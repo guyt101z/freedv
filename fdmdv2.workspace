@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeLite_Workspace Name="dvui" Database="./dvui.tags">
+  <Project Name="test_portaudio" Path="portaudio/examples/test_portaudio/test_portaudio.project" Active="No"/>
+  <Project Name="test_codec2" Path="test_codec2/test_codec2.project" Active="No"/>
+  <Project Name="test_hamlib" Path="hamlib-3.0/test_hamlib/test_hamlib.project" Active="No"/>
+  <Project Name="librs232" Path="rs232/librs232.project" Active="No"/>
+  <Project Name="fdmdv2" Path="fdmdv2.project" Active="Yes"/>
+  <BuildMatrix>
+    <WorkspaceConfiguration Name="Debug" Selected="no">
+      <Project Name="portsf" ConfigName="Debug"/>
+      <Project Name="test_sndfile" ConfigName="Debug"/>
+      <Project Name="test_portaudio" ConfigName="Debug"/>
+      <Project Name="test_codec2" ConfigName="Debug"/>
+      <Project Name="test_hamlib" ConfigName="Debug"/>
+      <Project Name="librs232" ConfigName="Debug"/>
+      <Project Name="dvui" ConfigName="Debug"/>
+    </WorkspaceConfiguration>
+    <WorkspaceConfiguration Name="Release" Selected="yes">
+      <Project Name="portsf" ConfigName="Release"/>
+      <Project Name="test_sndfile" ConfigName="Release"/>
+      <Project Name="test_portaudio" ConfigName="Release"/>
+      <Project Name="test_codec2" ConfigName="Release"/>
+      <Project Name="test_hamlib" ConfigName="Release"/>
+      <Project Name="librs232" ConfigName="Release"/>
+      <Project Name="dvui" ConfigName="Release"/>
+    </WorkspaceConfiguration>
+  </BuildMatrix>
+</CodeLite_Workspace>
