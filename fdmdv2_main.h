@@ -1,5 +1,6 @@
 //==========================================================================
 // Name:            fdmdv2_main.h
+//
 // Purpose:         Declares simple wxWidgets application with GUI.
 // Created:         Apr. 9, 2012
 // Initial author:  David Witten
@@ -21,6 +22,7 @@
 #include "wx/stopwatch.h"
 #include "wx/versioninfo.h"
 #include <wx/sound.h>
+#include <wx/thread.h>
 
 #include "topFrame.h"
 #include "dlg_about.h"
@@ -29,8 +31,8 @@
 #include "dlg_comports.h"
 #include "fdmdv2_plot.h"
 
-
 #define WAV_FILE wxT("doggrowl.wav")
+
 enum
 {
     ID_ROTATE_LEFT = wxID_HIGHEST + 1,
@@ -73,17 +75,18 @@ class MainFrame : public TopFrame
         DrawPanel*  m_panelExtra1;
         DrawPanel*  m_panelExtra2;
         bool        m_radioRunning;
-        // virtual void OnCloseFrame( wxCloseEvent& event ) { event.Skip(); }
-        // virtual void OnExitClick( wxCommandEvent& event ) { event.Skip(); }
-        // virtual void OnEraseBackground( wxEraseEvent& event ) { event.Skip(); }
-        // virtual void OnMouseDown( wxMouseEvent& event );
-        // virtual void OnMouseUp( wxMouseEvent& event );
-        // virtual void OnMouseMove( wxMouseEvent& event );
-        // virtual void OnPaint( wxPaintEvent& event ) { event.Skip(); }
-        // virtual void OnSize( wxSizeEvent& event ) { event.Skip(); }
-        // virtual void OnUpdateUI( wxUpdateUIEvent& event ) { event.Skip(); }
+
+        void DoStartThread();
+        void DoPauseThread();
+
+        //void DoResumeThread() { ... }
+
+        void OnThreadUpdate(wxThreadEvent&);
+        void OnThreadCompletion(wxThreadEvent&);
 
     protected:
+        MyThread *m_pThread;
+        wxCriticalSection m_pThreadCS;    // protects the m_pThread pointer
         // protected event handlers
         virtual void OnCloseFrame(wxCloseEvent& event);
         virtual void OnExitClick(wxCommandEvent& event);
@@ -129,9 +132,6 @@ class MainFrame : public TopFrame
         void OnUpdateUI( wxUpdateUIEvent& event );
 
         wxString LoadUserImage(wxImage& image);
-
-//        ScrollCanvas*   m_scrolledSpectrum;
-//        ScrollCanvas*   m_scrolledWaterfall;
 
     private:
         bool CreateSound(wxSound& snd) const;
