@@ -1,5 +1,6 @@
 //==========================================================================
 // Name:            fdmdv2_main.cpp
+//
 // Purpose:         Implements simple wxWidgets application with GUI.
 // Created:         Apr. 9, 2012
 // Initial author:  David Witten
