@@ -14,12 +14,10 @@ wxDECLARE_EVENT(wxEVT_COMMAND_AUDIOTHREAD_COMPLETED, wxThreadEvent);
 wxDECLARE_EVENT(wxEVT_COMMAND_AUDIOTHREAD_UPDATE, wxThreadEvent);
 
 #include "stdio.h"
-#include "portaudio.h"
+#include "extern/include/portaudio.h"
 
 /* This will be called asynchronously by the PortAudio engine. */
-static int audioCallback( void *inputBuffer, void *outputBuffer,
-
-unsigned long framesPerBuffer, PaTimestamp outTime, void *userData )
+static int audioCallback( void *inputBuffer, void *outputBuffer, unsigned long framesPerBuffer, PaTime outTime, void *userData )
 {
     float *out = (float *) outputBuffer;
     float *in = (float *) inputBuffer;
@@ -40,10 +38,11 @@ unsigned long framesPerBuffer, PaTimestamp outTime, void *userData )
     }
     return 0;
 }
+
 /* Use a PortAudioStream to process audio data. */
 int main(void)
 {
-    PortAudioStream *stream;
+    PortAudioWrap *stream;
     Pa_Initialize();
     //Pa_OpenDefaultStream(&stream, 2, 2, /* stereo input and output */ paFloat32, 44100.0, 64, 0, /* 64 frames per buffer, let PA determine numBuffers */audioCallback, NULL );
     Pa_OpenDefaultStream(&stream, 2, 2, paFloat32, 44100.0, 64, 0, audioCallback, NULL );

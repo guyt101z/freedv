@@ -2,7 +2,9 @@
 <CodeLite_Workspace Name="fdmdv2" Database="./fdmdv2.tags">
   <Project Name="test_portaudio" Path="libsndfile/Projects/w32-mingw/test_sndfile.project" Active="No"/>
   <Project Name="test_hamlib" Path="hamlib-3.0/test_hamlib/test_hamlib.project" Active="No"/>
-  <Project Name="fdmdv2" Path="fdmdv2.project" Active="Yes"/>
+  <Project Name="fdmdv2" Path="fdmdv2.project" Active="No"/>
+  <Project Name="pa_test" Path="pa_test/pa_test.project" Active="No"/>
+  <Project Name="pa_cppbinding_test" Path="pa_cppbinding_test/pa_cppbinding_test.project" Active="Yes"/>
   <BuildMatrix>
     <WorkspaceConfiguration Name="Debug" Selected="no">
       <Project Name="test_sndfile" ConfigName="Debug"/>
@@ -11,6 +13,8 @@
       <Project Name="test_hamlib" ConfigName="Debug"/>
       <Project Name="librs232" ConfigName="Debug"/>
       <Project Name="fdmdv2" ConfigName="Debug"/>
+      <Project Name="pa_test" ConfigName="Debug"/>
+      <Project Name="pa_cppbinding_test" ConfigName="Debug"/>
     </WorkspaceConfiguration>
     <WorkspaceConfiguration Name="Release" Selected="yes">
       <Project Name="test_sndfile" ConfigName="Release"/>
@@ -19,6 +23,8 @@
       <Project Name="test_hamlib" ConfigName="Release"/>
       <Project Name="librs232" ConfigName="Release"/>
       <Project Name="fdmdv2" ConfigName="Release"/>
+      <Project Name="pa_test" ConfigName="Release"/>
+      <Project Name="pa_cppbinding_test" ConfigName="Release"/>
     </WorkspaceConfiguration>
   </BuildMatrix>
 </CodeLite_Workspace>

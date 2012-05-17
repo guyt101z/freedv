@@ -16,7 +16,7 @@
 class AudioThread: public wxThread
 {
     public:
-        AudioThread(MainFrame *handler) : wxThread(wxTHREAD_DETACHED) { m_pHandler = handler }
+        AudioThread(MainFrame *handler) : wxThread(wxTHREAD_DETACHED){ m_pHandler = handler; }
         ~AudioThread();
 
     protected:
