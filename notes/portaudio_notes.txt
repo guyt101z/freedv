@@ -1,0 +1,355 @@
+
+build:
+make clean
+./configure ...
+make
+make install
+
+
+ ./configure --with-winapi=wmme --with-winapi=directx --with-winapi=asio --with-winapi=wasapi --with-asiodir=/p/Radio/ASIOSDK2 --with-dxdir=/p/Radio/dx7sdk --enable-cxx=yes --enable-shared=yes
+
+!!! didn't work !!! (Only configured wmme)!
+===========================================
+
+Trying:
+
+ ./configure --with-winapi=directx --with-dxdir=/p/Radio/dx7sdk --enable-cxx=yes --enable-shared=yes  --with-host_os=mingw
+
+ !!! didn't work !!! (build failed) 
+===========================================
+
+Try ASIO:
+ 
+./configure --with-winapi=asio  --with-asiodir=/p/Radio/ASIOSDK2  --enable-cxx=yes --enable-shared=yes --with-host_os=mingw
+
+Configuration summary:
+
+  Target ...................... i686-pc-mingw32
+  C++ bindings ................ yes
+  Debug output ................ no
+
+  WMME ........................ no
+  DSound ...................... no
+  ASIO ........................ yes (/p/Radio/ASIOSDK2)
+  WASAPI ...................... no
+  WDMKS ....................... no
+
+
+ !!! didn't work !!! (build failed libtool errors, It wants a uuid file, and it wants to find a copy of libportaudio.dll.la in /usr/lib !!???)
+===========================================
+Final lines of the build:
+
+/bin/sh ./libtool --mode=compile --tag=CXX g++ -c -g -O2 -DPA_LITTLE_ENDIAN -I./include -I./src/common -I./src/os/win -DPA_USE_WMME=
+0 -DPA_USE_ASIO=0 -DPA_USE_WDMKS=0 -DPA_USE_DS=0 -DPA_USE_WASAPI=0 -ffast-math -fomit-frame-pointer -I./src/hostapi/asio -I/p/Radio/
+ASIOSDK2/host/pc -I/p/Radio/ASIOSDK2/common -I/p/Radio/ASIOSDK2/host -UPA_USE_ASIO -DPA_USE_ASIO=1 -DWINDOWS -D_WIN32_WINNT=0x0501 -
+DWINVER=0x0501 /p/Radio/ASIOSDK2/host/pc/asiolist.cpp -o /p/Radio/ASIOSDK2/host/pc/asiolist.lo
+libtool: compile:  g++ -c -g -O2 -DPA_LITTLE_ENDIAN -I./include -I./src/common -I./src/os/win -DPA_USE_WMME=0 -DPA_USE_ASIO=0 -DPA_U
+SE_WDMKS=0 -DPA_USE_DS=0 -DPA_USE_WASAPI=0 -ffast-math -fomit-frame-pointer -I./src/hostapi/asio -I/p/Radio/ASIOSDK2/host/pc -I/p/Ra
+dio/ASIOSDK2/common -I/p/Radio/ASIOSDK2/host -UPA_USE_ASIO -DPA_USE_ASIO=1 -DWINDOWS -D_WIN32_WINNT=0x0501 -DWINVER=0x0501 /p/Radio/
+ASIOSDK2/host/pc/asiolist.cpp  -DDLL_EXPORT -DPIC -o /p/Radio/ASIOSDK2/host/pc/.libs/asiolist.o
+libtool: compile:  g++ -c -g -O2 -DPA_LITTLE_ENDIAN -I./include -I./src/common -I./src/os/win -DPA_USE_WMME=0 -DPA_USE_ASIO=0 -DPA_U
+SE_WDMKS=0 -DPA_USE_DS=0 -DPA_USE_WASAPI=0 -ffast-math -fomit-frame-pointer -I./src/hostapi/asio -I/p/Radio/ASIOSDK2/host/pc -I/p/Ra
+dio/ASIOSDK2/common -I/p/Radio/ASIOSDK2/host -UPA_USE_ASIO -DPA_USE_ASIO=1 -DWINDOWS -D_WIN32_WINNT=0x0501 -DWINVER=0x0501 /p/Radio/
+ASIOSDK2/host/pc/asiolist.cpp -o /p/Radio/ASIOSDK2/host/pc/asiolist.o >/dev/null 2>&1
+/bin/sh ./libtool --mode=link --tag=CXX g++  -shared -rpath /usr/local/lib -no-undefined -export-symbols-regex "(Pa|PaMacCore|PaJack
+|PaAlsa|PaAsio|PaOSS)_.*" -version-info 2:0:0 -o lib/libportaudio.la src/common/pa_allocation.lo src/common/pa_converters.lo src/com
+mon/pa_cpuload.lo src/common/pa_dither.lo src/common/pa_debugprint.lo src/common/pa_front.lo src/common/pa_process.lo src/common/pa_
+stream.lo src/common/pa_trace.lo src/hostapi/skeleton/pa_hostapi_skeleton.lo src/hostapi/asio/pa_asio.lo src/common/pa_ringbuffer.lo
+ src/os/win/pa_win_hostapis.lo src/os/win/pa_win_util.lo src/os/win/pa_win_coinitialize.lo src/hostapi/asio/iasiothiscallresolver.lo
+ /p/Radio/ASIOSDK2/common/asio.lo /p/Radio/ASIOSDK2/host/asiodrivers.lo /p/Radio/ASIOSDK2/host/pc/asiolist.lo -lwinmm -lm -lole32 -l
+uuid
+
+*** Warning: linker path does not have real file for library -luuid.
+*** I have the capability to make that library automatically link in when
+*** you link to this library.  But I can only do this if you have a
+*** shared version of the library, which you do not appear to have
+*** because I did check the linker path looking for a file starting
+*** with libuuid and none of the candidates passed a file format test
+*** using a file magic. Last file checked: /mingw/lib/libuuid.a
+*** The inter-library dependencies that have been dropped here will be
+*** automatically added whenever a program is linked with this library
+*** or is declared to -dlopen it.
+
+*** Since this library must not contain undefined symbols,
+*** because either the platform does not support them or
+*** it was explicitly requested with -no-undefined,
+*** libtool will only create a static version of it.
+libtool: link: /mingw/bin/ar cru lib/.libs/libportaudio.a src/common/.libs/pa_allocation.o src/common/.libs/pa_converters.o src/comm
+on/.libs/pa_cpuload.o src/common/.libs/pa_dither.o src/common/.libs/pa_debugprint.o src/common/.libs/pa_front.o src/common/.libs/pa_
+process.o src/common/.libs/pa_stream.o src/common/.libs/pa_trace.o src/hostapi/skeleton/.libs/pa_hostapi_skeleton.o src/hostapi/asio
+/.libs/pa_asio.o src/common/.libs/pa_ringbuffer.o src/os/win/.libs/pa_win_hostapis.o src/os/win/.libs/pa_win_util.o src/os/win/.libs
+/pa_win_coinitialize.o src/hostapi/asio/.libs/iasiothiscallresolver.o /p/Radio/ASIOSDK2/common/.libs/asio.o /p/Radio/ASIOSDK2/host/.
+libs/asiodrivers.o /p/Radio/ASIOSDK2/host/pc/.libs/asiolist.o
+libtool: link: ranlib lib/.libs/libportaudio.a
+libtool: link: ( cd "lib/.libs" && rm -f "libportaudio.la" && cp -p "../libportaudio.la" "libportaudio.la" )
+if test -n " bindings/cpp" ; then for dir in " bindings/cpp"; do make -C $dir all; done ; fi
+make[1]: Entering directory `/p/Radio/portaudio/bindings/cpp'
+Making all in lib
+make[2]: Entering directory `/p/Radio/portaudio/bindings/cpp/lib'
+/bin/sh ../libtool --tag=CXX   --mode=link g++  -g -O2 -Wall -ansi -pedantic -version-info 0:12:0 -no-undefined  -o libportaudiocpp.
+la -rpath /usr/local/lib BlockingStream.lo CallbackInterface.lo CallbackStream.lo CFunCallbackStream.lo CppFunCallbackStream.lo Devi
+ce.lo DirectionSpecificStreamParameters.lo Exception.lo HostApi.lo InterfaceCallbackStream.lo MemFunCallbackStream.lo Stream.lo Stre
+amParameters.lo System.lo SystemDeviceIterator.lo SystemHostApiIterator.lo ../../../lib/libportaudio.la
+
+*** Warning: This system can not link to static lib archive ../../../lib/libportaudio.la.
+*** I have the capability to make that library automatically link in when
+*** you link to this library.  But I can only do this if you have a
+*** shared version of the library, which you do not appear to have.
+libtool: link: rm -fr  .libs/libportaudiocpp.dll.a
+libtool: link: g++ -shared -nostdlib c:/bin/mingw/bin/../lib/gcc/mingw32/4.6.2/../../../dllcrt2.o c:/bin/mingw/bin/../lib/gcc/mingw3
+2/4.6.2/crtbegin.o  .libs/BlockingStream.o .libs/CallbackInterface.o .libs/CallbackStream.o .libs/CFunCallbackStream.o .libs/CppFunC
+allbackStream.o .libs/Device.o .libs/DirectionSpecificStreamParameters.o .libs/Exception.o .libs/HostApi.o .libs/InterfaceCallbackSt
+ream.o .libs/MemFunCallbackStream.o .libs/Stream.o .libs/StreamParameters.o .libs/System.o .libs/SystemDeviceIterator.o .libs/System
+HostApiIterator.o   -Lc:/bin/mingw/bin/../lib/gcc/mingw32/4.6.2 -Lc:/bin/mingw/bin/../lib/gcc -Lc:/bin/mingw/bin/../lib/gcc/mingw32/
+4.6.2/../../../../mingw32/lib -Lc:/bin/mingw/bin/../lib/gcc/mingw32/4.6.2/../../.. -lstdc++ -lmingw32 -lgcc_s -lgcc -lmoldname -lmin
+gwex -lmsvcrt -ladvapi32 -lshell32 -luser32 -lkernel32 -lmingw32 -lgcc_s -lgcc -lmoldname -lmingwex -lmsvcrt c:/bin/mingw/bin/../lib
+/gcc/mingw32/4.6.2/crtend.o  -O2   -o .libs/libportaudiocpp-0.dll -Wl,--enable-auto-image-base -Xlinker --out-implib -Xlinker .libs/
+libportaudiocpp.dll.a
+Creating library file: .libs/libportaudiocpp.dll.a
+.libs/BlockingStream.o: In function `ZN9portaudio14BlockingStream4openERKNS_16StreamParametersE':
+C:\Users\wittend\Projects\Radio\portaudio\bindings\cpp\lib/../source/portaudiocpp/BlockingStream.cxx:39: undefined reference to `Pa_
+OpenStream'
+.libs/BlockingStream.o: In function `ZN9portaudio14BlockingStream4readEPvm':
+C:\Users\wittend\Projects\Radio\portaudio\bindings\cpp\lib/../source/portaudiocpp/BlockingStream.cxx:51: undefined reference to `Pa_
+ReadStream'
+.libs/BlockingStream.o: In function `ZN9portaudio14BlockingStream5writeEPKvm':
+C:\Users\wittend\Projects\Radio\portaudio\bindings\cpp\lib/../source/portaudiocpp/BlockingStream.cxx:61: undefined reference to `Pa_
+WriteStream'
+.libs/BlockingStream.o: In function `ZNK9portaudio14BlockingStream17availableReadSizeEv':
+C:\Users\wittend\Projects\Radio\portaudio\bindings\cpp\lib/../source/portaudiocpp/BlockingStream.cxx:73: undefined reference to `Pa_
+GetStreamReadAvailable'
+.libs/BlockingStream.o: In function `ZNK9portaudio14BlockingStream18availableWriteSizeEv':
+C:\Users\wittend\Projects\Radio\portaudio\bindings\cpp\lib/../source/portaudiocpp/BlockingStream.cxx:85: undefined reference to `Pa_
+GetStreamWriteAvailable'
+.libs/CallbackStream.o: In function `ZNK9portaudio14CallbackStream7cpuLoadEv':
+C:\Users\wittend\Projects\Radio\portaudio\bindings\cpp\lib/../source/portaudiocpp/CallbackStream.cxx:17: undefined reference to `Pa_
+GetStreamCpuLoad'
+.libs/CFunCallbackStream.o: In function `ZN9portaudio18CFunCallbackStream4openERKNS_16StreamParametersEPFiPKvPvmPK24PaStreamCallback
+TimeInfomS6_ES6_':
+C:\Users\wittend\Projects\Radio\portaudio\bindings\cpp\lib/../source/portaudiocpp/CFunCallbackStream.cxx:34: undefined reference to
+`Pa_OpenStream'
+.libs/CppFunCallbackStream.o: In function `ZN9portaudio17FunCallbackStream4openERKNS_16StreamParametersE':
+C:\Users\wittend\Projects\Radio\portaudio\bindings\cpp\lib/../source/portaudiocpp/CppFunCallbackStream.cxx:72: undefined reference t
+o `Pa_OpenStream'
+.libs/Device.o: In function `Device':
+C:\Users\wittend\Projects\Radio\portaudio\bindings\cpp\lib/../source/portaudiocpp/Device.cxx:19: undefined reference to `Pa_GetDevic
+eInfo'
+.libs/Exception.o: In function `ZNK9portaudio11PaException11paErrorTextEv':
+C:\Users\wittend\Projects\Radio\portaudio\bindings\cpp\lib/../source/portaudiocpp/Exception.cxx:41: undefined reference to `Pa_GetEr
+rorText'
+.libs/Exception.o: In function `ZNK9portaudio11PaException16lastHostApiErrorEv':
+C:\Users\wittend\Projects\Radio\portaudio\bindings\cpp\lib/../source/portaudiocpp/Exception.cxx:58: undefined reference to `Pa_GetLa
+stHostErrorInfo'
+.libs/Exception.o: In function `ZNK9portaudio11PaException20lastHostApiErrorTextEv':
+C:\Users\wittend\Projects\Radio\portaudio\bindings\cpp\lib/../source/portaudiocpp/Exception.cxx:68: undefined reference to `Pa_GetLa
+stHostErrorInfo'
+.libs/Exception.o: In function `ZNK9portaudio11PaException11paErrorTextEv':
+C:\Users\wittend\Projects\Radio\portaudio\bindings\cpp\lib/../source/portaudiocpp/Exception.cxx:41: undefined reference to `Pa_GetEr
+rorText'
+.libs/HostApi.o: In function `HostApi':
+C:\Users\wittend\Projects\Radio\portaudio\bindings\cpp\lib/../source/portaudiocpp/HostApi.cxx:17: undefined reference to `Pa_GetHost
+ApiInfo'
+C:\Users\wittend\Projects\Radio\portaudio\bindings\cpp\lib/../source/portaudiocpp/HostApi.cxx:26: undefined reference to `Pa_HostApi
+DeviceIndexToDeviceIndex'
+.libs/HostApi.o: In function `ZNK9portaudio7HostApi5indexEv':
+C:\Users\wittend\Projects\Radio\portaudio\bindings\cpp\lib/../source/portaudiocpp/HostApi.cxx:61: undefined reference to `Pa_HostApi
+TypeIdToHostApiIndex'
+.libs/InterfaceCallbackStream.o: In function `ZN9portaudio23InterfaceCallbackStream4openERKNS_16StreamParametersERNS_17CallbackInter
+faceE':
+C:\Users\wittend\Projects\Radio\portaudio\bindings\cpp\lib/../source/portaudiocpp/InterfaceCallbackStream.cxx:38: undefined referenc
+e to `Pa_OpenStream'
+.libs/Stream.o: In function `ZN9portaudio6Stream5closeEv':
+C:\Users\wittend\Projects\Radio\portaudio\bindings\cpp\lib/../source/portaudiocpp/Stream.cxx:33: undefined reference to `Pa_CloseStr
+eam'
+.libs/Stream.o: In function `ZN9portaudio6Stream25setStreamFinishedCallbackEPFvPvE':
+C:\Users\wittend\Projects\Radio\portaudio\bindings\cpp\lib/../source/portaudiocpp/Stream.cxx:53: undefined reference to `Pa_SetStrea
+mFinishedCallback'
+.libs/Stream.o: In function `ZN9portaudio6Stream5startEv':
+C:\Users\wittend\Projects\Radio\portaudio\bindings\cpp\lib/../source/portaudiocpp/Stream.cxx:63: undefined reference to `Pa_StartStr
+eam'
+.libs/Stream.o: In function `ZN9portaudio6Stream4stopEv':
+C:\Users\wittend\Projects\Radio\portaudio\bindings\cpp\lib/../source/portaudiocpp/Stream.cxx:71: undefined reference to `Pa_StopStre
+am'
+.libs/Stream.o: In function `ZN9portaudio6Stream5abortEv':
+C:\Users\wittend\Projects\Radio\portaudio\bindings\cpp\lib/../source/portaudiocpp/Stream.cxx:79: undefined reference to `Pa_AbortStr
+eam'
+.libs/Stream.o: In function `ZNK9portaudio6Stream9isStoppedEv':
+C:\Users\wittend\Projects\Radio\portaudio\bindings\cpp\lib/../source/portaudiocpp/Stream.cxx:87: undefined reference to `Pa_IsStream
+Stopped'
+.libs/Stream.o: In function `ZNK9portaudio6Stream8isActiveEv':
+C:\Users\wittend\Projects\Radio\portaudio\bindings\cpp\lib/../source/portaudiocpp/Stream.cxx:97: undefined reference to `Pa_IsStream
+Active'
+.libs/Stream.o: In function `ZNK9portaudio6Stream12inputLatencyEv':
+C:\Users\wittend\Projects\Radio\portaudio\bindings\cpp\lib/../source/portaudiocpp/Stream.cxx:115: undefined reference to `Pa_GetStre
+amInfo'
+.libs/Stream.o: In function `ZNK9portaudio6Stream13outputLatencyEv':
+C:\Users\wittend\Projects\Radio\portaudio\bindings\cpp\lib/../source/portaudiocpp/Stream.cxx:133: undefined reference to `Pa_GetStre
+amInfo'
+.libs/Stream.o: In function `ZNK9portaudio6Stream10sampleRateEv':
+C:\Users\wittend\Projects\Radio\portaudio\bindings\cpp\lib/../source/portaudiocpp/Stream.cxx:152: undefined reference to `Pa_GetStre
+amInfo'
+.libs/Stream.o: In function `ZNK9portaudio6Stream4timeEv':
+C:\Users\wittend\Projects\Radio\portaudio\bindings\cpp\lib/../source/portaudiocpp/Stream.cxx:166: undefined reference to `Pa_GetStre
+amTime'
+.libs/StreamParameters.o: In function `ZNK9portaudio16StreamParameters11isSupportedEv':
+C:\Users\wittend\Projects\Radio\portaudio\bindings\cpp\lib/../source/portaudiocpp/StreamParameters.cxx:103: undefined reference to `
+Pa_IsFormatSupported'
+.libs/System.o: In function `ZN9portaudio6System14defaultHostApiEv':
+C:\Users\wittend\Projects\Radio\portaudio\bindings\cpp\lib/../source/portaudiocpp/System.cxx:165: undefined reference to `Pa_GetDefa
+ultHostApi'
+.libs/System.o: In function `ZN9portaudio6System15hostApiByTypeIdE15PaHostApiTypeId':
+C:\Users\wittend\Projects\Radio\portaudio\bindings\cpp\lib/../source/portaudiocpp/System.cxx:175: undefined reference to `Pa_HostApi
+TypeIdToHostApiIndex'
+.libs/System.o: In function `ZN9portaudio6System12hostApiCountEv':
+C:\Users\wittend\Projects\Radio\portaudio\bindings\cpp\lib/../source/portaudiocpp/System.cxx:193: undefined reference to `Pa_GetHost
+ApiCount'
+.libs/System.o: In function `ZN9portaudio6System11deviceCountEv':
+C:\Users\wittend\Projects\Radio\portaudio\bindings\cpp\lib/../source/portaudiocpp/System.cxx:261: undefined reference to `Pa_GetDevi
+ceCount'
+.libs/System.o: In function `ZN9portaudio6System19defaultOutputDeviceEv':
+C:\Users\wittend\Projects\Radio\portaudio\bindings\cpp\lib/../source/portaudiocpp/System.cxx:237: undefined reference to `Pa_GetDefa
+ultOutputDevice'
+.libs/System.o: In function `ZN9portaudio6System18defaultInputDeviceEv':
+C:\Users\wittend\Projects\Radio\portaudio\bindings\cpp\lib/../source/portaudiocpp/System.cxx:227: undefined reference to `Pa_GetDefa
+ultInputDevice'
+.libs/System.o: In function `ZN9portaudio6System10initializeEv':
+C:\Users\wittend\Projects\Radio\portaudio\bindings\cpp\lib/../source/portaudiocpp/System.cxx:48: undefined reference to `Pa_Initiali
+ze'
+.libs/System.o: In function `ZN9portaudio6System9terminateEv':
+C:\Users\wittend\Projects\Radio\portaudio\bindings\cpp\lib/../source/portaudiocpp/System.cxx:118: undefined reference to `Pa_Termina
+te'
+.libs/System.o: In function `ZN9portaudio6System12sizeOfSampleEm':
+C:\Users\wittend\Projects\Radio\portaudio\bindings\cpp\lib/../source/portaudiocpp/System.cxx:283: undefined reference to `Pa_GetSamp
+leSize'
+.libs/System.o: In function `ZN9portaudio6System7versionEv':
+C:\Users\wittend\Projects\Radio\portaudio\bindings\cpp\lib/../source/portaudiocpp/System.cxx:28: undefined reference to `Pa_GetVersi
+on'
+.libs/System.o: In function `ZN9portaudio6System11versionTextEv':
+C:\Users\wittend\Projects\Radio\portaudio\bindings\cpp\lib/../source/portaudiocpp/System.cxx:33: undefined reference to `Pa_GetVersi
+onText'
+.libs/System.o: In function `ZN9portaudio6System5sleepEl':
+C:\Users\wittend\Projects\Radio\portaudio\bindings\cpp\lib/../source/portaudiocpp/System.cxx:278: undefined reference to `Pa_Sleep'
+collect2: ld returned 1 exit status
+make[2]: *** [libportaudiocpp.la] Error 1
+make[2]: Leaving directory `/p/Radio/portaudio/bindings/cpp/lib'
+make[1]: *** [all-recursive] Error 1
+make[1]: Leaving directory `/p/Radio/portaudio/bindings/cpp'
+make: *** [all-recursive] Error 2
+ 
+
+Try a static build & DSound:
+===========================================
+ ./configure  --with-winapi=directx  --with-dxdir=/p/Radio/dx7sdk --enable-cxx=yes --enable-shared=no  --with-host_os=mingw
+
+As usual with DSound, configure goes Ok, but the last build messages I get are:
+/bin/sh ./libtool --mode=compile gcc -c -g -O2 -DPA_LITTLE_ENDIAN -I./include -I./src/common -I./src/os/win -DPA_USE_WMME=0 -DPA_USE
+_ASIO=0 -DPA_USE_WDMKS=0 -DPA_USE_DS=0 -DPA_USE_WASAPI=0 -I/p/Radio/dx7sdk/include -UPA_USE_DS -DPA_USE_DS=1 -mthreads -DPACKAGE_NAM
+E=\"\" -DPACKAGE_TARNAME=\"\" -DPACKAGE_VERSION=\"\" -DPACKAGE_STRING=\"\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\" -DSTDC_HEADER
+S=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPE
+S_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DLT_OBJDIR=\".libs/\" -DSIZEOF_SHORT=2 -DSIZEOF_INT=4 -DSIZEOF_LONG=4 src/hostapi/dsound/
+pa_win_ds.c -o src/hostapi/dsound/pa_win_ds.lo
+libtool: compile:  gcc -c -g -O2 -DPA_LITTLE_ENDIAN -I./include -I./src/common -I./src/os/win -DPA_USE_WMME=0 -DPA_USE_ASIO=0 -DPA_U
+SE_WDMKS=0 -DPA_USE_DS=0 -DPA_USE_WASAPI=0 -I/p/Radio/dx7sdk/include -UPA_USE_DS -DPA_USE_DS=1 -mthreads -DPACKAGE_NAME=\"\" -DPACKA
+GE_TARNAME=\"\" -DPACKAGE_VERSION=\"\" -DPACKAGE_STRING=\"\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\" -DSTDC_HEADERS=1 -DHAVE_SYS
+_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_S
+TDINT_H=1 -DHAVE_UNISTD_H=1 -DLT_OBJDIR=\".libs/\" -DSIZEOF_SHORT=2 -DSIZEOF_INT=4 -DSIZEOF_LONG=4 src/hostapi/dsound/pa_win_ds.c -o
+ src/hostapi/dsound/pa_win_ds.o
+src/hostapi/dsound/pa_win_ds.c:68:20: fatal error: dsound.h: No such file or directory
+compilation terminated.
+make: *** [src/hostapi/dsound/pa_win_ds.lo] Error 1
+
+ 
+Try a static build& ASIO:
+===========================================
+
+./configure --with-winapi=asio  --with-asiodir=/p/Radio/ASIOSDK2  --enable-cxx=yes --enable-shared=no --with-host_os=mingw
+
+
+Configuration summary:
+
+  Target ...................... i686-pc-mingw32
+  C++ bindings ................ yes
+  Debug output ................ no
+
+  WMME ........................ no
+  DSound ...................... no
+  ASIO ........................ yes (/p/Radio/ASIOSDK2)
+  WASAPI ...................... no
+  WDMKS ....................... no
+
+This one Worked!
+====================
+====================
+
+next:
+
+$ make install
+/bin/install -c -d /usr/local/lib
+/bin/sh ./libtool --mode=install /bin/install -c lib/libportaudio.la /usr/local/lib
+libtool: install: /bin/install -c lib/.libs/libportaudio.lai /usr/local/lib/libportaudio.la
+libtool: install: /bin/install -c lib/.libs/libportaudio.a /usr/local/lib/libportaudio.a
+libtool: install: chmod 644 /usr/local/lib/libportaudio.a
+libtool: install: ranlib /usr/local/lib/libportaudio.a
+/bin/install -c -d /usr/local/include
+for include in portaudio.h; do \
+                /bin/install -c -m 644 -m 644 ./include/$include /usr/local/include/$include; \
+        done
+/bin/install -c -d /usr/local/lib/pkgconfig
+/bin/install -c -m 644 portaudio-2.0.pc /usr/local/lib/pkgconfig/portaudio-2.0.pc
+
+------------------------------------------------------------
+PortAudio was successfully installed.
+
+On some systems (e.g. Linux) you should run 'ldconfig' now
+to make the shared object available.  You may also need to
+modify your LD_LIBRARY_PATH environment variable to include
+the directory /usr/local/lib
+------------------------------------------------------------
+
+make install-recursive
+make[1]: Entering directory `/p/Radio/portaudio'
+if test -n " bindings/cpp" ; then for dir in " bindings/cpp"; do make -C $dir install; done ; fi
+make[2]: Entering directory `/p/Radio/portaudio/bindings/cpp'
+Making install in lib
+make[3]: Entering directory `/p/Radio/portaudio/bindings/cpp/lib'
+make[4]: Entering directory `/p/Radio/portaudio/bindings/cpp/lib'
+test -z "/usr/local/lib" || /bin/mkdir -p "/usr/local/lib"
+ /bin/sh ../libtool   --mode=install /bin/install -c   libportaudiocpp.la '/usr/local/lib'
+libtool: install: /bin/install -c .libs/libportaudiocpp.lai /usr/local/lib/libportaudiocpp.la
+libtool: install: /bin/install -c .libs/libportaudiocpp.a /usr/local/lib/libportaudiocpp.a
+libtool: install: chmod 644 /usr/local/lib/libportaudiocpp.a
+libtool: install: ranlib /usr/local/lib/libportaudiocpp.a
+make[4]: Nothing to be done for `install-data-am'.
+make[4]: Leaving directory `/p/Radio/portaudio/bindings/cpp/lib'
+make[3]: Leaving directory `/p/Radio/portaudio/bindings/cpp/lib'
+Making install in include
+make[3]: Entering directory `/p/Radio/portaudio/bindings/cpp/include'
+make[4]: Entering directory `/p/Radio/portaudio/bindings/cpp/include'
+make[4]: Nothing to be done for `install-exec-am'.
+test -z "/usr/local/include/portaudiocpp" || /bin/mkdir -p "/usr/local/include/portaudiocpp"
+ /bin/install -c -m 644 portaudiocpp/AutoSystem.hxx portaudiocpp/BlockingStream.hxx portaudiocpp/CallbackInterface.hxx portaudiocpp/
+CallbackStream.hxx portaudiocpp/CFunCallbackStream.hxx portaudiocpp/CppFunCallbackStream.hxx portaudiocpp/Device.hxx portaudiocpp/Di
+rectionSpecificStreamParameters.hxx portaudiocpp/Exception.hxx portaudiocpp/HostApi.hxx portaudiocpp/InterfaceCallbackStream.hxx por
+taudiocpp/MemFunCallbackStream.hxx portaudiocpp/PortAudioCpp.hxx portaudiocpp/SampleDataFormat.hxx portaudiocpp/Stream.hxx portaudio
+cpp/StreamParameters.hxx portaudiocpp/SystemDeviceIterator.hxx portaudiocpp/SystemHostApiIterator.hxx portaudiocpp/System.hxx '/usr/
+local/include/portaudiocpp'
+make[4]: Leaving directory `/p/Radio/portaudio/bindings/cpp/include'
+make[3]: Leaving directory `/p/Radio/portaudio/bindings/cpp/include'
+Making install in bin
+make[3]: Entering directory `/p/Radio/portaudio/bindings/cpp/bin'
+make[4]: Entering directory `/p/Radio/portaudio/bindings/cpp/bin'
+make[4]: Nothing to be done for `install-exec-am'.
+make[4]: Nothing to be done for `install-data-am'.
+make[4]: Leaving directory `/p/Radio/portaudio/bindings/cpp/bin'
+make[3]: Leaving directory `/p/Radio/portaudio/bindings/cpp/bin'
+make[3]: Entering directory `/p/Radio/portaudio/bindings/cpp'
+make[4]: Entering directory `/p/Radio/portaudio/bindings/cpp'
+make[4]: Nothing to be done for `install-exec-am'.
+test -z "/usr/local/lib/pkgconfig" || /bin/mkdir -p "/usr/local/lib/pkgconfig"
+ /bin/install -c -m 644 portaudiocpp.pc '/usr/local/lib/pkgconfig'
+make[4]: Leaving directory `/p/Radio/portaudio/bindings/cpp'
+make[3]: Leaving directory `/p/Radio/portaudio/bindings/cpp'
+make[2]: Leaving directory `/p/Radio/portaudio/bindings/cpp'
+make[1]: Leaving directory `/p/Radio/portaudio'
+  
+
