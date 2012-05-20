@@ -13,7 +13,7 @@ CurrentFileName        :=
 CurrentFilePath        :=
 CurrentFileFullPath    :=
 User                   :=wittend
-Date                   :=5/17/2012
+Date                   :=5/18/2012
 CodeLitePath           :="C:\Program Files\CodeLite"
 LinkerName             :=g++
 ArchiveTool            :=ar rcus
@@ -56,7 +56,7 @@ WXWIN:=C:\bin\wxWidgets-2.9.2
 PATH:=$(WXWIN)\lib\gcc_dll;$(PATH)
 WXCFG:=gcc_dll\mswu
 UNIT_TEST_PP_SRC_DIR:=C:\bin\UnitTest++-1.3
-Objects=$(IntermediateDirectory)/topFrame$(ObjectSuffix) $(IntermediateDirectory)/dlg_about$(ObjectSuffix) $(IntermediateDirectory)/dlg_audio$(ObjectSuffix) $(IntermediateDirectory)/dlg_options$(ObjectSuffix) $(IntermediateDirectory)/dlg_comports$(ObjectSuffix) $(IntermediateDirectory)/fdmdv2_plot$(ObjectSuffix) $(IntermediateDirectory)/fdmdv2_main$(ObjectSuffix) $(IntermediateDirectory)/thread_audio$(ObjectSuffix) $(IntermediateDirectory)/fdmdv2_thread_audio$(ObjectSuffix) 
+Objects=$(IntermediateDirectory)/topFrame$(ObjectSuffix) $(IntermediateDirectory)/dlg_about$(ObjectSuffix) $(IntermediateDirectory)/dlg_audio$(ObjectSuffix) $(IntermediateDirectory)/dlg_options$(ObjectSuffix) $(IntermediateDirectory)/dlg_comports$(ObjectSuffix) $(IntermediateDirectory)/fdmdv2_plot$(ObjectSuffix) $(IntermediateDirectory)/fdmdv2_main$(ObjectSuffix) 
 
 ##
 ## Main Build Targets 
@@ -135,22 +135,6 @@ $(IntermediateDirectory)/fdmdv2_main$(DependSuffix): fdmdv2_main.cpp
 $(IntermediateDirectory)/fdmdv2_main$(PreprocessSuffix): fdmdv2_main.cpp
 	@$(CompilerName) $(CmpOptions) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/fdmdv2_main$(PreprocessSuffix) "C:/Users/wittend/Projects/Radio/fdmdv2/fdmdv2_main.cpp"
 
-$(IntermediateDirectory)/thread_audio$(ObjectSuffix): thread_audio.cpp $(IntermediateDirectory)/thread_audio$(DependSuffix)
-	$(CompilerName) $(IncludePCH) $(SourceSwitch) "C:/Users/wittend/Projects/Radio/fdmdv2/thread_audio.cpp" $(CmpOptions) $(ObjectSwitch)$(IntermediateDirectory)/thread_audio$(ObjectSuffix) $(IncludePath)
-$(IntermediateDirectory)/thread_audio$(DependSuffix): thread_audio.cpp
-	@$(CompilerName) $(CmpOptions) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/thread_audio$(ObjectSuffix) -MF$(IntermediateDirectory)/thread_audio$(DependSuffix) -MM "C:/Users/wittend/Projects/Radio/fdmdv2/thread_audio.cpp"
-
-$(IntermediateDirectory)/thread_audio$(PreprocessSuffix): thread_audio.cpp
-	@$(CompilerName) $(CmpOptions) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/thread_audio$(PreprocessSuffix) "C:/Users/wittend/Projects/Radio/fdmdv2/thread_audio.cpp"
-
-$(IntermediateDirectory)/fdmdv2_thread_audio$(ObjectSuffix): fdmdv2_thread_audio.cpp $(IntermediateDirectory)/fdmdv2_thread_audio$(DependSuffix)
-	$(CompilerName) $(IncludePCH) $(SourceSwitch) "C:/Users/wittend/Projects/Radio/fdmdv2/fdmdv2_thread_audio.cpp" $(CmpOptions) $(ObjectSwitch)$(IntermediateDirectory)/fdmdv2_thread_audio$(ObjectSuffix) $(IncludePath)
-$(IntermediateDirectory)/fdmdv2_thread_audio$(DependSuffix): fdmdv2_thread_audio.cpp
-	@$(CompilerName) $(CmpOptions) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/fdmdv2_thread_audio$(ObjectSuffix) -MF$(IntermediateDirectory)/fdmdv2_thread_audio$(DependSuffix) -MM "C:/Users/wittend/Projects/Radio/fdmdv2/fdmdv2_thread_audio.cpp"
-
-$(IntermediateDirectory)/fdmdv2_thread_audio$(PreprocessSuffix): fdmdv2_thread_audio.cpp
-	@$(CompilerName) $(CmpOptions) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/fdmdv2_thread_audio$(PreprocessSuffix) "C:/Users/wittend/Projects/Radio/fdmdv2/fdmdv2_thread_audio.cpp"
-
 
 -include $(IntermediateDirectory)/*$(DependSuffix)
 ##
@@ -178,12 +162,6 @@ clean:
 	$(RM) $(IntermediateDirectory)/fdmdv2_main$(ObjectSuffix)
 	$(RM) $(IntermediateDirectory)/fdmdv2_main$(DependSuffix)
 	$(RM) $(IntermediateDirectory)/fdmdv2_main$(PreprocessSuffix)
-	$(RM) $(IntermediateDirectory)/thread_audio$(ObjectSuffix)
-	$(RM) $(IntermediateDirectory)/thread_audio$(DependSuffix)
-	$(RM) $(IntermediateDirectory)/thread_audio$(PreprocessSuffix)
-	$(RM) $(IntermediateDirectory)/fdmdv2_thread_audio$(ObjectSuffix)
-	$(RM) $(IntermediateDirectory)/fdmdv2_thread_audio$(DependSuffix)
-	$(RM) $(IntermediateDirectory)/fdmdv2_thread_audio$(PreprocessSuffix)
 	$(RM) $(OutputFile)
 	$(RM) $(OutputFile).exe
 	$(RM) "C:\Users\wittend\Projects\Radio\fdmdv2\.build-release\fdmdv2"

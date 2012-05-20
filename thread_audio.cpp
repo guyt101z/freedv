@@ -38,7 +38,7 @@ static int audioCallback( void *inputBuffer, void *outputBuffer, unsigned long f
     }
     return 0;
 }
-
+#ifdef PORTAUDIO_MAIN
 /* Use a PortAudioStream to process audio data. */
 int main(void)
 {
@@ -53,3 +53,4 @@ int main(void)
     Pa_Terminate();
     return 0;
 }
+#endif  //PORTAUDIO_MAIN

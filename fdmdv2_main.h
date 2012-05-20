@@ -30,7 +30,7 @@
 #include "dlg_options.h"
 #include "dlg_comports.h"
 #include "fdmdv2_plot.h"
-#include "fdmdv2_thread_audio.h"
+//#include "fdmdv2_thread_audio.h"
 
 #define WAV_FILE wxT("doggrowl.wav")
 
@@ -86,7 +86,7 @@ class MainFrame : public TopFrame
         void OnThreadCompletion(wxThreadEvent&);
 
     protected:
-        Fdmdv2ThreadAudio *m_pThread;
+//        Fdmdv2ThreadAudio *m_pThread;
         wxCriticalSection m_pThreadCS;    // protects the m_pThread pointer
         // protected event handlers
         virtual void OnCloseFrame(wxCloseEvent& event);

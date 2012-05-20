@@ -15,8 +15,6 @@
     <File Name="dlg_comports.cpp"/>
     <File Name="fdmdv2_plot.cpp"/>
     <File Name="fdmdv2_main.cpp"/>
-    <File Name="thread_audio.cpp"/>
-    <File Name="fdmdv2_thread_audio.cpp"/>
   </VirtualDirectory>
   <VirtualDirectory Name="include">
     <File Name="topFrame.h"/>
@@ -26,8 +24,6 @@
     <File Name="dlg_comports.h"/>
     <File Name="fdmdv2_plot.h"/>
     <File Name="fdmdv2_main.h"/>
-    <File Name="thread_audio.h"/>
-    <File Name="fdmdv2_thread_audio.h"/>
   </VirtualDirectory>
   <VirtualDirectory Name="resources">
     <File Name="FDMDV2.fbp"/>
