@@ -352,4 +352,54 @@ make[3]: Leaving directory `/p/Radio/portaudio/bindings/cpp'
 make[2]: Leaving directory `/p/Radio/portaudio/bindings/cpp'
 make[1]: Leaving directory `/p/Radio/portaudio'
   
+  
+Trying both Direct Sound & Asio at the same time dynamicly:
+============================================================
+$ ./configure  --with-winapi=directx  --with-dxdir=/p/Radio/dx7sdk --with-winapi=asio  --with-asiodir=/p/Radio/ASIOSDK2  --enable-c
+xx=yes --enable-shared=yes  --with-host_os=mingw
 
+Configuration summary:
+
+  Target ...................... i686-pc-mingw32
+  C++ bindings ................ yes
+  Debug output ................ no
+
+  WMME ........................ no
+  DSound ...................... no
+  ASIO ........................ yes (/p/Radio/ASIOSDK2)
+  WASAPI ...................... no
+  WDMKS ....................... no
+  
+Fail!  configures only the last specified API (ASIO)
+
+
+Trying just Dsound:
+============================================================
+
+moved the DirectX sdk into c:/bin/ms_dxsdk/
+then mapped /bin/ms_dxsdk to /dxsdkin msys's /etc/fstab file.
+moved sal.h from MSVC10/include into /dxsdk/include.
+then did:
+
+ ./configure --with-winapi=directx --with-dxdir=/dxsdk --enable-cxx=yes --enable-shared=yes  --with-host_os=mingw
+
+got:
+ 
+Configuration summary:
+
+  Target ...................... i686-pc-mingw32
+  C++ bindings ................ yes
+  Debug output ................ no
+
+  WMME ........................ no
+  DSound ...................... yes (/dxsdk)
+  ASIO ........................ no
+  WASAPI ...................... no
+  WDMKS ....................... no
+
+and did: 
+
+  make
+
+  Everything seemed to work! Finally!
+  
