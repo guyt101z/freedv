@@ -2,7 +2,7 @@
 <CodeLite_Workspace Name="fdmdv2" Database="./fdmdv2.tags">
   <Project Name="test_portaudio" Path="libsndfile/Projects/w32-mingw/test_sndfile.project" Active="No"/>
   <Project Name="test_hamlib" Path="hamlib-3.0/test_hamlib/test_hamlib.project" Active="No"/>
-  <Project Name="fdmdv2" Path="fdmdv2.project" Active="Yes"/>
+  <Project Name="fdmdv2" Path="fdmdv2.project" Active="No"/>
   <Project Name="pa_test" Path="pa_test/pa_test.project" Active="No"/>
   <Project Name="pa_cppbinding_test" Path="pa_cppbinding_test/pa_cppbinding_test.project" Active="No"/>
   <BuildMatrix>
