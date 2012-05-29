@@ -7,6 +7,7 @@
 ## PLEASE DO "NOT" EDIT THIS FILE!
 ###########################################################################
 
+from dlg_audio.h import dlg_audio
 import wx
 import wx.xrc
 import wx.aui
@@ -468,31 +469,92 @@ class DlgAbout ( wx.Dialog ):
 ## Class DlgAudio
 ###########################################################################
 
-class DlgAudio ( wx.Dialog ):
+class DlgAudio ( public dlg_audio ):
 	
 	def __init__( self, parent ):
-		wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = _(u"Audio Options"), pos = wx.DefaultPosition, size = wx.Size( 465,302 ), style = wx.DEFAULT_DIALOG_STYLE )
+		dlg_audio.__init__( self ) ( self, parent, id = wx.ID_ANY, title = _(u"Audio Options"), pos = wx.DefaultPosition, size = wx.Size( 436,377 ), style = wx.DEFAULT_DIALOG_STYLE )
 		
 		self.SetSizeHintsSz( wx.DefaultSize, wx.DefaultSize )
 		
 		bSizer27 = wx.BoxSizer( wx.VERTICAL )
 		
-		gSizer1 = wx.GridSizer( 2, 2, 0, 0 )
+		bSizer271 = wx.BoxSizer( wx.HORIZONTAL )
 		
-		self.m_listCtrl1 = wx.ListCtrl( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LC_ICON )
-		gSizer1.Add( self.m_listCtrl1, 0, wx.ALL|wx.EXPAND, 5 )
+		sbSizer6 = wx.StaticBoxSizer( wx.StaticBox( self, wx.ID_ANY, _(u"Rx Input") ), wx.VERTICAL )
 		
-		self.m_listCtrl2 = wx.ListCtrl( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LC_ICON )
-		gSizer1.Add( self.m_listCtrl2, 0, wx.ALL|wx.EXPAND, 5 )
+		bSizer31 = wx.BoxSizer( wx.VERTICAL )
 		
-		self.m_listCtrl3 = wx.ListCtrl( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LC_ICON )
-		gSizer1.Add( self.m_listCtrl3, 0, wx.ALL|wx.EXPAND, 5 )
+		m_lbRxInputChoices = []
+		self.m_lbRxInput = wx.ListBox( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, m_lbRxInputChoices, wx.LB_SINGLE )
+		bSizer31.Add( self.m_lbRxInput, 1, wx.ALIGN_CENTER_HORIZONTAL|wx.ALL|wx.EXPAND, 2 )
 		
-		self.m_listCtrl4 = wx.ListCtrl( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LC_ICON )
-		gSizer1.Add( self.m_listCtrl4, 0, wx.ALL|wx.EXPAND, 5 )
+		self.m_textRxInput = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer31.Add( self.m_textRxInput, 0, wx.ALIGN_CENTER|wx.ALL|wx.EXPAND, 2 )
 		
 		
-		bSizer27.Add( gSizer1, 1, wx.EXPAND, 5 )
+		sbSizer6.Add( bSizer31, 1, wx.EXPAND, 6 )
+		
+		
+		bSizer271.Add( sbSizer6, 1, wx.EXPAND, 5 )
+		
+		sbSizer7 = wx.StaticBoxSizer( wx.StaticBox( self, wx.ID_ANY, _(u"Tx Output") ), wx.VERTICAL )
+		
+		bSizer281 = wx.BoxSizer( wx.VERTICAL )
+		
+		m_lbTxOutputChoices = []
+		self.m_lbTxOutput = wx.ListBox( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, m_lbTxOutputChoices, wx.LB_SINGLE )
+		bSizer281.Add( self.m_lbTxOutput, 1, wx.ALIGN_CENTER_HORIZONTAL|wx.ALL|wx.EXPAND, 2 )
+		
+		self.m_textCtrl15 = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer281.Add( self.m_textCtrl15, 0, wx.ALIGN_CENTER|wx.ALL|wx.EXPAND, 2 )
+		
+		
+		sbSizer7.Add( bSizer281, 1, wx.EXPAND, 5 )
+		
+		
+		bSizer271.Add( sbSizer7, 1, wx.EXPAND, 6 )
+		
+		
+		bSizer27.Add( bSizer271, 1, wx.EXPAND, 5 )
+		
+		bSizer26 = wx.BoxSizer( wx.HORIZONTAL )
+		
+		sbSizer8 = wx.StaticBoxSizer( wx.StaticBox( self, wx.ID_ANY, _(u"Voice Input") ), wx.VERTICAL )
+		
+		bSizer29 = wx.BoxSizer( wx.VERTICAL )
+		
+		m_lbVoiceInputChoices = []
+		self.m_lbVoiceInput = wx.ListBox( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, m_lbVoiceInputChoices, wx.LB_SINGLE )
+		bSizer29.Add( self.m_lbVoiceInput, 1, wx.ALIGN_CENTER_HORIZONTAL|wx.ALL|wx.EXPAND, 2 )
+		
+		self.m_textVoiceInput = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer29.Add( self.m_textVoiceInput, 0, wx.ALIGN_CENTER|wx.ALL|wx.EXPAND, 2 )
+		
+		
+		sbSizer8.Add( bSizer29, 1, wx.EXPAND, 5 )
+		
+		
+		bSizer26.Add( sbSizer8, 1, wx.EXPAND, 6 )
+		
+		sbSizer9 = wx.StaticBoxSizer( wx.StaticBox( self, wx.ID_ANY, _(u"Voice Output") ), wx.VERTICAL )
+		
+		bSizer30 = wx.BoxSizer( wx.VERTICAL )
+		
+		m_lbVoiceOutputChoices = []
+		self.m_lbVoiceOutput = wx.ListBox( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, m_lbVoiceOutputChoices, wx.LB_SINGLE )
+		bSizer30.Add( self.m_lbVoiceOutput, 1, wx.ALIGN_CENTER_HORIZONTAL|wx.ALL|wx.EXPAND, 2 )
+		
+		self.m_textVoiceOutput = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer30.Add( self.m_textVoiceOutput, 0, wx.ALIGN_CENTER|wx.ALL|wx.EXPAND, 2 )
+		
+		
+		sbSizer9.Add( bSizer30, 1, wx.EXPAND, 1 )
+		
+		
+		bSizer26.Add( sbSizer9, 1, wx.EXPAND, 6 )
+		
+		
+		bSizer27.Add( bSizer26, 1, wx.EXPAND, 1 )
 		
 		bSizer28 = wx.BoxSizer( wx.VERTICAL )
 		
@@ -517,6 +579,10 @@ class DlgAudio ( wx.Dialog ):
 		self.Centre( wx.BOTH )
 		
 		# Connect Events
+		self.m_lbRxInput.Bind( wx.EVT_LISTBOX, self.OnRxInputSelect )
+		self.m_lbTxOutput.Bind( wx.EVT_LISTBOX, self.OnTxOutputSelect )
+		self.m_lbVoiceInput.Bind( wx.EVT_LISTBOX, self.OnVoiceInputSelect )
+		self.m_lbVoiceOutput.Bind( wx.EVT_LISTBOX, self.OnVoiceOutputSelect )
 		self.m_sdbSizer3Apply.Bind( wx.EVT_BUTTON, self.OnApply )
 		self.m_sdbSizer3Cancel.Bind( wx.EVT_BUTTON, self.OnCancel )
 		self.m_sdbSizer3OK.Bind( wx.EVT_BUTTON, self.OnOK )
@@ -526,6 +592,18 @@ class DlgAudio ( wx.Dialog ):
 	
 	
 	# Virtual event handlers, overide them in your derived class
+	def OnRxInputSelect( self, event ):
+		event.Skip()
+	
+	def OnTxOutputSelect( self, event ):
+		event.Skip()
+	
+	def OnVoiceInputSelect( self, event ):
+		event.Skip()
+	
+	def OnVoiceOutputSelect( self, event ):
+		event.Skip()
+	
 	def OnApply( self, event ):
 		event.Skip()
 	

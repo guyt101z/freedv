@@ -443,9 +443,9 @@
 			</object>
 		</object>
 	</object>
-	<object class="wxDialog" name="DlgAudio">
+	<object class="wxDialog" name="DlgAudio" subclass="dlg_audio">
 		<style>wxDEFAULT_DIALOG_STYLE</style>
-		<size>465,302</size>
+		<size>436,377</size>
 		<title>Audio Options</title>
 		<centered>1</centered>
 		<object class="wxBoxSizer">
@@ -454,41 +454,154 @@
 				<option>1</option>
 				<flag>wxEXPAND</flag>
 				<border>5</border>
-				<object class="wxGridSizer">
-					<rows>2</rows>
-					<cols>2</cols>
-					<vgap>0</vgap>
-					<hgap>0</hgap>
+				<object class="wxBoxSizer">
+					<orient>wxHORIZONTAL</orient>
 					<object class="sizeritem">
-						<option>0</option>
-						<flag>wxALL|wxEXPAND</flag>
+						<option>1</option>
+						<flag>wxEXPAND</flag>
 						<border>5</border>
-						<object class="wxListCtrl" name="m_listCtrl1">
-							<style>wxLC_ICON</style>
+						<object class="wxStaticBoxSizer">
+							<orient>wxVERTICAL</orient>
+							<label>Rx Input</label>
+							<object class="sizeritem">
+								<option>1</option>
+								<flag>wxEXPAND</flag>
+								<border>6</border>
+								<object class="wxBoxSizer">
+									<orient>wxVERTICAL</orient>
+									<object class="sizeritem">
+										<option>1</option>
+										<flag>wxALIGN_CENTER_HORIZONTAL|wxALL|wxEXPAND</flag>
+										<border>2</border>
+										<object class="wxListBox" name="m_lbRxInput">
+											<style>wxLB_SINGLE</style>
+											<content />
+										</object>
+									</object>
+									<object class="sizeritem">
+										<option>0</option>
+										<flag>wxALIGN_CENTER|wxALL|wxEXPAND</flag>
+										<border>2</border>
+										<object class="wxTextCtrl" name="m_textRxInput">
+											<value></value>
+											<maxlength>0</maxlength>
+										</object>
+									</object>
+								</object>
+							</object>
 						</object>
 					</object>
 					<object class="sizeritem">
-						<option>0</option>
-						<flag>wxALL|wxEXPAND</flag>
-						<border>5</border>
-						<object class="wxListCtrl" name="m_listCtrl2">
-							<style>wxLC_ICON</style>
+						<option>1</option>
+						<flag>wxEXPAND</flag>
+						<border>6</border>
+						<object class="wxStaticBoxSizer">
+							<orient>wxVERTICAL</orient>
+							<label>Tx Output</label>
+							<object class="sizeritem">
+								<option>1</option>
+								<flag>wxEXPAND</flag>
+								<border>5</border>
+								<object class="wxBoxSizer">
+									<orient>wxVERTICAL</orient>
+									<object class="sizeritem">
+										<option>1</option>
+										<flag>wxALIGN_CENTER_HORIZONTAL|wxALL|wxEXPAND</flag>
+										<border>2</border>
+										<object class="wxListBox" name="m_lbTxOutput">
+											<style>wxLB_SINGLE</style>
+											<content />
+										</object>
+									</object>
+									<object class="sizeritem">
+										<option>0</option>
+										<flag>wxALIGN_CENTER|wxALL|wxEXPAND</flag>
+										<border>2</border>
+										<object class="wxTextCtrl" name="m_textCtrl15">
+											<value></value>
+											<maxlength>0</maxlength>
+										</object>
+									</object>
+								</object>
+							</object>
+						</object>
+					</object>
+				</object>
+			</object>
+			<object class="sizeritem">
+				<option>1</option>
+				<flag>wxEXPAND</flag>
+				<border>1</border>
+				<object class="wxBoxSizer">
+					<orient>wxHORIZONTAL</orient>
+					<object class="sizeritem">
+						<option>1</option>
+						<flag>wxEXPAND</flag>
+						<border>6</border>
+						<object class="wxStaticBoxSizer">
+							<orient>wxVERTICAL</orient>
+							<label>Voice Input</label>
+							<object class="sizeritem">
+								<option>1</option>
+								<flag>wxEXPAND</flag>
+								<border>5</border>
+								<object class="wxBoxSizer">
+									<orient>wxVERTICAL</orient>
+									<object class="sizeritem">
+										<option>1</option>
+										<flag>wxALIGN_CENTER_HORIZONTAL|wxALL|wxEXPAND</flag>
+										<border>2</border>
+										<object class="wxListBox" name="m_lbVoiceInput">
+											<style>wxLB_SINGLE</style>
+											<content />
+										</object>
+									</object>
+									<object class="sizeritem">
+										<option>0</option>
+										<flag>wxALIGN_CENTER|wxALL|wxEXPAND</flag>
+										<border>2</border>
+										<object class="wxTextCtrl" name="m_textVoiceInput">
+											<value></value>
+											<maxlength>0</maxlength>
+										</object>
+									</object>
+								</object>
+							</object>
 						</object>
 					</object>
 					<object class="sizeritem">
-						<option>0</option>
-						<flag>wxALL|wxEXPAND</flag>
-						<border>5</border>
-						<object class="wxListCtrl" name="m_listCtrl3">
-							<style>wxLC_ICON</style>
-						</object>
-					</object>
-					<object class="sizeritem">
-						<option>0</option>
-						<flag>wxALL|wxEXPAND</flag>
-						<border>5</border>
-						<object class="wxListCtrl" name="m_listCtrl4">
-							<style>wxLC_ICON</style>
+						<option>1</option>
+						<flag>wxEXPAND</flag>
+						<border>6</border>
+						<object class="wxStaticBoxSizer">
+							<orient>wxVERTICAL</orient>
+							<label>Voice Output</label>
+							<object class="sizeritem">
+								<option>1</option>
+								<flag>wxEXPAND</flag>
+								<border>1</border>
+								<object class="wxBoxSizer">
+									<orient>wxVERTICAL</orient>
+									<object class="sizeritem">
+										<option>1</option>
+										<flag>wxALIGN_CENTER_HORIZONTAL|wxALL|wxEXPAND</flag>
+										<border>2</border>
+										<object class="wxListBox" name="m_lbVoiceOutput">
+											<style>wxLB_SINGLE</style>
+											<content />
+										</object>
+									</object>
+									<object class="sizeritem">
+										<option>0</option>
+										<flag>wxALIGN_CENTER|wxALL|wxEXPAND</flag>
+										<border>2</border>
+										<object class="wxTextCtrl" name="m_textVoiceOutput">
+											<value></value>
+											<maxlength>0</maxlength>
+										</object>
+									</object>
+								</object>
+							</object>
 						</object>
 					</object>
 				</object>

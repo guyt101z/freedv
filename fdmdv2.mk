@@ -13,7 +13,7 @@ CurrentFileName        :=
 CurrentFilePath        :=
 CurrentFileFullPath    :=
 User                   :=wittend
-Date                   :=5/28/2012
+Date                   :=5/29/2012
 CodeLitePath           :="C:\Program Files\CodeLite"
 LinkerName             :=g++
 ArchiveTool            :=ar rcus
@@ -44,8 +44,8 @@ LinkOptions            :=  -mwindows -s $(shell wx-config --debug=no --libs --un
 IncludePath            :=  $(IncludeSwitch). 
 IncludePCH             := 
 RcIncludePath          := 
-Libs                   := $(LibrarySwitch)sndfile-1 
-LibPath                := $(LibraryPathSwitch). $(LibraryPathSwitch)./libsndfile/bin 
+Libs                   := $(LibrarySwitch)sndfile-1 $(LibrarySwitch)codec2 $(LibrarySwitch)portaudio $(LibrarySwitch)portaudiocpp 
+LibPath                := $(LibraryPathSwitch). $(LibraryPathSwitch)./libsndfile/bin $(LibraryPathSwitch)./extern/lib 
 
 
 ##
