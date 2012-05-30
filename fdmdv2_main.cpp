@@ -100,13 +100,13 @@ void MainFrame::OnSliderScrollTop(wxScrollEvent& event)
 
 void MainFrame::OnSliderScrollBottom(wxScrollEvent& event)
 {
-    wxMessageBox("Got Click!", "OnSliderScrollBottom", wxOK);
+    wxMessageBox(wxT("Got Click!"), wxT("OnSliderScrollBottom"), wxOK);
     event.Skip();
 }
 
 void MainFrame::OnCheckSQClick(wxCommandEvent& event)
 {
-    wxMessageBox("Got Click!", "OnCheckSQClick", wxOK);
+    wxMessageBox(wxT("Got Click!"), wxT("OnCheckSQClick"), wxOK);
     event.Skip();
 }
 

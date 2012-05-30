@@ -41,7 +41,7 @@ MakeDirCommand         :=makedir
 CmpOptions             := -O2 -Wall $(shell wx-config --cxxflags --unicode=yes --debug=no) $(Preprocessors)
 C_CmpOptions           := -O2 -Wall $(shell wx-config --cxxflags --unicode=yes --debug=no) $(Preprocessors)
 LinkOptions            :=  -mwindows -s $(shell wx-config --debug=no --libs --unicode=yes)
-IncludePath            :=  $(IncludeSwitch). 
+IncludePath            :=  $(IncludeSwitch). $(IncludeSwitch)./extern/include 
 IncludePCH             := 
 RcIncludePath          := 
 Libs                   := $(LibrarySwitch)sndfile-1 $(LibrarySwitch)codec2 $(LibrarySwitch)portaudio $(LibrarySwitch)portaudiocpp 

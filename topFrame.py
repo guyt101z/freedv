@@ -7,7 +7,6 @@
 ## PLEASE DO "NOT" EDIT THIS FILE!
 ###########################################################################
 
-from dlg_audio.h import dlg_audio
 import wx
 import wx.xrc
 import wx.aui
@@ -454,6 +453,7 @@ class DlgAbout ( wx.Dialog ):
 		self.Centre( wx.BOTH )
 		
 		# Connect Events
+		self.Bind( wx.EVT_CLOSE, self.OnClose )
 		self.Bind( wx.EVT_INIT_DIALOG, self.OnInitDialog )
 	
 	def __del__( self ):
@@ -461,6 +461,9 @@ class DlgAbout ( wx.Dialog ):
 	
 	
 	# Virtual event handlers, overide them in your derived class
+	def OnClose( self, event ):
+		event.Skip()
+	
 	def OnInitDialog( self, event ):
 		event.Skip()
 	
@@ -469,10 +472,10 @@ class DlgAbout ( wx.Dialog ):
 ## Class DlgAudio
 ###########################################################################
 
-class DlgAudio ( public dlg_audio ):
+class DlgAudio ( wx.Dialog ):
 	
 	def __init__( self, parent ):
-		dlg_audio.__init__( self ) ( self, parent, id = wx.ID_ANY, title = _(u"Audio Options"), pos = wx.DefaultPosition, size = wx.Size( 436,377 ), style = wx.DEFAULT_DIALOG_STYLE )
+		wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = _(u"Audio Options"), pos = wx.DefaultPosition, size = wx.Size( 553,455 ), style = wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER )
 		
 		self.SetSizeHintsSz( wx.DefaultSize, wx.DefaultSize )
 		
@@ -485,7 +488,7 @@ class DlgAudio ( public dlg_audio ):
 		bSizer31 = wx.BoxSizer( wx.VERTICAL )
 		
 		m_lbRxInputChoices = []
-		self.m_lbRxInput = wx.ListBox( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, m_lbRxInputChoices, wx.LB_SINGLE )
+		self.m_lbRxInput = wx.ListBox( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, m_lbRxInputChoices, wx.LB_HSCROLL|wx.LB_SINGLE )
 		bSizer31.Add( self.m_lbRxInput, 1, wx.ALIGN_CENTER_HORIZONTAL|wx.ALL|wx.EXPAND, 2 )
 		
 		self.m_textRxInput = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
@@ -502,7 +505,7 @@ class DlgAudio ( public dlg_audio ):
 		bSizer281 = wx.BoxSizer( wx.VERTICAL )
 		
 		m_lbTxOutputChoices = []
-		self.m_lbTxOutput = wx.ListBox( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, m_lbTxOutputChoices, wx.LB_SINGLE )
+		self.m_lbTxOutput = wx.ListBox( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, m_lbTxOutputChoices, wx.LB_HSCROLL|wx.LB_SINGLE )
 		bSizer281.Add( self.m_lbTxOutput, 1, wx.ALIGN_CENTER_HORIZONTAL|wx.ALL|wx.EXPAND, 2 )
 		
 		self.m_textCtrl15 = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
@@ -524,7 +527,7 @@ class DlgAudio ( public dlg_audio ):
 		bSizer29 = wx.BoxSizer( wx.VERTICAL )
 		
 		m_lbVoiceInputChoices = []
-		self.m_lbVoiceInput = wx.ListBox( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, m_lbVoiceInputChoices, wx.LB_SINGLE )
+		self.m_lbVoiceInput = wx.ListBox( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, m_lbVoiceInputChoices, wx.LB_HSCROLL|wx.LB_SINGLE )
 		bSizer29.Add( self.m_lbVoiceInput, 1, wx.ALIGN_CENTER_HORIZONTAL|wx.ALL|wx.EXPAND, 2 )
 		
 		self.m_textVoiceInput = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
@@ -541,7 +544,7 @@ class DlgAudio ( public dlg_audio ):
 		bSizer30 = wx.BoxSizer( wx.VERTICAL )
 		
 		m_lbVoiceOutputChoices = []
-		self.m_lbVoiceOutput = wx.ListBox( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, m_lbVoiceOutputChoices, wx.LB_SINGLE )
+		self.m_lbVoiceOutput = wx.ListBox( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, m_lbVoiceOutputChoices, wx.LB_HSCROLL|wx.LB_SINGLE )
 		bSizer30.Add( self.m_lbVoiceOutput, 1, wx.ALIGN_CENTER_HORIZONTAL|wx.ALL|wx.EXPAND, 2 )
 		
 		self.m_textVoiceOutput = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
@@ -579,6 +582,8 @@ class DlgAudio ( public dlg_audio ):
 		self.Centre( wx.BOTH )
 		
 		# Connect Events
+		self.Bind( wx.EVT_CLOSE, self.OnClose )
+		self.Bind( wx.EVT_INIT_DIALOG, self.OnInitDialog )
 		self.m_lbRxInput.Bind( wx.EVT_LISTBOX, self.OnRxInputSelect )
 		self.m_lbTxOutput.Bind( wx.EVT_LISTBOX, self.OnTxOutputSelect )
 		self.m_lbVoiceInput.Bind( wx.EVT_LISTBOX, self.OnVoiceInputSelect )
@@ -592,6 +597,12 @@ class DlgAudio ( public dlg_audio ):
 	
 	
 	# Virtual event handlers, overide them in your derived class
+	def OnClose( self, event ):
+		event.Skip()
+	
+	def OnInitDialog( self, event ):
+		event.Skip()
+	
 	def OnRxInputSelect( self, event ):
 		event.Skip()
 	

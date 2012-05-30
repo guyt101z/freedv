@@ -443,9 +443,9 @@
 			</object>
 		</object>
 	</object>
-	<object class="wxDialog" name="DlgAudio" subclass="dlg_audio">
-		<style>wxDEFAULT_DIALOG_STYLE</style>
-		<size>436,377</size>
+	<object class="wxDialog" name="DlgAudio">
+		<style>wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER</style>
+		<size>553,455</size>
 		<title>Audio Options</title>
 		<centered>1</centered>
 		<object class="wxBoxSizer">
@@ -474,7 +474,7 @@
 										<flag>wxALIGN_CENTER_HORIZONTAL|wxALL|wxEXPAND</flag>
 										<border>2</border>
 										<object class="wxListBox" name="m_lbRxInput">
-											<style>wxLB_SINGLE</style>
+											<style>wxLB_HSCROLL|wxLB_SINGLE</style>
 											<content />
 										</object>
 									</object>
@@ -509,7 +509,7 @@
 										<flag>wxALIGN_CENTER_HORIZONTAL|wxALL|wxEXPAND</flag>
 										<border>2</border>
 										<object class="wxListBox" name="m_lbTxOutput">
-											<style>wxLB_SINGLE</style>
+											<style>wxLB_HSCROLL|wxLB_SINGLE</style>
 											<content />
 										</object>
 									</object>
@@ -552,7 +552,7 @@
 										<flag>wxALIGN_CENTER_HORIZONTAL|wxALL|wxEXPAND</flag>
 										<border>2</border>
 										<object class="wxListBox" name="m_lbVoiceInput">
-											<style>wxLB_SINGLE</style>
+											<style>wxLB_HSCROLL|wxLB_SINGLE</style>
 											<content />
 										</object>
 									</object>
@@ -587,7 +587,7 @@
 										<flag>wxALIGN_CENTER_HORIZONTAL|wxALL|wxEXPAND</flag>
 										<border>2</border>
 										<object class="wxListBox" name="m_lbVoiceOutput">
-											<style>wxLB_SINGLE</style>
+											<style>wxLB_HSCROLL|wxLB_SINGLE</style>
 											<content />
 										</object>
 									</object>

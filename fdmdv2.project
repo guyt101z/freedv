@@ -15,6 +15,26 @@
     <File Name="dlg_comports.cpp"/>
     <File Name="fdmdv2_plot.cpp"/>
     <File Name="fdmdv2_main.cpp"/>
+    <File Name="extern/include/portaudiocpp/AsioDeviceAdapter.hxx"/>
+    <File Name="extern/include/portaudiocpp/AutoSystem.hxx"/>
+    <File Name="extern/include/portaudiocpp/BlockingStream.hxx"/>
+    <File Name="extern/include/portaudiocpp/CallbackInterface.hxx"/>
+    <File Name="extern/include/portaudiocpp/CallbackStream.hxx"/>
+    <File Name="extern/include/portaudiocpp/CFunCallbackStream.hxx"/>
+    <File Name="extern/include/portaudiocpp/CppFunCallbackStream.hxx"/>
+    <File Name="extern/include/portaudiocpp/Device.hxx"/>
+    <File Name="extern/include/portaudiocpp/DirectionSpecificStreamParameters.hxx"/>
+    <File Name="extern/include/portaudiocpp/Exception.hxx"/>
+    <File Name="extern/include/portaudiocpp/HostApi.hxx"/>
+    <File Name="extern/include/portaudiocpp/InterfaceCallbackStream.hxx"/>
+    <File Name="extern/include/portaudiocpp/MemFunCallbackStream.hxx"/>
+    <File Name="extern/include/portaudiocpp/PortAudioCpp.hxx"/>
+    <File Name="extern/include/portaudiocpp/SampleDataFormat.hxx"/>
+    <File Name="extern/include/portaudiocpp/Stream.hxx"/>
+    <File Name="extern/include/portaudiocpp/StreamParameters.hxx"/>
+    <File Name="extern/include/portaudiocpp/System.hxx"/>
+    <File Name="extern/include/portaudiocpp/SystemDeviceIterator.hxx"/>
+    <File Name="extern/include/portaudiocpp/SystemHostApiIterator.hxx"/>
   </VirtualDirectory>
   <VirtualDirectory Name="include">
     <File Name="topFrame.h"/>
@@ -24,6 +44,12 @@
     <File Name="dlg_comports.h"/>
     <File Name="fdmdv2_plot.h"/>
     <File Name="fdmdv2_main.h"/>
+    <File Name="extern/include/codec2.h"/>
+    <File Name="extern/include/portaudio.h"/>
+    <File Name="extern/include/rig.h"/>
+    <File Name="extern/include/rig_dll.h"/>
+    <File Name="extern/include/riglist.h"/>
+    <File Name="extern/include/samplerate.h"/>
   </VirtualDirectory>
   <VirtualDirectory Name="resources">
     <File Name="FDMDV2.fbp"/>
@@ -81,6 +107,7 @@
     </Configuration>
     <Configuration Name="Release" CompilerType="gnu g++" DebuggerType="GNU gdb debugger" Type="Executable" BuildCmpWithGlobalSettings="append" BuildLnkWithGlobalSettings="append" BuildResWithGlobalSettings="append">
       <Compiler Options="-O2;-Wall;$(shell wx-config --cxxflags --unicode=yes --debug=no)" C_Options="-O2;-Wall;$(shell wx-config --cxxflags --unicode=yes --debug=no)" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" UseDifferentPCHFlags="no" PCHFlags="">
+        <IncludePath Value="./extern/include"/>
         <Preprocessor Value="__WX__"/>
       </Compiler>
       <Linker Options="-mwindows;-s;$(shell wx-config --debug=no --libs --unicode=yes)" Required="yes">
