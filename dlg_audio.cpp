@@ -68,22 +68,11 @@ void AudioDlg::populateStandardSampleRates(
         const portaudio::DirectionSpecificStreamParameters &outputParameters)
 {
     static double STANDARD_SAMPLE_RATES[] = {
-                                                8000.0,
-                                                9600.0,
-                                                11025.0,
-                                                12000.0,
-                                                16000.0,
-                                                22050.0,
-                                                24000.0,
-                                                32000.0,
-                                                44100.0,
-                                                48000.0,
-                                                88200.0,
-                                                96000.0,
-                                                192000.0,
-                                                -1
-                                            }; // negative terminated list
-
+                                                8000.0, 9600.0, 11025.0, 12000.0,
+                                                16000.0, 22050.0, 24000.0, 32000.0,
+                                                44100.0, 48000.0, 88200.0, 96000.0,
+                                                -1 // negative terminated list
+                                            };
     int printCount = 0;
     wxString tStr;
 
@@ -92,37 +81,16 @@ void AudioDlg::populateStandardSampleRates(
         portaudio::StreamParameters tmp = portaudio::StreamParameters(inputParameters, outputParameters, STANDARD_SAMPLE_RATES[i], 0, paNoFlag);
         if (tmp.isSupported())
         {
-            tStr.Printf("%8.2f", STANDARD_SAMPLE_RATES[i]);
-            if (printCount == 0)
-            {
-                target->InsertItems(1, &tStr, 0);
-                printCount = 1;
-            }
-            else if (printCount == 4)
-            {
-                target->InsertItems(1, &tStr, 0);
-                printCount = 1;
-            }
-            else
-            {
-                target->InsertItems(1, &tStr, 0);
-                 ++printCount;
-            }
+            tStr.Printf("%i %8.2f", printCount, STANDARD_SAMPLE_RATES[i]);
+            target->InsertItems(1, &tStr, 0);
+            ++printCount;
         }
     }
     if (printCount == 0)
     {
-        //std::cout << "None" << std::endl;
         tStr = "None\n";
         target->InsertItems(1, &tStr, 0);
     }
-
-/*
-   else
-    {
-        std::cout << std::endl;
-    }
-*/
 }
 
 int AudioDlg::populateAudioInfo()
@@ -258,33 +226,27 @@ int AudioDlg::populateAudioInfo()
                 m_lbVoiceInput->InsertItems(1, &tStr, 0);
                 populateStandardSampleRates(m_lbVoiceInput, inputParameters, outputParameters);
             }
-//            tStr.Printf("---------------------------------\n");
-//            m_textTopRight->AppendText(tStr);
         }
     }
     catch (const portaudio::PaException &e)
     {
         tStr.Printf("A PortAudio error occured: %s\n",  e.paErrorText());
         wxMessageBox(tStr, wxT("Portaudio exception"), wxOK);
-//        m_textTopRight->AppendText(tStr);
     }
     catch (const portaudio::PaCppException &e)
     {
         tStr.Printf("A PortAudioCpp error occured: %s\n", e.what());
         wxMessageBox(tStr, wxT("PortAudioCpp error"), wxOK);
-        //m_textTopRight->AppendText(tStr);
     }
     catch (const std::exception &e)
     {
         tStr.Printf("A generic exception occured: %s\n", e.what());
         wxMessageBox(tStr, wxT("Generic Exception"), wxOK);
-//        m_textTopRight->AppendText(tStr);
     }
     catch (...)
     {
         tStr.Printf("An unknown exception occured.\n");
         wxMessageBox(tStr, wxT("Unknown error"), wxOK);
-//        m_textTopRight->AppendText(tStr);
     }
     return 0;
 }

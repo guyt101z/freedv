@@ -475,23 +475,119 @@ class DlgAbout ( wx.Dialog ):
 class DlgAudio ( wx.Dialog ):
 	
 	def __init__( self, parent ):
-		wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = _(u"Audio Options"), pos = wx.DefaultPosition, size = wx.Size( 553,455 ), style = wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER )
+		wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = _(u"Audio Options"), pos = wx.DefaultPosition, size = wx.Size( 553,381 ), style = wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER )
 		
 		self.SetSizeHintsSz( wx.DefaultSize, wx.DefaultSize )
 		
+		bSizer32 = wx.BoxSizer( wx.VERTICAL )
+		
+		self.m_nbAudioOptions = wx.Notebook( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_panelDevices = wx.Panel( self.m_nbAudioOptions, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		bSizer34 = wx.BoxSizer( wx.VERTICAL )
+		
+		sbSizer10 = wx.StaticBoxSizer( wx.StaticBox( self.m_panelDevices, wx.ID_ANY, _(u"PortAudio") ), wx.VERTICAL )
+		
+		bSizer41 = wx.BoxSizer( wx.HORIZONTAL )
+		
+		bSizer37 = wx.BoxSizer( wx.VERTICAL )
+		
+		self.m_radioBtnPortAudio = wx.RadioButton( self.m_panelDevices, wx.ID_ANY, _(u"PortAudio"), wx.DefaultPosition, wx.DefaultSize, wx.RB_GROUP )
+		self.m_radioBtnPortAudio.SetValue( True ) 
+		bSizer37.Add( self.m_radioBtnPortAudio, 1, wx.ALIGN_CENTER_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+		
+		
+		bSizer41.Add( bSizer37, 0, wx.EXPAND, 5 )
+		
+		gSizer7 = wx.GridSizer( 4, 1, 0, 0 )
+		
+		self.m_staticText14 = wx.StaticText( self.m_panelDevices, wx.ID_ANY, _(u"Audio in (mic) -> codec:"), wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_RIGHT )
+		self.m_staticText14.Wrap( -1 )
+		gSizer7.Add( self.m_staticText14, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT|wx.ALL, 5 )
+		
+		self.m_staticText15 = wx.StaticText( self.m_panelDevices, wx.ID_ANY, _(u"codec -> Radio Tx: "), wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_RIGHT )
+		self.m_staticText15.Wrap( -1 )
+		gSizer7.Add( self.m_staticText15, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT|wx.ALL, 5 )
+		
+		self.m_staticText16 = wx.StaticText( self.m_panelDevices, wx.ID_ANY, _(u"Radio Rx -> codec:"), wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_RIGHT )
+		self.m_staticText16.Wrap( -1 )
+		gSizer7.Add( self.m_staticText16, 0, wx.ALIGN_RIGHT|wx.ALL, 5 )
+		
+		self.m_staticText17 = wx.StaticText( self.m_panelDevices, wx.ID_ANY, _(u"codec -> Audio out (spkr):"), wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_RIGHT )
+		self.m_staticText17.Wrap( -1 )
+		gSizer7.Add( self.m_staticText17, 0, wx.ALIGN_RIGHT|wx.ALL, 5 )
+		
+		
+		bSizer41.Add( gSizer7, 1, wx.EXPAND, 5 )
+		
+		gSizer5 = wx.GridSizer( 4, 1, 0, 0 )
+		
+		m_comboBox1Choices = []
+		self.m_comboBox1 = wx.ComboBox( self.m_panelDevices, wx.ID_ANY, _(u"Combo!"), wx.DefaultPosition, wx.DefaultSize, m_comboBox1Choices, 0 )
+		gSizer5.Add( self.m_comboBox1, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL|wx.ALL|wx.EXPAND, 5 )
+		
+		m_comboBox2Choices = []
+		self.m_comboBox2 = wx.ComboBox( self.m_panelDevices, wx.ID_ANY, _(u"Combo!"), wx.DefaultPosition, wx.DefaultSize, m_comboBox2Choices, 0 )
+		gSizer5.Add( self.m_comboBox2, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL|wx.ALL|wx.EXPAND, 5 )
+		
+		m_comboBox11Choices = []
+		self.m_comboBox11 = wx.ComboBox( self.m_panelDevices, wx.ID_ANY, _(u"Combo!"), wx.DefaultPosition, wx.DefaultSize, m_comboBox11Choices, 0 )
+		gSizer5.Add( self.m_comboBox11, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL|wx.ALL|wx.EXPAND, 5 )
+		
+		m_comboBox12Choices = []
+		self.m_comboBox12 = wx.ComboBox( self.m_panelDevices, wx.ID_ANY, _(u"Combo!"), wx.DefaultPosition, wx.DefaultSize, m_comboBox12Choices, 0 )
+		gSizer5.Add( self.m_comboBox12, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL|wx.ALL|wx.EXPAND, 5 )
+		
+		
+		bSizer41.Add( gSizer5, 1, wx.EXPAND, 5 )
+		
+		
+		sbSizer10.Add( bSizer41, 1, wx.EXPAND, 5 )
+		
+		
+		bSizer34.Add( sbSizer10, 1, wx.EXPAND, 5 )
+		
+		sbSizer11 = wx.StaticBoxSizer( wx.StaticBox( self.m_panelDevices, wx.ID_ANY, _(u"File I/O") ), wx.HORIZONTAL )
+		
+		bSizer38 = wx.BoxSizer( wx.VERTICAL )
+		
+		self.m_radioBtnFileOnly = wx.RadioButton( self.m_panelDevices, wx.ID_ANY, _(u"File Only"), wx.DefaultPosition, wx.DefaultSize, wx.RB_GROUP )
+		bSizer38.Add( self.m_radioBtnFileOnly, 1, wx.ALIGN_CENTER_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+		
+		
+		sbSizer11.Add( bSizer38, 0, wx.EXPAND, 5 )
+		
+		bSizer45 = wx.BoxSizer( wx.VERTICAL )
+		
+		
+		sbSizer11.Add( bSizer45, 1, wx.EXPAND, 5 )
+		
+		bSizer46 = wx.BoxSizer( wx.VERTICAL )
+		
+		
+		sbSizer11.Add( bSizer46, 1, wx.EXPAND, 5 )
+		
+		
+		bSizer34.Add( sbSizer11, 1, wx.EXPAND, 5 )
+		
+		
+		self.m_panelDevices.SetSizer( bSizer34 )
+		self.m_panelDevices.Layout()
+		bSizer34.Fit( self.m_panelDevices )
+		self.m_nbAudioOptions.AddPage( self.m_panelDevices, _(u"Devices"), True )
+		self.m_panelSettings = wx.Panel( self.m_nbAudioOptions, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		bSizer27 = wx.BoxSizer( wx.VERTICAL )
 		
 		bSizer271 = wx.BoxSizer( wx.HORIZONTAL )
 		
-		sbSizer6 = wx.StaticBoxSizer( wx.StaticBox( self, wx.ID_ANY, _(u"Rx Input") ), wx.VERTICAL )
+		sbSizer6 = wx.StaticBoxSizer( wx.StaticBox( self.m_panelSettings, wx.ID_ANY, _(u"Rx Input") ), wx.VERTICAL )
 		
 		bSizer31 = wx.BoxSizer( wx.VERTICAL )
 		
 		m_lbRxInputChoices = []
-		self.m_lbRxInput = wx.ListBox( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, m_lbRxInputChoices, wx.LB_HSCROLL|wx.LB_SINGLE )
+		self.m_lbRxInput = wx.ListBox( self.m_panelSettings, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, m_lbRxInputChoices, wx.LB_HSCROLL|wx.LB_SINGLE )
 		bSizer31.Add( self.m_lbRxInput, 1, wx.ALIGN_CENTER_HORIZONTAL|wx.ALL|wx.EXPAND, 2 )
 		
-		self.m_textRxInput = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_textRxInput = wx.TextCtrl( self.m_panelSettings, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
 		bSizer31.Add( self.m_textRxInput, 0, wx.ALIGN_CENTER|wx.ALL|wx.EXPAND, 2 )
 		
 		
@@ -500,15 +596,15 @@ class DlgAudio ( wx.Dialog ):
 		
 		bSizer271.Add( sbSizer6, 1, wx.EXPAND, 5 )
 		
-		sbSizer7 = wx.StaticBoxSizer( wx.StaticBox( self, wx.ID_ANY, _(u"Tx Output") ), wx.VERTICAL )
+		sbSizer7 = wx.StaticBoxSizer( wx.StaticBox( self.m_panelSettings, wx.ID_ANY, _(u"Tx Output") ), wx.VERTICAL )
 		
 		bSizer281 = wx.BoxSizer( wx.VERTICAL )
 		
 		m_lbTxOutputChoices = []
-		self.m_lbTxOutput = wx.ListBox( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, m_lbTxOutputChoices, wx.LB_HSCROLL|wx.LB_SINGLE )
+		self.m_lbTxOutput = wx.ListBox( self.m_panelSettings, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, m_lbTxOutputChoices, wx.LB_HSCROLL|wx.LB_SINGLE )
 		bSizer281.Add( self.m_lbTxOutput, 1, wx.ALIGN_CENTER_HORIZONTAL|wx.ALL|wx.EXPAND, 2 )
 		
-		self.m_textCtrl15 = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_textCtrl15 = wx.TextCtrl( self.m_panelSettings, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
 		bSizer281.Add( self.m_textCtrl15, 0, wx.ALIGN_CENTER|wx.ALL|wx.EXPAND, 2 )
 		
 		
@@ -522,15 +618,15 @@ class DlgAudio ( wx.Dialog ):
 		
 		bSizer26 = wx.BoxSizer( wx.HORIZONTAL )
 		
-		sbSizer8 = wx.StaticBoxSizer( wx.StaticBox( self, wx.ID_ANY, _(u"Voice Input") ), wx.VERTICAL )
+		sbSizer8 = wx.StaticBoxSizer( wx.StaticBox( self.m_panelSettings, wx.ID_ANY, _(u"Voice Input") ), wx.VERTICAL )
 		
 		bSizer29 = wx.BoxSizer( wx.VERTICAL )
 		
 		m_lbVoiceInputChoices = []
-		self.m_lbVoiceInput = wx.ListBox( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, m_lbVoiceInputChoices, wx.LB_HSCROLL|wx.LB_SINGLE )
+		self.m_lbVoiceInput = wx.ListBox( self.m_panelSettings, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, m_lbVoiceInputChoices, wx.LB_HSCROLL|wx.LB_SINGLE )
 		bSizer29.Add( self.m_lbVoiceInput, 1, wx.ALIGN_CENTER_HORIZONTAL|wx.ALL|wx.EXPAND, 2 )
 		
-		self.m_textVoiceInput = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_textVoiceInput = wx.TextCtrl( self.m_panelSettings, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
 		bSizer29.Add( self.m_textVoiceInput, 0, wx.ALIGN_CENTER|wx.ALL|wx.EXPAND, 2 )
 		
 		
@@ -539,15 +635,15 @@ class DlgAudio ( wx.Dialog ):
 		
 		bSizer26.Add( sbSizer8, 1, wx.EXPAND, 6 )
 		
-		sbSizer9 = wx.StaticBoxSizer( wx.StaticBox( self, wx.ID_ANY, _(u"Voice Output") ), wx.VERTICAL )
+		sbSizer9 = wx.StaticBoxSizer( wx.StaticBox( self.m_panelSettings, wx.ID_ANY, _(u"Voice Output") ), wx.VERTICAL )
 		
 		bSizer30 = wx.BoxSizer( wx.VERTICAL )
 		
 		m_lbVoiceOutputChoices = []
-		self.m_lbVoiceOutput = wx.ListBox( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, m_lbVoiceOutputChoices, wx.LB_HSCROLL|wx.LB_SINGLE )
+		self.m_lbVoiceOutput = wx.ListBox( self.m_panelSettings, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, m_lbVoiceOutputChoices, wx.LB_HSCROLL|wx.LB_SINGLE )
 		bSizer30.Add( self.m_lbVoiceOutput, 1, wx.ALIGN_CENTER_HORIZONTAL|wx.ALL|wx.EXPAND, 2 )
 		
-		self.m_textVoiceOutput = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_textVoiceOutput = wx.TextCtrl( self.m_panelSettings, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
 		bSizer30.Add( self.m_textVoiceOutput, 0, wx.ALIGN_CENTER|wx.ALL|wx.EXPAND, 2 )
 		
 		
@@ -558,6 +654,22 @@ class DlgAudio ( wx.Dialog ):
 		
 		
 		bSizer27.Add( bSizer26, 1, wx.EXPAND, 1 )
+		
+		
+		self.m_panelSettings.SetSizer( bSizer27 )
+		self.m_panelSettings.Layout()
+		bSizer27.Fit( self.m_panelSettings )
+		self.m_nbAudioOptions.AddPage( self.m_panelSettings, _(u"Settings"), False )
+		self.m_panelRightChannel = wx.Panel( self.m_nbAudioOptions, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		bSizer36 = wx.BoxSizer( wx.VERTICAL )
+		
+		
+		self.m_panelRightChannel.SetSizer( bSizer36 )
+		self.m_panelRightChannel.Layout()
+		bSizer36.Fit( self.m_panelRightChannel )
+		self.m_nbAudioOptions.AddPage( self.m_panelRightChannel, _(u"Right Channel"), False )
+		
+		bSizer32.Add( self.m_nbAudioOptions, 1, wx.EXPAND |wx.ALL, 1 )
 		
 		bSizer28 = wx.BoxSizer( wx.VERTICAL )
 		
@@ -573,10 +685,13 @@ class DlgAudio ( wx.Dialog ):
 		bSizer28.Add( m_sdbSizer3, 1, wx.EXPAND, 5 )
 		
 		
-		bSizer27.Add( bSizer28, 0, wx.EXPAND, 5 )
+		bSizer32.Add( bSizer28, 0, wx.EXPAND, 5 )
 		
 		
-		self.SetSizer( bSizer27 )
+		bSizer32.AddSpacer( ( 0, 15), 0, wx.EXPAND, 5 )
+		
+		
+		self.SetSizer( bSizer32 )
 		self.Layout()
 		
 		self.Centre( wx.BOTH )

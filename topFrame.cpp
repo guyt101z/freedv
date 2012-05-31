@@ -420,6 +420,109 @@ DlgAudio::DlgAudio( wxWindow* parent, wxWindowID id, const wxString& title, cons
 {
 	this->SetSizeHints( wxDefaultSize, wxDefaultSize );
 	
+	wxBoxSizer* bSizer32;
+	bSizer32 = new wxBoxSizer( wxVERTICAL );
+	
+	m_nbAudioOptions = new wxNotebook( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0 );
+	m_panelDevices = new wxPanel( m_nbAudioOptions, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
+	wxBoxSizer* bSizer34;
+	bSizer34 = new wxBoxSizer( wxVERTICAL );
+	
+	wxStaticBoxSizer* sbSizer10;
+	sbSizer10 = new wxStaticBoxSizer( new wxStaticBox( m_panelDevices, wxID_ANY, _("PortAudio") ), wxVERTICAL );
+	
+	wxBoxSizer* bSizer41;
+	bSizer41 = new wxBoxSizer( wxHORIZONTAL );
+	
+	wxBoxSizer* bSizer37;
+	bSizer37 = new wxBoxSizer( wxVERTICAL );
+	
+	m_radioBtnPortAudio = new wxRadioButton( m_panelDevices, wxID_ANY, _("PortAudio"), wxDefaultPosition, wxDefaultSize, wxRB_GROUP );
+	m_radioBtnPortAudio->SetValue( true ); 
+	bSizer37->Add( m_radioBtnPortAudio, 1, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+	
+	
+	bSizer41->Add( bSizer37, 0, wxEXPAND, 5 );
+	
+	wxGridSizer* gSizer7;
+	gSizer7 = new wxGridSizer( 4, 1, 0, 0 );
+	
+	m_staticText14 = new wxStaticText( m_panelDevices, wxID_ANY, _("Audio in (mic) -> codec:"), wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT );
+	m_staticText14->Wrap( -1 );
+	gSizer7->Add( m_staticText14, 0, wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT|wxALL, 5 );
+	
+	m_staticText15 = new wxStaticText( m_panelDevices, wxID_ANY, _("codec -> Radio Tx: "), wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT );
+	m_staticText15->Wrap( -1 );
+	gSizer7->Add( m_staticText15, 0, wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT|wxALL, 5 );
+	
+	m_staticText16 = new wxStaticText( m_panelDevices, wxID_ANY, _("Radio Rx -> codec:"), wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT );
+	m_staticText16->Wrap( -1 );
+	gSizer7->Add( m_staticText16, 0, wxALIGN_RIGHT|wxALL, 5 );
+	
+	m_staticText17 = new wxStaticText( m_panelDevices, wxID_ANY, _("codec -> Audio out (spkr):"), wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT );
+	m_staticText17->Wrap( -1 );
+	gSizer7->Add( m_staticText17, 0, wxALIGN_RIGHT|wxALL, 5 );
+	
+	
+	bSizer41->Add( gSizer7, 1, wxEXPAND, 5 );
+	
+	wxGridSizer* gSizer5;
+	gSizer5 = new wxGridSizer( 4, 1, 0, 0 );
+	
+	m_comboBox1 = new wxComboBox( m_panelDevices, wxID_ANY, _("Combo!"), wxDefaultPosition, wxDefaultSize, 0, NULL, 0 ); 
+	gSizer5->Add( m_comboBox1, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL|wxEXPAND, 5 );
+	
+	m_comboBox2 = new wxComboBox( m_panelDevices, wxID_ANY, _("Combo!"), wxDefaultPosition, wxDefaultSize, 0, NULL, 0 ); 
+	gSizer5->Add( m_comboBox2, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL|wxEXPAND, 5 );
+	
+	m_comboBox11 = new wxComboBox( m_panelDevices, wxID_ANY, _("Combo!"), wxDefaultPosition, wxDefaultSize, 0, NULL, 0 ); 
+	gSizer5->Add( m_comboBox11, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL|wxEXPAND, 5 );
+	
+	m_comboBox12 = new wxComboBox( m_panelDevices, wxID_ANY, _("Combo!"), wxDefaultPosition, wxDefaultSize, 0, NULL, 0 ); 
+	gSizer5->Add( m_comboBox12, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL|wxEXPAND, 5 );
+	
+	
+	bSizer41->Add( gSizer5, 1, wxEXPAND, 5 );
+	
+	
+	sbSizer10->Add( bSizer41, 1, wxEXPAND, 5 );
+	
+	
+	bSizer34->Add( sbSizer10, 1, wxEXPAND, 5 );
+	
+	wxStaticBoxSizer* sbSizer11;
+	sbSizer11 = new wxStaticBoxSizer( new wxStaticBox( m_panelDevices, wxID_ANY, _("File I/O") ), wxHORIZONTAL );
+	
+	wxBoxSizer* bSizer38;
+	bSizer38 = new wxBoxSizer( wxVERTICAL );
+	
+	m_radioBtnFileOnly = new wxRadioButton( m_panelDevices, wxID_ANY, _("File Only"), wxDefaultPosition, wxDefaultSize, wxRB_GROUP );
+	bSizer38->Add( m_radioBtnFileOnly, 1, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+	
+	
+	sbSizer11->Add( bSizer38, 0, wxEXPAND, 5 );
+	
+	wxBoxSizer* bSizer45;
+	bSizer45 = new wxBoxSizer( wxVERTICAL );
+	
+	
+	sbSizer11->Add( bSizer45, 1, wxEXPAND, 5 );
+	
+	wxBoxSizer* bSizer46;
+	bSizer46 = new wxBoxSizer( wxVERTICAL );
+	
+	
+	sbSizer11->Add( bSizer46, 1, wxEXPAND, 5 );
+	
+	
+	bSizer34->Add( sbSizer11, 1, wxEXPAND, 5 );
+	
+	
+	m_panelDevices->SetSizer( bSizer34 );
+	m_panelDevices->Layout();
+	bSizer34->Fit( m_panelDevices );
+	m_nbAudioOptions->AddPage( m_panelDevices, _("Devices"), true );
+	m_panelSettings = new wxPanel( m_nbAudioOptions, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
 	wxBoxSizer* bSizer27;
 	bSizer27 = new wxBoxSizer( wxVERTICAL );
 	
@@ -427,15 +530,15 @@ DlgAudio::DlgAudio( wxWindow* parent, wxWindowID id, const wxString& title, cons
 	bSizer271 = new wxBoxSizer( wxHORIZONTAL );
 	
 	wxStaticBoxSizer* sbSizer6;
-	sbSizer6 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, _("Rx Input") ), wxVERTICAL );
+	sbSizer6 = new wxStaticBoxSizer( new wxStaticBox( m_panelSettings, wxID_ANY, _("Rx Input") ), wxVERTICAL );
 	
 	wxBoxSizer* bSizer31;
 	bSizer31 = new wxBoxSizer( wxVERTICAL );
 	
-	m_lbRxInput = new wxListBox( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_HSCROLL|wxLB_SINGLE ); 
+	m_lbRxInput = new wxListBox( m_panelSettings, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_HSCROLL|wxLB_SINGLE ); 
 	bSizer31->Add( m_lbRxInput, 1, wxALIGN_CENTER_HORIZONTAL|wxALL|wxEXPAND, 2 );
 	
-	m_textRxInput = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
+	m_textRxInput = new wxTextCtrl( m_panelSettings, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
 	bSizer31->Add( m_textRxInput, 0, wxALIGN_CENTER|wxALL|wxEXPAND, 2 );
 	
 	
@@ -445,15 +548,15 @@ DlgAudio::DlgAudio( wxWindow* parent, wxWindowID id, const wxString& title, cons
 	bSizer271->Add( sbSizer6, 1, wxEXPAND, 5 );
 	
 	wxStaticBoxSizer* sbSizer7;
-	sbSizer7 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, _("Tx Output") ), wxVERTICAL );
+	sbSizer7 = new wxStaticBoxSizer( new wxStaticBox( m_panelSettings, wxID_ANY, _("Tx Output") ), wxVERTICAL );
 	
 	wxBoxSizer* bSizer281;
 	bSizer281 = new wxBoxSizer( wxVERTICAL );
 	
-	m_lbTxOutput = new wxListBox( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_HSCROLL|wxLB_SINGLE ); 
+	m_lbTxOutput = new wxListBox( m_panelSettings, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_HSCROLL|wxLB_SINGLE ); 
 	bSizer281->Add( m_lbTxOutput, 1, wxALIGN_CENTER_HORIZONTAL|wxALL|wxEXPAND, 2 );
 	
-	m_textCtrl15 = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
+	m_textCtrl15 = new wxTextCtrl( m_panelSettings, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
 	bSizer281->Add( m_textCtrl15, 0, wxALIGN_CENTER|wxALL|wxEXPAND, 2 );
 	
 	
@@ -469,15 +572,15 @@ DlgAudio::DlgAudio( wxWindow* parent, wxWindowID id, const wxString& title, cons
 	bSizer26 = new wxBoxSizer( wxHORIZONTAL );
 	
 	wxStaticBoxSizer* sbSizer8;
-	sbSizer8 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, _("Voice Input") ), wxVERTICAL );
+	sbSizer8 = new wxStaticBoxSizer( new wxStaticBox( m_panelSettings, wxID_ANY, _("Voice Input") ), wxVERTICAL );
 	
 	wxBoxSizer* bSizer29;
 	bSizer29 = new wxBoxSizer( wxVERTICAL );
 	
-	m_lbVoiceInput = new wxListBox( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_HSCROLL|wxLB_SINGLE ); 
+	m_lbVoiceInput = new wxListBox( m_panelSettings, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_HSCROLL|wxLB_SINGLE ); 
 	bSizer29->Add( m_lbVoiceInput, 1, wxALIGN_CENTER_HORIZONTAL|wxALL|wxEXPAND, 2 );
 	
-	m_textVoiceInput = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
+	m_textVoiceInput = new wxTextCtrl( m_panelSettings, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
 	bSizer29->Add( m_textVoiceInput, 0, wxALIGN_CENTER|wxALL|wxEXPAND, 2 );
 	
 	
@@ -487,15 +590,15 @@ DlgAudio::DlgAudio( wxWindow* parent, wxWindowID id, const wxString& title, cons
 	bSizer26->Add( sbSizer8, 1, wxEXPAND, 6 );
 	
 	wxStaticBoxSizer* sbSizer9;
-	sbSizer9 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, _("Voice Output") ), wxVERTICAL );
+	sbSizer9 = new wxStaticBoxSizer( new wxStaticBox( m_panelSettings, wxID_ANY, _("Voice Output") ), wxVERTICAL );
 	
 	wxBoxSizer* bSizer30;
 	bSizer30 = new wxBoxSizer( wxVERTICAL );
 	
-	m_lbVoiceOutput = new wxListBox( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_HSCROLL|wxLB_SINGLE ); 
+	m_lbVoiceOutput = new wxListBox( m_panelSettings, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_HSCROLL|wxLB_SINGLE ); 
 	bSizer30->Add( m_lbVoiceOutput, 1, wxALIGN_CENTER_HORIZONTAL|wxALL|wxEXPAND, 2 );
 	
-	m_textVoiceOutput = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
+	m_textVoiceOutput = new wxTextCtrl( m_panelSettings, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
 	bSizer30->Add( m_textVoiceOutput, 0, wxALIGN_CENTER|wxALL|wxEXPAND, 2 );
 	
 	
@@ -506,6 +609,23 @@ DlgAudio::DlgAudio( wxWindow* parent, wxWindowID id, const wxString& title, cons
 	
 	
 	bSizer27->Add( bSizer26, 1, wxEXPAND, 1 );
+	
+	
+	m_panelSettings->SetSizer( bSizer27 );
+	m_panelSettings->Layout();
+	bSizer27->Fit( m_panelSettings );
+	m_nbAudioOptions->AddPage( m_panelSettings, _("Settings"), false );
+	m_panelRightChannel = new wxPanel( m_nbAudioOptions, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
+	wxBoxSizer* bSizer36;
+	bSizer36 = new wxBoxSizer( wxVERTICAL );
+	
+	
+	m_panelRightChannel->SetSizer( bSizer36 );
+	m_panelRightChannel->Layout();
+	bSizer36->Fit( m_panelRightChannel );
+	m_nbAudioOptions->AddPage( m_panelRightChannel, _("Right Channel"), false );
+	
+	bSizer32->Add( m_nbAudioOptions, 1, wxEXPAND | wxALL, 1 );
 	
 	wxBoxSizer* bSizer28;
 	bSizer28 = new wxBoxSizer( wxVERTICAL );
@@ -522,10 +642,13 @@ DlgAudio::DlgAudio( wxWindow* parent, wxWindowID id, const wxString& title, cons
 	bSizer28->Add( m_sdbSizer3, 1, wxEXPAND, 5 );
 	
 	
-	bSizer27->Add( bSizer28, 0, wxEXPAND, 5 );
+	bSizer32->Add( bSizer28, 0, wxEXPAND, 5 );
 	
 	
-	this->SetSizer( bSizer27 );
+	bSizer32->Add( 0, 15, 0, wxEXPAND, 5 );
+	
+	
+	this->SetSizer( bSizer32 );
 	this->Layout();
 	
 	this->Centre( wxBOTH );

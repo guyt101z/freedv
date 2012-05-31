@@ -34,7 +34,11 @@
 #include <wx/stattext.h>
 #include <wx/button.h>
 #include <wx/dialog.h>
+#include <wx/radiobut.h>
+#include <wx/combobox.h>
+#include <wx/panel.h>
 #include <wx/listbox.h>
+#include <wx/notebook.h>
 #include <wx/listctrl.h>
 
 ///////////////////////////////////////////////////////////////////////////
@@ -158,6 +162,19 @@ class DlgAudio : public wxDialog
 	private:
 	
 	protected:
+		wxNotebook* m_nbAudioOptions;
+		wxPanel* m_panelDevices;
+		wxRadioButton* m_radioBtnPortAudio;
+		wxStaticText* m_staticText14;
+		wxStaticText* m_staticText15;
+		wxStaticText* m_staticText16;
+		wxStaticText* m_staticText17;
+		wxComboBox* m_comboBox1;
+		wxComboBox* m_comboBox2;
+		wxComboBox* m_comboBox11;
+		wxComboBox* m_comboBox12;
+		wxRadioButton* m_radioBtnFileOnly;
+		wxPanel* m_panelSettings;
 		wxListBox* m_lbRxInput;
 		wxTextCtrl* m_textRxInput;
 		wxListBox* m_lbTxOutput;
@@ -166,6 +183,7 @@ class DlgAudio : public wxDialog
 		wxTextCtrl* m_textVoiceInput;
 		wxListBox* m_lbVoiceOutput;
 		wxTextCtrl* m_textVoiceOutput;
+		wxPanel* m_panelRightChannel;
 		wxStdDialogButtonSizer* m_sdbSizer3;
 		wxButton* m_sdbSizer3OK;
 		wxButton* m_sdbSizer3Apply;
@@ -185,7 +203,7 @@ class DlgAudio : public wxDialog
 	
 	public:
 		
-		DlgAudio( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("Audio Options"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 553,455 ), long style = wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER ); 
+		DlgAudio( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("Audio Options"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 553,381 ), long style = wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER ); 
 		~DlgAudio();
 	
 };
