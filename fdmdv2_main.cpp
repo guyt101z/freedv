@@ -19,7 +19,6 @@
 // initialize the application
 IMPLEMENT_APP(MainApp);
 
-// `Main program' equivalent: the program execution "starts" here
 //-------------------------------------------------------------------------
 // OnInit()
 //-------------------------------------------------------------------------
@@ -53,23 +52,36 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
 //    m_bitmap = bitmap;
     m_sound = NULL;
     m_zoom  = 1.;
+    m_SquelchActive = false;
 
 }
 
+//-------------------------------------------------------------------------
+// ~MainFrame()
+//-------------------------------------------------------------------------
 MainFrame::~MainFrame()
 {
 }
 
+//-------------------------------------------------------------------------
+// OnCloseFrame()
+//-------------------------------------------------------------------------
 void MainFrame::OnCloseFrame(wxCloseEvent& event)
 {
     Destroy();
 }
 
+//-------------------------------------------------------------------------
+// OnExitClick()
+//-------------------------------------------------------------------------
 void MainFrame::OnExitClick(wxCommandEvent& event)
 {
     Destroy();
 }
 
+//-------------------------------------------------------------------------
+// OnPaint()
+//-------------------------------------------------------------------------
 void MainFrame::OnPaint(wxPaintEvent& WXUNUSED(event))
 {
     wxPaintDC dc(this);
@@ -83,33 +95,59 @@ void MainFrame::OnPaint(wxPaintEvent& WXUNUSED(event))
     dc.DrawBitmap(m_bitmap, dc.DeviceToLogicalX((size.x - m_zoom * m_bitmap.GetWidth()) / 2), dc.DeviceToLogicalY((size.y - m_zoom * m_bitmap.GetHeight()) / 2), true);
 }
 
+//-------------------------------------------------------------------------
+// OnCmdSliderScroll()
+//-------------------------------------------------------------------------
 void MainFrame::OnCmdSliderScroll(wxScrollEvent& event)
 {
     event.Skip();
 }
 
+//-------------------------------------------------------------------------
+// OnCmdSliderScrollChanged()
+//-------------------------------------------------------------------------
 void MainFrame::OnCmdSliderScrollChanged(wxScrollEvent& event)
 {
     event.Skip();
 }
 
+//-------------------------------------------------------------------------
+// OnSliderScrollTop()
+//-------------------------------------------------------------------------
 void MainFrame::OnSliderScrollTop(wxScrollEvent& event)
 {
     event.Skip();
 }
 
+//-------------------------------------------------------------------------
+// OnSliderScrollBottom()
+//-------------------------------------------------------------------------
 void MainFrame::OnSliderScrollBottom(wxScrollEvent& event)
 {
     wxMessageBox(wxT("Got Click!"), wxT("OnSliderScrollBottom"), wxOK);
     event.Skip();
 }
 
+//-------------------------------------------------------------------------
+// OnCheckSQClick()
+//-------------------------------------------------------------------------
 void MainFrame::OnCheckSQClick(wxCommandEvent& event)
 {
-    wxMessageBox(wxT("Got Click!"), wxT("OnCheckSQClick"), wxOK);
-    event.Skip();
+    if(!m_SquelchActive)
+    {
+        m_SquelchActive = true;
+        //wxMessageBox(wxT("Squelch On!"), wxT("Squelch On"), wxOK);
+    }
+    else
+    {
+        m_SquelchActive = false;
+        //wxMessageBox(wxT("Squelch Off!"), wxT("Squelch Off"), wxOK);
+    }
 }
 
+//-------------------------------------------------------------------------
+// OnTogBtnTXClick()
+//-------------------------------------------------------------------------
 void MainFrame::OnTogBtnTXClick(wxCommandEvent& event)
 {
     m_soundFile = wxT("./hts1a.wav");
@@ -117,161 +155,394 @@ void MainFrame::OnTogBtnTXClick(wxCommandEvent& event)
     m_sound->Play();
 }
 
+//-------------------------------------------------------------------------
+// OnTogBtnRxID()
+//-------------------------------------------------------------------------
 void MainFrame::OnTogBtnRxID(wxCommandEvent& event)
 {
     wxMessageBox("Got Click!", "OnTogBtnRxID", wxOK);
     event.Skip();
 }
 
+//-------------------------------------------------------------------------
+// OnTogBtnTxID()
+//-------------------------------------------------------------------------
 void MainFrame::OnTogBtnTxID(wxCommandEvent& event)
 {
     wxMessageBox("Got Click!", "OnTogBtnTxID", wxOK);
     event.Skip();
 }
 
+//-------------------------------------------------------------------------
+// OnTogBtnSplitClick()
+//-------------------------------------------------------------------------
 void MainFrame::OnTogBtnSplitClick(wxCommandEvent& event)
 {
     wxMessageBox("Got Click!", "OnTogBtnSplitClick", wxOK);
     event.Skip();
 }
 
+//-------------------------------------------------------------------------
+// OnTogBtnAnalogClick()
+//-------------------------------------------------------------------------
 void MainFrame::OnTogBtnAnalogClick (wxCommandEvent& event)
 {
     wxMessageBox("Got Click!", "OnTogBtnAnalogClick", wxOK);
     event.Skip();
 }
 
+//-------------------------------------------------------------------------
+// OnTogBtnALCClick()
+//-------------------------------------------------------------------------
 void MainFrame::OnTogBtnALCClick(wxCommandEvent& event)
 {
     wxMessageBox("Got Click!", "OnTogBtnALCClick", wxOK);
     event.Skip();
 }
 
-void MainFrame::OnOpen( wxCommandEvent& event )
+//-------------------------------------------------------------------------
+// audioCallback()
+//-------------------------------------------------------------------------
+static int audioCallback(   const void *inputBuffer,
+                            void *outputBuffer,
+                            unsigned long framesPerBuffer,
+                            const PaStreamCallbackTimeInfo *outTime,
+                            PaStreamCallbackFlags statusFlags,
+                            void *userData
+                        )
 {
-    wxMessageBox("Got Click!", "OnOpen", wxOK);
-    event.Skip();
+    float *out = (float *) outputBuffer;
+    float *in  = (float *) inputBuffer;
+    float leftInput;
+    float rightInput;
+    unsigned int i;
+
+    if(inputBuffer == NULL)
+    {
+        return 0;
+    }
+    // Read input buffer, process data, and fill output buffer.
+    for(i = 0; i < framesPerBuffer; i++)
+    {
+        leftInput = *in++;                          // Get interleaved samples from input buffer.
+        rightInput = *in++;
+        *out++ = leftInput * rightInput;            // ring modulation
+        *out++ = 0.5f * (leftInput + rightInput);   // mixing
+    }
+    return paContinue;                              // 0;
 }
 
+/*
+#define FUZZ(x) CubicAmplifier(CubicAmplifier(CubicAmplifier(CubicAmplifier(x))))
+static int gNumNoInputs = 0;
+//-------------------------------------------------------------------------
+// fuzzCallback()
+//-------------------------------------------------------------------------
+static int fuzzCallback(const void *inputBuffer,
+                        void *outputBuffer,
+                        unsigned long framesPerBuffer,
+                        const PaStreamCallbackTimeInfo* timeInfo,
+                        PaStreamCallbackFlags statusFlags,
+                        void *userData)
+{
+    SAMPLE *out = (SAMPLE*)outputBuffer;
+    const SAMPLE *in = (const SAMPLE*)inputBuffer;
+    unsigned int i;
+    (void) timeInfo;                        // Prevent unused variable warnings.
+    (void) statusFlags;
+    (void) userData;
+
+    if(inputBuffer == NULL)
+    {
+        for(i = 0; i < framesPerBuffer; i++)
+        {
+            *out++ = 0;                     // left - silent
+            *out++ = 0;                     // right - silent
+        }
+        gNumNoInputs += 1;
+    }
+    else
+    {
+        for(i = 0; i < framesPerBuffer; i++)
+        {
+            *out++ = FUZZ(*in++);           // left - distorted
+            *out++ = *in++;                 // right - clean
+        }
+    }
+    return paContinue;
+}
+*/
+
+//-------------------------------------------------------------------------
+// OnTogBtnOnOff()
+//-------------------------------------------------------------------------
+void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
+{
+    PortAudioWrap pa;
+    if(!m_radioRunning)
+    {
+        m_radioRunning = true;
+        pa = PortAudioWrap();
+        err = pa.init();
+
+        inputDevice = pa.getDefaultInputDevice();                   // default input device
+        if(inputDevice == paNoDevice)
+        {
+            wxMessageBox("Error: No default input device.", "Error", wxOK);
+            return;
+        }
+        err = pa.setInputDevice(inputDevice);
+        err = pa.setInputChannelCount(2);                           // stereo input
+        err = pa.setInputSampleFormat(PA_SAMPLE_TYPE);
+        err = pa.setInputLatency(pa.getInputDefaultLowLatency());
+        pa.setInputHostApiStreamInfo(NULL);
+
+        outputDevice = pa.getDefaultOutputDevice();                 // default output device
+        if (outputDevice == paNoDevice)
+        {
+            wxMessageBox("Error: No default output device.", "Error", wxOK);
+            return;
+        }
+        err = pa.setOutputDevice(outputDevice);
+        err = pa.setOutputChannelCount(2);                           // stereo input
+        err = pa.setOutputSampleFormat(PA_SAMPLE_TYPE);
+
+        err = pa.setOutputLatency(pa.getOutputDefaultLowLatency());
+        pa.setOutputHostApiStreamInfo(NULL);
+
+        err = pa.setFramesPerBuffer(FRAMES_PER_BUFFER);
+        err = pa.setSampleRate(SAMPLE_RATE);
+        err = pa.setStreamFlags(0);
+        err = pa.setCallback(audioCallback);
+        err = pa.streamOpen();
+
+        if(err != paNoError)
+        {
+            wxMessageBox("Open/Setup error.", "Error", wxOK);
+            return;
+        }
+        err = pa.streamStart();
+        if(err != paNoError)
+        {
+            wxMessageBox("Stream Start Error.", "Error", wxOK);
+            return;
+        }
+        m_togBtnOnOff->SetLabel(wxT("Stop"));
+    }
+    else
+    {
+        m_radioRunning = false;
+        pa.terminate();
+        m_togBtnOnOff->SetLabel(wxT("Start"));
+    }
+}
+
+//-------------------------------------------------------------------------
+// OnOpen()
+//-------------------------------------------------------------------------
+void MainFrame::OnOpen( wxCommandEvent& event )
+{
+    if(m_sound != NULL)
+    {
+        if (wxMessageBox(wxT("Current content has not been saved! Proceed?"),wxT("Please confirm"), wxICON_QUESTION | wxYES_NO, this) == wxNO )
+        {
+            return;
+        }
+    }
+    wxFileDialog openFileDialog(this,
+                                wxT("Open Sound file"),
+                                wxEmptyString,
+                                wxEmptyString,
+                                wxT("WAV files (*.wav)|*.wav|")
+                                wxT("RAW files (*.raw)|*.raw|")
+                                wxT("SPEEX files (*.spx)|*.spx|")
+                                wxT("FLAC files (*.flc)|*.flc|")
+                                wxT("All files (*.*)|*.*|"),
+                                wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+    if (openFileDialog.ShowModal() == wxID_CANCEL)
+    {
+        return;     // the user changed idea...
+    }
+    // proceed loading the file chosen by the user;
+    m_sound->Play(openFileDialog.GetPath());
+/*
+    // this can be done with e.g. wxWidgets input streams:
+    wxFileInputStream input_stream(openFileDialog.GetPath());
+    if (!input_stream.IsOk())
+    {
+        wxLogError("Cannot open file '%s'.", openFileDialog.GetPath());
+        return;
+    }
+*/
+}
+
+//-------------------------------------------------------------------------
+// OnOpenUpdateUI()
+//-------------------------------------------------------------------------
 void MainFrame::OnOpenUpdateUI( wxUpdateUIEvent& event )
 {
 //    wxMessageBox("Got Click!", "OnOpenUpdateUI", wxOK);
 //    event.Skip();
 }
 
+//-------------------------------------------------------------------------
+// OnSaveUpdateUI()
+//-------------------------------------------------------------------------
 void MainFrame::OnSaveUpdateUI( wxUpdateUIEvent& event )
 {
 //    wxMessageBox("Got Click!", "OnSaveUpdateUI", wxOK);
 //    event.Skip();
 }
 
+//-------------------------------------------------------------------------
+// OnClose()
+//-------------------------------------------------------------------------
 void MainFrame::OnClose( wxCommandEvent& event )
 {
     if(m_sound != NULL)
     {
 //        if(m_sound->IsPlaying())
 //        {
-            m_sound->Stop();
-            m_sound = NULL;
+        m_sound->Stop();
+        m_sound = NULL;
 //        }
     }
 //    wxMessageBox("Got Click!", "OnClose", wxOK);
 //    event.Skip();
 }
 
+//-------------------------------------------------------------------------
+// OnCloseUpdateUI()
+//-------------------------------------------------------------------------
 void MainFrame::OnCloseUpdateUI( wxUpdateUIEvent& event )
 {
-//    wxMessageBox("Got Click!", "OnCloseUpdateUI", wxOK);
-//    event.Skip();
 }
 
+//-------------------------------------------------------------------------
+// OnExit()
+//-------------------------------------------------------------------------
 void MainFrame::OnExit( wxCommandEvent& event )
 {
     wxMessageBox("Got Click!", "OnExit", wxOK);
     event.Skip();
 }
 
+//-------------------------------------------------------------------------
+// OnCopy()
+//-------------------------------------------------------------------------
 void MainFrame::OnCopy( wxCommandEvent& event )
 {
     wxMessageBox("Got Click!", "OnCopy", wxOK);
     event.Skip();
 }
 
+//-------------------------------------------------------------------------
+// OnCopyUpdateUI()
+//-------------------------------------------------------------------------
 void MainFrame::OnCopyUpdateUI( wxUpdateUIEvent& event )
 {
-//    wxMessageBox("Got Click!", "OnCopyUpdateUI", wxOK);
-//    event.Skip();
 }
 
+//-------------------------------------------------------------------------
+// OnCut()
+//-------------------------------------------------------------------------
 void MainFrame::OnCut( wxCommandEvent& event )
 {
     wxMessageBox("Got Click!", "OnCut", wxOK);
     event.Skip();
 }
 
+//-------------------------------------------------------------------------
+// OnCutUpdateUI()
+//-------------------------------------------------------------------------
 void MainFrame::OnCutUpdateUI( wxUpdateUIEvent& event )
 {
-//    wxMessageBox("Got Click!", "OnCutUpdateUI", wxOK);
-//    event.Skip();
 }
 
+//-------------------------------------------------------------------------
+// OnPaste()
+//-------------------------------------------------------------------------
 void MainFrame::OnPaste( wxCommandEvent& event )
 {
     wxMessageBox("Got Click!", "OnPaste", wxOK);
     event.Skip();
 }
 
+//-------------------------------------------------------------------------
+// OnPasteUpdateUI()
+//-------------------------------------------------------------------------
 void MainFrame::OnPasteUpdateUI( wxUpdateUIEvent& event )
 {
-//    wxMessageBox("Got Click!", "OnPasteUpdateUI", wxOK);
-//    event.Skip();
 }
 
+//-------------------------------------------------------------------------
+// OnToolsOptions()
+//-------------------------------------------------------------------------
 void MainFrame::OnToolsOptions( wxCommandEvent& event )
 {
     OptionsDlg *dlg = new OptionsDlg(NULL);
     dlg->ShowModal();
 }
 
+//-------------------------------------------------------------------------
+// OnToolsOptionsUI()
+//-------------------------------------------------------------------------
 void MainFrame::OnToolsOptionsUI( wxUpdateUIEvent& event )
 {
-//    OptionsDlg *dlg = new OptionsDlg(NULL);
-//    dlg->ShowModal();
 }
 
+//-------------------------------------------------------------------------
+// OnToolsAudio()
+//-------------------------------------------------------------------------
 void MainFrame::OnToolsAudio( wxCommandEvent& event )
 {
     AudioDlg *dlg = new AudioDlg(NULL);
     dlg->ShowModal();
 }
 
+//-------------------------------------------------------------------------
+// OnToolsAudioUI()
+//-------------------------------------------------------------------------
 void MainFrame::OnToolsAudioUI( wxUpdateUIEvent& event )
 {
-//    OptionsDlg *dlg = new OptionsDlg(NULL);
-//    dlg->ShowModal();
 }
 
+//-------------------------------------------------------------------------
+// OnToolsComCfg()
+//-------------------------------------------------------------------------
 void MainFrame::OnToolsComCfg( wxCommandEvent& event )
 {
     ComPortsDlg *dlg = new ComPortsDlg(NULL);
     dlg->ShowModal();
 }
 
+//-------------------------------------------------------------------------
+// OnToolsComCfgUI()
+//-------------------------------------------------------------------------
 void MainFrame::OnToolsComCfgUI( wxUpdateUIEvent& event )
 {
     event.Enable(!m_radioRunning);
 }
 
+//-------------------------------------------------------------------------
+// OnHelpCheckUpdates()
+//-------------------------------------------------------------------------
 void MainFrame::OnHelpCheckUpdates( wxCommandEvent& event )
 {
     wxMessageBox("Got Click!", "OnHelpCheckUpdates", wxOK);
     event.Skip();
 }
 
+//-------------------------------------------------------------------------
+// OnHelpCheckUpdatesUI()
+//-------------------------------------------------------------------------
 void MainFrame::OnHelpCheckUpdatesUI( wxUpdateUIEvent& event )
 {
 }
 
+//-------------------------------------------------------------------------
+// OnHelpAbout()
+//-------------------------------------------------------------------------
 void MainFrame::OnHelpAbout( wxCommandEvent& event )
 {
     AboutDlg *dlg = new AboutDlg(NULL);
@@ -279,6 +550,9 @@ void MainFrame::OnHelpAbout( wxCommandEvent& event )
 }
 
 
+//-------------------------------------------------------------------------
+// LoadUserImage()
+//-------------------------------------------------------------------------
 wxString MainFrame::LoadUserImage(wxImage& image)
 {
     wxString filename;
@@ -295,22 +569,21 @@ wxString MainFrame::LoadUserImage(wxImage& image)
     return filename;
 }
 
+//-------------------------------------------------------------------------
+// OnSave()
+//-------------------------------------------------------------------------
 void MainFrame::OnSave(wxCommandEvent& WXUNUSED(event))
 {
     wxImage image = m_bitmap.ConvertToImage();
 
-    wxString savefilename = wxFileSelector(wxT("Save Image"),
+    wxString savefilename = wxFileSelector(wxT("Save Sound File"),
                                            wxEmptyString,
                                            wxEmptyString,
                                            (const wxChar *)NULL,
-                                           wxT("BMP files (*.bmp)|*.bmp|")
-                                           wxT("PNG files (*.png)|*.png|")
-                                           wxT("JPEG files (*.jpg)|*.jpg|")
-                                           wxT("GIF files (*.gif)|*.gif|")
-                                           wxT("TIFF files (*.tif)|*.tif|")
-                                           wxT("PCX files (*.pcx)|*.pcx|")
-                                           wxT("ICO files (*.ico)|*.ico|")
-                                           wxT("CUR files (*.cur)|*.cur"),
+                                           wxT("WAV files (*.wav)|*.wav|")
+                                           wxT("RAW files (*.raw)|*.raw|")
+                                           wxT("SPEEX files (*.spx)|*.spx|")
+                                           wxT("FLAC files (*.flc)|*.flc|"),
                                            wxFD_SAVE,
                                            this);
 

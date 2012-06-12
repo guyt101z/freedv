@@ -94,12 +94,15 @@ TopFrame::TopFrame( wxWindow* parent, wxWindowID id, const wxString& title, cons
 	snrSizer = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, _("SNR") ), wxVERTICAL );
 	
 	m_gaugeSNR = new wxGauge( this, wxID_ANY, 100, wxDefaultPosition, wxSize( 15,135 ), wxGA_SMOOTH|wxGA_VERTICAL );
+	m_gaugeSNR->SetToolTip( _("Display signal to noise ratio.") );
+	
 	snrSizer->Add( m_gaugeSNR, 1, wxALIGN_CENTER_HORIZONTAL|wxALL, 10 );
 	
 	wxBoxSizer* bSizer29;
 	bSizer29 = new wxBoxSizer( wxVERTICAL );
 	
 	m_textSNR = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxPoint( -1,-1 ), wxSize( 35,25 ), wxTE_READONLY );
+	m_textSNR->SetToolTip( _("Show S/N ratio numerically.") );
 	m_textSNR->SetMinSize( wxSize( 35,25 ) );
 	
 	bSizer29->Add( m_textSNR, 0, wxALIGN_CENTER|wxALL, 1 );
@@ -114,6 +117,8 @@ TopFrame::TopFrame( wxWindow* parent, wxWindowID id, const wxString& title, cons
 	levelSizer = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, _("Level") ), wxVERTICAL );
 	
 	m_gaugeLevel = new wxGauge( this, wxID_ANY, 100, wxDefaultPosition, wxSize( 15,135 ), wxGA_SMOOTH|wxGA_VERTICAL );
+	m_gaugeLevel->SetToolTip( _("Display signal level.") );
+	
 	levelSizer->Add( m_gaugeLevel, 1, wxALIGN_CENTER_HORIZONTAL|wxALL, 10 );
 	
 	
@@ -129,6 +134,8 @@ TopFrame::TopFrame( wxWindow* parent, wxWindowID id, const wxString& title, cons
 	upperSizer = new wxBoxSizer( wxVERTICAL );
 	
 	m_auiNbookCtrl = new wxAuiNotebook( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxAUI_NB_BOTTOM|wxAUI_NB_DEFAULT_STYLE );
+	m_auiNbookCtrl->SetFont( wxFont( 6, 70, 90, 90, false, wxEmptyString ) );
+	
 	
 	upperSizer->Add( m_auiNbookCtrl, 1, wxALIGN_TOP|wxEXPAND, 1 );
 	
@@ -172,28 +179,43 @@ TopFrame::TopFrame( wxWindow* parent, wxWindowID id, const wxString& title, cons
 	sbSizer3 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, _("SQ") ), wxVERTICAL );
 	
 	m_sliderSQ = new wxSlider( this, wxID_ANY, 50, 0, 100, wxDefaultPosition, wxSize( -1,100 ), wxSL_AUTOTICKS|wxSL_INVERSE|wxSL_VERTICAL );
+	m_sliderSQ->SetToolTip( _("Set Squelch level.") );
+	
 	sbSizer3->Add( m_sliderSQ, 2, wxALIGN_CENTER|wxALL, 1 );
 	
 	wxBoxSizer* bSizer131;
 	bSizer131 = new wxBoxSizer( wxVERTICAL );
 	
 	m_ckboxSQ = new wxCheckBox( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxCHK_2STATE );
+	m_ckboxSQ->SetToolTip( _("Activate/Deactivate Squelch") );
+	
 	bSizer131->Add( m_ckboxSQ, 0, wxALIGN_CENTER|wxALL, 5 );
 	
 	
 	sbSizer3->Add( bSizer131, 0, wxALIGN_CENTER, 5 );
 	
 	
-	rightSizer->Add( sbSizer3, 3, wxALIGN_CENTER_HORIZONTAL|wxALL|wxEXPAND, 3 );
+	rightSizer->Add( sbSizer3, 2, wxALIGN_CENTER_HORIZONTAL|wxALL|wxEXPAND, 3 );
 	
 	wxStaticBoxSizer* sbSizer5;
 	sbSizer5 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, _("Control") ), wxVERTICAL );
+	
+	wxBoxSizer* bSizer1511;
+	bSizer1511 = new wxBoxSizer( wxVERTICAL );
+	
+	m_togBtnOnOff = new wxToggleButton( this, wxID_ANY, _("Start"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_togBtnOnOff->SetToolTip( _("Begin receiving data.") );
+	
+	bSizer1511->Add( m_togBtnOnOff, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 1 );
+	
+	
+	sbSizer5->Add( bSizer1511, 0, wxEXPAND, 1 );
 	
 	wxBoxSizer* bSizer151;
 	bSizer151 = new wxBoxSizer( wxVERTICAL );
 	
 	m_togBtnSplit = new wxToggleButton( this, wxID_ANY, _("Split"), wxDefaultPosition, wxDefaultSize, 0 );
-	m_togBtnSplit->SetToolTip( _("Toggle Split mode.") );
+	m_togBtnSplit->SetToolTip( _("Toggle split frequency mode.") );
 	
 	bSizer151->Add( m_togBtnSplit, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 1 );
 	
@@ -215,7 +237,7 @@ TopFrame::TopFrame( wxWindow* parent, wxWindowID id, const wxString& title, cons
 	bSizer14 = new wxBoxSizer( wxVERTICAL );
 	
 	m_togBtnALC = new wxToggleButton( this, wxID_ANY, _("ALC"), wxDefaultPosition, wxDefaultSize, 0 );
-	m_togBtnALC->SetToolTip( _("Toggle ALC Mode.") );
+	m_togBtnALC->SetToolTip( _("Toggle automatic level control mode.") );
 	
 	bSizer14->Add( m_togBtnALC, 0, wxALL, 1 );
 	
@@ -226,6 +248,8 @@ TopFrame::TopFrame( wxWindow* parent, wxWindowID id, const wxString& title, cons
 	bSizer11 = new wxBoxSizer( wxVERTICAL );
 	
 	m_btnTogTX = new wxToggleButton( this, wxID_ANY, _("TX"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_btnTogTX->SetToolTip( _("Switch between Receive and Transmit") );
+	
 	bSizer11->Add( m_btnTogTX, 1, wxALIGN_CENTER|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 1 );
 	
 	
@@ -284,6 +308,7 @@ TopFrame::TopFrame( wxWindow* parent, wxWindowID id, const wxString& title, cons
 	m_sliderSQ->Connect( wxEVT_SCROLL_CHANGED, wxScrollEventHandler( TopFrame::OnCmdSliderScrollChanged ), NULL, this );
 	m_sliderSQ->Connect( wxEVT_SCROLL_TOP, wxScrollEventHandler( TopFrame::OnSliderScrollTop ), NULL, this );
 	m_ckboxSQ->Connect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( TopFrame::OnCheckSQClick ), NULL, this );
+	m_togBtnOnOff->Connect( wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler( TopFrame::OnTogBtnOnOff ), NULL, this );
 	m_togBtnSplit->Connect( wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler( TopFrame::OnTogBtnSplitClick ), NULL, this );
 	m_togBtnAnalog->Connect( wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler( TopFrame::OnTogBtnAnalogClick ), NULL, this );
 	m_togBtnALC->Connect( wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler( TopFrame::OnTogBtnALCClick ), NULL, this );
@@ -334,6 +359,7 @@ TopFrame::~TopFrame()
 	m_sliderSQ->Disconnect( wxEVT_SCROLL_CHANGED, wxScrollEventHandler( TopFrame::OnCmdSliderScrollChanged ), NULL, this );
 	m_sliderSQ->Disconnect( wxEVT_SCROLL_TOP, wxScrollEventHandler( TopFrame::OnSliderScrollTop ), NULL, this );
 	m_ckboxSQ->Disconnect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( TopFrame::OnCheckSQClick ), NULL, this );
+	m_togBtnOnOff->Disconnect( wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler( TopFrame::OnTogBtnOnOff ), NULL, this );
 	m_togBtnSplit->Disconnect( wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler( TopFrame::OnTogBtnSplitClick ), NULL, this );
 	m_togBtnAnalog->Disconnect( wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler( TopFrame::OnTogBtnAnalogClick ), NULL, this );
 	m_togBtnALC->Disconnect( wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler( TopFrame::OnTogBtnALCClick ), NULL, this );
@@ -429,60 +455,92 @@ DlgAudio::DlgAudio( wxWindow* parent, wxWindowID id, const wxString& title, cons
 	bSizer34 = new wxBoxSizer( wxVERTICAL );
 	
 	wxStaticBoxSizer* sbSizer10;
-	sbSizer10 = new wxStaticBoxSizer( new wxStaticBox( m_panelDevices, wxID_ANY, _("PortAudio") ), wxVERTICAL );
+	sbSizer10 = new wxStaticBoxSizer( new wxStaticBox( m_panelDevices, wxID_ANY, _("PortAudio") ), wxHORIZONTAL );
 	
 	wxBoxSizer* bSizer41;
 	bSizer41 = new wxBoxSizer( wxHORIZONTAL );
 	
-	wxBoxSizer* bSizer37;
-	bSizer37 = new wxBoxSizer( wxVERTICAL );
+	wxGridSizer* gSizer6;
+	gSizer6 = new wxGridSizer( 3, 1, 0, 0 );
 	
+	gSizer6->SetMinSize( wxSize( 115,-1 ) ); 
 	m_radioBtnPortAudio = new wxRadioButton( m_panelDevices, wxID_ANY, _("PortAudio"), wxDefaultPosition, wxDefaultSize, wxRB_GROUP );
 	m_radioBtnPortAudio->SetValue( true ); 
-	bSizer37->Add( m_radioBtnPortAudio, 1, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+	gSizer6->Add( m_radioBtnPortAudio, 1, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+	
+	wxGridSizer* gSizer51;
+	gSizer51 = new wxGridSizer( 2, 2, 0, 0 );
+	
+	gSizer51->SetMinSize( wxSize( 110,-1 ) ); 
+	m_staticText151 = new wxStaticText( m_panelDevices, wxID_ANY, _("# Ch Out:"), wxDefaultPosition, wxSize( 80,-1 ), wxALIGN_RIGHT );
+	m_staticText151->Wrap( -1 );
+	m_staticText151->SetFont( wxFont( 7, 70, 90, 90, false, wxEmptyString ) );
+	m_staticText151->SetMinSize( wxSize( 80,-1 ) );
+	m_staticText151->SetMaxSize( wxSize( 80,-1 ) );
+	
+	gSizer51->Add( m_staticText151, 1, wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT|wxALL|wxEXPAND, 5 );
+	
+	m_textNumChOut = new wxTextCtrl( m_panelDevices, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize( 30,-1 ), wxTE_READONLY );
+	m_textNumChOut->SetFont( wxFont( 7, 70, 90, 90, false, wxEmptyString ) );
+	m_textNumChOut->SetMinSize( wxSize( 30,-1 ) );
+	m_textNumChOut->SetMaxSize( wxSize( 30,-1 ) );
+	
+	gSizer51->Add( m_textNumChOut, 1, wxALIGN_CENTER_VERTICAL|wxALIGN_LEFT|wxALL, 5 );
+	
+	m_staticText141 = new wxStaticText( m_panelDevices, wxID_ANY, _("# Ch In:"), wxDefaultPosition, wxSize( 80,-1 ), wxALIGN_RIGHT );
+	m_staticText141->Wrap( -1 );
+	m_staticText141->SetFont( wxFont( 7, 70, 90, 90, false, wxEmptyString ) );
+	m_staticText141->SetMinSize( wxSize( 80,-1 ) );
+	m_staticText141->SetMaxSize( wxSize( 90,-1 ) );
+	
+	gSizer51->Add( m_staticText141, 1, wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT|wxALL|wxEXPAND, 5 );
+	
+	m_textNumChIn = new wxTextCtrl( m_panelDevices, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize( 30,-1 ), wxTE_READONLY );
+	m_textNumChIn->SetFont( wxFont( 7, 70, 90, 90, false, wxEmptyString ) );
+	m_textNumChIn->SetMinSize( wxSize( 30,-1 ) );
+	m_textNumChIn->SetMaxSize( wxSize( 30,-1 ) );
+	
+	gSizer51->Add( m_textNumChIn, 0, wxALL, 4 );
 	
 	
-	bSizer41->Add( bSizer37, 0, wxEXPAND, 5 );
+	gSizer6->Add( gSizer51, 0, wxEXPAND, 5 );
+	
+	
+	bSizer41->Add( gSizer6, 0, wxALL, 5 );
 	
 	wxGridSizer* gSizer7;
-	gSizer7 = new wxGridSizer( 4, 1, 0, 0 );
+	gSizer7 = new wxGridSizer( 4, 2, 0, 0 );
 	
-	m_staticText14 = new wxStaticText( m_panelDevices, wxID_ANY, _("Audio in (mic) -> codec:"), wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT );
+	m_staticText14 = new wxStaticText( m_panelDevices, wxID_ANY, _("Audio in (mic) -> codec:"), wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT|wxST_NO_AUTORESIZE );
 	m_staticText14->Wrap( -1 );
 	gSizer7->Add( m_staticText14, 0, wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT|wxALL, 5 );
 	
-	m_staticText15 = new wxStaticText( m_panelDevices, wxID_ANY, _("codec -> Radio Tx: "), wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT );
+	m_comboAudioCodec = new wxComboBox( m_panelDevices, wxID_ANY, _("<default>"), wxDefaultPosition, wxDefaultSize, 0, NULL, 0 ); 
+	gSizer7->Add( m_comboAudioCodec, 1, wxALL, 5 );
+	
+	m_staticText15 = new wxStaticText( m_panelDevices, wxID_ANY, _("codec -> Radio Tx:"), wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT|wxST_NO_AUTORESIZE );
 	m_staticText15->Wrap( -1 );
 	gSizer7->Add( m_staticText15, 0, wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT|wxALL, 5 );
 	
-	m_staticText16 = new wxStaticText( m_panelDevices, wxID_ANY, _("Radio Rx -> codec:"), wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT );
+	m_comboCodecTx = new wxComboBox( m_panelDevices, wxID_ANY, _("<default>"), wxDefaultPosition, wxDefaultSize, 0, NULL, 0 ); 
+	gSizer7->Add( m_comboCodecTx, 1, wxALL, 5 );
+	
+	m_staticText16 = new wxStaticText( m_panelDevices, wxID_ANY, _("Radio Rx -> codec:"), wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT|wxST_NO_AUTORESIZE );
 	m_staticText16->Wrap( -1 );
-	gSizer7->Add( m_staticText16, 0, wxALIGN_RIGHT|wxALL, 5 );
+	gSizer7->Add( m_staticText16, 0, wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT|wxALL, 5 );
 	
-	m_staticText17 = new wxStaticText( m_panelDevices, wxID_ANY, _("codec -> Audio out (spkr):"), wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT );
+	m_comboRadioRx = new wxComboBox( m_panelDevices, wxID_ANY, _("<default>"), wxDefaultPosition, wxDefaultSize, 0, NULL, 0 ); 
+	gSizer7->Add( m_comboRadioRx, 1, wxALL, 5 );
+	
+	m_staticText17 = new wxStaticText( m_panelDevices, wxID_ANY, _("codec -> Audio out (spkr):"), wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT|wxST_NO_AUTORESIZE );
 	m_staticText17->Wrap( -1 );
-	gSizer7->Add( m_staticText17, 0, wxALIGN_RIGHT|wxALL, 5 );
+	gSizer7->Add( m_staticText17, 0, wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT|wxALL, 5 );
+	
+	m_comboCodecSpkr = new wxComboBox( m_panelDevices, wxID_ANY, _("<default>"), wxDefaultPosition, wxDefaultSize, 0, NULL, 0 ); 
+	gSizer7->Add( m_comboCodecSpkr, 0, wxALL, 5 );
 	
 	
-	bSizer41->Add( gSizer7, 1, wxEXPAND, 5 );
-	
-	wxGridSizer* gSizer5;
-	gSizer5 = new wxGridSizer( 4, 1, 0, 0 );
-	
-	m_comboBox1 = new wxComboBox( m_panelDevices, wxID_ANY, _("Combo!"), wxDefaultPosition, wxDefaultSize, 0, NULL, 0 ); 
-	gSizer5->Add( m_comboBox1, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL|wxEXPAND, 5 );
-	
-	m_comboBox2 = new wxComboBox( m_panelDevices, wxID_ANY, _("Combo!"), wxDefaultPosition, wxDefaultSize, 0, NULL, 0 ); 
-	gSizer5->Add( m_comboBox2, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL|wxEXPAND, 5 );
-	
-	m_comboBox11 = new wxComboBox( m_panelDevices, wxID_ANY, _("Combo!"), wxDefaultPosition, wxDefaultSize, 0, NULL, 0 ); 
-	gSizer5->Add( m_comboBox11, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL|wxEXPAND, 5 );
-	
-	m_comboBox12 = new wxComboBox( m_panelDevices, wxID_ANY, _("Combo!"), wxDefaultPosition, wxDefaultSize, 0, NULL, 0 ); 
-	gSizer5->Add( m_comboBox12, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL|wxEXPAND, 5 );
-	
-	
-	bSizer41->Add( gSizer5, 1, wxEXPAND, 5 );
+	bSizer41->Add( gSizer7, 0, wxALL|wxEXPAND, 5 );
 	
 	
 	sbSizer10->Add( bSizer41, 1, wxEXPAND, 5 );
@@ -496,7 +554,7 @@ DlgAudio::DlgAudio( wxWindow* parent, wxWindowID id, const wxString& title, cons
 	wxBoxSizer* bSizer38;
 	bSizer38 = new wxBoxSizer( wxVERTICAL );
 	
-	m_radioBtnFileOnly = new wxRadioButton( m_panelDevices, wxID_ANY, _("File Only"), wxDefaultPosition, wxDefaultSize, wxRB_GROUP );
+	m_radioBtnFileOnly = new wxRadioButton( m_panelDevices, wxID_ANY, _("File Only"), wxDefaultPosition, wxDefaultSize, 0 );
 	bSizer38->Add( m_radioBtnFileOnly, 1, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5 );
 	
 	

@@ -74,6 +74,7 @@ class TopFrame : public wxFrame
 		wxToggleButton* m_togTxID;
 		wxSlider* m_sliderSQ;
 		wxCheckBox* m_ckboxSQ;
+		wxToggleButton* m_togBtnOnOff;
 		wxToggleButton* m_togBtnSplit;
 		wxToggleButton* m_togBtnAnalog;
 		wxToggleButton* m_togBtnALC;
@@ -114,6 +115,7 @@ class TopFrame : public wxFrame
 		virtual void OnCmdSliderScrollChanged( wxScrollEvent& event ) { event.Skip(); }
 		virtual void OnSliderScrollTop( wxScrollEvent& event ) { event.Skip(); }
 		virtual void OnCheckSQClick( wxCommandEvent& event ) { event.Skip(); }
+		virtual void OnTogBtnOnOff( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnTogBtnSplitClick( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnTogBtnAnalogClick( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnTogBtnALCClick( wxCommandEvent& event ) { event.Skip(); }
@@ -123,7 +125,7 @@ class TopFrame : public wxFrame
 	public:
 		wxAuiNotebook* m_auiNbookCtrl;
 		
-		TopFrame( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("FDMDV2"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 732,507 ), long style = wxDEFAULT_FRAME_STYLE|wxRESIZE_BORDER|wxTAB_TRAVERSAL );
+		TopFrame( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("FDMDV2"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 761,500 ), long style = wxDEFAULT_FRAME_STYLE|wxRESIZE_BORDER|wxTAB_TRAVERSAL );
 		
 		~TopFrame();
 	
@@ -165,14 +167,18 @@ class DlgAudio : public wxDialog
 		wxNotebook* m_nbAudioOptions;
 		wxPanel* m_panelDevices;
 		wxRadioButton* m_radioBtnPortAudio;
+		wxStaticText* m_staticText151;
+		wxTextCtrl* m_textNumChOut;
+		wxStaticText* m_staticText141;
+		wxTextCtrl* m_textNumChIn;
 		wxStaticText* m_staticText14;
+		wxComboBox* m_comboAudioCodec;
 		wxStaticText* m_staticText15;
+		wxComboBox* m_comboCodecTx;
 		wxStaticText* m_staticText16;
+		wxComboBox* m_comboRadioRx;
 		wxStaticText* m_staticText17;
-		wxComboBox* m_comboBox1;
-		wxComboBox* m_comboBox2;
-		wxComboBox* m_comboBox11;
-		wxComboBox* m_comboBox12;
+		wxComboBox* m_comboCodecSpkr;
 		wxRadioButton* m_radioBtnFileOnly;
 		wxPanel* m_panelSettings;
 		wxListBox* m_lbRxInput;
@@ -203,7 +209,7 @@ class DlgAudio : public wxDialog
 	
 	public:
 		
-		DlgAudio( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("Audio Options"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 553,381 ), long style = wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER ); 
+		DlgAudio( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("Audio Options"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 555,419 ), long style = wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER ); 
 		~DlgAudio();
 	
 };

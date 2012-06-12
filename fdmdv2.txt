@@ -1,1 +1,1 @@
-./Release/topFrame.o ./Release/dlg_about.o ./Release/dlg_audio.o ./Release/dlg_options.o ./Release/dlg_comports.o ./Release/fdmdv2_plot.o ./Release/fdmdv2_main.o  
+./Debug/topFrame.o ./Debug/dlg_about.o ./Debug/dlg_audio.o ./Debug/dlg_options.o ./Debug/dlg_comports.o ./Debug/fdmdv2_plot.o ./Debug/fdmdv2_main.o ./Debug/paclass.o  

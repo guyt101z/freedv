@@ -11,7 +11,7 @@
 #define __FDMDV2_MAIN__
 
 #include <wx/wx.h>
-#include "wx/image.h"
+
 #include "wx/file.h"
 #include "wx/filename.h"
 #include "wx/graphics.h"
@@ -23,8 +23,13 @@
 #include "wx/versioninfo.h"
 #include <wx/sound.h>
 #include <wx/thread.h>
+#include "libsndfile/include/sndfile.h"
+#include "extern/include/portaudio.h"
+#include "paclass.h"
+//#include "extern/include/portaudiocpp/PortAudioCpp.hxx"
 
 #include "topFrame.h"
+#include "codec2.h"
 #include "dlg_about.h"
 #include "dlg_audio.h"
 #include "dlg_options.h"
@@ -71,11 +76,22 @@ class MainFrame : public TopFrame
     public:
         MainFrame(wxWindow *parent);
         virtual ~MainFrame();
-        DrawPanel*  m_panelSpectrum;
-        DrawPanel*  m_panelWaterfall;
-        DrawPanel*  m_panelExtra1;
-        DrawPanel*  m_panelExtra2;
-        bool        m_radioRunning;
+        DrawPanel*      m_panelSpectrum;
+        DrawPanel*      m_panelWaterfall;
+        DrawPanel*      m_panelExtra1;
+        DrawPanel*      m_panelExtra2;
+        bool            m_radioRunning;
+        bool            m_SquelchActive;
+        CODEC2          *m_RXCodec2;
+        CODEC2          *m_TXCodec2;
+        PaError         err;
+        PaDeviceIndex   inputDevice;
+        PaDeviceIndex   outputDevice;
+
+//        PortAudioWrap   stream;
+//        portaudio::AutoSystem autoSys;
+//        portaudio::System *sys; // = portaudio::System::instance();
+//        StreamParameters
 
         void DoStartThread();
         void DoPauseThread();
@@ -126,7 +142,7 @@ class MainFrame : public TopFrame
         void OnTogBtnRxID( wxCommandEvent& event );
         void OnTogBtnTxID( wxCommandEvent& event );
         void OnTogBtnTXClick( wxCommandEvent& event );
-
+        void OnTogBtnOnOff( wxCommandEvent& event );
         void OnPaint(wxPaintEvent& event);
         void OnClose( wxCloseEvent& event );
         void OnSize( wxSizeEvent& event );

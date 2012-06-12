@@ -2,10 +2,10 @@
 ## Auto Generated makefile by CodeLite IDE
 ## any manual changes will be erased      
 ##
-## Release
+## Debug
 ProjectName            :=fdmdv2
-ConfigurationName      :=Release
-IntermediateDirectory  :=./Release
+ConfigurationName      :=Debug
+IntermediateDirectory  :=./Debug
 OutDir                 := $(IntermediateDirectory)
 WorkspacePath          := "C:\Users\wittend\Projects\Radio\fdmdv2"
 ProjectPath            := "C:\Users\wittend\Projects\Radio\fdmdv2"
@@ -13,7 +13,7 @@ CurrentFileName        :=
 CurrentFilePath        :=
 CurrentFileFullPath    :=
 User                   :=wittend
-Date                   :=5/30/2012
+Date                   :=6/12/2012
 CodeLitePath           :="C:\Program Files\CodeLite"
 LinkerName             :=g++
 ArchiveTool            :=ar rcus
@@ -38,9 +38,9 @@ PreprocessOnlySwitch   :=-E
 ObjectsFileList        :="C:\Users\wittend\Projects\Radio\fdmdv2\fdmdv2.txt"
 PCHCompileFlags        :=
 MakeDirCommand         :=makedir
-CmpOptions             := -O2 -Wall $(shell wx-config --cxxflags --unicode=yes --debug=no) $(Preprocessors)
-C_CmpOptions           := -O2 -Wall $(shell wx-config --cxxflags --unicode=yes --debug=no) $(Preprocessors)
-LinkOptions            :=  -mwindows -s $(shell wx-config --debug=no --libs --unicode=yes)
+CmpOptions             := -g -O0 -Wall $(shell wx-config --cxxflags --unicode=yes --debug=yes) $(Preprocessors)
+C_CmpOptions           := -g -O0 -Wall $(shell wx-config --cxxflags --unicode=yes --debug=yes) $(Preprocessors)
+LinkOptions            :=  -mwindows $(shell wx-config --debug=yes --libs --unicode=yes)
 IncludePath            :=  $(IncludeSwitch). $(IncludeSwitch)./extern/include 
 IncludePCH             := 
 RcIncludePath          := 
@@ -56,7 +56,7 @@ WXWIN:=C:\bin\wxWidgets-2.9.2
 PATH:=$(WXWIN)\lib\gcc_dll;$(PATH)
 WXCFG:=gcc_dll\mswu
 UNIT_TEST_PP_SRC_DIR:=C:\bin\UnitTest++-1.3
-Objects=$(IntermediateDirectory)/topFrame$(ObjectSuffix) $(IntermediateDirectory)/dlg_about$(ObjectSuffix) $(IntermediateDirectory)/dlg_audio$(ObjectSuffix) $(IntermediateDirectory)/dlg_options$(ObjectSuffix) $(IntermediateDirectory)/dlg_comports$(ObjectSuffix) $(IntermediateDirectory)/fdmdv2_plot$(ObjectSuffix) $(IntermediateDirectory)/fdmdv2_main$(ObjectSuffix) 
+Objects=$(IntermediateDirectory)/topFrame$(ObjectSuffix) $(IntermediateDirectory)/dlg_about$(ObjectSuffix) $(IntermediateDirectory)/dlg_audio$(ObjectSuffix) $(IntermediateDirectory)/dlg_options$(ObjectSuffix) $(IntermediateDirectory)/dlg_comports$(ObjectSuffix) $(IntermediateDirectory)/fdmdv2_plot$(ObjectSuffix) $(IntermediateDirectory)/fdmdv2_main$(ObjectSuffix) $(IntermediateDirectory)/paclass$(ObjectSuffix) 
 
 ##
 ## Main Build Targets 
@@ -71,7 +71,7 @@ $(OutputFile): $(IntermediateDirectory)/.d $(Objects)
 	$(LinkerName) $(OutputSwitch)$(OutputFile) @$(ObjectsFileList) $(LibPath) $(Libs) $(LinkOptions)
 
 $(IntermediateDirectory)/.d:
-	@$(MakeDirCommand) "./Release"
+	@$(MakeDirCommand) "./Debug"
 
 PreBuild:
 
@@ -135,6 +135,14 @@ $(IntermediateDirectory)/fdmdv2_main$(DependSuffix): fdmdv2_main.cpp
 $(IntermediateDirectory)/fdmdv2_main$(PreprocessSuffix): fdmdv2_main.cpp
 	@$(CompilerName) $(CmpOptions) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/fdmdv2_main$(PreprocessSuffix) "C:/Users/wittend/Projects/Radio/fdmdv2/fdmdv2_main.cpp"
 
+$(IntermediateDirectory)/paclass$(ObjectSuffix): paclass.cpp $(IntermediateDirectory)/paclass$(DependSuffix)
+	$(CompilerName) $(IncludePCH) $(SourceSwitch) "C:/Users/wittend/Projects/Radio/fdmdv2/paclass.cpp" $(CmpOptions) $(ObjectSwitch)$(IntermediateDirectory)/paclass$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/paclass$(DependSuffix): paclass.cpp
+	@$(CompilerName) $(CmpOptions) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/paclass$(ObjectSuffix) -MF$(IntermediateDirectory)/paclass$(DependSuffix) -MM "C:/Users/wittend/Projects/Radio/fdmdv2/paclass.cpp"
+
+$(IntermediateDirectory)/paclass$(PreprocessSuffix): paclass.cpp
+	@$(CompilerName) $(CmpOptions) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/paclass$(PreprocessSuffix) "C:/Users/wittend/Projects/Radio/fdmdv2/paclass.cpp"
+
 
 -include $(IntermediateDirectory)/*$(DependSuffix)
 ##
@@ -162,8 +170,11 @@ clean:
 	$(RM) $(IntermediateDirectory)/fdmdv2_main$(ObjectSuffix)
 	$(RM) $(IntermediateDirectory)/fdmdv2_main$(DependSuffix)
 	$(RM) $(IntermediateDirectory)/fdmdv2_main$(PreprocessSuffix)
+	$(RM) $(IntermediateDirectory)/paclass$(ObjectSuffix)
+	$(RM) $(IntermediateDirectory)/paclass$(DependSuffix)
+	$(RM) $(IntermediateDirectory)/paclass$(PreprocessSuffix)
 	$(RM) $(OutputFile)
 	$(RM) $(OutputFile).exe
-	$(RM) "C:\Users\wittend\Projects\Radio\fdmdv2\.build-release\fdmdv2"
+	$(RM) "C:\Users\wittend\Projects\Radio\fdmdv2\.build-debug\fdmdv2"
 
 

@@ -11,59 +11,92 @@
 //==========================================================================
 #include "dlg_audio.h"
 
+//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
+// Class AudioDlg( wxWindow* parent ) : DlgAudio( parent )
+//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 AudioDlg::AudioDlg( wxWindow* parent ) : DlgAudio( parent )
 {
 
 }
 
+//-------------------------------------------------------------------------
+// OnCancel()
+//-------------------------------------------------------------------------
 void AudioDlg::OnCancel( wxCommandEvent& event )
 {
     this->EndModal(wxID_OK);
 }
 
+//-------------------------------------------------------------------------
+// OnOK()
+//-------------------------------------------------------------------------
 void AudioDlg::OnOK( wxCommandEvent& event )
 {
     this->EndModal(wxID_OK);
 }
 
+//-------------------------------------------------------------------------
+// OnApply()
+//-------------------------------------------------------------------------
 void AudioDlg::OnApply( wxCommandEvent& event )
 {
     this->EndModal(wxID_OK);
 }
 
+//-------------------------------------------------------------------------
+// OnClose()
+//-------------------------------------------------------------------------
 void AudioDlg::OnClose( wxCloseEvent& event )
 {
     this->EndModal(wxID_OK);
 }
 
+//-------------------------------------------------------------------------
+// OnInitDialog()
+//-------------------------------------------------------------------------
 void AudioDlg::OnInitDialog( wxInitDialogEvent& event )
 {
     //wxMessageBox(wxT("got OnInitDialog()"), wxT("Select"), wxOK);
     populateAudioInfo();
 }
 
+//-------------------------------------------------------------------------
+// OnRxInputSelect()
+//-------------------------------------------------------------------------
 void AudioDlg::OnRxInputSelect( wxCommandEvent& event )
 {
     wxMessageBox(wxT("got OnRxInputSelect()"), wxT("Select"), wxOK);
 }
 
+//-------------------------------------------------------------------------
+// OnTxOutputSelect()
+//-------------------------------------------------------------------------
 void AudioDlg::OnTxOutputSelect( wxCommandEvent& event )
 {
     wxMessageBox(wxT("got OnTxOutputSelect()"), wxT("Select"), wxOK);
 }
 
+//-------------------------------------------------------------------------
+// OnVoiceInputSelect()
+//-------------------------------------------------------------------------
 void AudioDlg::OnVoiceInputSelect( wxCommandEvent& event )
 {
     wxMessageBox(wxT("got OnVoiceInputSelect()"), wxT("Select"), wxOK);
 }
 
+//-------------------------------------------------------------------------
+// OnVoiceOutputSelect()
+//-------------------------------------------------------------------------
 void AudioDlg::OnVoiceOutputSelect( wxCommandEvent& event )
 {
     wxMessageBox(wxT("got OnVoiceOutputSelect()"), wxT("Select"), wxOK);
 }
 
+//-------------------------------------------------------------------------
+// populateStandardSampleRates()
+//-------------------------------------------------------------------------
 void AudioDlg::populateStandardSampleRates(
-        wxListBox* target,
+        wxComboBox* target,
         const portaudio::DirectionSpecificStreamParameters &inputParameters,
         const portaudio::DirectionSpecificStreamParameters &outputParameters)
 {
@@ -82,17 +115,20 @@ void AudioDlg::populateStandardSampleRates(
         if (tmp.isSupported())
         {
             tStr.Printf("%i %8.2f", printCount, STANDARD_SAMPLE_RATES[i]);
-            target->InsertItems(1, &tStr, 0);
+            target->Append(tStr);
             ++printCount;
         }
     }
     if (printCount == 0)
     {
         tStr = "None\n";
-        target->InsertItems(1, &tStr, 0);
+        target->Append(tStr);
     }
 }
 
+//-------------------------------------------------------------------------
+// OnActivate()
+//-------------------------------------------------------------------------
 int AudioDlg::populateAudioInfo()
 {
     wxString tStr;
@@ -118,9 +154,7 @@ int AudioDlg::populateAudioInfo()
 /*
             tStr.Printf("---------- device #: %i ----------\n", (*i).index());
             m_textTopRight->AppendText(tStr);
-
             bool defaultDisplayed = false;
-
             if ((*i).isSystemDefaultInputDevice())
             {
                 tStr.Printf("[ System Default Input %s", (*i).hostApi().name());
@@ -149,13 +183,11 @@ int AudioDlg::populateAudioInfo()
                 m_textTopRight->AppendText(tStr);
                 defaultDisplayed = true;
             }
-
             if (defaultDisplayed)
             {
                tStr  =  " ]\n";
                 m_textTopRight->AppendText(tStr);
             }
-
             ttStr.Printf("Name                        : %s\n", (*i).name());
             tStr  += ttStr;
             ttStr.Printf("Host API                    : %s\n", (*i).hostApi().name());
@@ -164,7 +196,6 @@ int AudioDlg::populateAudioInfo()
             tStr  += ttStr;
             ttStr.Printf("Max outputs                 : %i\n\n", (*i).maxOutputChannels());
             tStr  += ttStr;
-
             ttStr.Printf("Default low input latency   : %8.3f\n", (*i).defaultLowInputLatency());
             tStr  += ttStr;
             ttStr.Printf("Default low output latency  : %8.3f\n", (*i).defaultLowOutputLatency());
@@ -180,11 +211,9 @@ int AudioDlg::populateAudioInfo()
             if ((*i).hostApi().typeId() == paASIO)
             {
                 portaudio::AsioDeviceAdapter asioDevice((*i));
-
                 //std::cout << "ASIO minimum buffer size    = " << asioDevice.minBufferSize() << std::endl;
                 //std::cout << "ASIO maximum buffer size    = " << asioDevice.maxBufferSize() << std::endl;
                 //std::cout << "ASIO preferred buffer size  = " << asioDevice.preferredBufferSize() << std::endl;
-
                 if (asioDevice.granularity() == -1)
                 {
                     //std::cout << "ASIO buffer granularity     = power of 2" << std::endl;
@@ -198,33 +227,47 @@ int AudioDlg::populateAudioInfo()
 
             tStr.Printf("Default sample rate         : %8.2f\n", (*i).defaultSampleRate());
             m_textTopRight->AppendText(tStr);
+        wxComboBox* m_comboAudioCodec;
+        wxComboBox* m_comboCodecTx;
+        wxComboBox* m_comboRadioRx;
+        wxComboBox* m_comboCodecSpkr;
 */
             // Poll for standard sample rates:
             portaudio::DirectionSpecificStreamParameters inputParameters((*i), (*i).maxInputChannels(), portaudio::INT16, true, 0.0, NULL);
             portaudio::DirectionSpecificStreamParameters outputParameters((*i), (*i).maxOutputChannels(), portaudio::INT16, true, 0.0, NULL);
             if (inputParameters.numChannels() > 0)
             {
-                tStr = "Supported standard Input sample rates\n";
-                m_lbRxInput->InsertItems(1, &tStr, 0);
-                tStr.Printf("   for half-duplex 16 bit %i channel input = ", inputParameters.numChannels());
-                m_lbRxInput->InsertItems(1, &tStr, 0);
-                populateStandardSampleRates(m_lbRxInput, inputParameters, portaudio::DirectionSpecificStreamParameters::null());
+//                tStr = "Supported standard Input sample rates\n";
+//                m_comboAudioCodec->Append(tStr);
+//                tStr.Printf("   for half-duplex 16 bit %i channel input = ", inputParameters.numChannels());
+//                m_comboAudioCodec->InsertItems(1, &tStr, 0);
+//                m_comboAudioCodec->Append(tStr);
+                populateStandardSampleRates(m_comboAudioCodec, inputParameters, portaudio::DirectionSpecificStreamParameters::null());
             }
             if (outputParameters.numChannels() > 0)
             {
-                tStr = "Supported standard Output sample rates\n";
-                m_lbTxOutput->InsertItems(1, &tStr, 0);
-                tStr.Printf("   for half-duplex 16 bit %i channel output = ", outputParameters.numChannels());
-                m_lbTxOutput->InsertItems(1, &tStr, 0);
-                populateStandardSampleRates(m_lbTxOutput, portaudio::DirectionSpecificStreamParameters::null(), outputParameters);
+//                tStr = "Supported standard Output sample rates\n";
+//                m_comboRadioRx->Append(tStr);
+//                tStr.Printf("   for half-duplex 16 bit %i channel output = ", outputParameters.numChannels());
+//                m_comboRadioRx->Append(tStr);
+                populateStandardSampleRates(m_comboRadioRx, portaudio::DirectionSpecificStreamParameters::null(), outputParameters);
             }
-            if (inputParameters.numChannels() > 0 && outputParameters.numChannels() > 0)
+            if (inputParameters.numChannels() > 0 && inputParameters.numChannels() > 0)
             {
-                tStr = "Supported full-duplex sample rates\n";
-                m_lbVoiceInput->InsertItems(1, &tStr, 0);
-                tStr.Printf("   for full-duplex 16 bit %i channel input, %i", inputParameters.numChannels(), outputParameters.numChannels());
-                m_lbVoiceInput->InsertItems(1, &tStr, 0);
-                populateStandardSampleRates(m_lbVoiceInput, inputParameters, outputParameters);
+//                tStr = "Supported full-duplex sample rates\n";
+//                m_comboCodecTx->Append(tStr);
+//                tStr.Printf("   for full-duplex 16 bit %i channel input, %i", inputParameters.numChannels(), outputParameters.numChannels());
+//                m_comboCodecTx->InsertItems(1, &tStr, 0);
+//                m_comboCodecTx->Append(tStr);
+                populateStandardSampleRates(m_comboCodecTx, inputParameters, outputParameters);
+            }
+            if (outputParameters.numChannels() > 0 && outputParameters.numChannels() > 0)
+            {
+//                tStr = "Supported full-duplex sample rates\n";
+//                m_comboCodecSpkr->Append(tStr);
+//                tStr.Printf("   for full-duplex 16 bit %i channel input, %i", inputParameters.numChannels(), outputParameters.numChannels());
+//                m_comboCodecTx->InsertItems(1, &tStr, 0);
+                populateStandardSampleRates(m_comboCodecSpkr, inputParameters, outputParameters);
             }
         }
     }

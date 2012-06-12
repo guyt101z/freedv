@@ -15,26 +15,7 @@
     <File Name="dlg_comports.cpp"/>
     <File Name="fdmdv2_plot.cpp"/>
     <File Name="fdmdv2_main.cpp"/>
-    <File Name="extern/include/portaudiocpp/AsioDeviceAdapter.hxx"/>
-    <File Name="extern/include/portaudiocpp/AutoSystem.hxx"/>
-    <File Name="extern/include/portaudiocpp/BlockingStream.hxx"/>
-    <File Name="extern/include/portaudiocpp/CallbackInterface.hxx"/>
-    <File Name="extern/include/portaudiocpp/CallbackStream.hxx"/>
-    <File Name="extern/include/portaudiocpp/CFunCallbackStream.hxx"/>
-    <File Name="extern/include/portaudiocpp/CppFunCallbackStream.hxx"/>
-    <File Name="extern/include/portaudiocpp/Device.hxx"/>
-    <File Name="extern/include/portaudiocpp/DirectionSpecificStreamParameters.hxx"/>
-    <File Name="extern/include/portaudiocpp/Exception.hxx"/>
-    <File Name="extern/include/portaudiocpp/HostApi.hxx"/>
-    <File Name="extern/include/portaudiocpp/InterfaceCallbackStream.hxx"/>
-    <File Name="extern/include/portaudiocpp/MemFunCallbackStream.hxx"/>
-    <File Name="extern/include/portaudiocpp/PortAudioCpp.hxx"/>
-    <File Name="extern/include/portaudiocpp/SampleDataFormat.hxx"/>
-    <File Name="extern/include/portaudiocpp/Stream.hxx"/>
-    <File Name="extern/include/portaudiocpp/StreamParameters.hxx"/>
-    <File Name="extern/include/portaudiocpp/System.hxx"/>
-    <File Name="extern/include/portaudiocpp/SystemDeviceIterator.hxx"/>
-    <File Name="extern/include/portaudiocpp/SystemHostApiIterator.hxx"/>
+    <File Name="paclass.cpp"/>
   </VirtualDirectory>
   <VirtualDirectory Name="include">
     <File Name="topFrame.h"/>
@@ -50,6 +31,29 @@
     <File Name="extern/include/rig_dll.h"/>
     <File Name="extern/include/riglist.h"/>
     <File Name="extern/include/samplerate.h"/>
+    <VirtualDirectory Name="portaudio_cpp">
+      <File Name="extern/include/portaudiocpp/AsioDeviceAdapter.hxx"/>
+      <File Name="extern/include/portaudiocpp/AutoSystem.hxx"/>
+      <File Name="extern/include/portaudiocpp/BlockingStream.hxx"/>
+      <File Name="extern/include/portaudiocpp/CallbackInterface.hxx"/>
+      <File Name="extern/include/portaudiocpp/CallbackStream.hxx"/>
+      <File Name="extern/include/portaudiocpp/CFunCallbackStream.hxx"/>
+      <File Name="extern/include/portaudiocpp/CppFunCallbackStream.hxx"/>
+      <File Name="extern/include/portaudiocpp/Device.hxx"/>
+      <File Name="extern/include/portaudiocpp/DirectionSpecificStreamParameters.hxx"/>
+      <File Name="extern/include/portaudiocpp/Exception.hxx"/>
+      <File Name="extern/include/portaudiocpp/HostApi.hxx"/>
+      <File Name="extern/include/portaudiocpp/InterfaceCallbackStream.hxx"/>
+      <File Name="extern/include/portaudiocpp/MemFunCallbackStream.hxx"/>
+      <File Name="extern/include/portaudiocpp/PortAudioCpp.hxx"/>
+      <File Name="extern/include/portaudiocpp/SampleDataFormat.hxx"/>
+      <File Name="extern/include/portaudiocpp/Stream.hxx"/>
+      <File Name="extern/include/portaudiocpp/StreamParameters.hxx"/>
+      <File Name="extern/include/portaudiocpp/System.hxx"/>
+      <File Name="extern/include/portaudiocpp/SystemDeviceIterator.hxx"/>
+      <File Name="extern/include/portaudiocpp/SystemHostApiIterator.hxx"/>
+    </VirtualDirectory>
+    <File Name="paclass.h"/>
   </VirtualDirectory>
   <VirtualDirectory Name="resources">
     <File Name="FDMDV2.fbp"/>
@@ -68,11 +72,16 @@
     </GlobalSettings>
     <Configuration Name="Debug" CompilerType="gnu g++" DebuggerType="GNU gdb debugger" Type="Executable" BuildCmpWithGlobalSettings="append" BuildLnkWithGlobalSettings="append" BuildResWithGlobalSettings="append">
       <Compiler Options="-g;-O0;-Wall;$(shell wx-config --cxxflags --unicode=yes --debug=yes)" C_Options="-g;-O0;-Wall;$(shell wx-config --cxxflags --unicode=yes --debug=yes)" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" UseDifferentPCHFlags="no" PCHFlags="">
+        <IncludePath Value="./extern/include"/>
         <Preprocessor Value="__WX__"/>
       </Compiler>
       <Linker Options="-mwindows;$(shell wx-config --debug=yes --libs --unicode=yes)" Required="yes">
         <LibraryPath Value="./libsndfile/bin"/>
+        <LibraryPath Value="./extern/lib"/>
         <Library Value="libsndfile-1.dll"/>
+        <Library Value="libcodec2.a"/>
+        <Library Value="libportaudio.a"/>
+        <Library Value="libportaudiocpp.a"/>
       </Linker>
       <ResourceCompiler Options="$(shell wx-config --rcflags)" Required="no"/>
       <General OutputFile="$(IntermediateDirectory)/$(ProjectName)" IntermediateDirectory="./Debug" Command="./$(ProjectName)" CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="$(IntermediateDirectory)" PauseExecWhenProcTerminates="yes"/>
@@ -99,7 +108,7 @@
         <CustomPostBuild/>
         <CustomPreBuild/>
       </AdditionalRules>
-      <Completion>
+      <Completion EnableCpp11="no">
         <ClangCmpFlags/>
         <ClangPP/>
         <SearchPaths/>
@@ -143,7 +152,7 @@
         <CustomPostBuild/>
         <CustomPreBuild/>
       </AdditionalRules>
-      <Completion>
+      <Completion EnableCpp11="no">
         <ClangCmpFlags/>
         <ClangPP/>
         <SearchPaths/>

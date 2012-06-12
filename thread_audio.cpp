@@ -1,7 +1,7 @@
 //==========================================================================
 // Name:            thread_audio.cpp
 //
-// Purpose:         Implements simple wxWidgets application with GUI.
+// Purpose:         Implements a thread for processing an audio data stream.
 // Created:         May 11, 2012
 // Initial author:  David Witten
 // License:         BSD License (other licenses may apply to other
@@ -38,6 +38,33 @@ static int audioCallback( void *inputBuffer, void *outputBuffer, unsigned long f
     }
     return 0;
 }
+
+AudioThread::AudioThread()
+{
+}
+
+AudioThread::~AudioThread()
+{
+}
+
+void* AudioThread::Entry()
+{
+    return NULL;
+}
+void AudioThread::OnDelete()
+{
+}
+void AudioThread::OnExit()
+{
+}
+void AudioThread::OnKill()
+{
+}
+
+//    bool Fdmdv2ThreadAudio::TestDestroy()
+//    {
+//    }
+
 #ifdef PORTAUDIO_MAIN
 /* Use a PortAudioStream to process audio data. */
 int main(void)

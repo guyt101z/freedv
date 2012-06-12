@@ -30,7 +30,7 @@ class AudioDlg : public DlgAudio
         void OnInitDialog( wxInitDialogEvent& event );
         void OnApply( wxCommandEvent& event );
         void populateStandardSampleRates(
-                wxListBox* target,
+                wxComboBox* target,
                 const portaudio::DirectionSpecificStreamParameters &inputParameters,
                 const portaudio::DirectionSpecificStreamParameters &outputParameters);
         int populateAudioInfo();
