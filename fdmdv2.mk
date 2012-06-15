@@ -13,7 +13,7 @@ CurrentFileName        :=
 CurrentFilePath        :=
 CurrentFileFullPath    :=
 User                   :=wittend
-Date                   :=6/12/2012
+Date                   :=6/15/2012
 CodeLitePath           :="C:\Program Files\CodeLite"
 LinkerName             :=g++
 ArchiveTool            :=ar rcus
@@ -52,7 +52,7 @@ LibPath                := $(LibraryPathSwitch). $(LibraryPathSwitch)./libsndfile
 ## User defined environment variables
 ##
 CodeLiteDir:=C:\Program Files\CodeLite
-WXWIN:=C:\bin\wxWidgets-2.9.2
+WXWIN:=C:\bin\wxWidgets-2.9.4
 PATH:=$(WXWIN)\lib\gcc_dll;$(PATH)
 WXCFG:=gcc_dll\mswu
 UNIT_TEST_PP_SRC_DIR:=C:\bin\UnitTest++-1.3

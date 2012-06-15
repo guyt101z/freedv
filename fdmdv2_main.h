@@ -29,7 +29,8 @@
 //#include "extern/include/portaudiocpp/PortAudioCpp.hxx"
 
 #include "topFrame.h"
-#include "codec2.h"
+#include "C:\Users\wittend\Projects\Radio\codec2-dev\src\codec2.h"
+#include "C:\Users\wittend\Projects\Radio\codec2-dev\src\fdmdv.h"
 #include "dlg_about.h"
 #include "dlg_audio.h"
 #include "dlg_options.h"
@@ -84,6 +85,7 @@ class MainFrame : public TopFrame
         bool            m_SquelchActive;
         CODEC2          *m_RXCodec2;
         CODEC2          *m_TXCodec2;
+        PortAudioWrap   *pa;
         PaError         err;
         PaDeviceIndex   inputDevice;
         PaDeviceIndex   outputDevice;

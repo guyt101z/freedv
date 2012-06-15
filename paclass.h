@@ -30,8 +30,8 @@ class PortAudioWrap
         PaStreamCallback                *streamCallback;
         PaStreamFinishedCallback        *streamFinishedCallback;
         const PaStreamCallbackTimeInfo  *timeInfo;
-        PaDeviceIndex                   inputDevice;
-        PaDeviceIndex                   outputDevice;
+//        PaDeviceIndex                   inputDevice;
+//        PaDeviceIndex                   outputDevice;
 
     public:
 
@@ -66,7 +66,7 @@ class PortAudioWrap
         void        setOutputHostApiStreamInfo(void *info = NULL);
         PaTime      getOutputDefaultLowLatency();
 
-        PaError     init();
+//        PaError     init();
         PaError     streamStart();
         PaError     streamClose();
         void        terminate();

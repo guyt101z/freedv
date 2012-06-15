@@ -2,24 +2,24 @@
 
 PortAudioWrap::PortAudioWrap()
 {
-    stream = NULL;
-    userData = NULL;
-    samplerate = 0;
-    framesPerBuffer = 0;
-    statusFlags = 0;
-    streamCallback = NULL;
-    streamFinishedCallback = NULL;
-    timeInfo = 0;
+    stream                  = NULL;
+    userData                = NULL;
+    samplerate              = 0;
+    framesPerBuffer         = 0;
+    statusFlags             = 0;
+    streamCallback          = NULL;
+    streamFinishedCallback  = NULL;
+    timeInfo                = 0;
 }
 
 PortAudioWrap::~PortAudioWrap()
 {
 }
 
-PaError PortAudioWrap::init()
-{
-    return Pa_Initialize();
-}
+//PaError PortAudioWrap::init()
+//{
+//    return Pa_Initialize();
+//}
 
 PaError PortAudioWrap::streamOpen()
 {
@@ -37,15 +37,15 @@ PaError PortAudioWrap::streamOpen()
 
 PaError PortAudioWrap::streamStart()
 {
-    return Pa_StartStream(this->stream);
+    return Pa_StartStream(stream);
 }
 
 PaError PortAudioWrap::streamClose()
 {
     if(isOpen())
     {
-        PaError rv = Pa_CloseStream(this->stream);
-        this->stream = NULL;
+        PaError rv = Pa_CloseStream(stream);
+//        stream = NULL;
         return rv;
     }
     else

@@ -44,16 +44,18 @@ bool MainApp::OnInit()
 }
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
-// Class MainFrame(wxFrame* parent) : TopFrame(parent)
+// Class MainFrame(wxFrame* pa->ent) : TopFrame(pa->ent)
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
 {
     m_radioRunning      = false;
-//    m_bitmap = bitmap;
-    m_sound = NULL;
-    m_zoom  = 1.;
-    m_SquelchActive = false;
-
+    m_sound             = NULL;
+    m_zoom              = 1.;
+    m_SquelchActive     = false;
+    if(Pa_Initialize())
+    {
+        wxMessageBox(wxT("Port Audio failed to initialize"), wxT("Pa_Initialize"), wxOK);
+    }
 }
 
 //-------------------------------------------------------------------------
@@ -68,6 +70,7 @@ MainFrame::~MainFrame()
 //-------------------------------------------------------------------------
 void MainFrame::OnCloseFrame(wxCloseEvent& event)
 {
+    Pa_Terminate();
     Destroy();
 }
 
@@ -80,7 +83,7 @@ void MainFrame::OnExitClick(wxCommandEvent& event)
 }
 
 //-------------------------------------------------------------------------
-// OnPaint()
+// Onpa->nt()
 //-------------------------------------------------------------------------
 void MainFrame::OnPaint(wxPaintEvent& WXUNUSED(event))
 {
@@ -160,7 +163,7 @@ void MainFrame::OnTogBtnTXClick(wxCommandEvent& event)
 //-------------------------------------------------------------------------
 void MainFrame::OnTogBtnRxID(wxCommandEvent& event)
 {
-    wxMessageBox("Got Click!", "OnTogBtnRxID", wxOK);
+    wxMessageBox(wxT("Got Click!"), wxT("OnTogBtnRxID"), wxOK);
     event.Skip();
 }
 
@@ -169,7 +172,7 @@ void MainFrame::OnTogBtnRxID(wxCommandEvent& event)
 //-------------------------------------------------------------------------
 void MainFrame::OnTogBtnTxID(wxCommandEvent& event)
 {
-    wxMessageBox("Got Click!", "OnTogBtnTxID", wxOK);
+    wxMessageBox(wxT("Got Click!"), wxT("OnTogBtnTxID"), wxOK);
     event.Skip();
 }
 
@@ -178,7 +181,7 @@ void MainFrame::OnTogBtnTxID(wxCommandEvent& event)
 //-------------------------------------------------------------------------
 void MainFrame::OnTogBtnSplitClick(wxCommandEvent& event)
 {
-    wxMessageBox("Got Click!", "OnTogBtnSplitClick", wxOK);
+    wxMessageBox(wxT("Got Click!"), wxT("OnTogBtnSplitClick"), wxOK);
     event.Skip();
 }
 
@@ -187,7 +190,7 @@ void MainFrame::OnTogBtnSplitClick(wxCommandEvent& event)
 //-------------------------------------------------------------------------
 void MainFrame::OnTogBtnAnalogClick (wxCommandEvent& event)
 {
-    wxMessageBox("Got Click!", "OnTogBtnAnalogClick", wxOK);
+    wxMessageBox(wxT("Got Click!"), wxT("OnTogBtnAnalogClick"), wxOK);
     event.Skip();
 }
 
@@ -196,38 +199,71 @@ void MainFrame::OnTogBtnAnalogClick (wxCommandEvent& event)
 //-------------------------------------------------------------------------
 void MainFrame::OnTogBtnALCClick(wxCommandEvent& event)
 {
-    wxMessageBox("Got Click!", "OnTogBtnALCClick", wxOK);
+    wxMessageBox(wxT("Got Click!"), wxT("OnTogBtnALCClick"), wxOK);
     event.Skip();
 }
 
 //-------------------------------------------------------------------------
-// audioCallback()
+// codec2Callback()
 //-------------------------------------------------------------------------
-static int audioCallback(   const void *inputBuffer,
-                            void *outputBuffer,
+static int codec2Callback(
+                            const void *inBuffer,
+                            void *outBuffer,
                             unsigned long framesPerBuffer,
                             const PaStreamCallbackTimeInfo *outTime,
                             PaStreamCallbackFlags statusFlags,
                             void *userData
-                        )
+                         )
 {
-    float *out = (float *) outputBuffer;
-    float *in  = (float *) inputBuffer;
-    float leftInput;
-    float rightInput;
+    float *out = (float *) outBuffer;
+    float *in  = (float *) inBuffer;
+    float leftIn;
+    float rightIn;
     unsigned int i;
 
-    if(inputBuffer == NULL)
+    if(inBuffer == NULL)
     {
         return 0;
     }
     // Read input buffer, process data, and fill output buffer.
     for(i = 0; i < framesPerBuffer; i++)
     {
-        leftInput = *in++;                          // Get interleaved samples from input buffer.
-        rightInput = *in++;
-        *out++ = leftInput * rightInput;            // ring modulation
-        *out++ = 0.5f * (leftInput + rightInput);   // mixing
+        leftIn  = *in++;                            // Get interleaved samples from input buffer.
+        rightIn = *in++;
+        *out++  = leftIn * rightIn;                 // ring modulation
+        *out++  = 0.5f * (leftIn + rightIn);        // mixing
+    }
+    return paContinue;                              // 0;
+}
+
+//-------------------------------------------------------------------------
+// audioCallback()
+//-------------------------------------------------------------------------
+static int audioCallback(   const void *inBuffer,
+                            void *outBuffer,
+                            unsigned long framesPerBuffer,
+                            const PaStreamCallbackTimeInfo *outTime,
+                            PaStreamCallbackFlags statusFlags,
+                            void *userData
+                        )
+{
+    float *out = (float *) outBuffer;
+    float *in  = (float *) inBuffer;
+    float leftIn;
+    float rightIn;
+    unsigned int i;
+
+    if(inBuffer == NULL)
+    {
+        return 0;
+    }
+    // Read input buffer, process data, and fill output buffer.
+    for(i = 0; i < framesPerBuffer; i++)
+    {
+        leftIn  = *in++;                            // Get interleaved samples from input buffer.
+        rightIn = *in++;
+        *out++  = leftIn * rightIn;                 // ring modulation
+        *out++  = 0.5f * (leftIn + rightIn);        // mixing
     }
     return paContinue;                              // 0;
 }
@@ -241,8 +277,8 @@ static int gNumNoInputs = 0;
 static int fuzzCallback(const void *inputBuffer,
                         void *outputBuffer,
                         unsigned long framesPerBuffer,
-                        const PaStreamCallbackTimeInfo* timeInfo,
-                        PaStreamCallbackFlags statusFlags,
+                        const pa->treamCallbackTimeInfo* timeInfo,
+                        pa->treamCallbackFlags statusFlags,
                         void *userData)
 {
     SAMPLE *out = (SAMPLE*)outputBuffer;
@@ -269,7 +305,7 @@ static int fuzzCallback(const void *inputBuffer,
             *out++ = *in++;                 // right - clean
         }
     }
-    return paContinue;
+    return pa->ontinue;
 }
 */
 
@@ -278,53 +314,52 @@ static int fuzzCallback(const void *inputBuffer,
 //-------------------------------------------------------------------------
 void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
 {
-    PortAudioWrap pa;
     if(!m_radioRunning)
     {
         m_radioRunning = true;
-        pa = PortAudioWrap();
-        err = pa.init();
+        pa = new PortAudioWrap();
+//        err = pa->init();
 
-        inputDevice = pa.getDefaultInputDevice();                   // default input device
+        inputDevice = pa->getDefaultInputDevice();                   // default input device
         if(inputDevice == paNoDevice)
         {
-            wxMessageBox("Error: No default input device.", "Error", wxOK);
+            wxMessageBox(wxT("Error: No default input device."), wxT("Error"), wxOK);
             return;
         }
-        err = pa.setInputDevice(inputDevice);
-        err = pa.setInputChannelCount(2);                           // stereo input
-        err = pa.setInputSampleFormat(PA_SAMPLE_TYPE);
-        err = pa.setInputLatency(pa.getInputDefaultLowLatency());
-        pa.setInputHostApiStreamInfo(NULL);
+        err = pa->setInputDevice(inputDevice);
+        err = pa->setInputChannelCount(2);                           // stereo input
+        err = pa->setInputSampleFormat(PA_SAMPLE_TYPE);
+        err = pa->setInputLatency(pa->getInputDefaultLowLatency());
+        pa->setInputHostApiStreamInfo(NULL);
 
-        outputDevice = pa.getDefaultOutputDevice();                 // default output device
+        outputDevice = pa->getDefaultOutputDevice();                 // default output device
         if (outputDevice == paNoDevice)
         {
-            wxMessageBox("Error: No default output device.", "Error", wxOK);
+            wxMessageBox(wxT("Error: No default output device."), wxT("Error"), wxOK);
             return;
         }
-        err = pa.setOutputDevice(outputDevice);
-        err = pa.setOutputChannelCount(2);                           // stereo input
-        err = pa.setOutputSampleFormat(PA_SAMPLE_TYPE);
+        err = pa->setOutputDevice(outputDevice);
+        err = pa->setOutputChannelCount(2);                           // stereo input
+        err = pa->setOutputSampleFormat(PA_SAMPLE_TYPE);
 
-        err = pa.setOutputLatency(pa.getOutputDefaultLowLatency());
-        pa.setOutputHostApiStreamInfo(NULL);
+        err = pa->setOutputLatency(pa->getOutputDefaultLowLatency());
+        pa->setOutputHostApiStreamInfo(NULL);
 
-        err = pa.setFramesPerBuffer(FRAMES_PER_BUFFER);
-        err = pa.setSampleRate(SAMPLE_RATE);
-        err = pa.setStreamFlags(0);
-        err = pa.setCallback(audioCallback);
-        err = pa.streamOpen();
+        err = pa->setFramesPerBuffer(FRAMES_PER_BUFFER);
+        err = pa->setSampleRate(SAMPLE_RATE);
+        err = pa->setStreamFlags(0);
+        err = pa->setCallback(audioCallback);
+        err = pa->streamOpen();
 
         if(err != paNoError)
         {
-            wxMessageBox("Open/Setup error.", "Error", wxOK);
+            wxMessageBox(wxT("Open/Setup error."), wxT("Error"), wxOK);
             return;
         }
-        err = pa.streamStart();
+        err = pa->streamStart();
         if(err != paNoError)
         {
-            wxMessageBox("Stream Start Error.", "Error", wxOK);
+            wxMessageBox(wxT("Stream Start Error."), wxT("Error"), wxOK);
             return;
         }
         m_togBtnOnOff->SetLabel(wxT("Stop"));
@@ -332,7 +367,10 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
     else
     {
         m_radioRunning = false;
-        pa.terminate();
+        pa->stop();
+//        pa->abort();
+//        delete pa;
+        //pa->terminate();
         m_togBtnOnOff->SetLabel(wxT("Start"));
     }
 }
@@ -367,10 +405,10 @@ void MainFrame::OnOpen( wxCommandEvent& event )
     m_sound->Play(openFileDialog.GetPath());
 /*
     // this can be done with e.g. wxWidgets input streams:
-    wxFileInputStream input_stream(openFileDialog.GetPath());
+    wxFileInputStream input_stream(openFileDialog.Getpa->h());
     if (!input_stream.IsOk())
     {
-        wxLogError("Cannot open file '%s'.", openFileDialog.GetPath());
+        wxLogError("Cannot open file '%s'.", openFileDialog.Getpa->h());
         return;
     }
 */
@@ -464,7 +502,7 @@ void MainFrame::OnCutUpdateUI( wxUpdateUIEvent& event )
 //-------------------------------------------------------------------------
 void MainFrame::OnPaste( wxCommandEvent& event )
 {
-    wxMessageBox("Got Click!", "OnPaste", wxOK);
+    wxMessageBox("Got Click!", "Onpa->te", wxOK);
     event.Skip();
 }
 
@@ -541,7 +579,7 @@ void MainFrame::OnHelpCheckUpdatesUI( wxUpdateUIEvent& event )
 }
 
 //-------------------------------------------------------------------------
-// OnHelpAbout()
+//OnHelpAbout()
 //-------------------------------------------------------------------------
 void MainFrame::OnHelpAbout( wxCommandEvent& event )
 {
@@ -616,7 +654,7 @@ void MainFrame::OnSave(wxCommandEvent& WXUNUSED(event))
             wxT("8 bpp color"),
             wxT("8 bpp greyscale"),
             wxT("8 bpp red"),
-            wxT("8 bpp own palette"),
+            wxT("8 bpp own pa->ette"),
             wxT("24 bpp")
         };
 
