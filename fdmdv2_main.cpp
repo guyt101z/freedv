@@ -16,6 +16,23 @@
 #define wxUSE_PCX       1
 #define wxUSE_LIBTIFF   1
 
+static int rxCallback(
+                        const void *inBuffer,
+                        void *outBuffer,
+                        unsigned long framesPerBuffer,
+                        const PaStreamCallbackTimeInfo *outTime,
+                        PaStreamCallbackFlags statusFlags,
+                        void *userData
+                     );
+static int txCallback(
+                        const void *inBuffer,
+                        void *outBuffer,
+                        unsigned long framesPerBuffer,
+                        const PaStreamCallbackTimeInfo *outTime,
+                        PaStreamCallbackFlags statusFlags,
+                        void *userData
+                     );
+
 // initialize the application
 IMPLEMENT_APP(MainApp);
 
@@ -48,7 +65,7 @@ bool MainApp::OnInit()
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
 {
-    m_radioRunning      = false;
+//    m_radioRunning      = false;
     m_sound             = NULL;
     m_zoom              = 1.;
     m_SquelchActive     = false;
@@ -79,6 +96,7 @@ void MainFrame::OnCloseFrame(wxCloseEvent& event)
 //-------------------------------------------------------------------------
 void MainFrame::OnExitClick(wxCommandEvent& event)
 {
+    Pa_Terminate();
     Destroy();
 }
 
@@ -204,9 +222,9 @@ void MainFrame::OnTogBtnALCClick(wxCommandEvent& event)
 }
 
 //-------------------------------------------------------------------------
-// codec2Callback()
+// rxCallback()
 //-------------------------------------------------------------------------
-static int codec2Callback(
+static int rxCallback(
                             const void *inBuffer,
                             void *outBuffer,
                             unsigned long framesPerBuffer,
@@ -237,9 +255,9 @@ static int codec2Callback(
 }
 
 //-------------------------------------------------------------------------
-// audioCallback()
+// txCallback()
 //-------------------------------------------------------------------------
-static int audioCallback(   const void *inBuffer,
+static int txCallback(   const void *inBuffer,
                             void *outBuffer,
                             unsigned long framesPerBuffer,
                             const PaStreamCallbackTimeInfo *outTime,
@@ -268,47 +286,26 @@ static int audioCallback(   const void *inBuffer,
     return paContinue;                              // 0;
 }
 
-/*
-#define FUZZ(x) CubicAmplifier(CubicAmplifier(CubicAmplifier(CubicAmplifier(x))))
-static int gNumNoInputs = 0;
 //-------------------------------------------------------------------------
-// fuzzCallback()
+// OnTogBtnOnOff()
 //-------------------------------------------------------------------------
-static int fuzzCallback(const void *inputBuffer,
-                        void *outputBuffer,
-                        unsigned long framesPerBuffer,
-                        const pa->treamCallbackTimeInfo* timeInfo,
-                        pa->treamCallbackFlags statusFlags,
-                        void *userData)
+void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
 {
-    SAMPLE *out = (SAMPLE*)outputBuffer;
-    const SAMPLE *in = (const SAMPLE*)inputBuffer;
-    unsigned int i;
-    (void) timeInfo;                        // Prevent unused variable warnings.
-    (void) statusFlags;
-    (void) userData;
-
-    if(inputBuffer == NULL)
+    if((!m_TxRunning) || (!m_RxRunning))
     {
-        for(i = 0; i < framesPerBuffer; i++)
-        {
-            *out++ = 0;                     // left - silent
-            *out++ = 0;                     // right - silent
-        }
-        gNumNoInputs += 1;
+        startRxStream();
+        startTxStream();
+        m_togBtnOnOff->SetLabel(wxT("Stop"));
     }
     else
     {
-        for(i = 0; i < framesPerBuffer; i++)
-        {
-            *out++ = FUZZ(*in++);           // left - distorted
-            *out++ = *in++;                 // right - clean
-        }
+        stopRxStream();
+        stopTxStream();
+        m_togBtnOnOff->SetLabel(wxT("Start"));
     }
-    return pa->ontinue;
 }
-*/
 
+/*
 //-------------------------------------------------------------------------
 // OnTogBtnOnOff()
 //-------------------------------------------------------------------------
@@ -348,7 +345,7 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
         err = pa->setFramesPerBuffer(FRAMES_PER_BUFFER);
         err = pa->setSampleRate(SAMPLE_RATE);
         err = pa->setStreamFlags(0);
-        err = pa->setCallback(audioCallback);
+        err = pa->setCallback(txCallback);
         err = pa->streamOpen();
 
         if(err != paNoError)
@@ -372,6 +369,173 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
 //        delete pa;
         //pa->terminate();
         m_togBtnOnOff->SetLabel(wxT("Start"));
+    }
+}
+*/
+
+//-------------------------------------------------------------------------
+// startRxStream()
+//-------------------------------------------------------------------------
+void MainFrame::startRxStream()
+{
+    if(!m_RxRunning)
+    {
+        m_RxRunning = true;
+        m_rxPa = new PortAudioWrap();
+
+        m_rxDevIn = m_rxPa->getDefaultInputDevice();                   // default input device
+        if(m_rxDevIn == paNoDevice)
+        {
+            wxMessageBox(wxT("Rx Error: No default input device."), wxT("Error"), wxOK);
+            return;
+        }
+        m_rxErr = m_rxPa->setInputDevice(m_rxDevIn);
+        m_rxErr = m_rxPa->setInputChannelCount(2);                           // stereo input
+        m_rxErr = m_rxPa->setInputSampleFormat(PA_SAMPLE_TYPE);
+        m_rxErr = m_rxPa->setInputLatency(m_rxPa->getInputDefaultLowLatency());
+        m_rxPa->setInputHostApiStreamInfo(NULL);
+
+        m_rxDevOut = m_rxPa->getDefaultOutputDevice();                 // default output device
+        if (m_rxDevOut == paNoDevice)
+        {
+            wxMessageBox(wxT("Rx Error: No default output device."), wxT("Error"), wxOK);
+            return;
+        }
+        m_rxErr = m_rxPa->setOutputDevice(m_rxDevOut);
+        m_rxErr = m_rxPa->setOutputChannelCount(2);                           // stereo input
+        m_rxErr = m_rxPa->setOutputSampleFormat(PA_SAMPLE_TYPE);
+
+        m_rxErr = m_rxPa->setOutputLatency(m_rxPa->getOutputDefaultLowLatency());
+        m_rxPa->setOutputHostApiStreamInfo(NULL);
+
+        m_rxErr = m_rxPa->setFramesPerBuffer(FRAMES_PER_BUFFER);
+        m_rxErr = m_rxPa->setSampleRate(SAMPLE_RATE);
+        m_rxErr = m_rxPa->setStreamFlags(0);
+        m_rxErr = m_rxPa->setCallback(rxCallback);
+        m_rxErr = m_rxPa->streamOpen();
+
+        if(m_rxErr != paNoError)
+        {
+            wxMessageBox(wxT("Rx Stream Open/Setup error."), wxT("Error"), wxOK);
+            return;
+        }
+        m_rxErr = m_rxPa->streamStart();
+        if(m_rxErr != paNoError)
+        {
+            wxMessageBox(wxT("Rx Stream Start Error."), wxT("Error"), wxOK);
+            return;
+        }
+//        OnTogBtnOnOff->SetLabel(wxT("Stop"));
+    }
+}
+
+//-------------------------------------------------------------------------
+// stopRxStream()
+//-------------------------------------------------------------------------
+void MainFrame::stopRxStream()
+{
+    if(m_RxRunning)
+    {
+        m_RxRunning = false;
+        m_rxPa->stop();
+        m_rxPa->streamClose();
+//        OnTogBtnOnOff->SetLabel(wxT("Start"));
+    }
+}
+
+//-------------------------------------------------------------------------
+// abortRxStream()
+//-------------------------------------------------------------------------
+void MainFrame::abortRxStream()
+{
+    if(m_RxRunning)
+    {
+        m_RxRunning = false;
+        m_rxPa->abort();
+//        OnTogBtnOnOff->SetLabel(wxT("Start"));
+    }
+}
+
+//-------------------------------------------------------------------------
+// startTxStream()
+//-------------------------------------------------------------------------
+void MainFrame::startTxStream()
+{
+    if(!m_TxRunning)
+    {
+        m_TxRunning = true;
+        m_txPa = new PortAudioWrap();
+
+        m_txDevIn = m_txPa->getDefaultInputDevice();                   // default input device
+        if(m_txDevIn == paNoDevice)
+        {
+            wxMessageBox(wxT("Tx Error: No default input device."), wxT("Error"), wxOK);
+            return;
+        }
+        m_txErr = m_txPa->setInputDevice(m_txDevIn);
+        m_txErr = m_txPa->setInputChannelCount(2);                           // stereo input
+        m_txErr = m_txPa->setInputSampleFormat(PA_SAMPLE_TYPE);
+        m_txErr = m_txPa->setInputLatency(m_txPa->getInputDefaultLowLatency());
+        m_txPa->setInputHostApiStreamInfo(NULL);
+
+        m_txDevOut = m_txPa->getDefaultOutputDevice();                 // default output device
+        if (m_txDevOut == paNoDevice)
+        {
+            wxMessageBox(wxT("Tx Error: No default output device."), wxT("Error"), wxOK);
+            return;
+        }
+        m_txErr = m_txPa->setOutputDevice(m_txDevOut);
+        m_txErr = m_txPa->setOutputChannelCount(2);                           // stereo input
+        m_txErr = m_txPa->setOutputSampleFormat(PA_SAMPLE_TYPE);
+
+        m_txErr = m_txPa->setOutputLatency(m_txPa->getOutputDefaultLowLatency());
+        m_txPa->setOutputHostApiStreamInfo(NULL);
+
+        m_txErr = m_txPa->setFramesPerBuffer(FRAMES_PER_BUFFER);
+        m_txErr = m_txPa->setSampleRate(SAMPLE_RATE);
+        m_txErr = m_txPa->setStreamFlags(0);
+        m_txErr = m_txPa->setCallback(txCallback);
+        m_txErr = m_txPa->streamOpen();
+
+        if(m_txErr != paNoError)
+        {
+            wxMessageBox(wxT("Tx Stream Open/Setup error."), wxT("Error"), wxOK);
+            return;
+        }
+        m_txErr = m_txPa->streamStart();
+        if(m_txErr != paNoError)
+        {
+            wxMessageBox(wxT("Tx Stream Start Error."), wxT("Error"), wxOK);
+            return;
+        }
+//        OnTogBtnOnOff->SetLabel(wxT("Stop"));
+    }
+}
+
+//-------------------------------------------------------------------------
+// stopTxStream()
+//-------------------------------------------------------------------------
+void MainFrame::stopTxStream()
+{
+    if(m_TxRunning)
+    {
+        m_TxRunning = false;
+        m_txPa->stop();
+        m_txPa->streamClose();
+//        OnTogBtnOnOff->SetLabel(wxT("Start"));
+    }
+}
+
+//-------------------------------------------------------------------------
+// abortTxStream()
+//-------------------------------------------------------------------------
+void MainFrame::abortTxStream()
+{
+    if(m_TxRunning)
+    {
+        m_TxRunning = false;
+        m_txPa->abort();
+//        OnTogBtnOnOff->SetLabel(wxT("Start"));
     }
 }
 
@@ -559,7 +723,7 @@ void MainFrame::OnToolsComCfg( wxCommandEvent& event )
 //-------------------------------------------------------------------------
 void MainFrame::OnToolsComCfgUI( wxUpdateUIEvent& event )
 {
-    event.Enable(!m_radioRunning);
+    event.Enable((!m_TxRunning) && (!m_RxRunning));
 }
 
 //-------------------------------------------------------------------------
@@ -612,7 +776,7 @@ wxString MainFrame::LoadUserImage(wxImage& image)
 //-------------------------------------------------------------------------
 void MainFrame::OnSave(wxCommandEvent& WXUNUSED(event))
 {
-    wxImage image = m_bitmap.ConvertToImage();
+ //   wxImage image = m_bitmap.ConvertToImage();
 
     wxString savefilename = wxFileSelector(wxT("Save Sound File"),
                                            wxEmptyString,
@@ -632,6 +796,7 @@ void MainFrame::OnSave(wxCommandEvent& WXUNUSED(event))
     wxString extension;
     wxFileName::SplitPath(savefilename, NULL, NULL, &extension);
     bool saved = false;
+/*
     if(extension == wxT("bmp"))
     {
         static const int bppvalues[] =
@@ -760,6 +925,7 @@ void MainFrame::OnSave(wxCommandEvent& WXUNUSED(event))
         // specified image format:
         saved = image.SaveFile(savefilename, wxBITMAP_TYPE_CUR);
     }
+*/
     if(!saved)
     {
         // This one guesses image format from filename extension

@@ -81,14 +81,20 @@ class MainFrame : public TopFrame
         DrawPanel*      m_panelWaterfall;
         DrawPanel*      m_panelExtra1;
         DrawPanel*      m_panelExtra2;
-        bool            m_radioRunning;
+//        bool            m_radioRunning;
         bool            m_SquelchActive;
+        bool            m_RxRunning;
+        bool            m_TxRunning;
         CODEC2          *m_RXCodec2;
         CODEC2          *m_TXCodec2;
-        PortAudioWrap   *pa;
-        PaError         err;
-        PaDeviceIndex   inputDevice;
-        PaDeviceIndex   outputDevice;
+        PortAudioWrap   *m_rxPa;
+        PortAudioWrap   *m_txPa;
+        PaDeviceIndex   m_rxDevIn;
+        PaDeviceIndex   m_rxDevOut;
+        PaDeviceIndex   m_txDevIn;
+        PaDeviceIndex   m_txDevOut;
+        PaError         m_rxErr;
+        PaError         m_txErr;
 
 //        PortAudioWrap   stream;
 //        portaudio::AutoSystem autoSys;
@@ -110,6 +116,12 @@ class MainFrame : public TopFrame
         virtual void OnCloseFrame(wxCloseEvent& event);
         virtual void OnExitClick(wxCommandEvent& event);
 
+        void startTxStream();
+        void startRxStream();
+        void stopTxStream();
+        void stopRxStream();
+        void abortTxStream();
+        void abortRxStream();
         void OnOpen( wxCommandEvent& event );
         void OnOpenUpdateUI( wxUpdateUIEvent& event );
         void OnSave( wxCommandEvent& event );

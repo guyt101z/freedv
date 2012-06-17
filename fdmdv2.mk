@@ -2,10 +2,10 @@
 ## Auto Generated makefile by CodeLite IDE
 ## any manual changes will be erased      
 ##
-## Debug
+## Release
 ProjectName            :=fdmdv2
-ConfigurationName      :=Debug
-IntermediateDirectory  :=./Debug
+ConfigurationName      :=Release
+IntermediateDirectory  :=./Release
 OutDir                 := $(IntermediateDirectory)
 WorkspacePath          := "C:\Users\wittend\Projects\Radio\fdmdv2"
 ProjectPath            := "C:\Users\wittend\Projects\Radio\fdmdv2"
@@ -13,7 +13,7 @@ CurrentFileName        :=
 CurrentFilePath        :=
 CurrentFileFullPath    :=
 User                   :=wittend
-Date                   :=6/15/2012
+Date                   :=6/17/2012
 CodeLitePath           :="C:\Program Files\CodeLite"
 LinkerName             :=g++
 ArchiveTool            :=ar rcus
@@ -38,9 +38,9 @@ PreprocessOnlySwitch   :=-E
 ObjectsFileList        :="C:\Users\wittend\Projects\Radio\fdmdv2\fdmdv2.txt"
 PCHCompileFlags        :=
 MakeDirCommand         :=makedir
-CmpOptions             := -g -O0 -Wall $(shell wx-config --cxxflags --unicode=yes --debug=yes) $(Preprocessors)
-C_CmpOptions           := -g -O0 -Wall $(shell wx-config --cxxflags --unicode=yes --debug=yes) $(Preprocessors)
-LinkOptions            :=  -mwindows $(shell wx-config --debug=yes --libs --unicode=yes)
+CmpOptions             := -O2 -Wall $(shell wx-config --cxxflags --unicode=yes --debug=no) $(Preprocessors)
+C_CmpOptions           := -O2 -Wall $(shell wx-config --cxxflags --unicode=yes --debug=no) $(Preprocessors)
+LinkOptions            :=  -mwindows -s $(shell wx-config --debug=no --libs --unicode=yes)
 IncludePath            :=  $(IncludeSwitch). $(IncludeSwitch)./extern/include 
 IncludePCH             := 
 RcIncludePath          := 
@@ -71,7 +71,7 @@ $(OutputFile): $(IntermediateDirectory)/.d $(Objects)
 	$(LinkerName) $(OutputSwitch)$(OutputFile) @$(ObjectsFileList) $(LibPath) $(Libs) $(LinkOptions)
 
 $(IntermediateDirectory)/.d:
-	@$(MakeDirCommand) "./Debug"
+	@$(MakeDirCommand) "./Release"
 
 PreBuild:
 
@@ -175,6 +175,6 @@ clean:
 	$(RM) $(IntermediateDirectory)/paclass$(PreprocessSuffix)
 	$(RM) $(OutputFile)
 	$(RM) $(OutputFile).exe
-	$(RM) "C:\Users\wittend\Projects\Radio\fdmdv2\.build-debug\fdmdv2"
+	$(RM) "C:\Users\wittend\Projects\Radio\fdmdv2\.build-release\fdmdv2"
 
 

@@ -5,8 +5,9 @@
   <Project Name="fdmdv2" Path="fdmdv2.project" Active="Yes"/>
   <Project Name="pa_test" Path="pa_test/pa_test.project" Active="No"/>
   <Project Name="pa_cppbinding_test" Path="pa_cppbinding_test/pa_cppbinding_test.project" Active="No"/>
+  <Project Name="fdmdv2basic" Path="fdmdv2basic/fdmdv2basic.project" Active="No"/>
   <BuildMatrix>
-    <WorkspaceConfiguration Name="Debug" Selected="yes">
+    <WorkspaceConfiguration Name="Debug" Selected="no">
       <Project Name="test_sndfile" ConfigName="Debug"/>
       <Project Name="test_portaudio" ConfigName="Debug"/>
       <Project Name="test_codec2" ConfigName="Debug"/>
@@ -15,8 +16,9 @@
       <Project Name="fdmdv2" ConfigName="Debug"/>
       <Project Name="pa_test" ConfigName="Debug"/>
       <Project Name="pa_cppbinding_test" ConfigName="Debug"/>
+      <Project Name="fdmdv2basic" ConfigName="Debug"/>
     </WorkspaceConfiguration>
-    <WorkspaceConfiguration Name="Release" Selected="no">
+    <WorkspaceConfiguration Name="Release" Selected="yes">
       <Project Name="test_sndfile" ConfigName="Release"/>
       <Project Name="test_portaudio" ConfigName="Release"/>
       <Project Name="test_codec2" ConfigName="Release"/>
@@ -25,6 +27,7 @@
       <Project Name="fdmdv2" ConfigName="Release"/>
       <Project Name="pa_test" ConfigName="Release"/>
       <Project Name="pa_cppbinding_test" ConfigName="Release"/>
+      <Project Name="fdmdv2basic" ConfigName="Release"/>
     </WorkspaceConfiguration>
   </BuildMatrix>
 </CodeLite_Workspace>
