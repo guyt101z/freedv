@@ -13,7 +13,7 @@ CurrentFileName        :=
 CurrentFilePath        :=
 CurrentFileFullPath    :=
 User                   :=wittend
-Date                   :=6/17/2012
+Date                   :=6/18/2012
 CodeLitePath           :="C:\Program Files\CodeLite"
 LinkerName             :=g++
 ArchiveTool            :=ar rcus
@@ -41,11 +41,11 @@ MakeDirCommand         :=makedir
 CmpOptions             := -O2 -Wall $(shell wx-config --cxxflags --unicode=yes --debug=no) $(Preprocessors)
 C_CmpOptions           := -O2 -Wall $(shell wx-config --cxxflags --unicode=yes --debug=no) $(Preprocessors)
 LinkOptions            :=  -mwindows -s $(shell wx-config --debug=no --libs --unicode=yes)
-IncludePath            :=  $(IncludeSwitch). $(IncludeSwitch)./extern/include 
+IncludePath            :=  $(IncludeSwitch). $(IncludeSwitch)/bin/MinGW/msys/1.0/local/include $(IncludeSwitch)../codec2-dev/src 
 IncludePCH             := 
 RcIncludePath          := 
 Libs                   := $(LibrarySwitch)sndfile-1 $(LibrarySwitch)codec2 $(LibrarySwitch)portaudio $(LibrarySwitch)portaudiocpp 
-LibPath                := $(LibraryPathSwitch). $(LibraryPathSwitch)./libsndfile/bin $(LibraryPathSwitch)./extern/lib 
+LibPath                := $(LibraryPathSwitch). $(LibraryPathSwitch)/bin/MinGW/msys/1.0/local/lib 
 
 
 ##

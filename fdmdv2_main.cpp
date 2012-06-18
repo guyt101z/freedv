@@ -225,13 +225,13 @@ void MainFrame::OnTogBtnALCClick(wxCommandEvent& event)
 // rxCallback()
 //-------------------------------------------------------------------------
 static int rxCallback(
-                            const void *inBuffer,
-                            void *outBuffer,
-                            unsigned long framesPerBuffer,
-                            const PaStreamCallbackTimeInfo *outTime,
-                            PaStreamCallbackFlags statusFlags,
-                            void *userData
-                         )
+                        const void *inBuffer,
+                        void *outBuffer,
+                        unsigned long framesPerBuffer,
+                        const PaStreamCallbackTimeInfo *outTime,
+                        PaStreamCallbackFlags statusFlags,
+                        void *userData
+                     )
 {
     float *out = (float *) outBuffer;
     float *in  = (float *) inBuffer;
@@ -257,13 +257,14 @@ static int rxCallback(
 //-------------------------------------------------------------------------
 // txCallback()
 //-------------------------------------------------------------------------
-static int txCallback(   const void *inBuffer,
-                            void *outBuffer,
-                            unsigned long framesPerBuffer,
-                            const PaStreamCallbackTimeInfo *outTime,
-                            PaStreamCallbackFlags statusFlags,
-                            void *userData
-                        )
+static int txCallback(
+                        const void *inBuffer,
+                        void *outBuffer,
+                        unsigned long framesPerBuffer,
+                        const PaStreamCallbackTimeInfo *outTime,
+                        PaStreamCallbackFlags statusFlags,
+                        void *userData
+                    )
 {
     float *out = (float *) outBuffer;
     float *in  = (float *) inBuffer;
@@ -304,74 +305,6 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
         m_togBtnOnOff->SetLabel(wxT("Start"));
     }
 }
-
-/*
-//-------------------------------------------------------------------------
-// OnTogBtnOnOff()
-//-------------------------------------------------------------------------
-void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
-{
-    if(!m_radioRunning)
-    {
-        m_radioRunning = true;
-        pa = new PortAudioWrap();
-//        err = pa->init();
-
-        inputDevice = pa->getDefaultInputDevice();                   // default input device
-        if(inputDevice == paNoDevice)
-        {
-            wxMessageBox(wxT("Error: No default input device."), wxT("Error"), wxOK);
-            return;
-        }
-        err = pa->setInputDevice(inputDevice);
-        err = pa->setInputChannelCount(2);                           // stereo input
-        err = pa->setInputSampleFormat(PA_SAMPLE_TYPE);
-        err = pa->setInputLatency(pa->getInputDefaultLowLatency());
-        pa->setInputHostApiStreamInfo(NULL);
-
-        outputDevice = pa->getDefaultOutputDevice();                 // default output device
-        if (outputDevice == paNoDevice)
-        {
-            wxMessageBox(wxT("Error: No default output device."), wxT("Error"), wxOK);
-            return;
-        }
-        err = pa->setOutputDevice(outputDevice);
-        err = pa->setOutputChannelCount(2);                           // stereo input
-        err = pa->setOutputSampleFormat(PA_SAMPLE_TYPE);
-
-        err = pa->setOutputLatency(pa->getOutputDefaultLowLatency());
-        pa->setOutputHostApiStreamInfo(NULL);
-
-        err = pa->setFramesPerBuffer(FRAMES_PER_BUFFER);
-        err = pa->setSampleRate(SAMPLE_RATE);
-        err = pa->setStreamFlags(0);
-        err = pa->setCallback(txCallback);
-        err = pa->streamOpen();
-
-        if(err != paNoError)
-        {
-            wxMessageBox(wxT("Open/Setup error."), wxT("Error"), wxOK);
-            return;
-        }
-        err = pa->streamStart();
-        if(err != paNoError)
-        {
-            wxMessageBox(wxT("Stream Start Error."), wxT("Error"), wxOK);
-            return;
-        }
-        m_togBtnOnOff->SetLabel(wxT("Stop"));
-    }
-    else
-    {
-        m_radioRunning = false;
-        pa->stop();
-//        pa->abort();
-//        delete pa;
-        //pa->terminate();
-        m_togBtnOnOff->SetLabel(wxT("Start"));
-    }
-}
-*/
 
 //-------------------------------------------------------------------------
 // startRxStream()
@@ -425,7 +358,6 @@ void MainFrame::startRxStream()
             wxMessageBox(wxT("Rx Stream Start Error."), wxT("Error"), wxOK);
             return;
         }
-//        OnTogBtnOnOff->SetLabel(wxT("Stop"));
     }
 }
 
@@ -439,7 +371,6 @@ void MainFrame::stopRxStream()
         m_RxRunning = false;
         m_rxPa->stop();
         m_rxPa->streamClose();
-//        OnTogBtnOnOff->SetLabel(wxT("Start"));
     }
 }
 
@@ -452,7 +383,6 @@ void MainFrame::abortRxStream()
     {
         m_RxRunning = false;
         m_rxPa->abort();
-//        OnTogBtnOnOff->SetLabel(wxT("Start"));
     }
 }
 
@@ -544,38 +474,6 @@ void MainFrame::abortTxStream()
 //-------------------------------------------------------------------------
 void MainFrame::OnOpen( wxCommandEvent& event )
 {
-    if(m_sound != NULL)
-    {
-        if (wxMessageBox(wxT("Current content has not been saved! Proceed?"),wxT("Please confirm"), wxICON_QUESTION | wxYES_NO, this) == wxNO )
-        {
-            return;
-        }
-    }
-    wxFileDialog openFileDialog(this,
-                                wxT("Open Sound file"),
-                                wxEmptyString,
-                                wxEmptyString,
-                                wxT("WAV files (*.wav)|*.wav|")
-                                wxT("RAW files (*.raw)|*.raw|")
-                                wxT("SPEEX files (*.spx)|*.spx|")
-                                wxT("FLAC files (*.flc)|*.flc|")
-                                wxT("All files (*.*)|*.*|"),
-                                wxFD_OPEN | wxFD_FILE_MUST_EXIST);
-    if (openFileDialog.ShowModal() == wxID_CANCEL)
-    {
-        return;     // the user changed idea...
-    }
-    // proceed loading the file chosen by the user;
-    m_sound->Play(openFileDialog.GetPath());
-/*
-    // this can be done with e.g. wxWidgets input streams:
-    wxFileInputStream input_stream(openFileDialog.Getpa->h());
-    if (!input_stream.IsOk())
-    {
-        wxLogError("Cannot open file '%s'.", openFileDialog.Getpa->h());
-        return;
-    }
-*/
 }
 
 //-------------------------------------------------------------------------
@@ -694,6 +592,50 @@ void MainFrame::OnToolsOptionsUI( wxUpdateUIEvent& event )
 }
 
 //-------------------------------------------------------------------------
+// OnCaptureRxStream()
+//-------------------------------------------------------------------------
+void MainFrame::OnCaptureRxStream( wxCommandEvent& event )
+{
+}
+
+//-------------------------------------------------------------------------
+// OnCaptureTxStream()
+//-------------------------------------------------------------------------
+void MainFrame::OnCaptureTxStream( wxCommandEvent& event )
+{
+}
+
+//-------------------------------------------------------------------------
+// OnPlayAudioFile()
+//-------------------------------------------------------------------------
+void MainFrame::OnPlayAudioFile( wxCommandEvent& event )
+{
+    if(m_sound != NULL)
+    {
+        if (wxMessageBox(wxT("Current content has not been saved! Proceed?"),wxT("Please confirm"), wxICON_QUESTION | wxYES_NO, this) == wxNO )
+        {
+            return;
+        }
+    }
+    wxFileDialog openFileDialog(this,
+                                wxT("Open Sound file"),
+                                wxEmptyString,
+                                wxEmptyString,
+                                wxT("WAV files (*.wav)|*.wav|")
+                                wxT("RAW files (*.raw)|*.raw|")
+                                wxT("SPEEX files (*.spx)|*.spx|")
+                                wxT("FLAC files (*.flc)|*.flc|")
+                                wxT("All files (*.*)|*.*|"),
+                                wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+    if (openFileDialog.ShowModal() == wxID_CANCEL)
+    {
+        return;     // the user changed idea...
+    }
+    // proceed loading the file chosen by the user;
+    m_sound->Play(openFileDialog.GetPath());
+}
+
+//-------------------------------------------------------------------------
 // OnToolsAudio()
 //-------------------------------------------------------------------------
 void MainFrame::OnToolsAudio( wxCommandEvent& event )
@@ -750,7 +692,6 @@ void MainFrame::OnHelpAbout( wxCommandEvent& event )
     AboutDlg *dlg = new AboutDlg(NULL);
     dlg->ShowModal();
 }
-
 
 //-------------------------------------------------------------------------
 // LoadUserImage()
@@ -930,6 +871,6 @@ void MainFrame::OnSave(wxCommandEvent& WXUNUSED(event))
     {
         // This one guesses image format from filename extension
         // (it may fail if the extension is not recognized):
-        image.SaveFile(savefilename);
+        //image.SaveFile(savefilename);
     }
 }

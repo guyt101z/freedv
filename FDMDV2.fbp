@@ -120,7 +120,7 @@
             <event name="OnSetFocus"></event>
             <event name="OnSize">topFrame_OnSize</event>
             <event name="OnUpdateUI">topFrame_OnUpdateUI</event>
-            <object class="wxMenuBar" expanded="0">
+            <object class="wxMenuBar" expanded="1">
                 <property name="BottomDockable">1</property>
                 <property name="LeftDockable">1</property>
                 <property name="RightDockable">1</property>
@@ -319,7 +319,7 @@
                         <event name="OnUpdateUI">OnPasteUpdateUI</event>
                     </object>
                 </object>
-                <object class="wxMenu" expanded="0">
+                <object class="wxMenu" expanded="1">
                     <property name="label">&amp;Tools</property>
                     <property name="name">tools</property>
                     <property name="permission">protected</property>
@@ -330,7 +330,7 @@
                         <property name="help"></property>
                         <property name="id">wxID_ANY</property>
                         <property name="kind">wxITEM_NORMAL</property>
-                        <property name="label">&amp;Audio</property>
+                        <property name="label">&amp;Audio Config</property>
                         <property name="name">m_menuItemAudio</property>
                         <property name="permission">none</property>
                         <property name="shortcut"></property>
@@ -345,8 +345,8 @@
                         <property name="help"></property>
                         <property name="id">wxID_ANY</property>
                         <property name="kind">wxITEM_NORMAL</property>
-                        <property name="label">Com Port Config</property>
-                        <property name="name">m_menuItemComCfg</property>
+                        <property name="label">Rig Control Config</property>
+                        <property name="name">m_menuItemRigCtrlCfg</property>
                         <property name="permission">none</property>
                         <property name="shortcut"></property>
                         <property name="unchecked_bitmap"></property>
@@ -360,13 +360,66 @@
                         <property name="help">Set preferences</property>
                         <property name="id">ID_OPTIONS</property>
                         <property name="kind">wxITEM_NORMAL</property>
-                        <property name="label">&amp;Options</property>
+                        <property name="label">Other Program &amp;Options</property>
                         <property name="name">m_menuItemOptions</property>
                         <property name="permission">none</property>
                         <property name="shortcut"></property>
                         <property name="unchecked_bitmap"></property>
                         <event name="OnMenuSelection">OnToolsOptions</event>
                         <event name="OnUpdateUI">OnToolsOptionsUI</event>
+                    </object>
+                    <object class="separator" expanded="1">
+                        <property name="name">m_separator2</property>
+                        <property name="permission">none</property>
+                    </object>
+                    <object class="wxMenuItem" expanded="0">
+                        <property name="bitmap">Load From Art Provider; </property>
+                        <property name="checked">0</property>
+                        <property name="enabled">1</property>
+                        <property name="help"></property>
+                        <property name="id">wxID_ANY</property>
+                        <property name="kind">wxITEM_NORMAL</property>
+                        <property name="label">Capture Rx Stream</property>
+                        <property name="name">m_menuItemCaptRxStream</property>
+                        <property name="permission">none</property>
+                        <property name="shortcut">Capture receive stream to file.</property>
+                        <property name="unchecked_bitmap"></property>
+                        <event name="OnMenuSelection">OnCaptureRxStream</event>
+                        <event name="OnUpdateUI"></event>
+                    </object>
+                    <object class="wxMenuItem" expanded="0">
+                        <property name="bitmap">Load From Art Provider; </property>
+                        <property name="checked">0</property>
+                        <property name="enabled">1</property>
+                        <property name="help"></property>
+                        <property name="id">wxID_ANY</property>
+                        <property name="kind">wxITEM_NORMAL</property>
+                        <property name="label">Capture Tx Stream</property>
+                        <property name="name">m_menuItemCaptTxStream</property>
+                        <property name="permission">none</property>
+                        <property name="shortcut">Capture transmit stream to file.</property>
+                        <property name="unchecked_bitmap"></property>
+                        <event name="OnMenuSelection">OnCaptureTxStream</event>
+                        <event name="OnUpdateUI"></event>
+                    </object>
+                    <object class="separator" expanded="1">
+                        <property name="name">m_separator3</property>
+                        <property name="permission">none</property>
+                    </object>
+                    <object class="wxMenuItem" expanded="1">
+                        <property name="bitmap"></property>
+                        <property name="checked">0</property>
+                        <property name="enabled">1</property>
+                        <property name="help"></property>
+                        <property name="id">wxID_ANY</property>
+                        <property name="kind">wxITEM_NORMAL</property>
+                        <property name="label">Play File</property>
+                        <property name="name">m_menuItemPlayAudioFile</property>
+                        <property name="permission">none</property>
+                        <property name="shortcut"></property>
+                        <property name="unchecked_bitmap"></property>
+                        <event name="OnMenuSelection">OnPlayAudioFile</event>
+                        <event name="OnUpdateUI"></event>
                     </object>
                 </object>
                 <object class="wxMenu" expanded="0">

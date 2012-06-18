@@ -14,10 +14,11 @@
 
 #include <wx/wx.h>
 #include "topFrame.h"
-#include "extern/include/portaudio.h"
-#include "extern/include/portaudiocpp/PortAudioCpp.hxx"
+
+#include "portaudio.h"
+#include "portaudiocpp/PortAudioCpp.hxx"
 #ifdef WIN32
-#include "extern/include/portaudiocpp/AsioDeviceAdapter.hxx"
+#include "portaudiocpp/AsioDeviceAdapter.hxx"
 #endif
 
 class AudioDlg : public DlgAudio

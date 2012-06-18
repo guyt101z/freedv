@@ -60,7 +60,7 @@ class PortAudioWrap
 
         PaError     setOutputDevice(PaDeviceIndex dev);
         PaError     setOutputChannelCount(int count);
-        int         getOutputChannelCount();
+        const int   getOutputChannelCount();
         PaError     setOutputSampleFormat(PaSampleFormat format);
         PaError     setOutputLatency(PaTime latency);
         void        setOutputHostApiStreamInfo(void *info = NULL);

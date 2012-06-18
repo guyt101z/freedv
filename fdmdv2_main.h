@@ -23,22 +23,20 @@
 #include "wx/versioninfo.h"
 #include <wx/sound.h>
 #include <wx/thread.h>
-#include "libsndfile/include/sndfile.h"
-#include "extern/include/portaudio.h"
+
+#include "sndfile.h"
+#include "portaudio.h"
 #include "paclass.h"
-//#include "extern/include/portaudiocpp/PortAudioCpp.hxx"
+
+#include "codec2.h"
+#include "fdmdv.h"
 
 #include "topFrame.h"
-#include "C:\Users\wittend\Projects\Radio\codec2-dev\src\codec2.h"
-#include "C:\Users\wittend\Projects\Radio\codec2-dev\src\fdmdv.h"
 #include "dlg_about.h"
 #include "dlg_audio.h"
 #include "dlg_options.h"
 #include "dlg_comports.h"
 #include "fdmdv2_plot.h"
-//#include "fdmdv2_thread_audio.h"
-
-#define WAV_FILE wxT("doggrowl.wav")
 
 enum
 {
@@ -81,7 +79,6 @@ class MainFrame : public TopFrame
         DrawPanel*      m_panelWaterfall;
         DrawPanel*      m_panelExtra1;
         DrawPanel*      m_panelExtra2;
-//        bool            m_radioRunning;
         bool            m_SquelchActive;
         bool            m_RxRunning;
         bool            m_TxRunning;
@@ -95,11 +92,7 @@ class MainFrame : public TopFrame
         PaDeviceIndex   m_txDevOut;
         PaError         m_rxErr;
         PaError         m_txErr;
-
-//        PortAudioWrap   stream;
-//        portaudio::AutoSystem autoSys;
-//        portaudio::System *sys; // = portaudio::System::instance();
-//        StreamParameters
+        wxSound         *m_sound;
 
         void DoStartThread();
         void DoPauseThread();
@@ -141,6 +134,9 @@ class MainFrame : public TopFrame
         void OnToolsComCfgUI( wxUpdateUIEvent& event );
         void OnToolsOptions( wxCommandEvent& event );
         void OnToolsOptionsUI( wxUpdateUIEvent& event );
+        void OnCaptureRxStream( wxCommandEvent& event );
+        void OnCaptureTxStream( wxCommandEvent& event );
+        void OnPlayAudioFile( wxCommandEvent& event );
         void OnHelpCheckUpdates( wxCommandEvent& event );
         void OnHelpCheckUpdatesUI( wxUpdateUIEvent& event );
         void OnHelpAbout( wxCommandEvent& event );
@@ -167,7 +163,6 @@ class MainFrame : public TopFrame
     private:
         bool CreateSound(wxSound& snd) const;
 
-        wxSound*    m_sound;
         wxString    m_soundFile;
 #ifdef __WXMSW__
         wxString    m_soundRes;

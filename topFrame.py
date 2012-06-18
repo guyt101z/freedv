@@ -71,14 +71,29 @@ class TopFrame ( wx.Frame ):
 		self.m_menubarMain.Append( self.edit, _(u"&Edit") ) 
 		
 		self.tools = wx.Menu()
-		self.m_menuItemAudio = wx.MenuItem( self.tools, wx.ID_ANY, _(u"&Audio"), wx.EmptyString, wx.ITEM_NORMAL )
+		self.m_menuItemAudio = wx.MenuItem( self.tools, wx.ID_ANY, _(u"&Audio Config"), wx.EmptyString, wx.ITEM_NORMAL )
 		self.tools.AppendItem( self.m_menuItemAudio )
 		
-		self.m_menuItemComCfg = wx.MenuItem( self.tools, wx.ID_ANY, _(u"Com Port Config"), wx.EmptyString, wx.ITEM_NORMAL )
-		self.tools.AppendItem( self.m_menuItemComCfg )
+		self.m_menuItemRigCtrlCfg = wx.MenuItem( self.tools, wx.ID_ANY, _(u"Rig Control Config"), wx.EmptyString, wx.ITEM_NORMAL )
+		self.tools.AppendItem( self.m_menuItemRigCtrlCfg )
 		
-		self.m_menuItemOptions = wx.MenuItem( self.tools, ID_OPTIONS, _(u"&Options"), _(u"Set preferences"), wx.ITEM_NORMAL )
+		self.m_menuItemOptions = wx.MenuItem( self.tools, ID_OPTIONS, _(u"Other Program &Options"), _(u"Set preferences"), wx.ITEM_NORMAL )
 		self.tools.AppendItem( self.m_menuItemOptions )
+		
+		self.tools.AppendSeparator()
+		
+		self.m_menuItemCaptRxStream = wx.MenuItem( self.tools, wx.ID_ANY, _(u"Capture Rx Stream")+ u"\t" + u"Capture receive stream to file.", wx.EmptyString, wx.ITEM_NORMAL )
+		self.m_menuItemCaptRxStream.SetBitmap( wx.NullBitmap )
+		self.tools.AppendItem( self.m_menuItemCaptRxStream )
+		
+		self.m_menuItemCaptTxStream = wx.MenuItem( self.tools, wx.ID_ANY, _(u"Capture Tx Stream")+ u"\t" + u"Capture transmit stream to file.", wx.EmptyString, wx.ITEM_NORMAL )
+		self.m_menuItemCaptTxStream.SetBitmap( wx.NullBitmap )
+		self.tools.AppendItem( self.m_menuItemCaptTxStream )
+		
+		self.tools.AppendSeparator()
+		
+		self.m_menuItemPlayAudioFile = wx.MenuItem( self.tools, wx.ID_ANY, _(u"Play File"), wx.EmptyString, wx.ITEM_NORMAL )
+		self.tools.AppendItem( self.m_menuItemPlayAudioFile )
 		
 		self.m_menubarMain.Append( self.tools, _(u"&Tools") ) 
 		
@@ -277,10 +292,13 @@ class TopFrame ( wx.Frame ):
 		self.Bind( wx.EVT_UPDATE_UI, self.OnPasteUpdateUI, id = self.m_menuItemPaste.GetId() )
 		self.Bind( wx.EVT_MENU, self.OnToolsAudio, id = self.m_menuItemAudio.GetId() )
 		self.Bind( wx.EVT_UPDATE_UI, self.OnToolsAudioUI, id = self.m_menuItemAudio.GetId() )
-		self.Bind( wx.EVT_MENU, self.OnToolsComCfg, id = self.m_menuItemComCfg.GetId() )
-		self.Bind( wx.EVT_UPDATE_UI, self.OnToolsComCfgUI, id = self.m_menuItemComCfg.GetId() )
+		self.Bind( wx.EVT_MENU, self.OnToolsComCfg, id = self.m_menuItemRigCtrlCfg.GetId() )
+		self.Bind( wx.EVT_UPDATE_UI, self.OnToolsComCfgUI, id = self.m_menuItemRigCtrlCfg.GetId() )
 		self.Bind( wx.EVT_MENU, self.OnToolsOptions, id = self.m_menuItemOptions.GetId() )
 		self.Bind( wx.EVT_UPDATE_UI, self.OnToolsOptionsUI, id = self.m_menuItemOptions.GetId() )
+		self.Bind( wx.EVT_MENU, self.OnCaptureRxStream, id = self.m_menuItemCaptRxStream.GetId() )
+		self.Bind( wx.EVT_MENU, self.OnCaptureTxStream, id = self.m_menuItemCaptTxStream.GetId() )
+		self.Bind( wx.EVT_MENU, self.OnPlayAudioFile, id = self.m_menuItemPlayAudioFile.GetId() )
 		self.Bind( wx.EVT_MENU, self.OnHelpCheckUpdates, id = self.m_menuItemHelpUpdates.GetId() )
 		self.Bind( wx.EVT_UPDATE_UI, self.OnHelpCheckUpdatesUI, id = self.m_menuItemHelpUpdates.GetId() )
 		self.Bind( wx.EVT_MENU, self.OnHelpAbout, id = self.m_menuItemAbout.GetId() )
@@ -369,6 +387,15 @@ class TopFrame ( wx.Frame ):
 		event.Skip()
 	
 	def OnToolsOptionsUI( self, event ):
+		event.Skip()
+	
+	def OnCaptureRxStream( self, event ):
+		event.Skip()
+	
+	def OnCaptureTxStream( self, event ):
+		event.Skip()
+	
+	def OnPlayAudioFile( self, event ):
 		event.Skip()
 	
 	def OnHelpCheckUpdates( self, event ):

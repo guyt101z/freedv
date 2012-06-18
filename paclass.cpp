@@ -139,7 +139,7 @@ PaError PortAudioWrap::setOutputChannelCount(int count)
     return paNoError;
 }
 
-int PortAudioWrap::getOutputChannelCount()
+const int PortAudioWrap::getOutputChannelCount()
 {
     return outputBuffer.channelCount;
 }

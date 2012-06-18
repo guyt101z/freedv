@@ -50,16 +50,32 @@
 			<object class="wxMenu" name="tools">
 				<label>_Tools</label>
 				<object class="wxMenuItem" name="m_menuItemAudio">
-					<label>_Audio</label>
+					<label>_Audio Config</label>
 					<help></help>
 				</object>
-				<object class="wxMenuItem" name="m_menuItemComCfg">
-					<label>Com Port Config</label>
+				<object class="wxMenuItem" name="m_menuItemRigCtrlCfg">
+					<label>Rig Control Config</label>
 					<help></help>
 				</object>
 				<object class="wxMenuItem" name="m_menuItemOptions">
-					<label>_Options</label>
+					<label>Other Program _Options</label>
 					<help>Set preferences</help>
+				</object>
+				<object class="separator" />
+				<object class="wxMenuItem" name="m_menuItemCaptRxStream">
+					<label>Capture Rx Stream\tCapture receive stream to file.</label>
+					<help></help>
+					<bitmap stock_id="" stock_client="">undefined.png</bitmap>
+				</object>
+				<object class="wxMenuItem" name="m_menuItemCaptTxStream">
+					<label>Capture Tx Stream\tCapture transmit stream to file.</label>
+					<help></help>
+					<bitmap stock_id="" stock_client="">undefined.png</bitmap>
+				</object>
+				<object class="separator" />
+				<object class="wxMenuItem" name="m_menuItemPlayAudioFile">
+					<label>Play File</label>
+					<help></help>
 				</object>
 			</object>
 			<object class="wxMenu" name="help">

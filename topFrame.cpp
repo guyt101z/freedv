@@ -57,16 +57,42 @@ TopFrame::TopFrame( wxWindow* parent, wxWindowID id, const wxString& title, cons
 	
 	tools = new wxMenu();
 	wxMenuItem* m_menuItemAudio;
-	m_menuItemAudio = new wxMenuItem( tools, wxID_ANY, wxString( _("&Audio") ) , wxEmptyString, wxITEM_NORMAL );
+	m_menuItemAudio = new wxMenuItem( tools, wxID_ANY, wxString( _("&Audio Config") ) , wxEmptyString, wxITEM_NORMAL );
 	tools->Append( m_menuItemAudio );
 	
-	wxMenuItem* m_menuItemComCfg;
-	m_menuItemComCfg = new wxMenuItem( tools, wxID_ANY, wxString( _("Com Port Config") ) , wxEmptyString, wxITEM_NORMAL );
-	tools->Append( m_menuItemComCfg );
+	wxMenuItem* m_menuItemRigCtrlCfg;
+	m_menuItemRigCtrlCfg = new wxMenuItem( tools, wxID_ANY, wxString( _("Rig Control Config") ) , wxEmptyString, wxITEM_NORMAL );
+	tools->Append( m_menuItemRigCtrlCfg );
 	
 	wxMenuItem* m_menuItemOptions;
-	m_menuItemOptions = new wxMenuItem( tools, ID_OPTIONS, wxString( _("&Options") ) , _("Set preferences"), wxITEM_NORMAL );
+	m_menuItemOptions = new wxMenuItem( tools, ID_OPTIONS, wxString( _("Other Program &Options") ) , _("Set preferences"), wxITEM_NORMAL );
 	tools->Append( m_menuItemOptions );
+	
+	tools->AppendSeparator();
+	
+	wxMenuItem* m_menuItemCaptRxStream;
+	m_menuItemCaptRxStream = new wxMenuItem( tools, wxID_ANY, wxString( _("Capture Rx Stream") ) + wxT('\t') + wxT("Capture receive stream to file."), wxEmptyString, wxITEM_NORMAL );
+	#ifdef __WXMSW__
+	m_menuItemCaptRxStream->SetBitmaps( wxNullBitmap );
+	#elif defined( __WXGTK__ )
+	m_menuItemCaptRxStream->SetBitmap( wxNullBitmap );
+	#endif
+	tools->Append( m_menuItemCaptRxStream );
+	
+	wxMenuItem* m_menuItemCaptTxStream;
+	m_menuItemCaptTxStream = new wxMenuItem( tools, wxID_ANY, wxString( _("Capture Tx Stream") ) + wxT('\t') + wxT("Capture transmit stream to file."), wxEmptyString, wxITEM_NORMAL );
+	#ifdef __WXMSW__
+	m_menuItemCaptTxStream->SetBitmaps( wxNullBitmap );
+	#elif defined( __WXGTK__ )
+	m_menuItemCaptTxStream->SetBitmap( wxNullBitmap );
+	#endif
+	tools->Append( m_menuItemCaptTxStream );
+	
+	tools->AppendSeparator();
+	
+	wxMenuItem* m_menuItemPlayAudioFile;
+	m_menuItemPlayAudioFile = new wxMenuItem( tools, wxID_ANY, wxString( _("Play File") ) , wxEmptyString, wxITEM_NORMAL );
+	tools->Append( m_menuItemPlayAudioFile );
 	
 	m_menubarMain->Append( tools, _("&Tools") ); 
 	
@@ -286,10 +312,13 @@ TopFrame::TopFrame( wxWindow* parent, wxWindowID id, const wxString& title, cons
 	this->Connect( m_menuItemPaste->GetId(), wxEVT_UPDATE_UI, wxUpdateUIEventHandler( TopFrame::OnPasteUpdateUI ) );
 	this->Connect( m_menuItemAudio->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( TopFrame::OnToolsAudio ) );
 	this->Connect( m_menuItemAudio->GetId(), wxEVT_UPDATE_UI, wxUpdateUIEventHandler( TopFrame::OnToolsAudioUI ) );
-	this->Connect( m_menuItemComCfg->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( TopFrame::OnToolsComCfg ) );
-	this->Connect( m_menuItemComCfg->GetId(), wxEVT_UPDATE_UI, wxUpdateUIEventHandler( TopFrame::OnToolsComCfgUI ) );
+	this->Connect( m_menuItemRigCtrlCfg->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( TopFrame::OnToolsComCfg ) );
+	this->Connect( m_menuItemRigCtrlCfg->GetId(), wxEVT_UPDATE_UI, wxUpdateUIEventHandler( TopFrame::OnToolsComCfgUI ) );
 	this->Connect( m_menuItemOptions->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( TopFrame::OnToolsOptions ) );
 	this->Connect( m_menuItemOptions->GetId(), wxEVT_UPDATE_UI, wxUpdateUIEventHandler( TopFrame::OnToolsOptionsUI ) );
+	this->Connect( m_menuItemCaptRxStream->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( TopFrame::OnCaptureRxStream ) );
+	this->Connect( m_menuItemCaptTxStream->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( TopFrame::OnCaptureTxStream ) );
+	this->Connect( m_menuItemPlayAudioFile->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( TopFrame::OnPlayAudioFile ) );
 	this->Connect( m_menuItemHelpUpdates->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( TopFrame::OnHelpCheckUpdates ) );
 	this->Connect( m_menuItemHelpUpdates->GetId(), wxEVT_UPDATE_UI, wxUpdateUIEventHandler( TopFrame::OnHelpCheckUpdatesUI ) );
 	this->Connect( m_menuItemAbout->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( TopFrame::OnHelpAbout ) );
@@ -341,6 +370,9 @@ TopFrame::~TopFrame()
 	this->Disconnect( wxID_ANY, wxEVT_UPDATE_UI, wxUpdateUIEventHandler( TopFrame::OnToolsComCfgUI ) );
 	this->Disconnect( ID_OPTIONS, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( TopFrame::OnToolsOptions ) );
 	this->Disconnect( ID_OPTIONS, wxEVT_UPDATE_UI, wxUpdateUIEventHandler( TopFrame::OnToolsOptionsUI ) );
+	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( TopFrame::OnCaptureRxStream ) );
+	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( TopFrame::OnCaptureTxStream ) );
+	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( TopFrame::OnPlayAudioFile ) );
 	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( TopFrame::OnHelpCheckUpdates ) );
 	this->Disconnect( wxID_ANY, wxEVT_UPDATE_UI, wxUpdateUIEventHandler( TopFrame::OnHelpCheckUpdatesUI ) );
 	this->Disconnect( ID_ABOUT, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( TopFrame::OnHelpAbout ) );
