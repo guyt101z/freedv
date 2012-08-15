@@ -23,7 +23,7 @@
 
 class AudioDlg : public DlgAudio
 {
-    protected:
+     protected:
         // Handlers for DlgAudio events.
         void OnCancel( wxCommandEvent& event );
         void OnOK( wxCommandEvent& event );

@@ -25,6 +25,7 @@ DrawPanel::DrawPanel(wxFrame* parent) : wxPanel(parent)
 {
     m_clip              = false;
     m_bitmap            = true;
+    m_zoomFactor        = 1.0;
     m_rubberBand        = false;
     m_mouseDown         = false;
     m_penShortDash      = wxPen(wxColor(0xA0, 0xA0, 0xA0), 1, wxPENSTYLE_SHORT_DASH);
@@ -106,6 +107,26 @@ void DrawPanel::OnMouseWheelMoved(wxMouseEvent& event)
 void DrawPanel::OnMouseUp(wxMouseEvent& event)
 {
     m_mouseDown = false;
+}
+
+//-------------------------------------------------------------------------
+// SetZoomFactor()
+//-------------------------------------------------------------------------
+double DrawPanel::SetZoomFactor(double zf)
+{
+    if((zf > 0) && (zf < 5.0))
+    {
+        m_zoomFactor = zf;
+    }
+    return zf;
+}
+
+//-------------------------------------------------------------------------
+// GetZoomFactor()
+//-------------------------------------------------------------------------
+double DrawPanel::GetZoomFactor(double zf)
+{
+    return m_zoomFactor;
 }
 
 #define PLOT_BORDER         10

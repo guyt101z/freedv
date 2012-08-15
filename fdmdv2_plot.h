@@ -38,6 +38,8 @@ class DrawPanel : public wxPanel
         void OnClose( wxCloseEvent& event ){ event.Skip(); }
         void OnSize( wxSizeEvent& event );
         void OnErase(wxEraseEvent& event);
+        double SetZoomFactor(double zf);
+        double GetZoomFactor(double zf);
         //void OnUpdateUI( wxUpdateUIEvent& event ){ event.Skip(); }
         void OnShow(wxShowEvent& event);
 
@@ -46,6 +48,7 @@ class DrawPanel : public wxPanel
         bool m_clip;
         bool m_rubberBand;
         bool m_mouseDown;
+        double m_zoomFactor;
     DECLARE_EVENT_TABLE()
 };
 #endif //__FDMDV2_PLOT__

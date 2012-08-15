@@ -10,8 +10,9 @@
   <Environment>
     <![CDATA[]]>
   </Environment>
+  <Project Name="fltk_fdmdv2" Path="fltk_fdmdv2/fltk_fdmdv2.project" Active="No"/>
   <BuildMatrix>
-    <WorkspaceConfiguration Name="Debug" Selected="yes">
+    <WorkspaceConfiguration Name="Debug" Selected="no">
       <Project Name="test_sndfile" ConfigName="Debug"/>
       <Project Name="test_portaudio" ConfigName="Debug"/>
       <Project Name="test_codec2" ConfigName="Debug"/>
@@ -22,18 +23,19 @@
       <Project Name="pa_cppbinding_test" ConfigName="Debug"/>
       <Project Name="fdmdv2basic" ConfigName="Debug"/>
       <Project Name="pa_enum" ConfigName="Debug"/>
+      <Project Name="fltk_fdmdv2" ConfigName="Debug"/>
+      <Project Name="fltk_fdmdv2" ConfigName="Debug"/>
     </WorkspaceConfiguration>
-    <WorkspaceConfiguration Name="Release" Selected="no">
-      <Project Name="test_sndfile" ConfigName="Release"/>
-      <Project Name="test_portaudio" ConfigName="Release"/>
-      <Project Name="test_codec2" ConfigName="Release"/>
-      <Project Name="test_hamlib" ConfigName="Release"/>
-      <Project Name="librs232" ConfigName="Release"/>
+    <WorkspaceConfiguration Name="Release" Selected="yes">
       <Project Name="fdmdv2" ConfigName="Release"/>
-      <Project Name="pa_test" ConfigName="Release"/>
-      <Project Name="pa_cppbinding_test" ConfigName="Release"/>
       <Project Name="fdmdv2basic" ConfigName="Release"/>
+      <Project Name="pa_cppbinding_test" ConfigName="Release"/>
       <Project Name="pa_enum" ConfigName="Release"/>
+      <Project Name="pa_test" ConfigName="Release"/>
+      <Project Name="test_hamlib" ConfigName="Release"/>
+      <Project Name="test_sndfile" ConfigName="Release"/>
+      <Project Name="fltk_fdmdv2" ConfigName="Release"/>
+      <Project Name="fltk_fdmdv2" ConfigName="Release"/>
     </WorkspaceConfiguration>
   </BuildMatrix>
 </CodeLite_Workspace>
