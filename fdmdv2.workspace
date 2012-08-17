@@ -2,15 +2,14 @@
 <CodeLite_Workspace Name="fdmdv2" Database="./fdmdv2.tags">
   <Project Name="test_portaudio" Path="libsndfile/Projects/w32-mingw/test_sndfile.project" Active="No"/>
   <Project Name="test_hamlib" Path="hamlib-3.0/test_hamlib/test_hamlib.project" Active="No"/>
-  <Project Name="fdmdv2" Path="fdmdv2.project" Active="No"/>
+  <Project Name="fdmdv2" Path="fdmdv2.project" Active="Yes"/>
   <Project Name="pa_test" Path="pa_test/pa_test.project" Active="No"/>
   <Project Name="pa_cppbinding_test" Path="pa_cppbinding_test/pa_cppbinding_test.project" Active="No"/>
   <Project Name="fdmdv2basic" Path="fdmdv2basic/fdmdv2basic.project" Active="No"/>
-  <Project Name="pa_enum" Path="pa_enum/pa_enum.project" Active="Yes"/>
+  <Project Name="pa_enum" Path="pa_enum/pa_enum.project" Active="No"/>
   <Environment>
     <![CDATA[]]>
   </Environment>
-  <Project Name="fltk_fdmdv2" Path="fltk_fdmdv2/fltk_fdmdv2.project" Active="No"/>
   <BuildMatrix>
     <WorkspaceConfiguration Name="Debug" Selected="no">
       <Project Name="test_sndfile" ConfigName="Debug"/>

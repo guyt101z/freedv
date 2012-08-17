@@ -119,6 +119,9 @@
       <Compiler Options="-O2;-Wall;$(shell wx-config --cxxflags --unicode=yes --debug=no)" C_Options="-O2;-Wall;$(shell wx-config --cxxflags --unicode=yes --debug=no)" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" UseDifferentPCHFlags="no" PCHFlags="">
         <IncludePath Value="/bin/MinGW/msys/1.0/local/include"/>
         <IncludePath Value="../codec2-dev/src"/>
+        <IncludePath Value="../../Audio/portaudio/include"/>
+        <IncludePath Value="../../Audio/portaudio/bindings/cpp/include"/>
+        <IncludePath Value="./libsndfile/include"/>
         <Preprocessor Value="__WX__"/>
       </Compiler>
       <Linker Options="-mwindows;-s;$(shell wx-config --debug=no --libs --unicode=yes)" Required="yes">
