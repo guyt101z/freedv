@@ -1,1 +1,0 @@
-./Release/topFrame.o ./Release/dlg_about.o ./Release/dlg_audio.o ./Release/dlg_options.o ./Release/dlg_comports.o ./Release/fdmdv2_plot.o ./Release/fdmdv2_main.o ./Release/paclass.o  

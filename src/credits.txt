@@ -1,0 +1,8 @@
+Credits (code or ideas borrowed from):
+==============================================
+David Rowe (obviously)
+Mel Whitten
+Don Mak
+Steve Nance (K5FR)
+James Ahlstrom (Quisk)
+FLDIGI
