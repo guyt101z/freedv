@@ -132,7 +132,7 @@ double DrawPanel::GetZoomFactor(double zf)
 #define PLOT_BORDER         10
 #define XLEFT_OFFSET        0
 #define YBOTTOM_OFFSET      25
-#define GRID_INCREMENT      100
+#define GRID_INCREMENT      50
 #define GREY_COLOR          wxColor(0x80, 0x80, 0x80)
 #define BLACK_COLOR         wxColor(0x00, 0x00, 0x00)
 

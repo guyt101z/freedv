@@ -1,3 +1,22 @@
+audiostream.cpp : audiostream.h
+dlg_about.cpp : dlg_about.h
+dlg_audio.cpp : dlg_audio.h
+dlg_comports.cpp : dlg_comports.h
+dlg_options.cpp : dlg_options.h
+fdmdv2DlgAudio.cpp : fdmdv2DlgAudio.h
+fdmdv2TopFrame.cpp : fdmdv2TopFrame.h
+fdmdv2_main.cpp : fdmdv2_main.h
+fdmdv2_plot.cpp : fdmdv2_plot.h
+fdmdv2_thread_audio.h
+paclass.cpp : paclass.h
+thread_audio.cpp : thread_audio.h
+topFrame.cpp : topFrame.h
+
+#topFrame.py
+#topFrame.xrc
+#credits.txt
+#FDMDV2.fbp
+
 audiostream.cpp
 audiostream.h
 credits.txt
