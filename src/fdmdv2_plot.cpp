@@ -3,6 +3,7 @@
 // Purpose:         Implements simple wxWidgets application with GUI.
 // Created:         Apr. 9, 2012
 // Initial author:  David Witten
+// Derived from:    code written by David Rowe
 // License:         BSD License (other licenses may apply to other
 //                  components of this project)
 //==========================================================================
@@ -214,4 +215,7 @@ void DrawPanel::paintNow()
     wxClientDC dc(this);
     render(dc);
 }
+
+// general purpose way of plotting scalar values that are
+// updated once per frame
 

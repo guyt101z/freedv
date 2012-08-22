@@ -3,6 +3,7 @@
 // Purpose:         Declares simple wxWidgets application with GUI
 // Created:         Apr. 10, 2012
 // Initial author:  David Witten
+// Derived from:    code written by David Rowe
 // License:         BSD License (other licenses may apply to other
 //                  components of this project)
 //==========================================================================
@@ -44,6 +45,14 @@ class DrawPanel : public wxPanel
         void OnShow(wxShowEvent& event);
 
     protected:
+        int  m_x;
+        int  m_y;
+        int  m_w;
+        int  m_h;
+        int  m_prev_w;
+        int  m_prev_h;
+        int  m_prev_x;
+        int  m_prev_y;
         bool m_bitmap;
         bool m_clip;
         bool m_rubberBand;

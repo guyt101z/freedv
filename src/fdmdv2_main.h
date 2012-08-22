@@ -26,10 +26,19 @@
 
 #include "sndfile.h"
 #include "portaudio.h"
-#include "paclass.h"
+#include "fdmdv2_pa_wrapper.h"
 
 #include "codec2.h"
 #include "fdmdv.h"
+
+#define MIN_DB             -40.0
+#define MAX_DB               0.0
+#define BETA                 0.1  // constant for time averageing spectrum data
+#define MIN_HZ               0
+#define MAX_HZ            4000
+#define WATERFALL_SECS_Y     5    // number of seconds respresented by y axis of waterfall
+#define DT                   0.02 // time between samples
+#define FS                8000    // FDMDV modem sample rate
 
 #include "topFrame.h"
 #include "dlg_about.h"
@@ -37,6 +46,10 @@
 #include "dlg_options.h"
 #include "dlg_comports.h"
 #include "fdmdv2_plot.h"
+#include "fdmdv2_scalar.h"
+#include "fdmdv2_plot_scatter.h"
+#include "fdmdv2_plot_waterfall.h"
+#include "fdmdv2_plot_spectrum.h"
 
 enum
 {
