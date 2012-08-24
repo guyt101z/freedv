@@ -1,3 +1,26 @@
+//==========================================================================
+// Name:            fdmdv2_pa_wrapper.cpp
+// Purpose:         Implements a wrapper class around the PortAudio library.
+// Created:         August 12, 2012
+// Initial author:  David Witten
+// License:
+//
+//  Copyright (C) 2012 David Witten
+//
+//  All rights reserved.
+//
+//  This program is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU Lesser General Public License version 2.1,
+//  as published by the Free Software Foundation.  This program is
+//  distributed in the hope that it will be useful, but WITHOUT ANY
+//  WARRANTY; without even the implied warranty of MERCHANTABILITY or
+//  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+//  License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public License
+//  along with this program; if not, see <http://www.gnu.org/licenses/>.
+//
+//==========================================================================
 #include "fdmdv2_pa_wrapper.h"
 
 PortAudioWrap::PortAudioWrap()
