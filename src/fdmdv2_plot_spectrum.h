@@ -25,17 +25,22 @@
 #ifndef __FDMDV2_PLOT_SPECTRUM__
 #define __FDMDV2_PLOT_SPECTRUM__
 
+#include "fdmdv2_plot.h"
+#include "fdmdv2_defines.h"
+
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 // Class Waterfall
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
-class SpectrumPlot : public DrawPanel
+class PlotSpectrum : public PlotPanel
 {
     public:
-        SpectrumPlot(wxFrame* parent, int x, int y, int w, int h);
-        ~SpectrumPlot() {};
+//        PlotSpectrum(wxFrame* parent, int x, int y, int w, int h);
+        PlotSpectrum(wxFrame* parent);
+        ~PlotSpectrum() {};
     protected:
         int handle(int event);
         void draw();
+        DECLARE_EVENT_TABLE()
 };
 
 

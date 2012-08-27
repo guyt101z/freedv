@@ -24,22 +24,23 @@
 //==========================================================================
 #include <string.h>
 #include "wx/wx.h"
-//#include "fdmdv2_main.h"
-//#include "fdmdv2_plot.h"
 #include "fdmdv2_plot_scatter.h"
 
-BEGIN_EVENT_TABLE(ScatterPlot, DrawPanel)
-    EVT_PAINT           (ScatterPlot::OnPaint)
-    EVT_MOTION          (ScatterPlot::OnMouseMove)
-    EVT_LEFT_DOWN       (ScatterPlot::OnMouseDown)
-    EVT_LEFT_UP         (ScatterPlot::OnMouseUp)
-    EVT_MOUSEWHEEL      (ScatterPlot::OnMouseWheelMoved)
-    EVT_SIZE            (ScatterPlot::OnSize)
-    EVT_SHOW            (ScatterPlot::OnShow)
-//    EVT_ERASE_BACKGROUND(DrawPanel::OnErase)
+BEGIN_EVENT_TABLE(PlotScatter, PlotPanel)
+    EVT_PAINT           (PlotScatter::OnPaint)
+    EVT_MOTION          (PlotScatter::OnMouseMove)
+    EVT_LEFT_DOWN       (PlotScatter::OnMouseDown)
+    EVT_LEFT_UP         (PlotScatter::OnMouseUp)
+    EVT_MOUSEWHEEL      (PlotScatter::OnMouseWheelMoved)
+    EVT_SIZE            (PlotScatter::OnSize)
+    EVT_SHOW            (PlotScatter::OnShow)
+//    EVT_ERASE_BACKGROUND(PlotScatter::OnErase)
 END_EVENT_TABLE()
 
-ScatterPlot::ScatterPlot(wxFrame* parent) : DrawPanel(parent)
+//----------------------------------------------------------------
+//
+//----------------------------------------------------------------
+PlotScatter::PlotScatter(wxFrame* parent) : PlotPanel(parent)
 {
     int i;
 
@@ -57,7 +58,10 @@ ScatterPlot::ScatterPlot(wxFrame* parent) : DrawPanel(parent)
     m_prev_y = 0;
 }
 
-void ScatterPlot::draw()
+//----------------------------------------------------------------
+//
+//----------------------------------------------------------------
+void PlotScatter::draw()
 {
     float x_scale;
     float y_scale;
@@ -113,7 +117,10 @@ void ScatterPlot::draw()
    // fl_pop_clip();
 }
 
-void ScatterPlot::add_new_samples(COMP samples[])
+//----------------------------------------------------------------
+//
+//----------------------------------------------------------------
+void PlotScatter::add_new_samples(COMP samples[])
 {
     int i;
 

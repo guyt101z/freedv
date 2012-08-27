@@ -64,11 +64,19 @@ bool MainApp::OnInit()
     // Create the main application window
     MainFrame *frame = new MainFrame(NULL);
 
-    frame->m_panelSpectrum = new DrawPanel((wxFrame*) frame->m_auiNbookCtrl );
+    frame->m_panelSpectrum = new PlotSpectrum((wxFrame*) frame->m_auiNbookCtrl );
     frame->m_auiNbookCtrl->AddPage(frame->m_panelSpectrum, _("Spectrum"), true, wxNullBitmap );
 
-    frame->m_panelWaterfall = new DrawPanel((wxFrame*) frame->m_auiNbookCtrl );
+    frame->m_panelWaterfall = new PlotWaterfall((wxFrame*) frame->m_auiNbookCtrl );
     frame->m_auiNbookCtrl->AddPage(frame->m_panelWaterfall, _("Waterfall"), true, wxNullBitmap );
+
+//    frame->m_panelScatter = new PlotScatter((wxFrame*) frame->m_auiNbookCtrl );
+//    frame->m_auiNbookCtrl->AddPage(frame->m_panelWaterfall, _("Scatter"), true, wxNullBitmap );
+
+//    frame->m_panelScalar = new PlotScalar((wxFrame*) frame->m_auiNbookCtrl, 500, 500);
+//    frame->m_auiNbookCtrl->AddPage(frame->m_panelWaterfall, _("Scalar"), true, wxNullBitmap );
+
+    frame->m_auiNbookCtrl->ChangeSelection(0);
 
     SetTopWindow(frame);
     frame->Layout();

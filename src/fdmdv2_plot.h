@@ -9,14 +9,18 @@
 //==========================================================================
 #ifndef __FDMDV2_PLOT__
 #define __FDMDV2_PLOT__
+//#include "codec2.h"
+//#include "fdmdv.h"
+#include <wx/rawbmp.h>
+#include <wx/image.h>
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
-// Class DrawPanel
+// Class PlotPanel
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
-class DrawPanel : public wxPanel
+class PlotPanel : public wxPanel
 {
     public:
-        DrawPanel(wxFrame* parent);
+        PlotPanel(wxFrame* parent);
         void paintEvent(wxPaintEvent & evt);
         void paintNow();
         void render(wxDC& dc);
@@ -29,6 +33,11 @@ class DrawPanel : public wxPanel
         int m_gridRightOffset;
         int m_gridTopOffset;
         int m_gridBottomOffset;
+        double m_label_size;
+        wxBitmap            *m_bmp;
+        //wxNativePixelData   *m_pBmp;
+        //wxAlphaPixelData    *m_pBmp;
+        wxImagePixelData    *m_pBmp;
 
         // some useful events
         void OnMouseMove(wxMouseEvent& event);
@@ -43,6 +52,8 @@ class DrawPanel : public wxPanel
         double GetZoomFactor(double zf);
         //void OnUpdateUI( wxUpdateUIEvent& event ){ event.Skip(); }
         void OnShow(wxShowEvent& event);
+        double GetLabelSize();
+        void SetLabelSize(double size);
 
     protected:
         int  m_x;

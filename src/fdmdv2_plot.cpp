@@ -19,10 +19,21 @@
 #define wxUSE_PCX       1
 #define wxUSE_LIBTIFF   1
 
+BEGIN_EVENT_TABLE(PlotPanel, wxPanel)
+    EVT_PAINT           (PlotPanel::OnPaint)
+    EVT_MOTION          (PlotPanel::OnMouseMove)
+    EVT_LEFT_DOWN       (PlotPanel::OnMouseDown)
+    EVT_LEFT_UP         (PlotPanel::OnMouseUp)
+    EVT_MOUSEWHEEL      (PlotPanel::OnMouseWheelMoved)
+    EVT_SIZE            (PlotPanel::OnSize)
+    EVT_SHOW            (PlotPanel::OnShow)
+//    EVT_ERASE_BACKGROUND(PlotPanel::OnErase)
+END_EVENT_TABLE()
+
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
-// Class DrawPanel(wxFrame* parent) : wxPanel(parent)
+// Class PlotPanel(wxFrame* parent) : wxPanel(parent)
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
-DrawPanel::DrawPanel(wxFrame* parent) : wxPanel(parent)
+PlotPanel::PlotPanel(wxFrame* parent) : wxPanel(parent)
 {
     m_clip              = false;
     m_bitmap            = true;
@@ -35,24 +46,30 @@ DrawPanel::DrawPanel(wxFrame* parent) : wxPanel(parent)
     m_gridRightOffset   = 10;
     m_gridTopOffset     = 10;
     m_gridBottomOffset  = 10;
+    SetLabelSize(10.0);
     paintNow();
 }
 
-BEGIN_EVENT_TABLE(DrawPanel, wxPanel)
-    EVT_PAINT           (DrawPanel::OnPaint)
-    EVT_MOTION          (DrawPanel::OnMouseMove)
-    EVT_LEFT_DOWN       (DrawPanel::OnMouseDown)
-    EVT_LEFT_UP         (DrawPanel::OnMouseUp)
-    EVT_MOUSEWHEEL      (DrawPanel::OnMouseWheelMoved)
-    EVT_SIZE            (DrawPanel::OnSize)
-    EVT_SHOW            (DrawPanel::OnShow)
-//    EVT_ERASE_BACKGROUND(DrawPanel::OnErase)
-END_EVENT_TABLE()
+//-------------------------------------------------------------------------
+// GetLabelSize()
+//-------------------------------------------------------------------------
+double PlotPanel::GetLabelSize()
+{
+    return m_label_size;
+}
+
+//-------------------------------------------------------------------------
+// SetLabelSize()
+//-------------------------------------------------------------------------
+void PlotPanel::SetLabelSize(double size)
+{
+    m_label_size = size;
+}
 
 //-------------------------------------------------------------------------
 // OnActivate()
 //-------------------------------------------------------------------------
-void DrawPanel::OnShow(wxShowEvent& event)
+void PlotPanel::OnShow(wxShowEvent& event)
 {
     paintNow();
 }
@@ -60,7 +77,7 @@ void DrawPanel::OnShow(wxShowEvent& event)
 //-------------------------------------------------------------------------
 // OnErase()
 //-------------------------------------------------------------------------
-void DrawPanel::OnErase(wxEraseEvent& event)
+void PlotPanel::OnErase(wxEraseEvent& event)
 {
     event.Skip();
 }
@@ -68,7 +85,7 @@ void DrawPanel::OnErase(wxEraseEvent& event)
 //-------------------------------------------------------------------------
 // OnSize()
 //-------------------------------------------------------------------------
-void DrawPanel::OnSize(wxSizeEvent& event)
+void PlotPanel::OnSize(wxSizeEvent& event)
 {
     if(m_bitmap)
     {
@@ -79,7 +96,7 @@ void DrawPanel::OnSize(wxSizeEvent& event)
 //-------------------------------------------------------------------------
 // OnMouseMove()
 //-------------------------------------------------------------------------
-void DrawPanel::OnMouseMove(wxMouseEvent& event)
+void PlotPanel::OnMouseMove(wxMouseEvent& event)
 {
 //    if(m_mouseDown)
 //    {
@@ -90,7 +107,7 @@ void DrawPanel::OnMouseMove(wxMouseEvent& event)
 //-------------------------------------------------------------------------
 // OnMouseDown()
 //-------------------------------------------------------------------------
-void DrawPanel::OnMouseDown(wxMouseEvent& event)
+void PlotPanel::OnMouseDown(wxMouseEvent& event)
 {
     m_mouseDown = true;
 }
@@ -98,14 +115,14 @@ void DrawPanel::OnMouseDown(wxMouseEvent& event)
 //-------------------------------------------------------------------------
 // OnMouseWheelMoved()
 //-------------------------------------------------------------------------
-void DrawPanel::OnMouseWheelMoved(wxMouseEvent& event)
+void PlotPanel::OnMouseWheelMoved(wxMouseEvent& event)
 {
 }
 
 //-------------------------------------------------------------------------
 // OnMouseUp()
 //-------------------------------------------------------------------------
-void DrawPanel::OnMouseUp(wxMouseEvent& event)
+void PlotPanel::OnMouseUp(wxMouseEvent& event)
 {
     m_mouseDown = false;
 }
@@ -113,7 +130,7 @@ void DrawPanel::OnMouseUp(wxMouseEvent& event)
 //-------------------------------------------------------------------------
 // SetZoomFactor()
 //-------------------------------------------------------------------------
-double DrawPanel::SetZoomFactor(double zf)
+double PlotPanel::SetZoomFactor(double zf)
 {
     if((zf > 0) && (zf < 5.0))
     {
@@ -125,7 +142,7 @@ double DrawPanel::SetZoomFactor(double zf)
 //-------------------------------------------------------------------------
 // GetZoomFactor()
 //-------------------------------------------------------------------------
-double DrawPanel::GetZoomFactor(double zf)
+double PlotPanel::GetZoomFactor(double zf)
 {
     return m_zoomFactor;
 }
@@ -140,7 +157,7 @@ double DrawPanel::GetZoomFactor(double zf)
 //-------------------------------------------------------------------------
 // render() Temporary. Subclass for each view, overide this as needed.
 //-------------------------------------------------------------------------
-void DrawPanel::render(wxDC&  dc)
+void PlotPanel::render(wxDC&  dc)
 {
     m_rectCtrl  = GetClientRect();
     m_rectGrid  = m_rectCtrl;
@@ -190,7 +207,7 @@ void DrawPanel::render(wxDC&  dc)
 // to be redrawn. You can also trigger this call by calling
 // Refresh()/Update().
 //-------------------------------------------------------------------------
-void DrawPanel::OnPaint(wxPaintEvent & evt)
+void PlotPanel::OnPaint(wxPaintEvent & evt)
 {
     wxPaintDC dc(this);
     render(dc);
@@ -210,7 +227,7 @@ void DrawPanel::OnPaint(wxPaintEvent & evt)
 // paint events and calling Refresh() when a refresh is needed
 // will do the job.
 //-------------------------------------------------------------------------
-void DrawPanel::paintNow()
+void PlotPanel::paintNow()
 {
     wxClientDC dc(this);
     render(dc);

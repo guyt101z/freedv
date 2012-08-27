@@ -24,8 +24,6 @@
 //==========================================================================
 #include <string.h>
 #include "wx/wx.h"
-#include "fdmdv2_main.h"
-#include "fdmdv2_plot.h"
 #include "fdmdv2_plot_waterfall.h"
 
 extern float *av_mag;
@@ -40,11 +38,23 @@ extern float *av_mag;
   block.
 
 */
+BEGIN_EVENT_TABLE(PlotWaterfall, PlotPanel)
+    EVT_PAINT           (PlotWaterfall::OnPaint)
+    EVT_MOTION          (PlotWaterfall::OnMouseMove)
+    EVT_LEFT_DOWN       (PlotWaterfall::OnMouseDown)
+    EVT_LEFT_UP         (PlotWaterfall::OnMouseUp)
+    EVT_MOUSEWHEEL      (PlotWaterfall::OnMouseWheelMoved)
+    EVT_SIZE            (PlotWaterfall::OnSize)
+    EVT_SHOW            (PlotWaterfall::OnShow)
+//    EVT_ERASE_BACKGROUND(PlotWaterfall::OnErase)
+END_EVENT_TABLE()
+
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 // Class WaterfallPlot
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
-//Waterfall::Waterfall(int x, int y, int w, int h): Fl_Box(x, y, w, h, "Waterfall")
-Waterfall::Waterfall(wxFrame* parent, int x, int y, int w, int h, const char name[]): DrawPanel(parent)
+//PlotWaterfall::PlotWaterfall(int x, int y, int w, int h): Fl_Box(x, y, w, h, "PlotWaterfall")
+//PlotWaterfall::PlotWaterfall(wxFrame* parent, int x, int y, int w, int h, const char name[]): PlotPanel(parent)
+PlotWaterfall::PlotWaterfall(wxFrame* parent): PlotPanel(parent)
 {
     int   i;
 
@@ -53,30 +63,44 @@ Waterfall::Waterfall(wxFrame* parent, int x, int y, int w, int h, const char nam
         heatmap_lut[i] = heatmap((float)i, 0.0, 255.0);
     }
     greyscale = 0;
-    //align(FL_ALIGN_TOP);
-    //labelsize(10);
-    new_pixel_buf(w,h);
+    SetLabelSize(10.0);
+//    wxSize sz = GetClientSize();
+    wxSize sz = GetMaxClientSize();
+    new_pixel_buf(sz.GetWidth(), sz.GetHeight());
 };
 
-Waterfall::~Waterfall()
+//----------------------------------------------------------------
+// ~PlotWaterfall()
+//----------------------------------------------------------------
+PlotWaterfall::~PlotWaterfall()
 {
     delete pixel_buf;
 }
 
-void Waterfall::new_pixel_buf(int w, int h)
+//----------------------------------------------------------------
+// new_pixel_buf()
+//----------------------------------------------------------------
+void PlotWaterfall::new_pixel_buf(int w, int h)
 {
-    int buf_sz, i;
+    int buf_sz;
+    int i;
 
-    prev_w = w; prev_h = h;
-    buf_sz = h*w;
-    pixel_buf = new unsigned[buf_sz];
-    for(i=0; i<buf_sz; i++)
-    {
-        pixel_buf[i] = 0;
-    }
+    prev_w = w;
+    prev_h = h;
+    buf_sz = h * w;
+
+    // pixel_buf = new unsigned[buf_sz];
+    //for(i = 0; i < buf_sz; i++)
+    //{
+    //    pixel_buf[i] = 0;
+    //}
+
 }
 
-int Waterfall::handle(int event)
+//----------------------------------------------------------------
+//  handle()
+//----------------------------------------------------------------
+int PlotWaterfall::handle(int event)
 {
     //  detect a left mouse down if inside the window
 /*
@@ -92,9 +116,12 @@ int Waterfall::handle(int event)
     return 0;
 }
 
+//----------------------------------------------------------------
+// heatmap()
 // map val to a rgb colour
 // from http://eddiema.ca/2011/01/21/c-sharp-heatmaps/
-unsigned Waterfall::heatmap(float val, float min, float max)
+//----------------------------------------------------------------
+unsigned PlotWaterfall::heatmap(float val, float min, float max)
 {
     unsigned r = 0;
     unsigned g = 0;
@@ -125,22 +152,25 @@ unsigned Waterfall::heatmap(float val, float min, float max)
     return  (b << 16) + (g << 8) + r;
 }
 
-void Waterfall::draw()
+//----------------------------------------------------------------
+// draw()
+//----------------------------------------------------------------
+void PlotWaterfall::draw()
 {
-    float  spec_index_per_px;
-    float  intensity_per_dB;
-    int    px_per_sec;
-    int    index;
-    int    dy;
-    int    dy_blocks;
-    int    bytes_in_row_of_blocks;
-    int    b;
-    int    px;
-    int    py;
-    int    intensity;
-    unsigned *last_row;
-    unsigned *pdest;
-    unsigned *psrc;
+    float       spec_index_per_px;
+    float       intensity_per_dB;
+    int         px_per_sec;
+    int         index;
+    int         dy;
+    int         dy_blocks;
+    int         bytes_in_row_of_blocks;
+    int         b;
+    int         px;
+    int         py;
+    int         intensity;
+    unsigned    *last_row;
+    unsigned    *pdest;
+    unsigned    *psrc;
 
     /* detect resizing of window */
     if ((m_h != m_prev_h) || (m_w != m_prev_w))

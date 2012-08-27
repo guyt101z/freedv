@@ -24,21 +24,19 @@
 //==========================================================================
 #ifndef __FDMDV2_PLOT_SCATTER__
 #define __FDMDV2_PLOT_SCATTER__
+
 #include "comp.h"
-#include "fdmdv2_main.h"
-
-#define SCATTER_MEM       (FDMDV_NSYM)*50
-#define SCATTER_X_MAX        3.0
-#define SCATTER_Y_MAX        3.0
+#include "fdmdv2_plot.h"
+#include "fdmdv2_defines.h"
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
-// Class ScattterPlot
+// Class PlotScatter
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
-class ScatterPlot : public DrawPanel
+class PlotScatter : public PlotPanel
 {
 public:
-   ScatterPlot(wxFrame* parent);
-    ~ScatterPlot(){};
+   PlotScatter(wxFrame* parent);
+    ~PlotScatter(){};
 
 protected:
     COMP m_mem[SCATTER_MEM];

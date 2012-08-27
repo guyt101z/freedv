@@ -33,53 +33,13 @@
 #include "dlg_options.h"
 #include "dlg_comports.h"
 #include "fdmdv2_plot.h"
-#include "fdmdv2_scalar.h"
+#include "fdmdv2_plot_scalar.h"
 #include "fdmdv2_plot_scatter.h"
 #include "fdmdv2_plot_waterfall.h"
 #include "fdmdv2_plot_spectrum.h"
 #include "fdmdv2_pa_wrapper.h"
 #include "sndfile.h"
 #include "portaudio.h"
-
-#define MIN_DB             -40.0
-#define MAX_DB               0.0
-#define BETA                 0.1  // constant for time averageing spectrum data
-#define MIN_HZ               0
-#define MAX_HZ            4000
-#define WATERFALL_SECS_Y     5    // number of seconds respresented by y axis of waterfall
-#define DT                   0.02 // time between samples
-#define FS                8000    // FDMDV modem sample rate
-
-#define SCATTER_MEM       (FDMDV_NSYM)*50
-#define SCATTER_X_MAX        3.0
-#define SCATTER_Y_MAX        3.0
-
-// main window params
-
-#define W                  1200
-#define W3                 (W/3)
-#define H                  600
-#define H2                 (H/2)
-#define SP                  20
-
-// sound card
-
-#define SAMPLE_RATE         48000                          // 48 kHz sampling rate rec. as we can trust accuracy of sound card
-#define N8                  FDMDV_NOM_SAMPLES_PER_FRAME    // processing buffer size at 8 kHz
-#define MEM8                (FDMDV_OS_TAPS/FDMDV_OS)
-#define N48                 (N8*FDMDV_OS)                  // processing buffer size at 48 kHz
-#define NUM_CHANNELS        2                              // I think most sound cards prefer stereo we will convert to mono
-
-#define BITS_PER_CODEC_FRAME (2*FDMDV_BITS_PER_FRAME)
-#define BYTES_PER_CODEC_FRAME (BITS_PER_CODEC_FRAME/8)
-
-enum
-{
-    ID_ROTATE_LEFT = wxID_HIGHEST + 1,
-    ID_ROTATE_RIGHT,
-    ID_RESIZE,
-    ID_PAINT_BG
-};
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 // Class MainApp
@@ -110,10 +70,11 @@ class MainFrame : public TopFrame
     public:
         MainFrame(wxWindow *parent);
         virtual ~MainFrame();
-        DrawPanel*      m_panelSpectrum;
-        DrawPanel*      m_panelWaterfall;
-        DrawPanel*      m_panelExtra1;
-        DrawPanel*      m_panelExtra2;
+        PlotPanel*      m_panelDefault;
+        PlotSpectrum*   m_panelSpectrum;
+        PlotWaterfall*  m_panelWaterfall;
+        PlotScatter*    m_panelScatter;
+        PlotScalar*     m_panelScalar;
         bool            m_SquelchActive;
         bool            m_RxRunning;
         bool            m_TxRunning;

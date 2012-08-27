@@ -25,27 +25,33 @@
 #ifndef __FDMDV2_PLOT_WATERFALL__
 #define __FDMDV2_PLOT_WATERFALL__
 
+#include "fdmdv2_plot.h"
+#include "fdmdv2_defines.h"
+
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
-// Class Waterfall
+// Class PlotWaterfall
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
-class Waterfall : public DrawPanel
+class PlotWaterfall : public PlotPanel
 {
 public:
-    //Waterfall(int x, int y, int w, int h);
-    Waterfall(wxFrame* parent, int x, int y, int w, int h, const char name[]);
-    ~Waterfall();
+    //PlotWaterfall(int x, int y, int w, int h);
+    //PlotWaterfall(wxFrame* parent, int x, int y, int w, int h, const char name[]);
+    PlotWaterfall(wxFrame* parent);
+    ~PlotWaterfall();
 
 protected:
-    int       prev_w, prev_h;
-    unsigned *pixel_buf;
-    unsigned  heatmap_lut[256];
-    int       greyscale;
+    int         prev_w;
+    int         prev_h;
+    unsigned    *pixel_buf;
+    unsigned    heatmap_lut[256];
+    int         greyscale;
 
-    void new_pixel_buf(int w, int h);
-    int handle(int event);
+    void    new_pixel_buf(int w, int h);
+    int     handle(int event);
     unsigned heatmap(float val, float min, float max);
-    void draw();
+    void    draw();
 
+    DECLARE_EVENT_TABLE()
 };
 
 #endif //__FDMDV2_PLOT_WATERFALL__

@@ -24,21 +24,35 @@
 //==========================================================================
 #include <string.h>
 #include "wx/wx.h"
-#include "fdmdv2_main.h"
-#include "fdmdv2_plot.h"
 
+#include "fdmdv2_main.h"
 #include "fdmdv2_plot_spectrum.h"
 
+BEGIN_EVENT_TABLE(PlotSpectrum, PlotPanel)
+    EVT_PAINT           (PlotSpectrum::OnPaint)
+    EVT_MOTION          (PlotSpectrum::OnMouseMove)
+    EVT_LEFT_DOWN       (PlotSpectrum::OnMouseDown)
+    EVT_LEFT_UP         (PlotSpectrum::OnMouseUp)
+    EVT_MOUSEWHEEL      (PlotSpectrum::OnMouseWheelMoved)
+    EVT_SIZE            (PlotSpectrum::OnSize)
+    EVT_SHOW            (PlotSpectrum::OnShow)
+//    EVT_ERASE_BACKGROUND(PlotSpectrum::OnErase)
+END_EVENT_TABLE()
+
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
-// Class SpectrumPlot
+// Class PlotSpectrum
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
-SpectrumPlot::SpectrumPlot(wxFrame* parent, int x, int y, int w, int h): DrawPanel(parent)
+//PlotSpectrum::PlotSpectrum(wxFrame* parent, int x, int y, int w, int h): PlotPanel(parent)
+PlotSpectrum::PlotSpectrum(wxFrame* parent): PlotPanel(parent)
 {
 //    align(FL_ALIGN_TOP);
 //    labelsize(10);
 }
 
-int SpectrumPlot::handle(int event)
+//----------------------------------------------------------------
+//
+//----------------------------------------------------------------
+int PlotSpectrum::handle(int event)
 {
 /*
     //  detect a left mouse down if inside the spectrum window
@@ -54,11 +68,18 @@ int SpectrumPlot::handle(int event)
     return 0;
 }
 
-void SpectrumPlot::draw()
+//----------------------------------------------------------------
+//
+//----------------------------------------------------------------
+void PlotSpectrum::draw()
 {
     float x_px_per_point = 0.0;
     float y_px_per_dB = 0.0;
-    int   i, x1, y1, x2, y2;
+    int   i;
+    int   x1;
+    int   y1;
+    int   x2;
+    int   y2;
     float mag1, mag2;
     char  label[20];
     float px_per_hz;
