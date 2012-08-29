@@ -70,7 +70,8 @@ class MainFrame : public TopFrame
     public:
         MainFrame(wxWindow *parent);
         virtual ~MainFrame();
-        PlotPanel*      m_panelDefault;
+        PlotPanel*      m_panelDefaultA;
+        PlotPanel*      m_panelDefaultB;
         PlotSpectrum*   m_panelSpectrum;
         PlotWaterfall*  m_panelWaterfall;
         PlotScatter*    m_panelScatter;

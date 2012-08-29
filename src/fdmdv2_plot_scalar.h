@@ -1,5 +1,5 @@
 //==========================================================================
-// Name:            fdmdv2_scalar.h
+// Name:            fdmdv2_plot_scalar.h
 // Purpose:         Defines a scalar plot derivative of fdmdv2_plot.
 // Created:         June 22, 2012
 // Initial author:  David Witten
@@ -25,29 +25,37 @@
 #ifndef __FDMDV2_PLOT_SCALAR__
 #define __FDMDV2_PLOT_SCALAR__
 
+#include "fdmdv2_plot.h"
+#include "fdmdv2_defines.h"
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
-// Class Scalar
+// Class PlotScalar
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
-class Scalar: public DrawPanel
+class PlotScalar: public PlotPanel
 {
-public:
+    public:
 
-    Scalar(wxFrame* parent, int x, int y, int w, int h, int x_max_, int y_max_, const char name[]);
-    ~Scalar();
-    void add_new_sample(float sample);
+        //PlotScalar(wxFrame* parent, int x, int y, int w, int h, int x_max_, int y_max_, const char name[]);
+        PlotScalar(wxFrame* parent, int x_max_, int y_max_);
+        ~PlotScalar();
+        void add_new_sample(float sample);
 
-protected:
+    protected:
 
-    int    m_x_max;
-    int    m_y_max;
-    float  *m_mem;              /* array of x_max samples */
-    float  m_new_sample;
-    int    m_index;
-    int    m_step;
+        int    m_x_max;
+        int    m_y_max;
+        float  *m_mem;              /* array of x_max samples */
+        float  m_new_sample;
+        int    m_index;
+        int    m_step;
 
-    int clip(int y1);
-    void draw();
+        int clip(int y1);
+        void draw(wxAutoBufferedPaintDC&  dc);
+        void OnPaint(wxPaintEvent& event);
+        void OnSize(wxSizeEvent& event);
+        void OnShow(wxShowEvent& event);
+
+        DECLARE_EVENT_TABLE()
 };
 
 //// update average of each spectrum point

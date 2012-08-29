@@ -37,9 +37,9 @@ BEGIN_EVENT_TABLE(PlotScatter, PlotPanel)
 //    EVT_ERASE_BACKGROUND(PlotScatter::OnErase)
 END_EVENT_TABLE()
 
-//----------------------------------------------------------------
-//
-//----------------------------------------------------------------
+//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
+// PlotScatter
+//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 PlotScatter::PlotScatter(wxFrame* parent) : PlotPanel(parent)
 {
     int i;
@@ -47,7 +47,7 @@ PlotScatter::PlotScatter(wxFrame* parent) : PlotPanel(parent)
     //align(FL_ALIGN_TOP);
     //labelsize(10);
 
-    for(i=0; i<SCATTER_MEM; i++)
+    for(i=0; i < SCATTER_MEM; i++)
     {
         m_mem[i].real = 0.0;
         m_mem[i].imag = 0.0;
@@ -59,9 +59,9 @@ PlotScatter::PlotScatter(wxFrame* parent) : PlotPanel(parent)
 }
 
 //----------------------------------------------------------------
-//
+// draw()
 //----------------------------------------------------------------
-void PlotScatter::draw()
+void PlotScatter::draw(wxAutoBufferedPaintDC&  dc)
 {
     float x_scale;
     float y_scale;
@@ -118,14 +118,41 @@ void PlotScatter::draw()
 }
 
 //----------------------------------------------------------------
-//
+// add_new_samples()
 //----------------------------------------------------------------
 void PlotScatter::add_new_samples(COMP samples[])
 {
     int i;
 
-    for(i=0; i<FDMDV_NSYM; i++)
+    for(i = 0; i < FDMDV_NSYM; i++)
     {
         m_new_samples[i] = samples[i];
     }
 }
+
+//----------------------------------------------------------------
+// OnPaint()
+//----------------------------------------------------------------
+void PlotScatter::OnPaint(wxPaintEvent& event)
+{
+    wxAutoBufferedPaintDC dc(this);
+    draw(dc);
+}
+
+//----------------------------------------------------------------
+// OnSize()
+//----------------------------------------------------------------
+void PlotScatter::OnSize(wxSizeEvent& event)
+{
+//    wxAutoBufferedPaintDC dc(this);
+//    draw(dc);
+}
+
+//----------------------------------------------------------------
+// OnShow()
+//----------------------------------------------------------------
+void PlotScatter::OnShow(wxShowEvent& event)
+{
+//    paintNow();
+}
+

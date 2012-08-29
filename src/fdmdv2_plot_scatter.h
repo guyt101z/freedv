@@ -34,17 +34,21 @@
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 class PlotScatter : public PlotPanel
 {
-public:
-   PlotScatter(wxFrame* parent);
-    ~PlotScatter(){};
+    public:
+       PlotScatter(wxFrame* parent);
+        ~PlotScatter(){};
 
-protected:
-    COMP m_mem[SCATTER_MEM];
-    COMP m_new_samples[FDMDV_NSYM];
+    protected:
+        COMP m_mem[SCATTER_MEM];
+        COMP m_new_samples[FDMDV_NSYM];
 
-    void draw();
-    void add_new_samples(COMP samples[]);
-    DECLARE_EVENT_TABLE()
+        void draw(wxAutoBufferedPaintDC&  dc);
+        void add_new_samples(COMP samples[]);
+        void OnPaint(wxPaintEvent& event);
+        void OnSize(wxSizeEvent& event);
+        void OnShow(wxShowEvent& event);
+
+        DECLARE_EVENT_TABLE()
 };
 
 #endif //__FDMDV2_PLOT_SCATTER__

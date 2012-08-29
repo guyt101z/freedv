@@ -13,6 +13,26 @@
 //#include "fdmdv.h"
 #include <wx/rawbmp.h>
 #include <wx/image.h>
+#include <wx/dcbuffer.h>
+
+#define wxUSE_FILEDLG       1
+#define wxUSE_LIBPNG        1
+#define wxUSE_LIBJPEG       1
+#define wxUSE_GIF           1
+#define wxUSE_PCX           1
+#define wxUSE_LIBTIFF       1
+
+#define PLOT_BORDER         2
+#define XLEFT_OFFSET        20
+#define YBOTTOM_OFFSET      25
+#define GRID_INCREMENT      50
+#define GREY_COLOR          wxColor(0x80, 0x80, 0x80)
+#define BLACK_COLOR         wxColor(0x00, 0x00, 0x00)
+#define BLUE_COLOR          wxColor(0x00, 0x00, 0xFF)
+#define GREEN_COLOR         wxColor(0xFF, 0x00, 0xFF)
+#define RED_COLOR           wxColor(0xFF, 0x00, 0x00)
+#define YELLOW_COLOR        wxColor(0x00, 0xFF, 0x00)
+
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 // Class PlotPanel
@@ -21,54 +41,55 @@ class PlotPanel : public wxPanel
 {
     public:
         PlotPanel(wxFrame* parent);
-        void paintEvent(wxPaintEvent & evt);
-        void paintNow();
-        void render(wxDC& dc);
-        wxPen m_penShortDash;
-        wxPen m_penDotDash;
-        wxRect m_rectCtrl;
-        wxRect m_rectGrid;
-        wxRect m_rectPlot;
-        int m_gridLeftOffset;
-        int m_gridRightOffset;
-        int m_gridTopOffset;
-        int m_gridBottomOffset;
-        double m_label_size;
-        wxBitmap            *m_bmp;
+        void            paintEvent(wxPaintEvent & evt);
+        void            draw(wxAutoBufferedPaintDC& dc);
+        void            drawGraticule(wxAutoBufferedPaintDC& dc);
+        wxPen           m_penShortDash;
+        wxPen           m_penDotDash;
+        wxRect          m_rectCtrl;
+        wxRect          m_rectGrid;
+        wxRect          m_rectPlot;
+//        int             m_gridLeftOffset;
+//        int             m_gridRightOffset;
+//        int             m_gridTopOffset;
+//        int             m_gridBottomOffset;
+        double          m_label_size;
+        wxSize          m_Bufsz;
+        wxBitmap        *m_bmp;
+        wxImagePixelData *m_pBmp;
         //wxNativePixelData   *m_pBmp;
         //wxAlphaPixelData    *m_pBmp;
-        wxImagePixelData    *m_pBmp;
 
         // some useful events
-        void OnMouseMove(wxMouseEvent& event);
-        void OnMouseDown(wxMouseEvent& event);
-        void OnMouseUp(wxMouseEvent& event);
-        void OnMouseWheelMoved(wxMouseEvent& event);
-        void OnPaint(wxPaintEvent& event);
-        void OnClose( wxCloseEvent& event ){ event.Skip(); }
-        void OnSize( wxSizeEvent& event );
-        void OnErase(wxEraseEvent& event);
-        double SetZoomFactor(double zf);
-        double GetZoomFactor(double zf);
+        void    OnMouseMove(wxMouseEvent& event);
+        void    OnMouseDown(wxMouseEvent& event);
+        void    OnMouseUp(wxMouseEvent& event);
+        void    OnMouseWheelMoved(wxMouseEvent& event);
+        void    OnClose(wxCloseEvent& event ){ event.Skip(); }
+        void    OnSize( wxSizeEvent& event );
+        void    OnErase(wxEraseEvent& event);
+        void    OnPaint(wxPaintEvent& event);
+        double  SetZoomFactor(double zf);
+        double  GetZoomFactor(double zf);
         //void OnUpdateUI( wxUpdateUIEvent& event ){ event.Skip(); }
-        void OnShow(wxShowEvent& event);
-        double GetLabelSize();
-        void SetLabelSize(double size);
+        void    OnShow(wxShowEvent& event);
+        double  GetLabelSize();
+        void    SetLabelSize(double size);
 
     protected:
-        int  m_x;
-        int  m_y;
-        int  m_w;
-        int  m_h;
-        int  m_prev_w;
-        int  m_prev_h;
-        int  m_prev_x;
-        int  m_prev_y;
-        bool m_bitmap;
-        bool m_clip;
-        bool m_rubberBand;
-        bool m_mouseDown;
-        double m_zoomFactor;
+        int     m_x;
+        int     m_y;
+        int     m_w;
+        int     m_h;
+        int     m_prev_w;
+        int     m_prev_h;
+        int     m_prev_x;
+        int     m_prev_y;
+        bool    m_bitmap;
+        bool    m_clip;
+        bool    m_rubberBand;
+        bool    m_mouseDown;
+        double  m_zoomFactor;
     DECLARE_EVENT_TABLE()
 };
 #endif //__FDMDV2_PLOT__

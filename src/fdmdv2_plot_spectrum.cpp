@@ -29,11 +29,11 @@
 #include "fdmdv2_plot_spectrum.h"
 
 BEGIN_EVENT_TABLE(PlotSpectrum, PlotPanel)
-    EVT_PAINT           (PlotSpectrum::OnPaint)
     EVT_MOTION          (PlotSpectrum::OnMouseMove)
     EVT_LEFT_DOWN       (PlotSpectrum::OnMouseDown)
     EVT_LEFT_UP         (PlotSpectrum::OnMouseUp)
     EVT_MOUSEWHEEL      (PlotSpectrum::OnMouseWheelMoved)
+    EVT_PAINT           (PlotSpectrum::OnPaint)
     EVT_SIZE            (PlotSpectrum::OnSize)
     EVT_SHOW            (PlotSpectrum::OnShow)
 //    EVT_ERASE_BACKGROUND(PlotSpectrum::OnErase)
@@ -42,36 +42,15 @@ END_EVENT_TABLE()
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 // Class PlotSpectrum
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
-//PlotSpectrum::PlotSpectrum(wxFrame* parent, int x, int y, int w, int h): PlotPanel(parent)
 PlotSpectrum::PlotSpectrum(wxFrame* parent): PlotPanel(parent)
 {
-//    align(FL_ALIGN_TOP);
-//    labelsize(10);
+    SetLabelSize(10.0);
 }
 
 //----------------------------------------------------------------
-//
+// draw()
 //----------------------------------------------------------------
-int PlotSpectrum::handle(int event)
-{
-/*
-    //  detect a left mouse down if inside the spectrum window
-    if((event == FL_NO_EVENT) && (Fl::event_button() == 1))
-    {
-        if((Fl::event_x() > x()) && (Fl::event_x() < (x() + w())) && (Fl::event_y() > y()) && (Fl::event_y() < (y() + h())))
-        {
-            // show zoomed spectrum window
-            zoomSpectrumWindow->show();
-        }
-    }
-*/
-    return 0;
-}
-
-//----------------------------------------------------------------
-//
-//----------------------------------------------------------------
-void PlotSpectrum::draw()
+void PlotSpectrum::draw(wxAutoBufferedPaintDC&  dc)
 {
     float x_px_per_point = 0.0;
     float y_px_per_dB = 0.0;
@@ -83,6 +62,7 @@ void PlotSpectrum::draw()
     float mag1, mag2;
     char  label[20];
     float px_per_hz;
+
 /*
     Fl_Box::draw();
     fl_color(FL_BLACK);
@@ -93,12 +73,16 @@ void PlotSpectrum::draw()
     fl_push_clip(x(),y(),w(),h());
     //printf("%d %d\n", w(), h());
 */
+    dc.SetBrush(*wxBLUE_BRUSH);
+    dc.SetPen(wxPen(YELLOW_COLOR, 2));
+    dc.DrawRectangle(PLOT_BORDER, PLOT_BORDER, m_w, m_h);
+
     x_px_per_point = (float)m_w / FDMDV_NSPEC;
     y_px_per_dB = (float)m_h / (MAX_DB - MIN_DB);
 
     // plot spectrum
 
-    for(i=0; i<FDMDV_NSPEC-1; i++)
+    for(i = 0; i < FDMDV_NSPEC - 1; i++)
     {
 //        mag1 = av_mag[i];
 //        mag2 = av_mag[i+1];
@@ -139,4 +123,31 @@ void PlotSpectrum::draw()
 //        fl_draw(label, x1, y2);
     }
 //    fl_pop_clip();
+}
+
+//----------------------------------------------------------------
+// OnPaint()
+//----------------------------------------------------------------
+void PlotSpectrum::OnPaint(wxPaintEvent& event)
+{
+    wxAutoBufferedPaintDC dc(this);
+    draw(dc);
+}
+
+//----------------------------------------------------------------
+// OnSize()
+//----------------------------------------------------------------
+void PlotSpectrum::OnSize(wxSizeEvent& event)
+{
+//    wxAutoBufferedPaintDC dc(this);
+//    draw(dc);
+}
+
+//----------------------------------------------------------------
+// OnShow()
+//----------------------------------------------------------------
+void PlotSpectrum::OnShow(wxShowEvent& event)
+{
+//    wxAutoBufferedPaintDC dc(this);
+//   draw(dc);
 }

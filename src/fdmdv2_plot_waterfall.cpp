@@ -52,8 +52,6 @@ END_EVENT_TABLE()
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 // Class WaterfallPlot
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
-//PlotWaterfall::PlotWaterfall(int x, int y, int w, int h): Fl_Box(x, y, w, h, "PlotWaterfall")
-//PlotWaterfall::PlotWaterfall(wxFrame* parent, int x, int y, int w, int h, const char name[]): PlotPanel(parent)
 PlotWaterfall::PlotWaterfall(wxFrame* parent): PlotPanel(parent)
 {
     int   i;
@@ -64,9 +62,7 @@ PlotWaterfall::PlotWaterfall(wxFrame* parent): PlotPanel(parent)
     }
     greyscale = 0;
     SetLabelSize(10.0);
-//    wxSize sz = GetClientSize();
-    wxSize sz = GetMaxClientSize();
-    new_pixel_buf(sz.GetWidth(), sz.GetHeight());
+    m_Bufsz = GetMaxClientSize();
 };
 
 //----------------------------------------------------------------
@@ -74,27 +70,39 @@ PlotWaterfall::PlotWaterfall(wxFrame* parent): PlotPanel(parent)
 //----------------------------------------------------------------
 PlotWaterfall::~PlotWaterfall()
 {
-    delete pixel_buf;
+    if(m_bmp->IsOk())
+    {
+        delete m_bmp;
+    }
 }
 
+/*
 //----------------------------------------------------------------
 // new_pixel_buf()
 //----------------------------------------------------------------
 void PlotWaterfall::new_pixel_buf(int w, int h)
 {
-    int buf_sz;
-    int i;
+//    int i;
 
-    prev_w = w;
-    prev_h = h;
-    buf_sz = h * w;
+    m_prev_w = w;
+    m_prev_h = h;
 
-    // pixel_buf = new unsigned[buf_sz];
-    //for(i = 0; i < buf_sz; i++)
-    //{
-    //    pixel_buf[i] = 0;
-    //}
+//    wxMemoryDC m_memDC = new wxMemoryDC();
 
+    if(m_bmp->IsOk())
+    {
+        delete m_bmp;
+        //m_Bufsz = h * w;
+
+        //m_img = new wxImage(sz, pdata, alpha,false);
+        m_bmp = new wxBitmap(w, h, wxBITMAP_SCREEN_DEPTH);
+        //m_pBmp = m_bmp->GetBitmapData();
+    }
+//    pixel_buf = new unsigned[buf_sz];
+//    for(i = 0; i < buf_sz; i++)
+//    {
+//        pixel_buf[i] = 0;
+//    }
 }
 
 //----------------------------------------------------------------
@@ -103,7 +111,6 @@ void PlotWaterfall::new_pixel_buf(int w, int h)
 int PlotWaterfall::handle(int event)
 {
     //  detect a left mouse down if inside the window
-/*
     if ((event == FL_NO_EVENT) && (Fl::event_button() == 1))
     {
         if ((Fl::event_x() > x()) && (Fl::event_x() < (x() + w())) && (Fl::event_y() > y()) && (Fl::event_y() < (y() + h())))
@@ -112,9 +119,9 @@ int PlotWaterfall::handle(int event)
             zoomWaterfallWindow->show();
         }
     }
-*/
     return 0;
 }
+*/
 
 //----------------------------------------------------------------
 // heatmap()
@@ -155,7 +162,7 @@ unsigned PlotWaterfall::heatmap(float val, float min, float max)
 //----------------------------------------------------------------
 // draw()
 //----------------------------------------------------------------
-void PlotWaterfall::draw()
+void PlotWaterfall::draw(wxAutoBufferedPaintDC&  dc)
 {
     float       spec_index_per_px;
     float       intensity_per_dB;
@@ -172,12 +179,35 @@ void PlotWaterfall::draw()
     unsigned    *pdest;
     unsigned    *psrc;
 
+    m_rectCtrl  = GetClientRect();
+    m_rectGrid  = m_rectCtrl;
+
+    m_rectGrid.Deflate(PLOT_BORDER, (PLOT_BORDER + (YBOTTOM_OFFSET/2)));
+    m_rectGrid.Offset(PLOT_BORDER, PLOT_BORDER);
+
+    int m_h = m_rectGrid.GetHeight();
+    int m_w = m_rectGrid.GetWidth();
+
     /* detect resizing of window */
+/*
     if ((m_h != m_prev_h) || (m_w != m_prev_w))
     {
-        delete pixel_buf;
+        //delete m_pBmp;
         new_pixel_buf(m_w, m_h);
     }
+*/
+    //int p;
+    //char buf[15];
+    wxString s;
+
+    dc.Clear();
+//    PlotPanel::draw(dc);
+
+    // Draw a filled rectangle with aborder
+    dc.SetBrush(*wxBLUE_BRUSH);
+    dc.SetPen(wxPen(GREEN_COLOR, 2));
+    dc.DrawRectangle(PLOT_BORDER, PLOT_BORDER, m_w, m_h);
+
 //    Fl_Box::draw();
     // determine dy, the height of one "block"
     px_per_sec = (float)m_h / WATERFALL_SECS_Y;
@@ -212,7 +242,7 @@ void PlotWaterfall::draw()
         {
             for(py = 0; py < dy; py++)
             {
-                last_row[px + py * m_w] = intensity<<8;
+                last_row[px + py * m_w] = intensity << 8;
             }
         }
         else
@@ -225,6 +255,48 @@ void PlotWaterfall::draw()
     }
     // update bit map
     //fl_draw_image((unsigned char*)pixel_buf, m_x, m_y, m_w, m_h, 4, 0);
+    //dc.DrawLines(4, m_pBmp, 0, 0 );
 }
 
+//----------------------------------------------------------------
+// paintNow()
+//----------------------------------------------------------------
+void PlotWaterfall::paintNow()
+{
+//    wxClientDC dc(this);
+//    draw(dc);
+//    draw();
+}
 
+//----------------------------------------------------------------
+// paintEvent()
+//
+// Called by the system of by wxWidgets when the panel needs
+// to be redrawn. You can also trigger this call by calling
+// Refresh()/Update().
+//----------------------------------------------------------------
+void PlotWaterfall::OnPaint(wxPaintEvent & evt)
+{
+    wxAutoBufferedPaintDC dc(this);
+    draw(dc);
+}
+
+//----------------------------------------------------------------
+// OnSize()
+//----------------------------------------------------------------
+void PlotWaterfall::OnSize(wxSizeEvent& event)
+{
+    if(m_bitmap)
+    {
+        this->Refresh();
+    }
+}
+
+//----------------------------------------------------------------
+// OnShow()
+//----------------------------------------------------------------
+void PlotWaterfall::OnShow(wxShowEvent& event)
+{
+//    wxAutoBufferedPaintDC dc(this);
+//    draw();
+}

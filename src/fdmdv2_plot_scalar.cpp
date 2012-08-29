@@ -1,5 +1,5 @@
 //==========================================================================
-// Name:            fdmdv2_plot_waterfall.cpp
+// Name:            fdmdv2_plot_scalar.cpp
 // Purpose:         Implements a waterfall plot derivative of fdmdv2_plot.
 // Created:         June 22, 2012
 // Initial author:  David Witten
@@ -25,10 +25,24 @@
 #include <string.h>
 #include "wx/wx.h"
 #include "fdmdv2_main.h"
-#include "fdmdv2_plot.h"
-#include "fdmdv2_scalar.h"
+#include "fdmdv2_plot_scalar.h"
 
-Scalar::Scalar(wxFrame* parent, int x, int y, int w, int h, int x_max_, int y_max_, const char name[]): DrawPanel(parent)
+BEGIN_EVENT_TABLE(PlotScalar, PlotPanel)
+    EVT_PAINT           (PlotScalar::OnPaint)
+    EVT_MOTION          (PlotScalar::OnMouseMove)
+    EVT_LEFT_DOWN       (PlotScalar::OnMouseDown)
+    EVT_LEFT_UP         (PlotScalar::OnMouseUp)
+    EVT_MOUSEWHEEL      (PlotScalar::OnMouseWheelMoved)
+    EVT_SIZE            (PlotScalar::OnSize)
+    EVT_SHOW            (PlotScalar::OnShow)
+//    EVT_ERASE_BACKGROUND(PlotScalar::OnErase)
+END_EVENT_TABLE()
+
+//----------------------------------------------------------------
+//
+//----------------------------------------------------------------
+//PlotScalar::PlotScalar(wxFrame* parent, int x, int y, int w, int h, int x_max_, int y_max_, const char name[]): PlotPanel(parent)
+PlotScalar::PlotScalar(wxFrame* parent, int x_max_, int y_max_): PlotPanel(parent)
 {
     int i;
 
@@ -50,17 +64,26 @@ Scalar::Scalar(wxFrame* parent, int x, int y, int w, int h, int x_max_, int y_ma
     m_index = 0;
 }
 
-Scalar::~Scalar()
+//----------------------------------------------------------------
+//
+//----------------------------------------------------------------
+PlotScalar::~PlotScalar()
 {
     delete m_mem;
 }
 
-void Scalar::add_new_sample(float sample)
+//----------------------------------------------------------------
+//
+//----------------------------------------------------------------
+void PlotScalar::add_new_sample(float sample)
 {
     m_new_sample = sample;
 }
 
-int Scalar::clip(int y1)
+//----------------------------------------------------------------
+//
+//----------------------------------------------------------------
+int PlotScalar::clip(int y1)
 {
     if(y1 > (m_h/2 - 10))
     {
@@ -73,7 +96,10 @@ int Scalar::clip(int y1)
     return y1;
 }
 
-void Scalar::draw()
+//----------------------------------------------------------------
+//
+//----------------------------------------------------------------
+void PlotScalar::draw(wxAutoBufferedPaintDC&  dc)
 {
     float x_scale;
     float y_scale;
@@ -84,7 +110,7 @@ void Scalar::draw()
     int   y2;
     char  label[100];
 
-//    DrawPanel::draw();
+//    PlotPanel::draw();
 
     /* detect resizing of window */
     if((m_h != m_prev_h) || (m_w != m_prev_w) || (m_x != m_prev_x) || (m_y != m_prev_y))
@@ -167,3 +193,30 @@ void Scalar::draw()
 //         av_mag[i] = (1.0 - BETA)*av_mag[i] + BETA*mag_dB[i];
 //     }
 // }
+
+//----------------------------------------------------------------
+// OnPaint()
+//----------------------------------------------------------------
+void PlotScalar::OnPaint(wxPaintEvent& event)
+{
+    wxAutoBufferedPaintDC dc(this);
+    draw(dc);
+}
+
+//----------------------------------------------------------------
+// OnSize()
+//----------------------------------------------------------------
+void PlotScalar::OnSize(wxSizeEvent& event)
+{
+//    wxAutoBufferedPaintDC dc(this);
+//    draw(dc);
+}
+
+//----------------------------------------------------------------
+// OnShow()
+//----------------------------------------------------------------
+void PlotScalar::OnShow(wxShowEvent& event)
+{
+//    wxAutoBufferedPaintDC dc(this);
+ //   draw(dc);
+}

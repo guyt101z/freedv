@@ -34,23 +34,21 @@
 class PlotWaterfall : public PlotPanel
 {
 public:
-    //PlotWaterfall(int x, int y, int w, int h);
-    //PlotWaterfall(wxFrame* parent, int x, int y, int w, int h, const char name[]);
     PlotWaterfall(wxFrame* parent);
     ~PlotWaterfall();
 
 protected:
-    int         prev_w;
-    int         prev_h;
     unsigned    *pixel_buf;
     unsigned    heatmap_lut[256];
     int         greyscale;
 
-    void    new_pixel_buf(int w, int h);
-    int     handle(int event);
-    unsigned heatmap(float val, float min, float max);
-    void    draw();
+    unsigned    heatmap(float val, float min, float max);
+    void        draw(wxAutoBufferedPaintDC&  dc);
 
+    void        OnPaint(wxPaintEvent & evt);
+    void        OnSize(wxSizeEvent& event);
+    void        OnShow(wxShowEvent& event);
+    void        paintNow();
     DECLARE_EVENT_TABLE()
 };
 
