@@ -38,7 +38,7 @@ class PlotScalar: public PlotPanel
         //PlotScalar(wxFrame* parent, int x, int y, int w, int h, int x_max_, int y_max_, const char name[]);
         PlotScalar(wxFrame* parent, int x_max_, int y_max_);
         ~PlotScalar();
-        void add_new_sample(float sample);
+         void add_new_sample(float sample);
 
     protected:
 

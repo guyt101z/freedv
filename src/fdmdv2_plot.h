@@ -22,17 +22,45 @@
 #define wxUSE_PCX           1
 #define wxUSE_LIBTIFF       1
 
-#define PLOT_BORDER         2
-#define XLEFT_OFFSET        20
+#define PLOT_BORDER         3
+#define XLEFT_OFFSET        30
+#define XLEFT_TEXT_OFFSET   7
 #define YBOTTOM_OFFSET      25
 #define GRID_INCREMENT      50
 #define GREY_COLOR          wxColor(0x80, 0x80, 0x80)
 #define BLACK_COLOR         wxColor(0x00, 0x00, 0x00)
-#define BLUE_COLOR          wxColor(0x00, 0x00, 0xFF)
-#define GREEN_COLOR         wxColor(0xFF, 0x00, 0xFF)
-#define RED_COLOR           wxColor(0xFF, 0x00, 0x00)
-#define YELLOW_COLOR        wxColor(0x00, 0xFF, 0x00)
 
+#define BLUE_COLOR          wxColor(0x00, 0x00, 0xFF)
+#define LIGHT_BLUE_COLOR    wxColor(0x80, 0x80, 0xFF)
+
+#define RED_COLOR           wxColor(0xFF, 0x5E, 0x5E)
+#define LIGHT_RED_COLOR     wxColor(0xFF, 0xE0, 0xE0)
+#define DARK_RED_COLOR      wxColor(0xFF, 0x00, 0x00)
+#define PINK_COLOR          wxColor(0xFF, 0x80, 0xFF)
+
+#define LIGHT_GREEN_COLOR   wxColor(0xE3, 0xFF, 0xE0)
+#define GREEN_COLOR         wxColor(0x95, 0xFF, 0x8A)
+#define DARK_GREEN_COLOR    wxColor(0x20, 0xFF, 0x08)
+#define VERY_GREEN_COLOR    wxColor(0x00, 0xFF, 0x00)
+
+#define YELLOW_COLOR        wxColor(0xFF, 0xFF, 0x5E)
+#define LIGHT_YELLOW_COLOR  wxColor(0xFF, 0xFF, 0xB5)
+#define DARK_YELLOW_COLOR   wxColor(0xFF, 0xFF, 0x08)
+
+/*
+    wxNullBrush
+    wxBLACK_BRUSH
+    wxBLUE_BRUSH
+    wxCYAN_BRUSH
+    wxGREEN_BRUSH
+    wxYELLOW_BRUSH
+    wxGREY_BRUSH
+    wxLIGHT_GREY_BRUSH
+    wxMEDIUM_GREY_BRUSH
+    wxRED_BRUSH
+    wxTRANSPARENT_BRUSH
+    wxWHITE_BRUSH
+*/
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 // Class PlotPanel
@@ -85,7 +113,7 @@ class PlotPanel : public wxPanel
         int     m_prev_h;
         int     m_prev_x;
         int     m_prev_y;
-        bool    m_bitmap;
+        bool    m_use_bitmap;
         bool    m_clip;
         bool    m_rubberBand;
         bool    m_mouseDown;

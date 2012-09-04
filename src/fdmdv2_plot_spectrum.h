@@ -38,10 +38,11 @@ class PlotSpectrum : public PlotPanel
         PlotSpectrum(wxFrame* parent);
         ~PlotSpectrum() {};
     protected:
-        void draw(wxAutoBufferedPaintDC&  dc);
-        void OnPaint(wxPaintEvent& event);
-        void OnSize(wxSizeEvent& event);
-        void OnShow(wxShowEvent& event);
+        void        OnPaint(wxPaintEvent& event);
+        void        OnSize(wxSizeEvent& event);
+        void        OnShow(wxShowEvent& event);
+        void        drawGraticule(wxAutoBufferedPaintDC&  dc);
+        void        draw(wxAutoBufferedPaintDC&  dc);
 
         DECLARE_EVENT_TABLE()
 };

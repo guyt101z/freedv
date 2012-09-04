@@ -47,6 +47,7 @@ static int txCallback(
                         PaStreamCallbackFlags statusFlags,
                         void *userData
                      );
+
 float  av_mag[FDMDV_NSPEC];                  // shared between a few classes
 
 // initialize the application
@@ -65,16 +66,16 @@ bool MainApp::OnInit()
     MainFrame *frame = new MainFrame(NULL);
 
     frame->m_panelDefaultA = new PlotPanel((wxFrame*) frame->m_auiNbookCtrl );
-    frame->m_auiNbookCtrl->AddPage(frame->m_panelDefaultA, _("Spectrum"), true, wxNullBitmap );
+    frame->m_auiNbookCtrl->AddPage(frame->m_panelDefaultA, _("Test A"), true, wxNullBitmap );
 
-    frame->m_panelDefaultB = new PlotPanel((wxFrame*) frame->m_auiNbookCtrl );
-    frame->m_auiNbookCtrl->AddPage(frame->m_panelDefaultB, _("Waterfall"), true, wxNullBitmap );
+//    frame->m_panelDefaultB = new PlotPanel((wxFrame*) frame->m_auiNbookCtrl );
+//    frame->m_auiNbookCtrl->AddPage(frame->m_panelDefaultB, _("Test B"), true, wxNullBitmap );
 
-//    frame->m_panelSpectrum = new PlotSpectrum((wxFrame*) frame->m_auiNbookCtrl );
-//    frame->m_auiNbookCtrl->AddPage(frame->m_panelSpectrum, _("Spectrum"), true, wxNullBitmap );
+    frame->m_panelSpectrum = new PlotSpectrum((wxFrame*) frame->m_auiNbookCtrl );
+    frame->m_auiNbookCtrl->AddPage(frame->m_panelSpectrum, _("Spectrum"), true, wxNullBitmap );
 
-//    frame->m_panelWaterfall = new PlotWaterfall((wxFrame*) frame->m_auiNbookCtrl );
-//    frame->m_auiNbookCtrl->AddPage(frame->m_panelWaterfall, _("Waterfall"), true, wxNullBitmap );
+    frame->m_panelWaterfall = new PlotWaterfall((wxFrame*) frame->m_auiNbookCtrl );
+    frame->m_auiNbookCtrl->AddPage(frame->m_panelWaterfall, _("Waterfall"), true, wxNullBitmap );
 
 //    frame->m_panelScatter = new PlotScatter((wxFrame*) frame->m_auiNbookCtrl );
 //    frame->m_auiNbookCtrl->AddPage(frame->m_panelWaterfall, _("Scatter"), true, wxNullBitmap );
@@ -531,11 +532,11 @@ void MainFrame::OnClose( wxCommandEvent& event )
 {
     if(m_sound != NULL)
     {
-//        if(m_sound->IsPlaying())
-//        {
-        m_sound->Stop();
-        m_sound = NULL;
-//        }
+        //if(m_sound->IsOk()IsPlaying())
+        //{
+            m_sound->Stop();
+            m_sound = NULL;
+        //}
     }
 //    wxMessageBox("Got Click!", "OnClose", wxOK);
 //    event.Skip();
@@ -553,8 +554,8 @@ void MainFrame::OnCloseUpdateUI( wxUpdateUIEvent& event )
 //-------------------------------------------------------------------------
 void MainFrame::OnExit( wxCommandEvent& event )
 {
-    wxMessageBox("Got Click!", "OnExit", wxOK);
-    event.Skip();
+//    wxMessageBox("Got Click!", "OnExit", wxOK);
+//    event.Skip();
 }
 
 //-------------------------------------------------------------------------

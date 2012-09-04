@@ -56,7 +56,7 @@ PlotWaterfall::PlotWaterfall(wxFrame* parent): PlotPanel(parent)
 {
     int   i;
 
-    for(i=0; i<255; i++)
+    for(i = 0; i < 255; i++)
     {
         heatmap_lut[i] = heatmap((float)i, 0.0, 255.0);
     }
@@ -70,10 +70,10 @@ PlotWaterfall::PlotWaterfall(wxFrame* parent): PlotPanel(parent)
 //----------------------------------------------------------------
 PlotWaterfall::~PlotWaterfall()
 {
-    if(m_bmp->IsOk())
-    {
-        delete m_bmp;
-    }
+//    if(m_bmp->IsOk())
+//    {
+//        delete m_bmp;
+//    }
 }
 
 /*
@@ -159,6 +159,51 @@ unsigned PlotWaterfall::heatmap(float val, float min, float max)
     return  (b << 16) + (g << 8) + r;
 }
 
+//-------------------------------------------------------------------------
+// drawGraticule()
+//-------------------------------------------------------------------------
+void PlotWaterfall::drawGraticule(wxAutoBufferedPaintDC&  dc)
+{
+    int p;
+    char buf[15];
+    wxString s;
+
+//    int h = m_rectGrid.GetHeight();
+//    int w = m_rectGrid.GetWidth();
+
+    // Draw a filled rectangle with aborder
+    wxBrush ltBlueBrush = wxBrush(LIGHT_RED_COLOR);
+    dc.SetBrush(ltBlueBrush);
+    dc.SetPen(wxPen(BLACK_COLOR, 1));
+    dc.DrawRectangle(PLOT_BORDER + XLEFT_OFFSET, PLOT_BORDER, m_w, m_h);
+
+    // Vertical gridlines
+    dc.SetPen(m_penShortDash);
+    for(p = (PLOT_BORDER + XLEFT_OFFSET + GRID_INCREMENT); p < m_w; p += GRID_INCREMENT)
+    {
+        dc.DrawLine(p, (m_h + PLOT_BORDER), p, PLOT_BORDER);
+    }
+    // Horizontal gridlines
+    dc.SetPen(m_penDotDash);
+    for(p = (m_h - GRID_INCREMENT); p > PLOT_BORDER; p -= GRID_INCREMENT)
+    {
+        dc.DrawLine(PLOT_BORDER + XLEFT_OFFSET, (p + PLOT_BORDER), (m_w + PLOT_BORDER + XLEFT_OFFSET), (p + PLOT_BORDER));
+    }
+    // Label the X-Axis
+    dc.SetPen(wxPen(GREY_COLOR, 1));
+    for(p = GRID_INCREMENT; p < (m_w - YBOTTOM_OFFSET); p += GRID_INCREMENT)
+    {
+        sprintf(buf, "%1.1f Hz",(double)(p / 10));
+        dc.DrawText(buf, p - PLOT_BORDER + XLEFT_OFFSET, m_h + YBOTTOM_OFFSET/2);
+    }
+    // Label the Y-Axis
+    for(p = (m_h - GRID_INCREMENT); p > PLOT_BORDER; p -= GRID_INCREMENT)
+    {
+        sprintf(buf, "%1.0f", (double)((m_h - p) * -10));
+        dc.DrawText(buf, XLEFT_TEXT_OFFSET, p);
+    }
+}
+
 //----------------------------------------------------------------
 // draw()
 //----------------------------------------------------------------
@@ -178,15 +223,24 @@ void PlotWaterfall::draw(wxAutoBufferedPaintDC&  dc)
     unsigned    *last_row;
     unsigned    *pdest;
     unsigned    *psrc;
+    //int p;
+    //char buf[15];
+    //wxString s;
 
     m_rectCtrl  = GetClientRect();
     m_rectGrid  = m_rectCtrl;
 
-    m_rectGrid.Deflate(PLOT_BORDER, (PLOT_BORDER + (YBOTTOM_OFFSET/2)));
-    m_rectGrid.Offset(PLOT_BORDER, PLOT_BORDER);
+    m_rectGrid.Deflate(PLOT_BORDER + (XLEFT_OFFSET/2), (PLOT_BORDER + (YBOTTOM_OFFSET/2)));
+    m_rectGrid.Offset(PLOT_BORDER + XLEFT_OFFSET, PLOT_BORDER);
 
-    int m_h = m_rectGrid.GetHeight();
-    int m_w = m_rectGrid.GetWidth();
+//    m_rectGrid.Deflate(PLOT_BORDER, (PLOT_BORDER + (YBOTTOM_OFFSET/2)));
+//    m_rectGrid.Offset(PLOT_BORDER, PLOT_BORDER);
+
+    m_h = m_rectGrid.GetHeight();
+    m_w = m_rectGrid.GetWidth();
+
+    dc.Clear();
+    drawGraticule(dc);
 
     /* detect resizing of window */
 /*
@@ -196,19 +250,7 @@ void PlotWaterfall::draw(wxAutoBufferedPaintDC&  dc)
         new_pixel_buf(m_w, m_h);
     }
 */
-    //int p;
-    //char buf[15];
-    wxString s;
-
-    dc.Clear();
-//    PlotPanel::draw(dc);
-
-    // Draw a filled rectangle with aborder
-    dc.SetBrush(*wxBLUE_BRUSH);
-    dc.SetPen(wxPen(GREEN_COLOR, 2));
-    dc.DrawRectangle(PLOT_BORDER, PLOT_BORDER, m_w, m_h);
-
-//    Fl_Box::draw();
+/*
     // determine dy, the height of one "block"
     px_per_sec = (float)m_h / WATERFALL_SECS_Y;
     dy = DT * px_per_sec;
@@ -253,19 +295,10 @@ void PlotWaterfall::draw(wxAutoBufferedPaintDC&  dc)
             }
         }
     }
+*/
     // update bit map
     //fl_draw_image((unsigned char*)pixel_buf, m_x, m_y, m_w, m_h, 4, 0);
     //dc.DrawLines(4, m_pBmp, 0, 0 );
-}
-
-//----------------------------------------------------------------
-// paintNow()
-//----------------------------------------------------------------
-void PlotWaterfall::paintNow()
-{
-//    wxClientDC dc(this);
-//    draw(dc);
-//    draw();
 }
 
 //----------------------------------------------------------------
@@ -286,7 +319,7 @@ void PlotWaterfall::OnPaint(wxPaintEvent & evt)
 //----------------------------------------------------------------
 void PlotWaterfall::OnSize(wxSizeEvent& event)
 {
-    if(m_bitmap)
+    if(m_use_bitmap)
     {
         this->Refresh();
     }

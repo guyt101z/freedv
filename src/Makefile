@@ -38,27 +38,36 @@ am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
-CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 SOURCES =
 DIST_SOURCES =
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
-ACLOCAL = ${SHELL} /p/Radio/fdmdv2/missing --run aclocal-1.11
-AMTAR = ${SHELL} /p/Radio/fdmdv2/missing --run tar
-AUTOCONF = ${SHELL} /p/Radio/fdmdv2/missing --run autoconf
-AUTOHEADER = ${SHELL} /p/Radio/fdmdv2/missing --run autoheader
-AUTOMAKE = ${SHELL} /p/Radio/fdmdv2/missing --run automake-1.11
+ACLOCAL = ${SHELL} /fdmdv2/missing --run aclocal-1.11
+AMTAR = ${SHELL} /fdmdv2/missing --run tar
+AUTOCONF = ${SHELL} /fdmdv2/missing --run autoconf
+AUTOHEADER = ${SHELL} /fdmdv2/missing --run autoheader
+AUTOMAKE = ${SHELL} /fdmdv2/missing --run automake-1.11
 AWK = gawk
+CC = gcc
+CCDEPMODE = depmode=none
+CFLAGS = -g -O2
+CPP = gcc -E
+CPPFLAGS = 
 CYGPATH_W = echo
-DEFS = -DPACKAGE_NAME=\"fdmdv2\" -DPACKAGE_TARNAME=\"fdmdv2\" -DPACKAGE_VERSION=\"0.2\" -DPACKAGE_STRING=\"fdmdv2\ 0.2\" -DPACKAGE_BUGREPORT=\"wittend@wwrinc.com\" -DPACKAGE_URL=\"\" -DPACKAGE=\"fdmdv2\" -DVERSION=\"0.2\"
+DEFS = -DPACKAGE_NAME=\"fdmdv2\" -DPACKAGE_TARNAME=\"fdmdv2\" -DPACKAGE_VERSION=\"0.2\" -DPACKAGE_STRING=\"fdmdv2\ 0.2\" -DPACKAGE_BUGREPORT=\"wittend@wwrinc.com\" -DPACKAGE_URL=\"\" -DPACKAGE=\"fdmdv2\" -DVERSION=\"0.2\" -DHAVE_LIBM=1 -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_STDLIB_H=1 -DHAVE_MALLOC=1 -DHAVE_FLOOR=1 -DHAVE_POW=1 -DHAVE_SQRT=1
+DEPDIR = .deps
 ECHO_C = 
 ECHO_N = -n
 ECHO_T = 
+EGREP = /bin/grep -E
+EXEEXT = .exe
+GREP = /bin/grep
 INSTALL = /bin/install -c
 INSTALL_DATA = ${INSTALL} -m 644
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_SCRIPT = ${INSTALL}
 INSTALL_STRIP_PROGRAM = $(install_sh) -c -s
+LDFLAGS = 
 LIBOBJS = 
 
 #INCLUDE = ../../codec2-dev/src \
@@ -96,8 +105,9 @@ LIBS = -lsndfile-1 \
 -lwsock32 
 
 LTLIBOBJS = 
-MAKEINFO = ${SHELL} /p/Radio/fdmdv2/missing --run makeinfo
+MAKEINFO = ${SHELL} /fdmdv2/missing --run makeinfo
 MKDIR_P = /bin/mkdir -p
+OBJEXT = o
 PACKAGE = fdmdv2
 PACKAGE_BUGREPORT = wittend@wwrinc.com
 PACKAGE_NAME = fdmdv2
@@ -110,11 +120,14 @@ SET_MAKE =
 SHELL = /bin/sh
 STRIP = 
 VERSION = 0.2
-abs_builddir = /p/Radio/fdmdv2/src
-abs_srcdir = /p/Radio/fdmdv2/src
-abs_top_builddir = /p/Radio/fdmdv2
-abs_top_srcdir = /p/Radio/fdmdv2
+abs_builddir = /fdmdv2/src
+abs_srcdir = /fdmdv2/src
+abs_top_builddir = /fdmdv2
+abs_top_srcdir = /fdmdv2
+ac_ct_CC = gcc
+am__include = include
 am__leading_dot = .
+am__quote = 
 am__tar = ${AMTAR} chof - "$$tardir"
 am__untar = ${AMTAR} xf -
 bindir = ${exec_prefix}/bin
@@ -129,7 +142,7 @@ host_alias =
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
-install_sh = ${SHELL} /p/Radio/fdmdv2/install-sh
+install_sh = ${SHELL} /fdmdv2/install-sh
 libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
 localedir = ${datarootdir}/locale
@@ -154,8 +167,8 @@ AUTOMAKE_OPTS = gnu
 NAME = fdmdv2
 AM_CPPFLAGS = $(AM_CFLAGS) 
 WX_FLAGS = -mthreads -DHAVE_W32API_H -D__WXMSW__ -DNDEBUG -D_UNICODE -IC:\bin\wxWidgets-2.9.4\lib\gcc_dll\mswu -IC:\bin\wxWidgets-2.9.4\include -DWXUSINGDLL -Wno-ctor-dtor-privacy -pipe -fmessage-length=0
+CONFIG_CLEAN_FILES = *.o *.exe
 EXE_EXT = .exe
-OBJEXT = o
 GPP = mingw32-g++.exe
 WXWIN = C:\bin\wxWidgets-2.9.4
 # PATH=$(WXWIN)\lib\gcc_dll;$(PATH)
@@ -164,21 +177,31 @@ UNIT_TEST_PP_SRC_DIR = C:\bin\UnitTest++-1.3
 SRC = topFrame.cpp \
 fdmdv2_main.cpp \
 fdmdv2_plot.cpp \
+fdmdv2_plot_scalar.cpp \
+fdmdv2_plot_scatter.cpp \
+fdmdv2_plot_spectrum.cpp \
+fdmdv2_plot_waterfall.cpp \
+fdmdv2_process_audio.cpp\
+fdmdv2_pa_wrapper.cpp \
 dlg_about.cpp \
 dlg_audio.cpp \
 dlg_comports.cpp \
-dlg_options.cpp \
-paclass.cpp
+dlg_options.cpp
 
 DEFINES = -D__WX__
 OBJS = topFrame.$(OBJEXT) \
 fdmdv2_main.$(OBJEXT) \
 fdmdv2_plot.$(OBJEXT) \
+fdmdv2_plot_scalar.$(OBJEXT) \
+fdmdv2_plot_scatter.$(OBJEXT) \
+fdmdv2_plot_spectrum.$(OBJEXT) \
+fdmdv2_plot_waterfall.$(OBJEXT) \
+fdmdv2_process_audio.$(OBJEXT)\
+fdmdv2_pa_wrapper.$(OBJEXT)\
 dlg_about.$(OBJEXT) \
 dlg_audio.$(OBJEXT) \
 dlg_comports.$(OBJEXT) \
-dlg_options.$(OBJEXT) \
-paclass.$(OBJEXT)
+dlg_options.$(OBJEXT)
 
 INCLUDE_PATHS = -I. \
 -IC:\bin\wxWidgets-2.9.4\lib\gcc_dll\mswu \
@@ -381,6 +404,24 @@ fdmdv2_main.$(OBJEXT):  fdmdv2_main.cpp fdmdv2_main.h
 fdmdv2_plot.$(OBJEXT):  fdmdv2_plot.cpp fdmdv2_plot.h 
 	$(GPP) -c $(DEFINES) $(INCLUDE_PATHS) $(CFLAGS) $(WX_FLAGS) fdmdv2_plot.cpp
 
+fdmdv2_plot_scalar.$(OBJEXT):  fdmdv2_plot_scalar.cpp fdmdv2_plot_scalar.h fdmdv2_plot.h fdmdv2_defines.h
+	$(GPP) -c $(DEFINES) $(INCLUDE_PATHS) $(CFLAGS) $(WX_FLAGS) fdmdv2_plot_scalar.cpp
+
+fdmdv2_plot_scatter.$(OBJEXT):  fdmdv2_plot_scatter.cpp fdmdv2_plot_scatter.h fdmdv2_plot.h fdmdv2_defines.h
+	$(GPP) -c $(DEFINES) $(INCLUDE_PATHS) $(CFLAGS) $(WX_FLAGS) fdmdv2_plot_scatter.cpp
+
+fdmdv2_plot_spectrum.$(OBJEXT):  fdmdv2_plot_spectrum.cpp fdmdv2_plot_spectrum.h fdmdv2_plot.h fdmdv2_defines.h
+	$(GPP) -c $(DEFINES) $(INCLUDE_PATHS) $(CFLAGS) $(WX_FLAGS) fdmdv2_plot_spectrum.cpp
+
+fdmdv2_plot_waterfall.$(OBJEXT):  fdmdv2_plot_waterfall.cpp fdmdv2_plot_waterfall.h fdmdv2_plot.h fdmdv2_defines.h
+	$(GPP) -c $(DEFINES) $(INCLUDE_PATHS) $(CFLAGS) $(WX_FLAGS) fdmdv2_plot_waterfall.cpp
+
+fdmdv2_process_audio.$(OBJEXT):  fdmdv2_process_audio.cpp 
+	$(GPP) -c $(DEFINES) $(INCLUDE_PATHS) $(CFLAGS) $(WX_FLAGS) fdmdv2_process_audio.cpp
+
+fdmdv2_pa_wrapper.$(OBJEXT): fdmdv2_pa_wrapper.cpp  fdmdv2_pa_wrapper.h
+	$(GPP) -c $(DEFINES) $(INCLUDE_PATHS) $(CFLAGS) $(WX_FLAGS) fdmdv2_pa_wrapper.cpp
+
 dlg_about.$(OBJEXT):  dlg_about.cpp dlg_about.h 
 	$(GPP) -c $(DEFINES) $(INCLUDE_PATHS) $(CFLAGS) $(WX_FLAGS) dlg_about.cpp
 
@@ -392,9 +433,6 @@ dlg_comports.$(OBJEXT):  dlg_comports.cpp dlg_comports.h
 
 dlg_options.$(OBJEXT):  dlg_options.cpp dlg_options.h 
 	$(GPP) -c $(DEFINES) $(INCLUDE_PATHS) $(CFLAGS) $(WX_FLAGS) dlg_options.cpp
-
-paclass.$(OBJEXT):  paclass.cpp paclass.h 
-	$(GPP) -c $(DEFINES) $(INCLUDE_PATHS)  $(CFLAGS) $(WX_FLAGS) paclass.cpp
 
 #fdmdv2$(EXE_EXT): topFrame.$(OBJEXT) topFrame.$(OBJEXT) fdmdv2_main.$(OBJEXT) fdmdv2_plot.$(OBJEXT) dlg_about.$(OBJEXT) dlg_audio.$(OBJEXT) dlg_comports.$(OBJEXT) dlg_options.$(OBJEXT) paclass.$(OBJEXT)
 

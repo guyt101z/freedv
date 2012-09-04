@@ -43,12 +43,13 @@ protected:
     int         greyscale;
 
     unsigned    heatmap(float val, float min, float max);
-    void        draw(wxAutoBufferedPaintDC&  dc);
 
     void        OnPaint(wxPaintEvent & evt);
     void        OnSize(wxSizeEvent& event);
     void        OnShow(wxShowEvent& event);
-    void        paintNow();
+    void        drawGraticule(wxAutoBufferedPaintDC&  dc);
+    void        draw(wxAutoBufferedPaintDC&  dc);
+
     DECLARE_EVENT_TABLE()
 };
 

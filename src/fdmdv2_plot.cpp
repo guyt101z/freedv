@@ -28,7 +28,7 @@ END_EVENT_TABLE()
 PlotPanel::PlotPanel(wxFrame* parent) : wxPanel(parent)
 {
     m_clip              = false;
-    m_bitmap            = true;
+    m_use_bitmap        = true;
     m_zoomFactor        = 1.0;
     m_rubberBand        = false;
     m_mouseDown         = false;
@@ -79,7 +79,7 @@ void PlotPanel::OnErase(wxEraseEvent& event)
 //-------------------------------------------------------------------------
 void PlotPanel::OnSize(wxSizeEvent& event)
 {
-    if(m_bitmap)
+    if(m_use_bitmap)
     {
         this->Refresh();
     }
@@ -148,41 +148,37 @@ void PlotPanel::drawGraticule(wxAutoBufferedPaintDC&  dc)
     char buf[15];
     wxString s;
 
-    m_rectCtrl  = GetClientRect();
-    m_rectGrid  = m_rectCtrl;
-
-    m_rectGrid.Deflate(PLOT_BORDER + (XLEFT_OFFSET/2), (PLOT_BORDER + (YBOTTOM_OFFSET/2)));
-    //m_rectGrid.Offset(PLOT_BORDER + (XLEFT_OFFSET), PLOT_BORDER);
-    m_rectGrid.Offset(PLOT_BORDER + XLEFT_OFFSET, PLOT_BORDER);
-
-    int h = m_rectGrid.GetHeight();
-    int w = m_rectGrid.GetWidth();
-
-    dc.Clear();
-
     // Draw a filled rectangle with aborder
-    dc.SetBrush(*wxBLUE_BRUSH);
-    dc.SetPen(wxPen(BLACK_COLOR, 2));
-    dc.DrawRectangle(PLOT_BORDER + XLEFT_OFFSET, PLOT_BORDER, w, h);
+    wxBrush ltBlueBrush = wxBrush(LIGHT_BLUE_COLOR);
+    dc.SetBrush(ltBlueBrush);
+    dc.SetPen(wxPen(BLACK_COLOR, 1));
+    dc.DrawRectangle(PLOT_BORDER + XLEFT_OFFSET, PLOT_BORDER, m_w, m_h);
 
     // Vertical gridlines
     dc.SetPen(m_penShortDash);
-    for(p = (PLOT_BORDER + XLEFT_OFFSET + GRID_INCREMENT); p < w; p += GRID_INCREMENT)
+    for(p = (PLOT_BORDER + XLEFT_OFFSET + GRID_INCREMENT); p < m_w; p += GRID_INCREMENT)
     {
-        dc.DrawLine(p, (h + PLOT_BORDER), p, PLOT_BORDER);
+        dc.DrawLine(p, (m_h + PLOT_BORDER), p, PLOT_BORDER);
     }
     // Horizontal gridlines
     dc.SetPen(m_penDotDash);
-    for(p = (h - GRID_INCREMENT); p > PLOT_BORDER; p -= GRID_INCREMENT)
+    for(p = (m_h - GRID_INCREMENT); p > PLOT_BORDER; p -= GRID_INCREMENT)
     {
-        dc.DrawLine(PLOT_BORDER + XLEFT_OFFSET, (p + PLOT_BORDER), (w + PLOT_BORDER + XLEFT_OFFSET), (p + PLOT_BORDER));
+        dc.DrawLine(PLOT_BORDER + XLEFT_OFFSET, (p + PLOT_BORDER), (m_w + PLOT_BORDER + XLEFT_OFFSET), (p + PLOT_BORDER));
     }
     // Label the X-Axis
     dc.SetPen(wxPen(GREY_COLOR, 1));
-    for(p = GRID_INCREMENT; p < (w - YBOTTOM_OFFSET); p += GRID_INCREMENT)
+    for(p = GRID_INCREMENT; p < (m_w - YBOTTOM_OFFSET); p += GRID_INCREMENT)
     {
         sprintf(buf, "%1.1f Hz",(double)(p / 10));
-        dc.DrawText(buf, p - PLOT_BORDER + XLEFT_OFFSET, h + YBOTTOM_OFFSET/2);
+        dc.DrawText(buf, p - PLOT_BORDER + XLEFT_OFFSET, m_h + YBOTTOM_OFFSET/2);
+    }
+    // Label the Y-Axis
+    //for(p = GRID_INCREMENT; p < (h - YBOTTOM_OFFSET); p += GRID_INCREMENT)
+    for(p = (m_h - GRID_INCREMENT); p > PLOT_BORDER; p -= GRID_INCREMENT)
+    {
+        sprintf(buf, "%1.0f", (double)((m_h - p) * -10));
+        dc.DrawText(buf, XLEFT_TEXT_OFFSET, p);
     }
 }
 
@@ -191,6 +187,16 @@ void PlotPanel::drawGraticule(wxAutoBufferedPaintDC&  dc)
 //-------------------------------------------------------------------------
 void PlotPanel::draw(wxAutoBufferedPaintDC&  dc)
 {
+    m_rectCtrl  = GetClientRect();
+    m_rectGrid  = m_rectCtrl;
+
+    m_rectGrid.Deflate(PLOT_BORDER + (XLEFT_OFFSET/2), (PLOT_BORDER + (YBOTTOM_OFFSET/2)));
+    m_rectGrid.Offset(PLOT_BORDER + XLEFT_OFFSET, PLOT_BORDER);
+
+    m_h = m_rectGrid.GetHeight();
+    m_w = m_rectGrid.GetWidth();
+
+    dc.Clear();
     drawGraticule(dc);
 }
 
@@ -207,23 +213,3 @@ void PlotPanel::OnPaint(wxPaintEvent & evt)
     draw(dc);
 }
 
-//-------------------------------------------------------------------------
-// paintNow()
-//
-// Alternatively, you can use a clientDC to paint on the panel
-// at any time. Using this generally does not free you from
-// catching paint events, since it is possible that e.g. the window
-// manager throws away your drawing when the window comes to the
-// background, and expects you will redraw it when the window comes
-// back (by sending a paint event).
-//
-// In most cases, this will not be needed at all; simply handling
-// paint events and calling Refresh() when a refresh is needed
-// will do the job.
-//-------------------------------------------------------------------------
-//void PlotPanel::paintNow()
-//{
-//    wxClientDC dc(this);
-//    draw(dc);
-//    draw();
-//}
