@@ -82,12 +82,12 @@
 #include "codec2.h"
 
 //-- Globals: Eliminate!! --------------------------------
-char         *fin_name = NULL;
-char         *fout_name = NULL;
-char         *sound_dev_name = NULL;
-FILE         *fin = NULL;
-FILE         *fout = NULL;
-struct FDMDV *fdmdv;
+//char         *fin_name = NULL;
+//char         *fout_name = NULL;
+//char         *sound_dev_name = NULL;
+//FILE         *fin = NULL;
+//FILE         *fout = NULL;
+struct FDMDV  *fdmdv_state;
 struct CODEC2 *codec2;
 //float         av_mag[FDMDV_NSPEC];                  // shared between a few classes
 extern float *av_mag;
@@ -98,7 +98,7 @@ float  Ts = 0.0;
 short  input_buf[2*FDMDV_NOM_SAMPLES_PER_FRAME];
 int    n_input_buf = 0;
 int    nin = FDMDV_NOM_SAMPLES_PER_FRAME;
-short *output_buf;
+short  *output_buf;
 int    n_output_buf = 0;
 int    codec_bits[2*FDMDV_BITS_PER_FRAME];
 int    state = 0;
@@ -115,27 +115,30 @@ typedef struct
 } paCallBackData;
 
 //----------------------------------------------------------------
-//
+// per_frame_rx_processing()
 //----------------------------------------------------------------
 void per_frame_rx_processing(
-                                short  output_buf[], /* output buf of decoded speech samples          */
-                                int   *n_output_buf, /* how many samples currently in output_buf[]    */
-                                int    codec_bits[], /* current frame of bits for decoder             */
-                                short  input_buf[],  /* input buf of modem samples input to demod     */
-                                int   *n_input_buf,  /* how many samples currently in input_buf[]     */
-                                int   *nin,          /* amount of samples demod needs for next call   */
-                                int   *state,        /* used to collect codec_bits[] halves           */
-                                struct CODEC2 *c2    /* Codec 2 states                                */
+                                short   output_buf[],  /* output buf of decoded speech samples          */
+                                int     *n_output_buf, /* how many samples currently in output_buf[]    */
+                                int     codec_bits[],  /* current frame of bits for decoder             */
+                                short   input_buf[],   /* input buf of modem samples input to demod     */
+                                int     *n_input_buf,  /* how many samples currently in input_buf[]     */
+                                int     *nin,          /* amount of samples demod needs for next call   */
+                                int     *state,        /* used to collect codec_bits[] halves           */
+                                struct  CODEC2 *c2     /* Codec 2 states                                */
                             )
 {
-    struct FDMDV_STATS stats;
-    int    sync_bit;
-    float  rx_fdm[FDMDV_MAX_SAMPLES_PER_FRAME];
-    int    rx_bits[FDMDV_BITS_PER_FRAME];
-    unsigned char  packed_bits[BYTES_PER_CODEC_FRAME];
-    float  rx_spec[FDMDV_NSPEC];
-    int    i, nin_prev, bit, byte;
-    int    next_state;
+    struct FDMDV_STATS  stats;
+    int                 sync_bit;
+    float               rx_fdm[FDMDV_MAX_SAMPLES_PER_FRAME];
+    int                 rx_bits[FDMDV_BITS_PER_FRAME];
+    unsigned char       packed_bits[BYTES_PER_CODEC_FRAME];
+    float               rx_spec[FDMDV_NSPEC];
+    int                 i;
+    int                 nin_prev;
+    int                 bit;
+    int                 byte;
+    int                 next_state;
 
     assert(*n_input_buf <= (2 * FDMDV_NOM_SAMPLES_PER_FRAME));
 
@@ -158,12 +161,12 @@ void per_frame_rx_processing(
     while(*n_input_buf >= *nin)
     {
         // demod per frame processing
-        for(i=0; i<*nin; i++)
+        for(i = 0; i < *nin; i++)
         {
             rx_fdm[i] = (float)input_buf[i]/FDMDV_SCALE;
         }
         nin_prev = *nin;
-        fdmdv_demod(fdmdv, rx_bits, &sync_bit, rx_fdm, nin);
+        fdmdv_demod(fdmdv_state, rx_bits, &sync_bit, rx_fdm, nin);
         *n_input_buf -= nin_prev;
         assert(*n_input_buf >= 0);
 
@@ -174,8 +177,8 @@ void per_frame_rx_processing(
         }
 
         // compute rx spectrum & get demod stats, and update GUI plot data
-        fdmdv_get_rx_spectrum(fdmdv, rx_spec, rx_fdm, nin_prev);
-        fdmdv_get_demod_stats(fdmdv, &stats);
+        fdmdv_get_rx_spectrum(fdmdv_state, rx_spec, rx_fdm, nin_prev);
+        fdmdv_get_demod_stats(fdmdv_state, &stats);
         new_data(rx_spec);
 //        aScatter->add_new_samples(stats.rx_symbols);
 //        aTimingEst->add_new_sample(stats.rx_timing);
@@ -197,14 +200,15 @@ void per_frame_rx_processing(
         {
             case 0:
                 // mute output audio when out of sync
-                if(*n_output_buf < 2*codec2_samples_per_frame(c2) - N8)
+                if(*n_output_buf < 2 * codec2_samples_per_frame(c2) - N8)
                 {
                     for(i=0; i<N8; i++)
+                    {
                         output_buf[*n_output_buf + i] = 0;
-
+                    }
                     *n_output_buf += N8;
                 }
-                assert(*n_output_buf <= (2*codec2_samples_per_frame(c2)));
+                assert(*n_output_buf <= (2 * codec2_samples_per_frame(c2)));
                 if((stats.fest_coarse_fine == 1) && (stats.snr_est > 3.0))
                 {
                     next_state = 1;
@@ -216,7 +220,7 @@ void per_frame_rx_processing(
                 {
                     next_state = 2;
                     // first half of frame of codec bits
-                    memcpy(codec_bits, rx_bits, FDMDV_BITS_PER_FRAME*sizeof(int));
+                    memcpy(codec_bits, rx_bits, FDMDV_BITS_PER_FRAME * sizeof(int));
                 }
                 else
                 {
@@ -239,10 +243,10 @@ void per_frame_rx_processing(
                     // second half of frame of codec bits
                     memcpy(&codec_bits[FDMDV_BITS_PER_FRAME], rx_bits, FDMDV_BITS_PER_FRAME*sizeof(int));
                     // pack bits, MSB received first
-                    bit = 7;
+                    bit  = 7;
                     byte = 0;
                     memset(packed_bits, 0, BYTES_PER_CODEC_FRAME);
-                    for(i=0; i<BITS_PER_CODEC_FRAME; i++)
+                    for(i = 0; i < BITS_PER_CODEC_FRAME; i++)
                     {
                         packed_bits[byte] |= (codec_bits[i] << bit);
                         bit--;
@@ -259,7 +263,7 @@ void per_frame_rx_processing(
                         codec2_decode(c2, &output_buf[*n_output_buf], packed_bits);
                         *n_output_buf += codec2_samples_per_frame(c2);
                     }
-                    assert(*n_output_buf <= (2*codec2_samples_per_frame(c2)));
+                    assert(*n_output_buf <= (2 * codec2_samples_per_frame(c2)));
                 }
                 break;
         }
@@ -274,9 +278,9 @@ void new_data(float mag_dB[])
 {
     int i;
 
-    for(i=0; i<FDMDV_NSPEC; i++)
+    for(i = 0; i < FDMDV_NSPEC; i++)
     {
-        av_mag[i] = (1.0 - BETA)*av_mag[i] + BETA*mag_dB[i];
+        av_mag[i] = (1.0 - BETA) * av_mag[i] + BETA * mag_dB[i];
     }
 }
 
@@ -317,9 +321,9 @@ void update_gui(int nin, float *Ts)
 //  is not doing GUI work.  We use this function for providing file
 //  input to update the GUI when simulating real time operation.
 //----------------------------------------------------------------
+/*
 void idle(void*)
 {
-/*
     int ret, i;
     if(fin_name != NULL)
     {
@@ -345,18 +349,22 @@ void idle(void*)
     // simulate time delay from real world A/D input, and pause betwen
     // screen updates
     usleep(20000);
-*/
 }
+*/
 
+/*
 //----------------------------------------------------------------
 // This routine will be called by the PortAudio engine when audio
 //  is available.
 //----------------------------------------------------------------
-static int callback(const void *inputBuffer, void *outputBuffer,
-                    unsigned long framesPerBuffer,
-                    const PaStreamCallbackTimeInfo* timeInfo,
-                    PaStreamCallbackFlags statusFlags,
-                    void *userData)
+static int callback(
+                        const void *inputBuffer,
+                        void *outputBuffer,
+                        unsigned long framesPerBuffer,
+                        const PaStreamCallbackTimeInfo* timeInfo,
+                        PaStreamCallbackFlags statusFlags,
+                        void *userData
+                    )
 {
     paCallBackData *cbData = (paCallBackData*)userData;
     unsigned int    i;
@@ -425,7 +433,7 @@ static int callback(const void *inputBuffer, void *outputBuffer,
         in8k[i] = in8k[i+N8];
     }
     assert(outputBuffer != NULL);
-    /* write signal to both channels */
+    // write signal to both channels
     for(i = 0; i < N48; i++)
     {
         out48k_short[i] = (short)out48k[i];
@@ -437,7 +445,8 @@ static int callback(const void *inputBuffer, void *outputBuffer,
     }
     return paContinue;
 }
-
+*/
+/*
 //----------------------------------------------------------------
 // arg_callback()
 //----------------------------------------------------------------
@@ -475,3 +484,4 @@ int arg_callback(int argc, char **argv, int &i)
     }
     return 0;
 }
+*/

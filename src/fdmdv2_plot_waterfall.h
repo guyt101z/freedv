@@ -28,6 +28,10 @@
 #include "fdmdv2_plot.h"
 #include "fdmdv2_defines.h"
 
+#define MAX_ZOOM    7
+#define MAX_BMP_X   (400 * MAX_ZOOM)
+#define MAX_BMP_Y   (400 * MAX_ZOOM)
+
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 // Class PlotWaterfall
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
@@ -38,9 +42,9 @@ public:
     ~PlotWaterfall();
 
 protected:
-    unsigned    *pixel_buf;
-    unsigned    heatmap_lut[256];
-    int         greyscale;
+    unsigned    *m_pixel_buf;
+    unsigned    m_heatmap_lut[256];
+    int         m_greyscale;
 
     unsigned    heatmap(float val, float min, float max);
 

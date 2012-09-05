@@ -69,24 +69,24 @@ class PlotPanel : public wxPanel
 {
     public:
         PlotPanel(wxFrame* parent);
-        void            paintEvent(wxPaintEvent & evt);
-        void            draw(wxAutoBufferedPaintDC& dc);
-        void            drawGraticule(wxAutoBufferedPaintDC& dc);
-        wxPen           m_penShortDash;
-        wxPen           m_penDotDash;
-        wxRect          m_rectCtrl;
-        wxRect          m_rectGrid;
-        wxRect          m_rectPlot;
-//        int             m_gridLeftOffset;
-//        int             m_gridRightOffset;
-//        int             m_gridTopOffset;
-//        int             m_gridBottomOffset;
-        double          m_label_size;
-        wxSize          m_Bufsz;
-        wxBitmap        *m_bmp;
-        wxImagePixelData *m_pBmp;
-        //wxNativePixelData   *m_pBmp;
-        //wxAlphaPixelData    *m_pBmp;
+        void                paintEvent(wxPaintEvent & evt);
+        void                draw(wxAutoBufferedPaintDC& dc);
+        void                drawGraticule(wxAutoBufferedPaintDC& dc);
+        wxPen               m_penShortDash;
+        wxPen               m_penDotDash;
+        wxRect              m_rectCtrl;
+        wxRect              m_rectGrid;
+        wxRect              m_rectPlot;
+//        int                 m_gridLeftOffset;
+//        int                 m_gridRightOffset;
+//        int                 m_gridTopOffset;
+//        int                 m_gridBottomOffset;
+        double              m_label_size;
+        wxSize              m_Bufsz;
+        wxBitmap            *m_bmp;
+        wxImagePixelData    *m_pBmp;
+        //wxNativePixelData     *m_pBmp;
+        //wxAlphaPixelData      *m_pBmp;
 
         // some useful events
         void    OnMouseMove(wxMouseEvent& event);
@@ -97,6 +97,7 @@ class PlotPanel : public wxPanel
         void    OnSize( wxSizeEvent& event );
         void    OnErase(wxEraseEvent& event);
         void    OnPaint(wxPaintEvent& event);
+
         double  SetZoomFactor(double zf);
         double  GetZoomFactor(double zf);
         //void OnUpdateUI( wxUpdateUIEvent& event ){ event.Skip(); }

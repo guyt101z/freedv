@@ -70,6 +70,7 @@ class MainFrame : public TopFrame
     public:
         MainFrame(wxWindow *parent);
         virtual ~MainFrame();
+
         PlotPanel*      m_panelDefaultA;
         PlotPanel*      m_panelDefaultB;
         PlotSpectrum*   m_panelSpectrum;
@@ -90,6 +91,7 @@ class MainFrame : public TopFrame
         PaError         m_rxErr;
         PaError         m_txErr;
         wxSound         *m_sound;
+        float           av_mag[FDMDV_NSPEC];
 
         void DoStartThread();
         void DoPauseThread();

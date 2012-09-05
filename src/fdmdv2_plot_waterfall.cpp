@@ -56,11 +56,12 @@ PlotWaterfall::PlotWaterfall(wxFrame* parent): PlotPanel(parent)
 {
     int   i;
 
+    m_bmp = new wxBitmap(MAX_BMP_X, MAX_BMP_Y, wxBITMAP_SCREEN_DEPTH);
     for(i = 0; i < 255; i++)
     {
-        heatmap_lut[i] = heatmap((float)i, 0.0, 255.0);
+        m_heatmap_lut[i] = heatmap((float)i, 0.0, 255.0);
     }
-    greyscale = 0;
+    m_greyscale = 0;
     SetLabelSize(10.0);
     m_Bufsz = GetMaxClientSize();
 };
@@ -70,10 +71,10 @@ PlotWaterfall::PlotWaterfall(wxFrame* parent): PlotPanel(parent)
 //----------------------------------------------------------------
 PlotWaterfall::~PlotWaterfall()
 {
-//    if(m_bmp->IsOk())
-//    {
-//        delete m_bmp;
-//    }
+    if(!m_bmp->IsNull())
+    {
+        delete m_bmp;
+    }
 }
 
 /*
@@ -98,10 +99,10 @@ void PlotWaterfall::new_pixel_buf(int w, int h)
         m_bmp = new wxBitmap(w, h, wxBITMAP_SCREEN_DEPTH);
         //m_pBmp = m_bmp->GetBitmapData();
     }
-//    pixel_buf = new unsigned[buf_sz];
+//    m_pixel_buf = new unsigned[buf_sz];
 //    for(i = 0; i < buf_sz; i++)
 //    {
-//        pixel_buf[i] = 0;
+//        m_pixel_buf[i] = 0;
 //    }
 }
 
@@ -168,15 +169,6 @@ void PlotWaterfall::drawGraticule(wxAutoBufferedPaintDC&  dc)
     char buf[15];
     wxString s;
 
-//    int h = m_rectGrid.GetHeight();
-//    int w = m_rectGrid.GetWidth();
-
-    // Draw a filled rectangle with aborder
-    wxBrush ltBlueBrush = wxBrush(LIGHT_RED_COLOR);
-    dc.SetBrush(ltBlueBrush);
-    dc.SetPen(wxPen(BLACK_COLOR, 1));
-    dc.DrawRectangle(PLOT_BORDER + XLEFT_OFFSET, PLOT_BORDER, m_w, m_h);
-
     // Vertical gridlines
     dc.SetPen(m_penShortDash);
     for(p = (PLOT_BORDER + XLEFT_OFFSET + GRID_INCREMENT); p < m_w; p += GRID_INCREMENT)
@@ -240,6 +232,13 @@ void PlotWaterfall::draw(wxAutoBufferedPaintDC&  dc)
     m_w = m_rectGrid.GetWidth();
 
     dc.Clear();
+
+    // Draw a filled rectangle with aborder
+    wxBrush ltBlueBrush = wxBrush(LIGHT_RED_COLOR);
+    dc.SetBrush(ltBlueBrush);
+    dc.SetPen(wxPen(BLACK_COLOR, 1));
+    dc.DrawRectangle(PLOT_BORDER + XLEFT_OFFSET, PLOT_BORDER, m_w, m_h);
+
     drawGraticule(dc);
 
     /* detect resizing of window */
@@ -250,7 +249,7 @@ void PlotWaterfall::draw(wxAutoBufferedPaintDC&  dc)
         new_pixel_buf(m_w, m_h);
     }
 */
-/*
+
     // determine dy, the height of one "block"
     px_per_sec = (float)m_h / WATERFALL_SECS_Y;
     dy = DT * px_per_sec;
@@ -260,14 +259,14 @@ void PlotWaterfall::draw(wxAutoBufferedPaintDC&  dc)
     bytes_in_row_of_blocks = dy * m_w * sizeof(unsigned);
     for(b = 0; b < dy_blocks - 1; b++)
     {
-        pdest = pixel_buf + b * m_w * dy;
-        psrc  = pixel_buf + (b + 1) * m_w * dy;
+        pdest = m_pixel_buf + b * m_w * dy;
+        psrc  = m_pixel_buf + (b + 1) * m_w * dy;
         memcpy(pdest, psrc, bytes_in_row_of_blocks);
     }
     // create a new row of blocks at bottom
     spec_index_per_px = (float)FDMDV_NSPEC / (float) m_w;
     intensity_per_dB = (float)256 /(MAX_DB - MIN_DB);
-    last_row = pixel_buf + dy *(dy_blocks - 1)* m_w;
+    last_row = m_pixel_buf + dy *(dy_blocks - 1)* m_w;
     for(px = 0; px < m_w; px++)
     {
         index = px * spec_index_per_px;
@@ -280,7 +279,7 @@ void PlotWaterfall::draw(wxAutoBufferedPaintDC&  dc)
         {
             intensity = 0;
         }
-        if (greyscale)
+        if (m_greyscale)
         {
             for(py = 0; py < dy; py++)
             {
@@ -291,13 +290,13 @@ void PlotWaterfall::draw(wxAutoBufferedPaintDC&  dc)
         {
             for(py = 0; py < dy; py++)
             {
-                last_row[px + py * m_w] = heatmap_lut[intensity];
+                last_row[px + py * m_w] = m_heatmap_lut[intensity];
             }
         }
     }
-*/
+
     // update bit map
-    //fl_draw_image((unsigned char*)pixel_buf, m_x, m_y, m_w, m_h, 4, 0);
+    //fl_draw_image((unsigned char*)m_pixel_buf, m_x, m_y, m_w, m_h, 4, 0);
     //dc.DrawLines(4, m_pBmp, 0, 0 );
 }
 

@@ -148,12 +148,6 @@ void PlotPanel::drawGraticule(wxAutoBufferedPaintDC&  dc)
     char buf[15];
     wxString s;
 
-    // Draw a filled rectangle with aborder
-    wxBrush ltBlueBrush = wxBrush(LIGHT_BLUE_COLOR);
-    dc.SetBrush(ltBlueBrush);
-    dc.SetPen(wxPen(BLACK_COLOR, 1));
-    dc.DrawRectangle(PLOT_BORDER + XLEFT_OFFSET, PLOT_BORDER, m_w, m_h);
-
     // Vertical gridlines
     dc.SetPen(m_penShortDash);
     for(p = (PLOT_BORDER + XLEFT_OFFSET + GRID_INCREMENT); p < m_w; p += GRID_INCREMENT)
@@ -197,6 +191,13 @@ void PlotPanel::draw(wxAutoBufferedPaintDC&  dc)
     m_w = m_rectGrid.GetWidth();
 
     dc.Clear();
+
+    // Draw a filled rectangle with aborder
+    wxBrush ltBlueBrush = wxBrush(LIGHT_BLUE_COLOR);
+    dc.SetBrush(ltBlueBrush);
+    dc.SetPen(wxPen(BLACK_COLOR, 1));
+    dc.DrawRectangle(PLOT_BORDER + XLEFT_OFFSET, PLOT_BORDER, m_w, m_h);
+
     drawGraticule(dc);
 }
 

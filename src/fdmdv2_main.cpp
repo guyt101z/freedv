@@ -469,7 +469,6 @@ void MainFrame::startTxStream()
             wxMessageBox(wxT("Tx Stream Start Error."), wxT("Error"), wxOK);
             return;
         }
-//        OnTogBtnOnOff->SetLabel(wxT("Stop"));
     }
 }
 
@@ -483,7 +482,6 @@ void MainFrame::stopTxStream()
         m_TxRunning = false;
         m_txPa->stop();
         m_txPa->streamClose();
-//        OnTogBtnOnOff->SetLabel(wxT("Start"));
     }
 }
 
@@ -496,7 +494,6 @@ void MainFrame::abortTxStream()
     {
         m_TxRunning = false;
         m_txPa->abort();
-//        OnTogBtnOnOff->SetLabel(wxT("Start"));
     }
 }
 
