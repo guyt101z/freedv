@@ -201,24 +201,6 @@ void PlotWaterfall::drawGraticule(wxAutoBufferedPaintDC&  dc)
 //----------------------------------------------------------------
 void PlotWaterfall::draw(wxAutoBufferedPaintDC&  dc)
 {
-    float       spec_index_per_px;
-    float       intensity_per_dB;
-    int         px_per_sec;
-    int         index;
-    int         dy;
-    int         dy_blocks;
-    int         bytes_in_row_of_blocks;
-    int         b;
-    int         px;
-    int         py;
-    int         intensity;
-    unsigned    *last_row;
-    unsigned    *pdest;
-    unsigned    *psrc;
-    //int p;
-    //char buf[15];
-    //wxString s;
-
     m_rectCtrl  = GetClientRect();
     m_rectGrid  = m_rectCtrl;
 
@@ -240,7 +222,28 @@ void PlotWaterfall::draw(wxAutoBufferedPaintDC&  dc)
     dc.DrawRectangle(PLOT_BORDER + XLEFT_OFFSET, PLOT_BORDER, m_w, m_h);
 
     drawGraticule(dc);
+    //plotData(dc);
+}
 
+//----------------------------------------------------------------
+// plotData()
+//----------------------------------------------------------------
+void PlotWaterfall::plotData(wxAutoBufferedPaintDC&  dc)
+{
+    float       spec_index_per_px;
+    float       intensity_per_dB;
+    int         px_per_sec;
+    int         index;
+    int         dy;
+    int         dy_blocks;
+    int         bytes_in_row_of_blocks;
+    int         b;
+    int         px;
+    int         py;
+    int         intensity;
+    unsigned    *last_row;
+    unsigned    *pdest;
+    unsigned    *psrc;
     /* detect resizing of window */
 /*
     if ((m_h != m_prev_h) || (m_w != m_prev_w))

@@ -53,7 +53,7 @@ protected:
     void        OnShow(wxShowEvent& event);
     void        drawGraticule(wxAutoBufferedPaintDC&  dc);
     void        draw(wxAutoBufferedPaintDC&  dc);
-
+    void        plotData(wxAutoBufferedPaintDC&  dc);
     DECLARE_EVENT_TABLE()
 };
 
