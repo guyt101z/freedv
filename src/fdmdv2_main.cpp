@@ -31,24 +31,7 @@
 #define wxUSE_PCX       1
 #define wxUSE_LIBTIFF   1
 
-static int rxCallback(
-                        const void *inBuffer,
-                        void *outBuffer,
-                        unsigned long framesPerBuffer,
-                        const PaStreamCallbackTimeInfo *outTime,
-                        PaStreamCallbackFlags statusFlags,
-                        void *userData
-                     );
-static int txCallback(
-                        const void *inBuffer,
-                        void *outBuffer,
-                        unsigned long framesPerBuffer,
-                        const PaStreamCallbackTimeInfo *outTime,
-                        PaStreamCallbackFlags statusFlags,
-                        void *userData
-                     );
-
-float  av_mag[FDMDV_NSPEC];                  // shared between a few classes
+//float  av_mag[FDMDV_NSPEC];                  // shared between a few classes
 
 // initialize the application
 IMPLEMENT_APP(MainApp);
@@ -65,29 +48,15 @@ bool MainApp::OnInit()
     // Create the main application window
     MainFrame *frame = new MainFrame(NULL);
 
-    frame->m_panelDefaultA = new PlotPanel((wxFrame*) frame->m_auiNbookCtrl );
-    frame->m_auiNbookCtrl->AddPage(frame->m_panelDefaultA, _("Test A"), true, wxNullBitmap );
+    SetTopWindow(frame);
 
-//    frame->m_panelDefaultB = new PlotPanel((wxFrame*) frame->m_auiNbookCtrl );
-//    frame->m_auiNbookCtrl->AddPage(frame->m_panelDefaultB, _("Test B"), true, wxNullBitmap );
-
-    frame->m_panelSpectrum = new PlotSpectrum((wxFrame*) frame->m_auiNbookCtrl );
-    frame->m_auiNbookCtrl->AddPage(frame->m_panelSpectrum, _("Spectrum"), true, wxNullBitmap );
-
-    frame->m_panelWaterfall = new PlotWaterfall((wxFrame*) frame->m_auiNbookCtrl );
-    frame->m_auiNbookCtrl->AddPage(frame->m_panelWaterfall, _("Waterfall"), true, wxNullBitmap );
-
-//    frame->m_panelScatter = new PlotScatter((wxFrame*) frame->m_auiNbookCtrl );
-//    frame->m_auiNbookCtrl->AddPage(frame->m_panelWaterfall, _("Scatter"), true, wxNullBitmap );
-
-//    frame->m_panelScalar = new PlotScalar((wxFrame*) frame->m_auiNbookCtrl, 500, 500);
-//    frame->m_auiNbookCtrl->AddPage(frame->m_panelWaterfall, _("Scalar"), true, wxNullBitmap );
-
+    // Should guarantee that the first plot tab defined is the one
+    // displayed. But it doesn't when built from command line.  Why?
     frame->m_auiNbookCtrl->ChangeSelection(0);
 
-    SetTopWindow(frame);
     frame->Layout();
     frame->Show();
+
     return true;
 }
 
@@ -104,6 +73,23 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     {
         wxMessageBox(wxT("Port Audio failed to initialize"), wxT("Pa_Initialize"), wxOK);
     }
+    // Add Waterfall Plot window
+    m_panelWaterfall = new PlotWaterfall((wxFrame*) m_auiNbookCtrl );
+    m_auiNbookCtrl->AddPage(m_panelWaterfall, _("Waterfall"), true, wxNullBitmap );
+
+    // Add Spectrum Plot window
+    m_panelSpectrum = new PlotSpectrum((wxFrame*) m_auiNbookCtrl );
+    m_auiNbookCtrl->AddPage(m_panelSpectrum, _("Spectrum"), true, wxNullBitmap );
+
+//    m_panelScatter = new PlotScatter((wxFrame*) m_auiNbookCtrl );
+//    m_auiNbookCtrl->AddPage(m_panelWaterfall, _("Scatter"), true, wxNullBitmap );
+
+//    m_panelScalar = new PlotScalar((wxFrame*) m_auiNbookCtrl, 500, 500);
+//    m_auiNbookCtrl->AddPage(m_panelWaterfall, _("Scalar"), true, wxNullBitmap );
+
+    // Add generic plot window
+    m_panelDefaultA = new PlotPanel((wxFrame*) m_auiNbookCtrl );
+    m_auiNbookCtrl->AddPage(m_panelDefaultA, _("Test A"), true, wxNullBitmap );
 }
 
 //-------------------------------------------------------------------------
@@ -144,7 +130,7 @@ void MainFrame::OnPaint(wxPaintEvent& WXUNUSED(event))
     }
     dc.SetUserScale(m_zoom, m_zoom);
     const wxSize size = GetClientSize();
-    dc.DrawBitmap(m_bitmap, dc.DeviceToLogicalX((size.x - m_zoom * m_bitmap.GetWidth()) / 2), dc.DeviceToLogicalY((size.y - m_zoom * m_bitmap.GetHeight()) / 2), true);
+//    dc.DrawBitmap(m_bitmap, dc.DeviceToLogicalX((size.x - m_zoom * m_bitmap.GetWidth()) / 2), dc.DeviceToLogicalY((size.y - m_zoom * m_bitmap.GetHeight()) / 2), true);
 }
 
 //-------------------------------------------------------------------------
@@ -251,11 +237,12 @@ void MainFrame::OnTogBtnALCClick(wxCommandEvent& event)
     wxMessageBox(wxT("Got Click!"), wxT("OnTogBtnALCClick"), wxOK);
     event.Skip();
 }
+/*
 
 //-------------------------------------------------------------------------
 // rxCallback()
 //-------------------------------------------------------------------------
-static int rxCallback(
+int  MainFrame::rxCallback(
                         const void *inBuffer,
                         void *outBuffer,
                         unsigned long framesPerBuffer,
@@ -284,11 +271,12 @@ static int rxCallback(
     }
     return paContinue;                              // 0;
 }
-
+ * */
+/*
 //-------------------------------------------------------------------------
 // txCallback()
 //-------------------------------------------------------------------------
-static int txCallback(
+int  MainFrame::txCallback(
                         const void *inBuffer,
                         void *outBuffer,
                         unsigned long framesPerBuffer,
@@ -317,6 +305,7 @@ static int txCallback(
     }
     return paContinue;                              // 0;
 }
+*/
 
 //-------------------------------------------------------------------------
 // OnTogBtnOnOff()
@@ -529,14 +518,12 @@ void MainFrame::OnClose( wxCommandEvent& event )
 {
     if(m_sound != NULL)
     {
-        //if(m_sound->IsOk()IsPlaying())
-        //{
+        if(m_sound->IsOk())
+        {
             m_sound->Stop();
             m_sound = NULL;
-        //}
+        }
     }
-//    wxMessageBox("Got Click!", "OnClose", wxOK);
-//    event.Skip();
 }
 
 //-------------------------------------------------------------------------

@@ -24,9 +24,11 @@
 //==========================================================================
 #include <string.h>
 #include "wx/wx.h"
+#include "fdmdv2_main.h"
 #include "fdmdv2_plot_waterfall.h"
 
-extern float *av_mag;
+//extern float *av_mag;
+
 /*
 
   Notes:
@@ -56,7 +58,7 @@ PlotWaterfall::PlotWaterfall(wxFrame* parent): PlotPanel(parent)
 {
     int   i;
 
-    m_bmp = new wxBitmap(MAX_BMP_X, MAX_BMP_Y, wxBITMAP_SCREEN_DEPTH);
+//    m_bmp = new wxBitmap(MAX_BMP_X, MAX_BMP_Y, wxBITMAP_SCREEN_DEPTH);
     for(i = 0; i < 255; i++)
     {
         m_heatmap_lut[i] = heatmap((float)i, 0.0, 255.0);
@@ -64,6 +66,8 @@ PlotWaterfall::PlotWaterfall(wxFrame* parent): PlotPanel(parent)
     m_greyscale = 0;
     SetLabelSize(10.0);
     m_Bufsz = GetMaxClientSize();
+//    m_newdata = true;
+    m_newdata = false;
 };
 
 //----------------------------------------------------------------
@@ -71,10 +75,6 @@ PlotWaterfall::PlotWaterfall(wxFrame* parent): PlotPanel(parent)
 //----------------------------------------------------------------
 PlotWaterfall::~PlotWaterfall()
 {
-    if(!m_bmp->IsNull())
-    {
-        delete m_bmp;
-    }
 }
 
 /*
@@ -95,7 +95,7 @@ void PlotWaterfall::new_pixel_buf(int w, int h)
         delete m_bmp;
         //m_Bufsz = h * w;
 
-        //m_img = new wxImage(sz, pdata, alpha,false);
+        //m_img = new wxImage(sz, pdata, alpha, false);
         m_bmp = new wxBitmap(w, h, wxBITMAP_SCREEN_DEPTH);
         //m_pBmp = m_bmp->GetBitmapData();
     }
@@ -171,7 +171,7 @@ void PlotWaterfall::drawGraticule(wxAutoBufferedPaintDC&  dc)
 
     // Vertical gridlines
     dc.SetPen(m_penShortDash);
-    for(p = (PLOT_BORDER + XLEFT_OFFSET + GRID_INCREMENT); p < m_w; p += GRID_INCREMENT)
+    for(p = (PLOT_BORDER + XLEFT_OFFSET + GRID_INCREMENT); p < ((m_w - XLEFT_OFFSET) + GRID_INCREMENT); p += GRID_INCREMENT)
     {
         dc.DrawLine(p, (m_h + PLOT_BORDER), p, PLOT_BORDER);
     }
@@ -207,9 +207,6 @@ void PlotWaterfall::draw(wxAutoBufferedPaintDC&  dc)
     m_rectGrid.Deflate(PLOT_BORDER + (XLEFT_OFFSET/2), (PLOT_BORDER + (YBOTTOM_OFFSET/2)));
     m_rectGrid.Offset(PLOT_BORDER + XLEFT_OFFSET, PLOT_BORDER);
 
-//    m_rectGrid.Deflate(PLOT_BORDER, (PLOT_BORDER + (YBOTTOM_OFFSET/2)));
-//    m_rectGrid.Offset(PLOT_BORDER, PLOT_BORDER);
-
     m_h = m_rectGrid.GetHeight();
     m_w = m_rectGrid.GetWidth();
 
@@ -223,6 +220,11 @@ void PlotWaterfall::draw(wxAutoBufferedPaintDC&  dc)
 
     drawGraticule(dc);
     //plotData(dc);
+    if(m_newdata)
+    {
+        m_newdata = false;
+        plotPixelData(dc);
+    }
 }
 
 //----------------------------------------------------------------
@@ -244,6 +246,7 @@ void PlotWaterfall::plotData(wxAutoBufferedPaintDC&  dc)
     unsigned    *last_row;
     unsigned    *pdest;
     unsigned    *psrc;
+//    float       *av_mag = ((MainFrame *)GetParent())->m_av_mag;
     /* detect resizing of window */
 /*
     if ((m_h != m_prev_h) || (m_w != m_prev_w))
@@ -262,19 +265,21 @@ void PlotWaterfall::plotData(wxAutoBufferedPaintDC&  dc)
     bytes_in_row_of_blocks = dy * m_w * sizeof(unsigned);
     for(b = 0; b < dy_blocks - 1; b++)
     {
-        pdest = m_pixel_buf + b * m_w * dy;
-        psrc  = m_pixel_buf + (b + 1) * m_w * dy;
+        pdest = (unsigned int *)m_pBmp + b * m_w * dy;
+        psrc  = (unsigned int *)m_pBmp + (b + 1) * m_w * dy;
         memcpy(pdest, psrc, bytes_in_row_of_blocks);
     }
     // create a new row of blocks at bottom
     spec_index_per_px = (float)FDMDV_NSPEC / (float) m_w;
     intensity_per_dB = (float)256 /(MAX_DB - MIN_DB);
-    last_row = m_pixel_buf + dy *(dy_blocks - 1)* m_w;
+    last_row = (unsigned int *)m_pBmp + dy *(dy_blocks - 1)* m_w;
     for(px = 0; px < m_w; px++)
     {
         index = px * spec_index_per_px;
-        intensity = intensity_per_dB * (av_mag[index] - MIN_DB);
-        if (intensity > 255)
+        intensity = intensity_per_dB * (m_pTopFrame->m_rxPa->m_av_mag[index] - MIN_DB);
+        //intensity = intensity_per_dB * m_pTopFrame->m_rxPa->getAvMag(index) - MIN_DB);
+
+        if(intensity > 255)
         {
             intensity = 255;
         }
@@ -282,7 +287,7 @@ void PlotWaterfall::plotData(wxAutoBufferedPaintDC&  dc)
         {
             intensity = 0;
         }
-        if (m_greyscale)
+        if(m_greyscale)
         {
             for(py = 0; py < dy; py++)
             {
@@ -297,10 +302,110 @@ void PlotWaterfall::plotData(wxAutoBufferedPaintDC&  dc)
             }
         }
     }
-
     // update bit map
     //fl_draw_image((unsigned char*)m_pixel_buf, m_x, m_y, m_w, m_h, 4, 0);
     //dc.DrawLines(4, m_pBmp, 0, 0 );
+
+}
+
+//-------------------------------------------------------------------------
+// plotPixelData()
+//-------------------------------------------------------------------------
+void PlotWaterfall::plotPixelData(wxAutoBufferedPaintDC&  dc)
+{
+    float       spec_index_per_px;
+    float       intensity_per_dB;
+    int         px_per_sec;
+    int         index;
+    int         dy;
+    int         dy_blocks;
+    int         bytes_in_row_of_blocks;
+    int         b;
+    int         px;
+    int         py;
+    int         intensity;
+    unsigned    *last_row;
+    unsigned    *pdest;
+    unsigned    *psrc;
+
+    // determine dy, the height of one "block"
+    px_per_sec = (float)m_h / WATERFALL_SECS_Y;
+    dy = DT * px_per_sec;
+    // number of dy high blocks in spectrogram
+    dy_blocks = m_h / dy;
+    // shift previous bit map
+    bytes_in_row_of_blocks = dy * m_w * sizeof(unsigned);
+    for(b = 0; b < dy_blocks - 1; b++)
+    {
+        pdest = (unsigned int *)m_pBmp + b * m_w * dy;
+        psrc  = (unsigned int *)m_pBmp + (b + 1) * m_w * dy;
+        memcpy(pdest, psrc, bytes_in_row_of_blocks);
+    }
+    // create a new row of blocks at bottom
+    spec_index_per_px = (float)FDMDV_NSPEC / (float) m_w;
+    intensity_per_dB  = (float)256 /(MAX_DB - MIN_DB);
+    last_row = (unsigned int *)m_pBmp + dy *(dy_blocks - 1)* m_w;
+
+    wxNativePixelData data(*m_bmp);
+    if(!data)
+    {
+        // ... raw access to bitmap data unavailable, do something else ...
+        return;
+    }
+    if(data.GetWidth() < 20 || data.GetHeight() < 20)
+    {
+        // ... complain: the bitmap it too small ...
+        return;
+    }
+    wxNativePixelData::Iterator p(data);
+    // we draw a (10, 10)-(20, 20) rect manually using the given r, g, b
+    p.Offset(data, 10, 10);
+    for(px = 0; px < m_w; px++)
+    {
+        index = px * spec_index_per_px;
+        // intensity = intensity_per_dB * (m_av_mag[index] - MIN_DB);
+        intensity = intensity_per_dB * (((MainFrame *)GetParent())->m_rxPa->m_av_mag[index] - MIN_DB);
+        if(intensity > 255)
+        {
+            intensity = 255;
+        }
+        if(intensity > 255)
+        {
+            intensity = 255;
+        }
+        if (intensity < 0)
+        {
+            intensity = 0;
+        }
+        if(m_greyscale)
+        {
+            for(py = 0; py < dy; py++)
+            {
+                last_row[px + py * m_w] = intensity << 8;
+            }
+        }
+        else
+        {
+            for(py = 0; py < dy; py++)
+            {
+                last_row[px + py * m_w] = m_heatmap_lut[intensity];
+            }
+        }
+    }
+/*
+    for(int y = 0; y < 10; ++y)
+    {
+        wxNativePixelData::Iterator rowStart = p;
+        for(int x = 0; x < 10; ++x, ++p)
+        {
+            p.Red()     = r;
+            p.Green()   = g;
+            p.Blue()    = b;
+        }
+        p = rowStart;
+        p.OffsetY(data, 1);
+    }
+*/
 }
 
 //----------------------------------------------------------------

@@ -47,6 +47,8 @@ PlotSpectrum::PlotSpectrum(wxFrame* parent): PlotPanel(parent)
     SetLabelSize(10.0);
 }
 
+#define TEXT_BASELINE_OFFSET_Y  -5
+
 //-------------------------------------------------------------------------
 // drawGraticule()
 //-------------------------------------------------------------------------
@@ -55,31 +57,43 @@ void PlotSpectrum::drawGraticule(wxAutoBufferedPaintDC&  dc)
     int p;
     char buf[15];
     wxString s;
+    //int h_mod_inc = 0;
 
     // Vertical gridlines
     dc.SetPen(m_penShortDash);
-    for(p = (PLOT_BORDER + XLEFT_OFFSET + GRID_INCREMENT); p < m_w; p += GRID_INCREMENT)
+    for(p = (PLOT_BORDER + XLEFT_OFFSET + GRID_INCREMENT); p < ((m_w - XLEFT_OFFSET) + GRID_INCREMENT); p += GRID_INCREMENT)
     {
         dc.DrawLine(p, (m_h + PLOT_BORDER), p, PLOT_BORDER);
     }
+
+    int y_zero = (m_h - m_top) / 2 ;
+    dc.SetPen(m_penSolid);
+    dc.DrawLine(PLOT_BORDER + XLEFT_OFFSET, y_zero, (m_w + PLOT_BORDER + XLEFT_OFFSET), y_zero);
+    sprintf(buf, "%6.0f", 0.0);
+    dc.DrawText(buf, XLEFT_TEXT_OFFSET, y_zero + TEXT_BASELINE_OFFSET_Y);
+
     // Horizontal gridlines
     dc.SetPen(m_penDotDash);
-    for(p = (m_h - GRID_INCREMENT); p > PLOT_BORDER; p -= GRID_INCREMENT)
+    for(p = 0; (y_zero + p) < m_h ; p += GRID_INCREMENT)
     {
-        dc.DrawLine(PLOT_BORDER + XLEFT_OFFSET, (p + PLOT_BORDER), (m_w + PLOT_BORDER + XLEFT_OFFSET), (p + PLOT_BORDER));
+        if(p > 0)
+        {
+            dc.DrawLine(PLOT_BORDER + XLEFT_OFFSET, (y_zero + p), (m_w + PLOT_BORDER + XLEFT_OFFSET), (y_zero + p));
+            sprintf(buf, "%6.0f", (double)(p) * -10);
+            dc.DrawText(buf, XLEFT_TEXT_OFFSET, (y_zero + p + TEXT_BASELINE_OFFSET_Y));
+
+            dc.DrawLine(PLOT_BORDER + XLEFT_OFFSET, (y_zero - p), (m_w + PLOT_BORDER + XLEFT_OFFSET), (y_zero - p));
+            sprintf(buf, "%6.0f", (double)(p) * 10);
+            dc.DrawText(buf, XLEFT_TEXT_OFFSET, (y_zero - p + TEXT_BASELINE_OFFSET_Y));
+        }
     }
+
     // Label the X-Axis
     dc.SetPen(wxPen(GREY_COLOR, 1));
     for(p = GRID_INCREMENT; p < (m_w - YBOTTOM_OFFSET); p += GRID_INCREMENT)
     {
         sprintf(buf, "%1.1f Hz",(double)(p / 10));
         dc.DrawText(buf, p - PLOT_BORDER + XLEFT_OFFSET, m_h + YBOTTOM_OFFSET/2);
-    }
-    // Label the Y-Axis
-    for(p = (m_h - GRID_INCREMENT); p > PLOT_BORDER; p -= GRID_INCREMENT)
-    {
-        sprintf(buf, "%1.0f", (double)((m_h - p) * -10));
-        dc.DrawText(buf, XLEFT_TEXT_OFFSET, p);
     }
 }
 
@@ -88,6 +102,7 @@ void PlotSpectrum::drawGraticule(wxAutoBufferedPaintDC&  dc)
 //----------------------------------------------------------------
 void PlotSpectrum::draw(wxAutoBufferedPaintDC&  dc)
 {
+/*
     float x_px_per_point = 0.0;
     float y_px_per_dB = 0.0;
     int   i;
@@ -98,7 +113,7 @@ void PlotSpectrum::draw(wxAutoBufferedPaintDC&  dc)
     float mag1, mag2;
     char  label[20];
     float px_per_hz;
-
+*/
     m_rectCtrl  = GetClientRect();
     m_rectGrid  = m_rectCtrl;
 
@@ -114,10 +129,13 @@ void PlotSpectrum::draw(wxAutoBufferedPaintDC&  dc)
     dc.Clear();
 
     // Draw a filled rectangle with aborder
-    wxBrush ltBlueBrush = wxBrush(LIGHT_YELLOW_COLOR);
-    dc.SetBrush(ltBlueBrush);
-    dc.SetPen(wxPen(BLACK_COLOR, 1));
-    dc.DrawRectangle(PLOT_BORDER + XLEFT_OFFSET, PLOT_BORDER, m_w, m_h);
+    wxBrush ltYellowBrush = wxBrush(LIGHT_YELLOW_COLOR);
+    dc.SetBrush(ltYellowBrush);
+//    dc.SetBrush(BLACK_COLOR);
+//    dc.SetPen(wxPen(BLACK_COLOR, 1));
+    m_top = PLOT_BORDER;
+    m_left = PLOT_BORDER + XLEFT_OFFSET;
+    dc.DrawRectangle(m_left, m_top, m_w, m_h);
 
     drawGraticule(dc);
 /*

@@ -24,7 +24,7 @@
 //==========================================================================
 #ifndef __FDMDV2_DEFINES__
 #define __FDMDV2_DEFINES__
-
+#include "wx/wx.h"
 /* FFT points */
 #define FDMDV_NSPEC         512
 
@@ -71,8 +71,8 @@
 #define N48                 (N8*FDMDV_OS)                  // processing buffer size at 48 kHz
 #define NUM_CHANNELS        2                              // I think most sound cards prefer stereo we will convert to mono
 
-#define BITS_PER_CODEC_FRAME (2*FDMDV_BITS_PER_FRAME)
-#define BYTES_PER_CODEC_FRAME (BITS_PER_CODEC_FRAME/8)
+#define BITS_PER_CODEC_FRAME  (2 * FDMDV_BITS_PER_FRAME)
+#define BYTES_PER_CODEC_FRAME (BITS_PER_CODEC_FRAME / 8)
 
 /* 8 to 48 kHz sample rate conversion */
 #define FDMDV_OS                 6         /* oversampling rate           */

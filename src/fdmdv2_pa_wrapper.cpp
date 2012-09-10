@@ -33,6 +33,7 @@ PortAudioWrap::PortAudioWrap()
     streamCallback          = NULL;
     streamFinishedCallback  = NULL;
     timeInfo                = 0;
+    loadData();
 }
 
 PortAudioWrap::~PortAudioWrap()
@@ -68,7 +69,6 @@ PaError PortAudioWrap::streamClose()
     if(isOpen())
     {
         PaError rv = Pa_CloseStream(stream);
-//        stream = NULL;
         return rv;
     }
     else
@@ -216,14 +216,12 @@ PaError PortAudioWrap::setStreamFlags(PaStreamFlags flags)
 
 PaError PortAudioWrap::setInputDevice(PaDeviceIndex index)
 {
-//    inputDevice = index;
     inputBuffer.device = index;
     return paNoError;
 }
 
 PaError PortAudioWrap::setOutputDevice(PaDeviceIndex index)
 {
-//    outputDevice = index;
     outputBuffer.device = index;
     return paNoError;
 }
@@ -232,4 +230,193 @@ PaError PortAudioWrap::setCallback(PaStreamCallback *callback)
 {
     streamCallback = callback;
     return paNoError;
+}
+
+typedef struct
+{
+    float               in48k[FDMDV_OS_TAPS + N48];
+    float               in8k[MEM8 + N8];
+} paCallBackData;
+
+
+//----------------------------------------------------------------
+// per_frame_rx_processing()
+//----------------------------------------------------------------
+void  PortAudioWrap::per_frame_rx_processing(
+                                short   output_buf[],  /* output buf of decoded speech samples          */
+                                int     *n_output_buf, /* how many samples currently in output_buf[]    */
+                                int     codec_bits[],  /* current frame of bits for decoder             */
+                                short   input_buf[],   /* input buf of modem samples input to demod     */
+                                int     *n_input_buf,  /* how many samples currently in input_buf[]     */
+                                int     *nin,          /* amount of samples demod needs for next call   */
+                                int     *state,        /* used to collect codec_bits[] halves           */
+                                struct  CODEC2 *c2     /* Codec 2 states                                */
+                            )
+{
+    struct FDMDV_STATS  stats;
+    int                 sync_bit;
+    float               rx_fdm[FDMDV_MAX_SAMPLES_PER_FRAME];
+    int                 rx_bits[FDMDV_BITS_PER_FRAME];
+    unsigned char       packed_bits[BYTES_PER_CODEC_FRAME];
+    float               rx_spec[FDMDV_NSPEC];
+    int                 i;
+    int                 nin_prev;
+    int                 bit;
+    int                 byte;
+    int                 next_state;
+
+    assert(*n_input_buf <= (2 * FDMDV_NOM_SAMPLES_PER_FRAME));
+
+    /*
+      This while loop will run the demod 0, 1 (nominal) or 2 times:
+
+      0: when tx sample clock runs faster than rx, occasionally we
+         will run out of samples
+
+      1: normal, run decoder once, every 2nd frame output a frame of
+         speech samples to D/A
+
+      2: when tx sample clock runs slower than rx, occasionally we will
+         have enough samples to run demod twice.
+
+      With a +/- 10 Hz sample clock difference at FS=8000Hz (+/- 1250
+      ppm), case 0 or 1 occured about once every 30 seconds.  This is
+      no problem for the decoded audio.
+    */
+    while(*n_input_buf >= *nin)
+    {
+        // demod per frame processing
+        for(i = 0; i < *nin; i++)
+        {
+            rx_fdm[i] = (float)input_buf[i]/FDMDV_SCALE;
+        }
+        nin_prev = *nin;
+        fdmdv_demod(fdmdv_state, rx_bits, &sync_bit, rx_fdm, nin);
+        *n_input_buf -= nin_prev;
+        assert(*n_input_buf >= 0);
+
+        // shift input buffer
+        for(i=0; i<*n_input_buf; i++)
+        {
+            input_buf[i] = input_buf[i+nin_prev];
+        }
+
+        // compute rx spectrum & get demod stats, and update GUI plot data
+        fdmdv_get_rx_spectrum(fdmdv_state, rx_spec, rx_fdm, nin_prev);
+        fdmdv_get_demod_stats(fdmdv_state, &stats);
+        averageData(rx_spec);
+//        aScatter->add_new_samples(stats.rx_symbols);
+//        aTimingEst->add_new_sample(stats.rx_timing);
+//        aFreqEst->add_new_sample(stats.foff);
+//        aSNR->add_new_sample(stats.snr_est);
+        /*
+           State machine to:
+
+           + Mute decoded audio when out of sync.  The demod is synced
+             when we are using the fine freq estimate and SNR is above
+             a thresh.
+
+           + Decode codec bits only if we have a 0,1 sync bit
+             sequence.  Collects two frames of demod bits to decode
+             one frame of codec bits.
+        */
+        next_state = *state;
+        switch(*state)
+        {
+            case 0:
+                // mute output audio when out of sync
+                if(*n_output_buf < 2 * codec2_samples_per_frame(c2) - N8)
+                {
+                    for(i=0; i<N8; i++)
+                    {
+                        output_buf[*n_output_buf + i] = 0;
+                    }
+                    *n_output_buf += N8;
+                }
+                assert(*n_output_buf <= (2 * codec2_samples_per_frame(c2)));
+                if((stats.fest_coarse_fine == 1) && (stats.snr_est > 3.0))
+                {
+                    next_state = 1;
+                }
+                break;
+
+            case 1:
+                if(sync_bit == 0)
+                {
+                    next_state = 2;
+                    // first half of frame of codec bits
+                    memcpy(codec_bits, rx_bits, FDMDV_BITS_PER_FRAME * sizeof(int));
+                }
+                else
+                {
+                    next_state = 1;
+                }
+                if(stats.fest_coarse_fine == 0)
+                {
+                    next_state = 0;
+                }
+                break;
+
+            case 2:
+                next_state = 1;
+                if(stats.fest_coarse_fine == 0)
+                {
+                    next_state = 0;
+                }
+                if(sync_bit == 1)
+                {
+                    // second half of frame of codec bits
+                    memcpy(&codec_bits[FDMDV_BITS_PER_FRAME], rx_bits, FDMDV_BITS_PER_FRAME*sizeof(int));
+                    // pack bits, MSB received first
+                    bit  = 7;
+                    byte = 0;
+                    memset(packed_bits, 0, BYTES_PER_CODEC_FRAME);
+                    for(i = 0; i < BITS_PER_CODEC_FRAME; i++)
+                    {
+                        packed_bits[byte] |= (codec_bits[i] << bit);
+                        bit--;
+                        if(bit < 0)
+                        {
+                            bit = 7;
+                            byte++;
+                        }
+                    }
+                    assert(byte == BYTES_PER_CODEC_FRAME);
+                    // add decoded speech to end of output buffer
+                    if(*n_output_buf <= codec2_samples_per_frame(c2))
+                    {
+                        codec2_decode(c2, &output_buf[*n_output_buf], packed_bits);
+                        *n_output_buf += codec2_samples_per_frame(c2);
+                    }
+                    assert(*n_output_buf <= (2 * codec2_samples_per_frame(c2)));
+                }
+                break;
+        }
+        *state = next_state;
+    }
+}
+
+//----------------------------------------------------------------
+// update average of each spectrum point
+//----------------------------------------------------------------
+void PortAudioWrap::averageData(float mag_dB[])
+{
+    int i;
+
+    for(i = 0; i < FDMDV_NSPEC; i++)
+    {
+        m_av_mag[i] = (1.0 - BETA) * m_av_mag[i] + BETA * mag_dB[i];
+    }
+}
+
+//----------------------------------------------------------------
+// create Dummy Data
+//----------------------------------------------------------------
+void PortAudioWrap::loadData()
+{
+    int i;
+    for(i = 0; i < FDMDV_NSPEC; i++)
+    {
+        m_av_mag[i] = i;
+    }
 }

@@ -63,7 +63,7 @@ class MainApp : public wxApp
 DECLARE_APP(MainApp)
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
-// Class MainApp
+// Class MainFrame
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 class MainFrame : public TopFrame
 {
@@ -91,15 +91,32 @@ class MainFrame : public TopFrame
         PaError         m_rxErr;
         PaError         m_txErr;
         wxSound         *m_sound;
-        float           av_mag[FDMDV_NSPEC];
-
-        void DoStartThread();
-        void DoPauseThread();
+//        static int (*rxCallback(void const*, void*, unsigned long, PaStreamCallbackTimeInfo const*, unsigned long, void*));
+/*
+        static int rxCallback(
+                                const void *inBuffer,
+                                void *outBuffer,
+                                unsigned long framesPerBuffer,
+                                const PaStreamCallbackTimeInfo *outTime,
+                                PaStreamCallbackFlags statusFlags,
+                                void *userData
+                             );
+        static int txCallback(
+                                const void *inBuffer,
+                                void *outBuffer,
+                                unsigned long framesPerBuffer,
+                                const PaStreamCallbackTimeInfo *outTime,
+                                PaStreamCallbackFlags statusFlags,
+                                void *userData
+                             );
+*/
+//        void DoStartThread();
+//        void DoPauseThread();
 
         //void DoResumeThread() { ... }
 
-        void OnThreadUpdate(wxThreadEvent&);
-        void OnThreadCompletion(wxThreadEvent&);
+//        void OnThreadUpdate(wxThreadEvent&);
+//        void OnThreadCompletion(wxThreadEvent&);
 
     protected:
 //        Fdmdv2ThreadAudio *m_pThread;
@@ -169,13 +186,30 @@ class MainFrame : public TopFrame
         bool        m_useMemory;
 
         wxTextCtrl* m_tc;
-        wxBitmap    m_bitmap;
-        wxBitmap    m_alphaBitmap;
+//        wxBitmap    m_bitmap;
+//        wxBitmap    m_alphaBitmap;
         int         m_zoom;
 
         // any class wishing to process wxWidgets events must use this macro
 //    DECLARE_EVENT_TABLE()
 };
 
+/*
+typedef int (ClassName::*CallbackType)(float);
 
+void DoWork(CallbackType callback)
+{
+  //Class instance to invoke it through
+  ClassName instance;
+
+  //Invocation
+  int result = instance->*callback(1.0f);
+}
+
+int main(int argc, char ** argv)
+{
+  //Pass in SomeCallback to the DoWork
+  DoWork(&ClassName::Method);
+}
+*/
 #endif //__FDMDV2_MAIN__

@@ -7,13 +7,18 @@
 // License:         BSD License (other licenses may apply to other
 //                  components of this project)
 //==========================================================================
+//#include "fdmdv2_main.h"
 #ifndef __FDMDV2_PLOT__
 #define __FDMDV2_PLOT__
-//#include "codec2.h"
-//#include "fdmdv.h"
+#include <wx/wx.h>
+#include <wx/aui/auibook.h>
 #include <wx/rawbmp.h>
 #include <wx/image.h>
 #include <wx/dcbuffer.h>
+
+#define MAX_ZOOM    7
+#define MAX_BMP_X   (400 * MAX_ZOOM)
+#define MAX_BMP_Y   (400 * MAX_ZOOM)
 
 #define wxUSE_FILEDLG       1
 #define wxUSE_LIBPNG        1
@@ -24,7 +29,7 @@
 
 #define PLOT_BORDER         3
 #define XLEFT_OFFSET        30
-#define XLEFT_TEXT_OFFSET   7
+#define XLEFT_TEXT_OFFSET   8
 #define YBOTTOM_OFFSET      25
 #define GRID_INCREMENT      50
 #define GREY_COLOR          wxColor(0x80, 0x80, 0x80)
@@ -62,6 +67,8 @@
     wxWHITE_BRUSH
 */
 
+class MainFrame;
+
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 // Class PlotPanel
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
@@ -69,56 +76,61 @@ class PlotPanel : public wxPanel
 {
     public:
         PlotPanel(wxFrame* parent);
-        void                paintEvent(wxPaintEvent & evt);
-        void                draw(wxAutoBufferedPaintDC& dc);
-        void                drawGraticule(wxAutoBufferedPaintDC& dc);
+        ~PlotPanel();
         wxPen               m_penShortDash;
         wxPen               m_penDotDash;
+        wxPen               m_penSolid;
         wxRect              m_rectCtrl;
         wxRect              m_rectGrid;
         wxRect              m_rectPlot;
-//        int                 m_gridLeftOffset;
-//        int                 m_gridRightOffset;
-//        int                 m_gridTopOffset;
-//        int                 m_gridBottomOffset;
+        MainFrame           *m_pTopFrame;
+        wxAuiNotebook       *m_pNoteBook;
         double              m_label_size;
         wxSize              m_Bufsz;
+        bool                m_newdata;
         wxBitmap            *m_bmp;
-        wxImagePixelData    *m_pBmp;
-        //wxNativePixelData     *m_pBmp;
-        //wxAlphaPixelData      *m_pBmp;
+        wxNativePixelData   *m_pBmp;
 
         // some useful events
-        void    OnMouseMove(wxMouseEvent& event);
-        void    OnMouseDown(wxMouseEvent& event);
-        void    OnMouseUp(wxMouseEvent& event);
-        void    OnMouseWheelMoved(wxMouseEvent& event);
-        void    OnClose(wxCloseEvent& event ){ event.Skip(); }
-        void    OnSize( wxSizeEvent& event );
-        void    OnErase(wxEraseEvent& event);
-        void    OnPaint(wxPaintEvent& event);
-
-        double  SetZoomFactor(double zf);
-        double  GetZoomFactor(double zf);
+        void            OnMouseMove(wxMouseEvent& event);
+        void            OnMouseDown(wxMouseEvent& event);
+        void            OnMouseUp(wxMouseEvent& event);
+        void            OnMouseWheelMoved(wxMouseEvent& event);
+        void            OnClose(wxCloseEvent& event ){ event.Skip(); }
+        void            OnSize( wxSizeEvent& event );
+        void            OnErase(wxEraseEvent& event);
+        void            OnPaint(wxPaintEvent& event);
         //void OnUpdateUI( wxUpdateUIEvent& event ){ event.Skip(); }
-        void    OnShow(wxShowEvent& event);
-        double  GetLabelSize();
-        void    SetLabelSize(double size);
+
+        void            paintEvent(wxPaintEvent & evt);
+        virtual void    draw(wxAutoBufferedPaintDC& dc);
+        virtual void    drawGraticule(wxAutoBufferedPaintDC& dc);
+        virtual double  SetZoomFactor(double zf);
+        virtual double  GetZoomFactor(double zf);
+        virtual void    OnShow(wxShowEvent& event);
+        virtual double  GetLabelSize();
+        virtual void    SetLabelSize(double size);
 
     protected:
-        int     m_x;
-        int     m_y;
-        int     m_w;
-        int     m_h;
-        int     m_prev_w;
-        int     m_prev_h;
-        int     m_prev_x;
-        int     m_prev_y;
-        bool    m_use_bitmap;
-        bool    m_clip;
-        bool    m_rubberBand;
-        bool    m_mouseDown;
-        double  m_zoomFactor;
+        int         m_x;
+        int         m_y;
+        int         m_w;
+        int         m_h;
+        int         m_left;
+        int         m_top;
+        int         m_prev_w;
+        int         m_prev_h;
+        int         m_prev_x;
+        int         m_prev_y;
+        bool        m_use_bitmap;
+        bool        m_clip;
+        bool        m_rubberBand;
+        bool        m_mouseDown;
+        double      m_zoomFactor;
+//        int             m_gridLeftOffset;
+//        int             m_gridRightOffset;
+//        int             m_gridTopOffset;
+//        int             m_gridBottomOffset;
     DECLARE_EVENT_TABLE()
 };
 #endif //__FDMDV2_PLOT__

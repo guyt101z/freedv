@@ -8,8 +8,6 @@
 //                  components of this project)
 //==========================================================================
 #include <string.h>
-#include "wx/wx.h"
-#include "fdmdv2_main.h"
 #include "fdmdv2_plot.h"
 
 BEGIN_EVENT_TABLE(PlotPanel, wxPanel)
@@ -27,19 +25,48 @@ END_EVENT_TABLE()
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 PlotPanel::PlotPanel(wxFrame* parent) : wxPanel(parent)
 {
+    m_pNoteBook         = (wxAuiNotebook *) parent;
+    m_pTopFrame         = (MainFrame *)m_pNoteBook->GetParent();
+    m_bmp               = new wxBitmap(MAX_BMP_X, MAX_BMP_Y, wxBITMAP_SCREEN_DEPTH);
+    wxNativePixelData m_pBmp(*m_bmp);
+    if ( !m_pBmp )
+    {
+        // ... raw access to bitmap data unavailable, do something else ...
+        return;
+    }
+
+    if ( m_pBmp.GetWidth() < 20 || m_pBmp.GetHeight() < 20 )
+    {
+        // ... complain: the bitmap it too small ...
+        return;
+    }
+
+    m_zoomFactor        = 1.0;
     m_clip              = false;
     m_use_bitmap        = true;
-    m_zoomFactor        = 1.0;
+    m_newdata           = false;
     m_rubberBand        = false;
     m_mouseDown         = false;
     m_penShortDash      = wxPen(wxColor(0xA0, 0xA0, 0xA0), 1, wxPENSTYLE_SHORT_DASH);
     m_penDotDash        = wxPen(wxColor(0xD0, 0xD0, 0xD0), 1, wxPENSTYLE_DOT_DASH);
+    m_penSolid          = wxPen(wxColor(0x00, 0x00, 0x00), 1, wxPENSTYLE_SOLID);
 //    m_gridLeftOffset    = 20;
 //    m_gridRightOffset   = 5;
 //    m_gridTopOffset     = 5;
 //    m_gridBottomOffset  = 10;
     SetBackgroundStyle(wxBG_STYLE_PAINT);
     SetLabelSize(10.0);
+}
+
+//-------------------------------------------------------------------------
+// ~PlotPanel()
+//-------------------------------------------------------------------------
+PlotPanel::~PlotPanel()
+{
+    if(!m_bmp->IsNull())
+    {
+        delete m_bmp;
+    }
 }
 
 //-------------------------------------------------------------------------
@@ -150,7 +177,7 @@ void PlotPanel::drawGraticule(wxAutoBufferedPaintDC&  dc)
 
     // Vertical gridlines
     dc.SetPen(m_penShortDash);
-    for(p = (PLOT_BORDER + XLEFT_OFFSET + GRID_INCREMENT); p < m_w; p += GRID_INCREMENT)
+    for(p = (PLOT_BORDER + XLEFT_OFFSET + GRID_INCREMENT); p < ((m_w - XLEFT_OFFSET) + GRID_INCREMENT); p += GRID_INCREMENT)
     {
         dc.DrawLine(p, (m_h + PLOT_BORDER), p, PLOT_BORDER);
     }
@@ -197,7 +224,6 @@ void PlotPanel::draw(wxAutoBufferedPaintDC&  dc)
     dc.SetBrush(ltBlueBrush);
     dc.SetPen(wxPen(BLACK_COLOR, 1));
     dc.DrawRectangle(PLOT_BORDER + XLEFT_OFFSET, PLOT_BORDER, m_w, m_h);
-
     drawGraticule(dc);
 }
 

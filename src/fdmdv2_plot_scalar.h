@@ -58,16 +58,5 @@ class PlotScalar: public PlotPanel
         DECLARE_EVENT_TABLE()
 };
 
-//// update average of each spectrum point
-//void new_data(float mag_dB[])
-//{
-//    int i;
-//
-//    for(i=0; i<FDMDV_NSPEC; i++)
-//    {
-//        av_mag[i] = (1.0 - BETA)*av_mag[i] + BETA*mag_dB[i];
-//    }
-//}
-
 #endif // __FDMDV2_PLOT_SCALAR__
 
