@@ -22,7 +22,7 @@
 #include "wx/stopwatch.h"
 #include "wx/versioninfo.h"
 #include <wx/sound.h>
-#include <wx/thread.h>
+//#include <wx/thread.h>
 
 #include "codec2.h"
 #include "fdmdv.h"
