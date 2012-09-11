@@ -109,14 +109,13 @@ void PlotScalar::draw(wxAutoBufferedPaintDC&  dc)
     int   x2;
     int   y2;
     char  label[100];
-
-//    PlotPanel::draw();
+    wxPen pen;
 
     /* detect resizing of window */
     if((m_h != m_prev_h) || (m_w != m_prev_w) || (m_x != m_prev_x) || (m_y != m_prev_y))
     {
-        //fl_color(FL_BLACK);
-        //fl_rectf(m_x, m_y, m_w, m_h);
+        dc.SetPen(BLACK_COLOR);
+        dc.DrawRectangle(m_x, m_y, m_w, m_h);
         m_prev_h = m_h;
         m_prev_w = m_w;
         m_prev_x = m_x;
@@ -128,20 +127,20 @@ void PlotScalar::draw(wxAutoBufferedPaintDC&  dc)
     y_scale = (float)m_h /(2.0 * m_y_max);
 
     // erase last sample
-    //fl_color(FL_BLACK);
+    dc.SetPen(BLACK_COLOR);
     x1 = x_scale * m_index + m_x;
     y1 = y_scale * m_mem[m_index];
     y1 = clip(y1);
     y1 = m_y + m_h/2 - y1;
-    //fl_point(x1, y1);
+    dc.DrawPoint(x1, y1);
 
     // draw new sample
-    //fl_color(FL_GREEN);
+    dc.SetPen(GREEN_COLOR);
     x1 = x_scale * m_index + m_x;
     y1 = y_scale * m_new_sample;
     y1 = clip(y1);
     y1 = m_y + m_h/2 - y1;
-//    fl_point(x1, y1);
+    dc.DrawPoint(x1, y1);
     m_mem[m_index] = m_new_sample;
     m_index++;
     if(m_index >=  m_x_max)
@@ -159,26 +158,31 @@ void PlotScalar::draw(wxAutoBufferedPaintDC&  dc)
     {
         m_step /= 2.0;
     }
-   // fl_color(FL_DARK_GREEN);
-   // fl_line_style(FL_DOT);
+    pen = dc.GetPen();
+    pen.SetColour(DARK_GREEN_COLOR);
+    pen.SetStyle(wxPENSTYLE_DOT);
+    dc.SetPen(pen);
     for(i =- m_y_max; i < m_y_max; i += m_step)
     {
         x1 = m_x;
         y1 = m_y + m_h/2 - i * y_scale;
         x2 = m_x + m_w;
         y2 = y1;
-        //fl_line(x1, y1, x2, y2);
+        dc.DrawLine(x1, y1, x2, y2);
     }
 
     // y axis graticule labels
-   // fl_color(FL_GREEN);
-   // fl_line_style(FL_SOLID);
+    pen = dc.GetPen();
+    pen.SetColour(GREEN_COLOR);
+    pen.SetStyle(wxPENSTYLE_DOT);
+    dc.SetPen(pen);
     for(i =- m_y_max; i < m_y_max; i += m_step)
     {
         x1 = m_x;
         y1 = m_y + m_h/2 - i * y_scale;
         sprintf(label, "%d", i);
-        //fl_draw(label, x1, y1);
+        wxSize sz = dc.GetTextExtent(label);
+        dc.DrawLabel(label,  wxRect(x1, y1, sz.GetWidth(), sz.GetHeight()), wxALIGN_LEFT);
     }
     //fl_pop_clip();
 }

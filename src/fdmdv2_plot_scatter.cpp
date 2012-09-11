@@ -95,6 +95,7 @@ void PlotScatter::draw(wxAutoBufferedPaintDC&  dc)
     {
         x1 = x_scale * m_mem[i].real + m_x + m_w/2;
         y1 = y_scale * m_mem[i].imag + m_y + m_h/2;
+        dc.DrawPoint(x1, y1);
         //fl_point(x1, y1);
         m_mem[i] = m_mem[i+FDMDV_NSYM];
     }

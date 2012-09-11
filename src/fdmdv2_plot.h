@@ -71,6 +71,13 @@ class MainFrame;
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 // Class PlotPanel
+//
+// @class $(Name)
+// @author $(User)
+// @date $(Date)
+// @file $(CurrentFileName).$(CurrentFileExt)
+// @brief
+//
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 class PlotPanel : public wxPanel
 {

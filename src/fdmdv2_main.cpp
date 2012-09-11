@@ -61,7 +61,14 @@ bool MainApp::OnInit()
 }
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
-// Class MainFrame(wxFrame* pa->ent) : TopFrame(pa->ent)
+// Class MainFrame(wxFrame* pa->ent) : TopFrame(parent)
+//
+// @class $(Name)
+// @author $(User)
+// @date $(Date)
+// @file $(CurrentFileName).$(CurrentFileExt)
+// @brief
+//
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
 {
@@ -129,7 +136,7 @@ void MainFrame::OnPaint(wxPaintEvent& WXUNUSED(event))
         dc.Clear();
     }
     dc.SetUserScale(m_zoom, m_zoom);
-    const wxSize size = GetClientSize();
+//    const wxSize size = GetClientSize();
 //    dc.DrawBitmap(m_bitmap, dc.DeviceToLogicalX((size.x - m_zoom * m_bitmap.GetWidth()) / 2), dc.DeviceToLogicalY((size.y - m_zoom * m_bitmap.GetHeight()) / 2), true);
 }
 
@@ -237,19 +244,18 @@ void MainFrame::OnTogBtnALCClick(wxCommandEvent& event)
     wxMessageBox(wxT("Got Click!"), wxT("OnTogBtnALCClick"), wxOK);
     event.Skip();
 }
-/*
 
 //-------------------------------------------------------------------------
 // rxCallback()
 //-------------------------------------------------------------------------
-int  MainFrame::rxCallback(
-                        const void *inBuffer,
-                        void *outBuffer,
-                        unsigned long framesPerBuffer,
-                        const PaStreamCallbackTimeInfo *outTime,
-                        PaStreamCallbackFlags statusFlags,
-                        void *userData
-                     )
+int MainFrame::rxCallback(
+                            const void *inBuffer,
+                            void *outBuffer,
+                            unsigned long framesPerBuffer,
+                            const PaStreamCallbackTimeInfo *outTime,
+                            PaStreamCallbackFlags statusFlags,
+                            void *userData
+                         )
 {
     float *out = (float *) outBuffer;
     float *in  = (float *) inBuffer;
@@ -271,19 +277,19 @@ int  MainFrame::rxCallback(
     }
     return paContinue;                              // 0;
 }
- * */
-/*
+
+
 //-------------------------------------------------------------------------
 // txCallback()
 //-------------------------------------------------------------------------
-int  MainFrame::txCallback(
-                        const void *inBuffer,
-                        void *outBuffer,
-                        unsigned long framesPerBuffer,
-                        const PaStreamCallbackTimeInfo *outTime,
-                        PaStreamCallbackFlags statusFlags,
-                        void *userData
-                    )
+int MainFrame::txCallback(
+                            const void *inBuffer,
+                            void *outBuffer,
+                            unsigned long framesPerBuffer,
+                            const PaStreamCallbackTimeInfo *outTime,
+                            PaStreamCallbackFlags statusFlags,
+                            void *userData
+                         )
 {
     float *out = (float *) outBuffer;
     float *in  = (float *) inBuffer;
@@ -305,7 +311,7 @@ int  MainFrame::txCallback(
     }
     return paContinue;                              // 0;
 }
-*/
+
 
 //-------------------------------------------------------------------------
 // OnTogBtnOnOff()

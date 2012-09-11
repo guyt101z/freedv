@@ -6,6 +6,13 @@
 // Derived from:    code written by David Rowe
 // License:         BSD License (other licenses may apply to other
 //                  components of this project)
+//
+// @class $(Name)
+// @author $(User)
+// @date $(Date)
+// @file $(CurrentFileName).$(CurrentFileExt)
+// @brief
+//
 //==========================================================================
 #include <string.h>
 #include "fdmdv2_plot.h"
@@ -22,6 +29,13 @@ END_EVENT_TABLE()
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 // Class PlotPanel(wxFrame* parent) : wxPanel(parent)
+//
+// @class $(Name)
+// @author $(User)
+// @date $(Date)
+// @file $(CurrentFileName).$(CurrentFileExt)
+// @brief
+//
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 PlotPanel::PlotPanel(wxFrame* parent) : wxPanel(parent)
 {

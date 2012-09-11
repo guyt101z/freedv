@@ -43,6 +43,13 @@
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 // Class MainApp
+//
+// @class $(Name)
+// @author $(User)
+// @date $(Date)
+// @file $(CurrentFileName).$(CurrentFileExt)
+// @brief
+//
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 class MainApp : public wxApp
 {
@@ -50,13 +57,10 @@ class MainApp : public wxApp
         virtual bool OnInit();
         virtual int OnExit()
         {
-            //DeleteBitmaps();
             return 0;
         }
 
     protected:
-        //void DeleteBitmaps();
-        //bool LoadImages();
 };
 
 // declare global static function wxGetApp()
@@ -64,6 +68,13 @@ DECLARE_APP(MainApp)
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 // Class MainFrame
+//
+// @class $(Name)
+// @author $(User)
+// @date $(Date)
+// @file $(CurrentFileName).$(CurrentFileExt)
+// @brief
+//
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 class MainFrame : public TopFrame
 {
@@ -72,7 +83,6 @@ class MainFrame : public TopFrame
         virtual ~MainFrame();
 
         PlotPanel*      m_panelDefaultA;
-        PlotPanel*      m_panelDefaultB;
         PlotSpectrum*   m_panelSpectrum;
         PlotWaterfall*  m_panelWaterfall;
         PlotScatter*    m_panelScatter;
@@ -91,8 +101,7 @@ class MainFrame : public TopFrame
         PaError         m_rxErr;
         PaError         m_txErr;
         wxSound         *m_sound;
-//        static int (*rxCallback(void const*, void*, unsigned long, PaStreamCallbackTimeInfo const*, unsigned long, void*));
-/*
+
         static int rxCallback(
                                 const void *inBuffer,
                                 void *outBuffer,
@@ -109,18 +118,8 @@ class MainFrame : public TopFrame
                                 PaStreamCallbackFlags statusFlags,
                                 void *userData
                              );
-*/
-//        void DoStartThread();
-//        void DoPauseThread();
-
-        //void DoResumeThread() { ... }
-
-//        void OnThreadUpdate(wxThreadEvent&);
-//        void OnThreadCompletion(wxThreadEvent&);
 
     protected:
-//        Fdmdv2ThreadAudio *m_pThread;
-        wxCriticalSection m_pThreadCS;    // protects the m_pThread pointer
         // protected event handlers
         virtual void OnCloseFrame(wxCloseEvent& event);
         virtual void OnExitClick(wxCommandEvent& event);
@@ -186,30 +185,7 @@ class MainFrame : public TopFrame
         bool        m_useMemory;
 
         wxTextCtrl* m_tc;
-//        wxBitmap    m_bitmap;
-//        wxBitmap    m_alphaBitmap;
         int         m_zoom;
-
-        // any class wishing to process wxWidgets events must use this macro
-//    DECLARE_EVENT_TABLE()
 };
 
-/*
-typedef int (ClassName::*CallbackType)(float);
-
-void DoWork(CallbackType callback)
-{
-  //Class instance to invoke it through
-  ClassName instance;
-
-  //Invocation
-  int result = instance->*callback(1.0f);
-}
-
-int main(int argc, char ** argv)
-{
-  //Pass in SomeCallback to the DoWork
-  DoWork(&ClassName::Method);
-}
-*/
 #endif //__FDMDV2_MAIN__
