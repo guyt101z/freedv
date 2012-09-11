@@ -42,11 +42,11 @@ CONFIG_CLEAN_VPATH_FILES =
 SOURCES =
 DIST_SOURCES =
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
-ACLOCAL = ${SHELL} /fdmdv2/missing --run aclocal-1.11
-AMTAR = ${SHELL} /fdmdv2/missing --run tar
-AUTOCONF = ${SHELL} /fdmdv2/missing --run autoconf
-AUTOHEADER = ${SHELL} /fdmdv2/missing --run autoheader
-AUTOMAKE = ${SHELL} /fdmdv2/missing --run automake-1.11
+ACLOCAL = ${SHELL} /p/Radio/fdmdv2/missing --run aclocal-1.11
+AMTAR = ${SHELL} /p/Radio/fdmdv2/missing --run tar
+AUTOCONF = ${SHELL} /p/Radio/fdmdv2/missing --run autoconf
+AUTOHEADER = ${SHELL} /p/Radio/fdmdv2/missing --run autoheader
+AUTOMAKE = ${SHELL} /p/Radio/fdmdv2/missing --run automake-1.11
 AWK = gawk
 CC = gcc
 CCDEPMODE = depmode=none
@@ -105,7 +105,7 @@ LIBS = -lsndfile-1 \
 -lwsock32 
 
 LTLIBOBJS = 
-MAKEINFO = ${SHELL} /fdmdv2/missing --run makeinfo
+MAKEINFO = ${SHELL} /p/Radio/fdmdv2/missing --run makeinfo
 MKDIR_P = /bin/mkdir -p
 OBJEXT = o
 PACKAGE = fdmdv2
@@ -120,10 +120,10 @@ SET_MAKE =
 SHELL = /bin/sh
 STRIP = 
 VERSION = 0.2
-abs_builddir = /fdmdv2/src
-abs_srcdir = /fdmdv2/src
-abs_top_builddir = /fdmdv2
-abs_top_srcdir = /fdmdv2
+abs_builddir = /p/Radio/fdmdv2/src
+abs_srcdir = /p/Radio/fdmdv2/src
+abs_top_builddir = /p/Radio/fdmdv2
+abs_top_srcdir = /p/Radio/fdmdv2
 ac_ct_CC = gcc
 am__include = include
 am__leading_dot = .
@@ -142,7 +142,7 @@ host_alias =
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
-install_sh = ${SHELL} /fdmdv2/install-sh
+install_sh = ${SHELL} /p/Radio/fdmdv2/install-sh
 libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
 localedir = ${datarootdir}/locale
@@ -181,7 +181,6 @@ fdmdv2_plot_scalar.cpp \
 fdmdv2_plot_scatter.cpp \
 fdmdv2_plot_spectrum.cpp \
 fdmdv2_plot_waterfall.cpp \
-fdmdv2_process_audio.cpp\
 fdmdv2_pa_wrapper.cpp \
 dlg_about.cpp \
 dlg_audio.cpp \
@@ -196,7 +195,6 @@ fdmdv2_plot_scalar.$(OBJEXT) \
 fdmdv2_plot_scatter.$(OBJEXT) \
 fdmdv2_plot_spectrum.$(OBJEXT) \
 fdmdv2_plot_waterfall.$(OBJEXT) \
-fdmdv2_process_audio.$(OBJEXT)\
 fdmdv2_pa_wrapper.$(OBJEXT)\
 dlg_about.$(OBJEXT) \
 dlg_audio.$(OBJEXT) \
@@ -416,8 +414,8 @@ fdmdv2_plot_spectrum.$(OBJEXT):  fdmdv2_plot_spectrum.cpp fdmdv2_plot_spectrum.h
 fdmdv2_plot_waterfall.$(OBJEXT):  fdmdv2_plot_waterfall.cpp fdmdv2_plot_waterfall.h fdmdv2_plot.h fdmdv2_defines.h
 	$(GPP) -c $(DEFINES) $(INCLUDE_PATHS) $(CFLAGS) $(WX_FLAGS) fdmdv2_plot_waterfall.cpp
 
-fdmdv2_process_audio.$(OBJEXT):  fdmdv2_process_audio.cpp 
-	$(GPP) -c $(DEFINES) $(INCLUDE_PATHS) $(CFLAGS) $(WX_FLAGS) fdmdv2_process_audio.cpp
+#fdmdv2_process_audio.$(OBJEXT):  fdmdv2_process_audio.cpp 
+#	$(GPP) -c $(DEFINES) $(INCLUDE_PATHS) $(CFLAGS) $(WX_FLAGS) fdmdv2_process_audio.cpp
 
 fdmdv2_pa_wrapper.$(OBJEXT): fdmdv2_pa_wrapper.cpp  fdmdv2_pa_wrapper.h
 	$(GPP) -c $(DEFINES) $(INCLUDE_PATHS) $(CFLAGS) $(WX_FLAGS) fdmdv2_pa_wrapper.cpp

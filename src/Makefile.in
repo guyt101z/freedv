@@ -181,7 +181,6 @@ fdmdv2_plot_scalar.cpp \
 fdmdv2_plot_scatter.cpp \
 fdmdv2_plot_spectrum.cpp \
 fdmdv2_plot_waterfall.cpp \
-fdmdv2_process_audio.cpp\
 fdmdv2_pa_wrapper.cpp \
 dlg_about.cpp \
 dlg_audio.cpp \
@@ -196,7 +195,6 @@ fdmdv2_plot_scalar.$(OBJEXT) \
 fdmdv2_plot_scatter.$(OBJEXT) \
 fdmdv2_plot_spectrum.$(OBJEXT) \
 fdmdv2_plot_waterfall.$(OBJEXT) \
-fdmdv2_process_audio.$(OBJEXT)\
 fdmdv2_pa_wrapper.$(OBJEXT)\
 dlg_about.$(OBJEXT) \
 dlg_audio.$(OBJEXT) \
@@ -416,8 +414,8 @@ fdmdv2_plot_spectrum.$(OBJEXT):  fdmdv2_plot_spectrum.cpp fdmdv2_plot_spectrum.h
 fdmdv2_plot_waterfall.$(OBJEXT):  fdmdv2_plot_waterfall.cpp fdmdv2_plot_waterfall.h fdmdv2_plot.h fdmdv2_defines.h
 	$(GPP) -c $(DEFINES) $(INCLUDE_PATHS) $(CFLAGS) $(WX_FLAGS) fdmdv2_plot_waterfall.cpp
 
-fdmdv2_process_audio.$(OBJEXT):  fdmdv2_process_audio.cpp 
-	$(GPP) -c $(DEFINES) $(INCLUDE_PATHS) $(CFLAGS) $(WX_FLAGS) fdmdv2_process_audio.cpp
+#fdmdv2_process_audio.$(OBJEXT):  fdmdv2_process_audio.cpp 
+#	$(GPP) -c $(DEFINES) $(INCLUDE_PATHS) $(CFLAGS) $(WX_FLAGS) fdmdv2_process_audio.cpp
 
 fdmdv2_pa_wrapper.$(OBJEXT): fdmdv2_pa_wrapper.cpp  fdmdv2_pa_wrapper.h
 	$(GPP) -c $(DEFINES) $(INCLUDE_PATHS) $(CFLAGS) $(WX_FLAGS) fdmdv2_pa_wrapper.cpp
