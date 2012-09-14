@@ -32,7 +32,6 @@
 #define wxUSE_LIBTIFF   1
 
 //float  av_mag[FDMDV_NSPEC];                  // shared between a few classes
-
 // initialize the application
 IMPLEMENT_APP(MainApp);
 
@@ -45,18 +44,48 @@ bool MainApp::OnInit()
     {
         return false;
     }
+    if(!loadConfig())
+    {
+        wxMessageBox(wxT("Unable to open configuration data.  Create New?"), wxT("Configuration"), wxYES_NO | wxCANCEL);
+    }
     // Create the main application window
     MainFrame *frame = new MainFrame(NULL);
-
     SetTopWindow(frame);
-
     // Should guarantee that the first plot tab defined is the one
     // displayed. But it doesn't when built from command line.  Why?
     frame->m_auiNbookCtrl->ChangeSelection(0);
-
     frame->Layout();
     frame->Show();
+    return true;
+}
 
+//-------------------------------------------------------------------------
+// loadConfig()
+//-------------------------------------------------------------------------
+bool MainApp::loadConfig()
+{
+    g_config = new wxConfig("FDMDV2");
+    wxString str;
+    if(g_config->Read("LastPrompt", &str))
+    {
+        // last prompt was found in the config file/registry and its value is
+        // now in str
+        // ...
+    }
+    else
+    {
+        // no last prompt...
+    }
+    // another example: using default values and the full path instead of just
+    // key name: if the key is not found , the value 17 is returned
+    long value = g_config->ReadLong("/LastRun/CalculatedValues/MaxValue", 17);
+
+    // at the end of the program we would save everything back
+    g_config->Write("LastPrompt", str);
+    g_config->Write("/LastRun/CalculatedValues/MaxValue", value);
+
+    // the changes will be written back automatically
+    delete g_config;
     return true;
 }
 
@@ -97,6 +126,12 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     // Add generic plot window
     m_panelDefaultA = new PlotPanel((wxFrame*) m_auiNbookCtrl );
     m_auiNbookCtrl->AddPage(m_panelDefaultA, _("Test A"), true, wxNullBitmap );
+#ifdef USE_TIMER
+//    this->Connect(wxEVT_TIMER, MainFrame::OnTimer);    //, ID_TIMER_WATERFALL);
+    Bind(wxEVT_TIMER, &MainFrame::OnTimer, this);   // ID_MY_WINDOW);
+    m_plotTimer.SetOwner(this, ID_TIMER_WATERFALL);
+    m_plotTimer.Start(500, wxTIMER_CONTINUOUS);
+#endif
 }
 
 //-------------------------------------------------------------------------
@@ -104,7 +139,25 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
 //-------------------------------------------------------------------------
 MainFrame::~MainFrame()
 {
+#ifdef USE_TIMER
+    if (m_plotTimer.IsRunning())
+    {
+        m_plotTimer.Stop();
+        Unbind(wxEVT_TIMER, &MainFrame::OnTimer, this);   // ID_MY_WINDOW);
+    }
+#endif
 }
+
+#ifdef USE_TIMER
+//----------------------------------------------------------------
+// OnTimer()
+//----------------------------------------------------------------
+void MainFrame::OnTimer(wxTimerEvent &evt)
+{
+    m_panelWaterfall->m_newdata = true;
+    m_panelWaterfall->Refresh();
+}
+#endif
 
 //-------------------------------------------------------------------------
 // OnCloseFrame()
@@ -125,7 +178,7 @@ void MainFrame::OnExitClick(wxCommandEvent& event)
 }
 
 //-------------------------------------------------------------------------
-// Onpa->nt()
+// Onpa->Paint()
 //-------------------------------------------------------------------------
 void MainFrame::OnPaint(wxPaintEvent& WXUNUSED(event))
 {
@@ -136,8 +189,6 @@ void MainFrame::OnPaint(wxPaintEvent& WXUNUSED(event))
         dc.Clear();
     }
     dc.SetUserScale(m_zoom, m_zoom);
-//    const wxSize size = GetClientSize();
-//    dc.DrawBitmap(m_bitmap, dc.DeviceToLogicalX((size.x - m_zoom * m_bitmap.GetWidth()) / 2), dc.DeviceToLogicalY((size.y - m_zoom * m_bitmap.GetHeight()) / 2), true);
 }
 
 //-------------------------------------------------------------------------
@@ -243,73 +294,6 @@ void MainFrame::OnTogBtnALCClick(wxCommandEvent& event)
 {
     wxMessageBox(wxT("Got Click!"), wxT("OnTogBtnALCClick"), wxOK);
     event.Skip();
-}
-
-//-------------------------------------------------------------------------
-// rxCallback()
-//-------------------------------------------------------------------------
-int MainFrame::rxCallback(
-                            const void *inBuffer,
-                            void *outBuffer,
-                            unsigned long framesPerBuffer,
-                            const PaStreamCallbackTimeInfo *outTime,
-                            PaStreamCallbackFlags statusFlags,
-                            void *userData
-                         )
-{
-    float *out = (float *) outBuffer;
-    float *in  = (float *) inBuffer;
-    float leftIn;
-    float rightIn;
-    unsigned int i;
-
-    if(inBuffer == NULL)
-    {
-        return 0;
-    }
-    // Read input buffer, process data, and fill output buffer.
-    for(i = 0; i < framesPerBuffer; i++)
-    {
-        leftIn  = *in++;                            // Get interleaved samples from input buffer.
-        rightIn = *in++;
-        *out++  = leftIn * rightIn;                 // ring modulation
-        *out++  = 0.5f * (leftIn + rightIn);        // mixing
-    }
-    return paContinue;                              // 0;
-}
-
-
-//-------------------------------------------------------------------------
-// txCallback()
-//-------------------------------------------------------------------------
-int MainFrame::txCallback(
-                            const void *inBuffer,
-                            void *outBuffer,
-                            unsigned long framesPerBuffer,
-                            const PaStreamCallbackTimeInfo *outTime,
-                            PaStreamCallbackFlags statusFlags,
-                            void *userData
-                         )
-{
-    float *out = (float *) outBuffer;
-    float *in  = (float *) inBuffer;
-    float leftIn;
-    float rightIn;
-    unsigned int i;
-
-    if(inBuffer == NULL)
-    {
-        return 0;
-    }
-    // Read input buffer, process data, and fill output buffer.
-    for(i = 0; i < framesPerBuffer; i++)
-    {
-        leftIn  = *in++;                            // Get interleaved samples from input buffer.
-        rightIn = *in++;
-        *out++  = leftIn * rightIn;                 // ring modulation
-        *out++  = 0.5f * (leftIn + rightIn);        // mixing
-    }
-    return paContinue;                              // 0;
 }
 
 
@@ -738,8 +722,6 @@ wxString MainFrame::LoadUserImage(wxImage& image)
 //-------------------------------------------------------------------------
 void MainFrame::OnSave(wxCommandEvent& WXUNUSED(event))
 {
- //   wxImage image = m_bitmap.ConvertToImage();
-
     wxString savefilename = wxFileSelector(wxT("Save Sound File"),
                                            wxEmptyString,
                                            wxEmptyString,
@@ -750,7 +732,6 @@ void MainFrame::OnSave(wxCommandEvent& WXUNUSED(event))
                                            wxT("FLAC files (*.flc)|*.flc|"),
                                            wxFD_SAVE,
                                            this);
-
     if(savefilename.empty())
     {
         return;
@@ -758,140 +739,248 @@ void MainFrame::OnSave(wxCommandEvent& WXUNUSED(event))
     wxString extension;
     wxFileName::SplitPath(savefilename, NULL, NULL, &extension);
     bool saved = false;
-/*
-    if(extension == wxT("bmp"))
-    {
-        static const int bppvalues[] =
-        {
-            wxBMP_1BPP,
-            wxBMP_1BPP_BW,
-            wxBMP_4BPP,
-            wxBMP_8BPP,
-            wxBMP_8BPP_GREY,
-            wxBMP_8BPP_RED,
-            wxBMP_8BPP_PALETTE,
-            wxBMP_24BPP
-        };
-
-        const wxString bppchoices[] =
-        {
-            wxT("1 bpp color"),
-            wxT("1 bpp B&W"),
-            wxT("4 bpp color"),
-            wxT("8 bpp color"),
-            wxT("8 bpp greyscale"),
-            wxT("8 bpp red"),
-            wxT("8 bpp own pa->ette"),
-            wxT("24 bpp")
-        };
-
-        int bppselection = wxGetSingleChoiceIndex(wxT("Set BMP BPP"),
-                           wxT("Image sample: save file"),
-                           WXSIZEOF(bppchoices),
-                           bppchoices,
-                           this);
-        if(bppselection != -1)
-        {
-            int format = bppvalues[bppselection];
-
-            image.SetOption(wxIMAGE_OPTION_BMP_FORMAT, format);
-            if(format == wxBMP_8BPP_PALETTE)
-            {
-                unsigned char *cmap = new unsigned char [256];
-                for(int i = 0; i < 256; i++)
-                {
-                    cmap[i] = (unsigned char)i;
-                }
-                image.SetPalette(wxPalette(256, cmap, cmap, cmap));
-                delete[] cmap;
-            }
-        }
-    }
-    else if(extension == wxT("png"))
-    {
-        static const int pngvalues[] =
-        {
-            wxPNG_TYPE_COLOUR,
-            wxPNG_TYPE_COLOUR,
-            wxPNG_TYPE_GREY,
-            wxPNG_TYPE_GREY,
-            wxPNG_TYPE_GREY_RED,
-            wxPNG_TYPE_GREY_RED,
-        };
-
-        const wxString pngchoices[] =
-        {
-            wxT("Colour 8bpp"),
-            wxT("Colour 16bpp"),
-            wxT("Grey 8bpp"),
-            wxT("Grey 16bpp"),
-            wxT("Grey red 8bpp"),
-            wxT("Grey red 16bpp"),
-        };
-
-        int sel = wxGetSingleChoiceIndex(wxT("Set PNG format"),
-                                         wxT("Image sample: save file"),
-                                         WXSIZEOF(pngchoices),
-                                         pngchoices,
-                                         this);
-        if(sel != -1)
-        {
-            image.SetOption(wxIMAGE_OPTION_PNG_FORMAT, pngvalues[sel]);
-            image.SetOption(wxIMAGE_OPTION_PNG_BITDEPTH, sel % 2 ? 16 : 8);
-
-            // these values are taken from OptiPNG with -o3 switch
-            const wxString compressionChoices[] =
-            {
-                wxT("compression = 9, memory = 8, strategy = 0, filter = 0"),
-                wxT("compression = 9, memory = 9, strategy = 0, filter = 0"),
-                wxT("compression = 9, memory = 8, strategy = 1, filter = 0"),
-                wxT("compression = 9, memory = 9, strategy = 1, filter = 0"),
-                wxT("compression = 1, memory = 8, strategy = 2, filter = 0"),
-                wxT("compression = 1, memory = 9, strategy = 2, filter = 0"),
-                wxT("compression = 9, memory = 8, strategy = 0, filter = 5"),
-                wxT("compression = 9, memory = 9, strategy = 0, filter = 5"),
-                wxT("compression = 9, memory = 8, strategy = 1, filter = 5"),
-                wxT("compression = 9, memory = 9, strategy = 1, filter = 5"),
-                wxT("compression = 1, memory = 8, strategy = 2, filter = 5"),
-                wxT("compression = 1, memory = 9, strategy = 2, filter = 5"),
-            };
-
-            int sel = wxGetSingleChoiceIndex(wxT("Select compression option (Cancel to use default)\n"),
-                                             wxT("PNG Compression Options"),
-                                             WXSIZEOF(compressionChoices),
-                                             compressionChoices,
-                                             this);
-            if(sel != -1)
-            {
-                const int zc[] = {9, 9, 9, 9, 1, 1, 9, 9, 9, 9, 1, 1};
-                const int zm[] = {8, 9, 8, 9, 8, 9, 8, 9, 8, 9, 8, 9};
-                const int zs[] = {0, 0, 1, 1, 2, 2, 0, 0, 1, 1, 2, 2};
-                const int f[]  = {0x08, 0x08, 0x08, 0x08, 0x08, 0x08,
-                                  0xF8, 0xF8, 0xF8, 0xF8, 0xF8, 0xF8
-                                 };
-
-                image.SetOption(wxIMAGE_OPTION_PNG_COMPRESSION_LEVEL      , zc[sel]);
-                image.SetOption(wxIMAGE_OPTION_PNG_COMPRESSION_MEM_LEVEL  , zm[sel]);
-                image.SetOption(wxIMAGE_OPTION_PNG_COMPRESSION_STRATEGY   , zs[sel]);
-                image.SetOption(wxIMAGE_OPTION_PNG_FILTER                 , f[sel]);
-                image.SetOption(wxIMAGE_OPTION_PNG_COMPRESSION_BUFFER_SIZE, 1048576); // 1 MB
-            }
-        }
-    }
-    else if(extension == wxT("cur"))
-    {
-        image.Rescale(32, 32);
-        image.SetOption(wxIMAGE_OPTION_CUR_HOTSPOT_X, 0);
-        image.SetOption(wxIMAGE_OPTION_CUR_HOTSPOT_Y, 0);
-        // This shows how you can save an image with explicitly
-        // specified image format:
-        saved = image.SaveFile(savefilename, wxBITMAP_TYPE_CUR);
-    }
-*/
     if(!saved)
     {
         // This one guesses image format from filename extension
         // (it may fail if the extension is not recognized):
         //image.SaveFile(savefilename);
+    }
+}
+
+//-------------------------------------------------------------------------
+// rxCallback()
+//-------------------------------------------------------------------------
+int MainFrame::rxCallback(
+                            const void *inBuffer,
+                            void *outBuffer,
+                            unsigned long framesPerBuffer,
+                            const PaStreamCallbackTimeInfo *outTime,
+                            PaStreamCallbackFlags statusFlags,
+                            void *userData
+                         )
+{
+    float *out = (float *) outBuffer;
+    float *in  = (float *) inBuffer;
+    float leftIn;
+    float rightIn;
+    unsigned int i;
+
+    if(inBuffer == NULL)
+    {
+        return 0;
+    }
+    // Read input buffer, process data, and fill output buffer.
+    for(i = 0; i < framesPerBuffer; i++)
+    {
+        leftIn  = *in++;                            // Get interleaved samples from input buffer.
+        rightIn = *in++;
+        *out++  = leftIn * rightIn;                 // ring modulation
+        *out++  = 0.5f * (leftIn + rightIn);        // mixing
+    }
+    return paContinue;                              // 0;
+}
+
+//-------------------------------------------------------------------------
+// txCallback()
+//-------------------------------------------------------------------------
+int MainFrame::txCallback(
+                            const void *inBuffer,
+                            void *outBuffer,
+                            unsigned long framesPerBuffer,
+                            const PaStreamCallbackTimeInfo *outTime,
+                            PaStreamCallbackFlags statusFlags,
+                            void *userData
+                         )
+{
+    float *out = (float *) outBuffer;
+    float *in  = (float *) inBuffer;
+    float leftIn;
+    float rightIn;
+    unsigned int i;
+
+    if(inBuffer == NULL)
+    {
+        return 0;
+    }
+    // Read input buffer, process data, and fill output buffer.
+    for(i = 0; i < framesPerBuffer; i++)
+    {
+        leftIn  = *in++;                            // Get interleaved samples from input buffer.
+        rightIn = *in++;
+        *out++  = leftIn * rightIn;                 // ring modulation
+        *out++  = 0.5f * (leftIn + rightIn);        // mixing
+    }
+    return paContinue;                              // 0;
+}
+
+//----------------------------------------------------------------
+// update average of each spectrum point
+//----------------------------------------------------------------
+void MainFrame::averageData(float mag_dB[])
+{
+    int i;
+
+    for(i = 0; i < FDMDV_NSPEC; i++)
+    {
+        m_rxPa->m_av_mag[i] = (1.0 - BETA) * m_rxPa->m_av_mag[i] + BETA * mag_dB[i];
+    }
+}
+
+//----------------------------------------------------------------
+// per_frame_rx_processing()
+//----------------------------------------------------------------
+void MainFrame::per_frame_rx_processing(
+                                            short   output_buf[],  // output buf of decoded speech samples
+                                            int     *n_output_buf, // how many samples currently in output_buf[]
+                                            int     codec_bits[],  // current frame of bits for decoder
+                                            short   input_buf[],   // input buf of modem samples input to demod
+                                            int     *n_input_buf,  // how many samples currently in input_buf[]
+                                            int     *nin,          // amount of samples demod needs for next call
+                                            int     *state,        // used to collect codec_bits[] halves
+                                            struct  CODEC2 *c2     // Codec 2 states
+                                       )
+{
+    struct FDMDV_STATS  stats;
+    int                 sync_bit;
+    float               rx_fdm[FDMDV_MAX_SAMPLES_PER_FRAME];
+    int                 rx_bits[FDMDV_BITS_PER_FRAME];
+    unsigned char       packed_bits[BYTES_PER_CODEC_FRAME];
+    float               rx_spec[FDMDV_NSPEC];
+    int                 i;
+    int                 nin_prev;
+    int                 bit;
+    int                 byte;
+    int                 next_state;
+
+    assert(*n_input_buf <= (2 * FDMDV_NOM_SAMPLES_PER_FRAME));
+
+    //
+    //  This while loop will run the demod 0, 1 (nominal) or 2 times:
+    //
+    //  0: when tx sample clock runs faster than rx, occasionally we
+    //     will run out of samples
+    //
+    //  1: normal, run decoder once, every 2nd frame output a frame of
+    //     speech samples to D/A
+    //
+    //  2: when tx sample clock runs slower than rx, occasionally we will
+    //     have enough samples to run demod twice.
+    //
+    //  With a +/- 10 Hz sample clock difference at FS=8000Hz (+/- 1250
+    //  ppm), case 0 or 1 occured about once every 30 seconds.  This is
+    //  no problem for the decoded audio.
+    //
+    while(*n_input_buf >= *nin)
+    {
+        // demod per frame processing
+        for(i = 0; i < *nin; i++)
+        {
+            rx_fdm[i] = (float)input_buf[i]/FDMDV_SCALE;
+        }
+        nin_prev = *nin;
+        fdmdv_demod(m_pFDMDV_state, rx_bits, &sync_bit, rx_fdm, nin);
+        *n_input_buf -= nin_prev;
+        assert(*n_input_buf >= 0);
+
+        // shift input buffer
+        for(i = 0; i < *n_input_buf; i++)
+        {
+            input_buf[i] = input_buf[i+nin_prev];
+        }
+
+        // compute rx spectrum & get demod stats, and update GUI plot data
+        fdmdv_get_rx_spectrum(m_pFDMDV_state, rx_spec, rx_fdm, nin_prev);
+        fdmdv_get_demod_stats(m_pFDMDV_state, &stats);
+        averageData(rx_spec);
+        //m_panelWaterfall;
+        //m_panelScalar;
+//        m_panelScatter->add_new_samples(stats.rx_symbols);
+//        aTimingEst->add_new_sample(stats.rx_timing);
+//        aFreqEst->add_new_sample(stats.foff);
+//        aSNR->add_new_sample(stats.snr_est);
+        //
+        //   State machine to:
+        //
+        //   + Mute decoded audio when out of sync.  The demod is synced
+        //     when we are using the fine freq estimate and SNR is above
+        //     a thresh.
+        //
+        //   + Decode codec bits only if we have a 0,1 sync bit
+        //     sequence.  Collects two frames of demod bits to decode
+        //     one frame of codec bits.
+        //
+        next_state = *state;
+        switch(*state)
+        {
+            case 0:
+                // mute output audio when out of sync
+                if(*n_output_buf < 2 * codec2_samples_per_frame(c2) - N8)
+                {
+                    for(i=0; i<N8; i++)
+                    {
+                        output_buf[*n_output_buf + i] = 0;
+                    }
+                    *n_output_buf += N8;
+                }
+                assert(*n_output_buf <= (2 * codec2_samples_per_frame(c2)));
+                if((stats.fest_coarse_fine == 1) && (stats.snr_est > 3.0))
+                {
+                    next_state = 1;
+                }
+                break;
+
+            case 1:
+                if(sync_bit == 0)
+                {
+                    next_state = 2;
+                    // first half of frame of codec bits
+                    memcpy(codec_bits, rx_bits, FDMDV_BITS_PER_FRAME * sizeof(int));
+                }
+                else
+                {
+                    next_state = 1;
+                }
+                if(stats.fest_coarse_fine == 0)
+                {
+                    next_state = 0;
+                }
+                break;
+
+            case 2:
+                next_state = 1;
+                if(stats.fest_coarse_fine == 0)
+                {
+                    next_state = 0;
+                }
+                if(sync_bit == 1)
+                {
+                    // second half of frame of codec bits
+                    memcpy(&codec_bits[FDMDV_BITS_PER_FRAME], rx_bits, FDMDV_BITS_PER_FRAME*sizeof(int));
+                    // pack bits, MSB received first
+                    bit  = 7;
+                    byte = 0;
+                    memset(packed_bits, 0, BYTES_PER_CODEC_FRAME);
+                    for(i = 0; i < BITS_PER_CODEC_FRAME; i++)
+                    {
+                        packed_bits[byte] |= (codec_bits[i] << bit);
+                        bit--;
+                        if(bit < 0)
+                        {
+                            bit = 7;
+                            byte++;
+                        }
+                    }
+                    assert(byte == BYTES_PER_CODEC_FRAME);
+                    // add decoded speech to end of output buffer
+                    if(*n_output_buf <= codec2_samples_per_frame(c2))
+                    {
+                        codec2_decode(c2, &output_buf[*n_output_buf], packed_bits);
+                        *n_output_buf += codec2_samples_per_frame(c2);
+                    }
+                    assert(*n_output_buf <= (2 * codec2_samples_per_frame(c2)));
+                }
+                break;
+        }
+        *state = next_state;
     }
 }

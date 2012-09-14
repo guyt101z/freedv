@@ -39,9 +39,8 @@ BEGIN_EVENT_TABLE(PlotScalar, PlotPanel)
 END_EVENT_TABLE()
 
 //----------------------------------------------------------------
-//
+// PlotScalar()
 //----------------------------------------------------------------
-//PlotScalar::PlotScalar(wxFrame* parent, int x, int y, int w, int h, int x_max_, int y_max_, const char name[]): PlotPanel(parent)
 PlotScalar::PlotScalar(wxFrame* parent, int x_max_, int y_max_): PlotPanel(parent)
 {
     int i;
@@ -65,7 +64,7 @@ PlotScalar::PlotScalar(wxFrame* parent, int x_max_, int y_max_): PlotPanel(paren
 }
 
 //----------------------------------------------------------------
-//
+// ~PlotScalar()
 //----------------------------------------------------------------
 PlotScalar::~PlotScalar()
 {
@@ -73,7 +72,7 @@ PlotScalar::~PlotScalar()
 }
 
 //----------------------------------------------------------------
-//
+// add_new_sample()
 //----------------------------------------------------------------
 void PlotScalar::add_new_sample(float sample)
 {
@@ -81,23 +80,23 @@ void PlotScalar::add_new_sample(float sample)
 }
 
 //----------------------------------------------------------------
-//
+// clip()
 //----------------------------------------------------------------
 int PlotScalar::clip(int y1)
 {
-    if(y1 > (m_h/2 - 10))
+    if(y1 > (m_rCtrl.GetHeight()/2 - 10))
     {
-        y1 = m_h/2 - 10;
+        y1 = m_rCtrl.GetHeight()/2 - 10;
     }
-    if(y1 < -(m_h/2 - 10))
+    if(y1 < -(m_rCtrl.GetHeight()/2 - 10))
     {
-        y1 = -(m_h/2 - 10);
+        y1 = -(m_rCtrl.GetHeight()/2 - 10);
     }
     return y1;
 }
 
 //----------------------------------------------------------------
-//
+// draw()
 //----------------------------------------------------------------
 void PlotScalar::draw(wxAutoBufferedPaintDC&  dc)
 {
@@ -112,26 +111,26 @@ void PlotScalar::draw(wxAutoBufferedPaintDC&  dc)
     wxPen pen;
 
     /* detect resizing of window */
-    if((m_h != m_prev_h) || (m_w != m_prev_w) || (m_x != m_prev_x) || (m_y != m_prev_y))
+    if((m_rCtrl.GetHeight() != m_prev_h) || (m_rCtrl.GetWidth() != m_prev_w) || (m_x != m_prev_x) || (m_y != m_prev_y))
     {
         dc.SetPen(BLACK_COLOR);
-        dc.DrawRectangle(m_x, m_y, m_w, m_h);
-        m_prev_h = m_h;
-        m_prev_w = m_w;
+        dc.DrawRectangle(m_x, m_y, m_rCtrl.GetWidth(), m_rCtrl.GetHeight());
+        m_prev_h = m_rCtrl.GetHeight();
+        m_prev_w = m_rCtrl.GetWidth();
         m_prev_x = m_x;
         m_prev_y = m_y;
     }
 
     //fl_push_clip(m_x, m_y, m_w, m_h);
     x_scale = (float)m_x_max;
-    y_scale = (float)m_h /(2.0 * m_y_max);
+    y_scale = (float)m_rCtrl.GetHeight() /(2.0 * m_y_max);
 
     // erase last sample
     dc.SetPen(BLACK_COLOR);
     x1 = x_scale * m_index + m_x;
     y1 = y_scale * m_mem[m_index];
     y1 = clip(y1);
-    y1 = m_y + m_h/2 - y1;
+    y1 = m_y + m_rCtrl.GetHeight()/2 - y1;
     dc.DrawPoint(x1, y1);
 
     // draw new sample
@@ -139,7 +138,7 @@ void PlotScalar::draw(wxAutoBufferedPaintDC&  dc)
     x1 = x_scale * m_index + m_x;
     y1 = y_scale * m_new_sample;
     y1 = clip(y1);
-    y1 = m_y + m_h/2 - y1;
+    y1 = m_y + m_rCtrl.GetHeight()/2 - y1;
     dc.DrawPoint(x1, y1);
     m_mem[m_index] = m_new_sample;
     m_index++;
@@ -165,8 +164,8 @@ void PlotScalar::draw(wxAutoBufferedPaintDC&  dc)
     for(i =- m_y_max; i < m_y_max; i += m_step)
     {
         x1 = m_x;
-        y1 = m_y + m_h/2 - i * y_scale;
-        x2 = m_x + m_w;
+        y1 = m_y + m_rCtrl.GetHeight()/2 - i * y_scale;
+        x2 = m_x + m_rCtrl.GetWidth();
         y2 = y1;
         dc.DrawLine(x1, y1, x2, y2);
     }
@@ -179,7 +178,7 @@ void PlotScalar::draw(wxAutoBufferedPaintDC&  dc)
     for(i =- m_y_max; i < m_y_max; i += m_step)
     {
         x1 = m_x;
-        y1 = m_y + m_h/2 - i * y_scale;
+        y1 = m_y + m_rCtrl.GetHeight()/2 - i * y_scale;
         sprintf(label, "%d", i);
         wxSize sz = dc.GetTextExtent(label);
         dc.DrawLabel(label,  wxRect(x1, y1, sz.GetWidth(), sz.GetHeight()), wxALIGN_LEFT);

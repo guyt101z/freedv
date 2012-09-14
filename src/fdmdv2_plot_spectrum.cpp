@@ -61,28 +61,28 @@ void PlotSpectrum::drawGraticule(wxAutoBufferedPaintDC&  dc)
 
     // Vertical gridlines
     dc.SetPen(m_penShortDash);
-    for(p = (PLOT_BORDER + XLEFT_OFFSET + GRID_INCREMENT); p < ((m_w - XLEFT_OFFSET) + GRID_INCREMENT); p += GRID_INCREMENT)
+    for(p = (PLOT_BORDER + XLEFT_OFFSET + GRID_INCREMENT); p < ((m_rCtrl.GetWidth() - XLEFT_OFFSET) + GRID_INCREMENT); p += GRID_INCREMENT)
     {
-        dc.DrawLine(p, (m_h + PLOT_BORDER), p, PLOT_BORDER);
+        dc.DrawLine(p, (m_rCtrl.GetHeight() + PLOT_BORDER), p, PLOT_BORDER);
     }
 
-    int y_zero = (m_h - m_top) / 2 ;
+    int y_zero = (m_rCtrl.GetHeight() - m_top) / 2 ;
     dc.SetPen(m_penSolid);
-    dc.DrawLine(PLOT_BORDER + XLEFT_OFFSET, y_zero, (m_w + PLOT_BORDER + XLEFT_OFFSET), y_zero);
+    dc.DrawLine(PLOT_BORDER + XLEFT_OFFSET, y_zero, (m_rCtrl.GetWidth() + PLOT_BORDER + XLEFT_OFFSET), y_zero);
     sprintf(buf, "%6.0f", 0.0);
     dc.DrawText(buf, XLEFT_TEXT_OFFSET, y_zero + TEXT_BASELINE_OFFSET_Y);
 
     // Horizontal gridlines
     dc.SetPen(m_penDotDash);
-    for(p = 0; (y_zero + p) < m_h ; p += GRID_INCREMENT)
+    for(p = 0; (y_zero + p) < m_rCtrl.GetHeight() ; p += GRID_INCREMENT)
     {
         if(p > 0)
         {
-            dc.DrawLine(PLOT_BORDER + XLEFT_OFFSET, (y_zero + p), (m_w + PLOT_BORDER + XLEFT_OFFSET), (y_zero + p));
+            dc.DrawLine(PLOT_BORDER + XLEFT_OFFSET, (y_zero + p), (m_rCtrl.GetWidth() + PLOT_BORDER + XLEFT_OFFSET), (y_zero + p));
             sprintf(buf, "%6.0f", (double)(p) * -10);
             dc.DrawText(buf, XLEFT_TEXT_OFFSET, (y_zero + p + TEXT_BASELINE_OFFSET_Y));
 
-            dc.DrawLine(PLOT_BORDER + XLEFT_OFFSET, (y_zero - p), (m_w + PLOT_BORDER + XLEFT_OFFSET), (y_zero - p));
+            dc.DrawLine(PLOT_BORDER + XLEFT_OFFSET, (y_zero - p), (m_rCtrl.GetWidth() + PLOT_BORDER + XLEFT_OFFSET), (y_zero - p));
             sprintf(buf, "%6.0f", (double)(p) * 10);
             dc.DrawText(buf, XLEFT_TEXT_OFFSET, (y_zero - p + TEXT_BASELINE_OFFSET_Y));
         }
@@ -90,10 +90,10 @@ void PlotSpectrum::drawGraticule(wxAutoBufferedPaintDC&  dc)
 
     // Label the X-Axis
     dc.SetPen(wxPen(GREY_COLOR, 1));
-    for(p = GRID_INCREMENT; p < (m_w - YBOTTOM_OFFSET); p += GRID_INCREMENT)
+    for(p = GRID_INCREMENT; p < (m_rCtrl.GetWidth() - YBOTTOM_OFFSET); p += GRID_INCREMENT)
     {
         sprintf(buf, "%1.1f Hz",(double)(p / 10));
-        dc.DrawText(buf, p - PLOT_BORDER + XLEFT_OFFSET, m_h + YBOTTOM_OFFSET/2);
+        dc.DrawText(buf, p - PLOT_BORDER + XLEFT_OFFSET, m_rCtrl.GetHeight() + YBOTTOM_OFFSET/2);
     }
 }
 
@@ -114,17 +114,17 @@ void PlotSpectrum::draw(wxAutoBufferedPaintDC&  dc)
     char  label[20];
     float px_per_hz;
 */
-    m_rectCtrl  = GetClientRect();
-    m_rectGrid  = m_rectCtrl;
+    m_rCtrl  = GetClientRect();
+    m_rGrid  = m_rCtrl;
 
-    m_rectGrid.Deflate(PLOT_BORDER + (XLEFT_OFFSET/2), (PLOT_BORDER + (YBOTTOM_OFFSET/2)));
-    m_rectGrid.Offset(PLOT_BORDER + XLEFT_OFFSET, PLOT_BORDER);
+    m_rGrid.Deflate(PLOT_BORDER + (XLEFT_OFFSET/2), (PLOT_BORDER + (YBOTTOM_OFFSET/2)));
+    m_rGrid.Offset(PLOT_BORDER + XLEFT_OFFSET, PLOT_BORDER);
 
-//    m_rectGrid.Deflate(PLOT_BORDER, (PLOT_BORDER + (YBOTTOM_OFFSET/2)));
-//    m_rectGrid.Offset(PLOT_BORDER, PLOT_BORDER);
+//    m_rGrid.Deflate(PLOT_BORDER, (PLOT_BORDER + (YBOTTOM_OFFSET/2)));
+//    m_rGrid.Offset(PLOT_BORDER, PLOT_BORDER);
 
-    m_h = m_rectGrid.GetHeight();
-    m_w = m_rectGrid.GetWidth();
+//    m_h = m_rGrid.GetHeight();
+//    m_w = m_rGrid.GetWidth();
 
     dc.Clear();
 
@@ -135,7 +135,7 @@ void PlotSpectrum::draw(wxAutoBufferedPaintDC&  dc)
 //    dc.SetPen(wxPen(BLACK_COLOR, 1));
     m_top = PLOT_BORDER;
     m_left = PLOT_BORDER + XLEFT_OFFSET;
-    dc.DrawRectangle(m_left, m_top, m_w, m_h);
+    dc.DrawRectangle(m_left, m_top, m_rCtrl.GetWidth(), m_rCtrl.GetHeight());
 
     drawGraticule(dc);
 /*
@@ -216,8 +216,11 @@ void PlotSpectrum::OnPaint(wxPaintEvent& event)
 //----------------------------------------------------------------
 void PlotSpectrum::OnSize(wxSizeEvent& event)
 {
+    m_rCtrlPrev = m_rCtrl;
+    m_rCtrl     = GetClientRect();
     if(m_use_bitmap)
     {
+        m_bmp = new wxBitmap(m_rCtrl.GetWidth(), m_rCtrl.GetHeight(), wxBITMAP_SCREEN_DEPTH);
         this->Refresh();
     }
 }

@@ -73,28 +73,28 @@ void PlotScatter::draw(wxAutoBufferedPaintDC&  dc)
     //Fl_Box::draw();
 
     /* detect resizing of window */
-    if((m_h != m_prev_h) || (m_w != m_prev_w) || (m_x != m_prev_x) || (m_y != m_prev_y))
+    if((m_rCtrl.GetHeight() != m_prev_h) || (m_rCtrl.GetWidth() != m_prev_w) || (m_x != m_prev_x) || (m_y != m_prev_y))
     {
         //fl_color(FL_BLACK);
         //fl_rectf(x(),y(),w(),h());
-        m_prev_h = m_h;
-        m_prev_w = m_w;
+        m_prev_h = m_rCtrl.GetHeight();
+        m_prev_w = m_rCtrl.GetWidth();
         m_prev_x = m_x;
         m_prev_y = m_y;
     }
 
     //fl_push_clip(x(),y(),w(),h());
 
-    x_scale = m_w/SCATTER_X_MAX;
-    y_scale = m_h/SCATTER_Y_MAX;
+    x_scale = m_rCtrl.GetWidth()/SCATTER_X_MAX;
+    y_scale = m_rCtrl.GetHeight()/SCATTER_Y_MAX;
 
     // erase last samples
     //fl_color(FL_BLACK);
 
     for(i=0; i<FDMDV_NSYM; i++)
     {
-        x1 = x_scale * m_mem[i].real + m_x + m_w/2;
-        y1 = y_scale * m_mem[i].imag + m_y + m_h/2;
+        x1 = x_scale * m_mem[i].real + m_x + m_rCtrl.GetWidth()/2;
+        y1 = y_scale * m_mem[i].imag + m_y + m_rCtrl.GetHeight()/2;
         dc.DrawPoint(x1, y1);
         //fl_point(x1, y1);
         m_mem[i] = m_mem[i+FDMDV_NSYM];
@@ -110,8 +110,8 @@ void PlotScatter::draw(wxAutoBufferedPaintDC&  dc)
     //fl_color(FL_GREEN);
     for(i = SCATTER_MEM-FDMDV_NSYM, j = 0; i < SCATTER_MEM; i++,j++)
     {
-        x1 = x_scale * m_new_samples[j].real + m_x + m_w/2;
-        y1 = y_scale * m_new_samples[j].imag + m_y + m_h/2;
+        x1 = x_scale * m_new_samples[j].real + m_x + m_rCtrl.GetWidth()/2;
+        y1 = y_scale * m_new_samples[j].imag + m_y + m_rCtrl.GetHeight()/2;
         //fl_point(x1, y1);
         m_mem[i] = m_new_samples[j];
     }

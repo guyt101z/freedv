@@ -40,25 +40,26 @@
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 class PlotWaterfall : public PlotPanel
 {
-public:
-    PlotWaterfall(wxFrame* parent);
-    ~PlotWaterfall();
+    public:
+        PlotWaterfall(wxFrame* parent);
+        ~PlotWaterfall();
 
-protected:
-//    unsigned    *m_pixel_buf;
-    unsigned    m_heatmap_lut[256];
-    int         m_greyscale;
+    protected:
+    //    unsigned    *m_pixel_buf;
+        unsigned    m_heatmap_lut[256];
+        int         m_greyscale;
+        wxMemoryDC  m_mDC;
+        int         m_line_color;
 
-    unsigned    heatmap(float val, float min, float max);
+        unsigned    heatmap(float val, float min, float max);
 
-    void        OnPaint(wxPaintEvent & evt);
-    void        OnSize(wxSizeEvent& event);
-    void        OnShow(wxShowEvent& event);
-    void        drawGraticule(wxAutoBufferedPaintDC&  dc);
-    void        draw(wxAutoBufferedPaintDC&  dc);
-    void        plotData(wxAutoBufferedPaintDC&  dc);
-    void        plotPixelData(wxAutoBufferedPaintDC&  dc);
-    DECLARE_EVENT_TABLE()
+        void        OnPaint(wxPaintEvent & evt);
+        //void        OnSize(wxSizeEvent& event);
+        void        OnShow(wxShowEvent& event);
+        void        drawGraticule(wxAutoBufferedPaintDC&  dc);
+        void        draw(wxAutoBufferedPaintDC& pdc);
+        void        plotPixelData(wxAutoBufferedPaintDC&  dc);
+        DECLARE_EVENT_TABLE()
 };
 
 #endif //__FDMDV2_PLOT_WATERFALL__

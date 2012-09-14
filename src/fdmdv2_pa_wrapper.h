@@ -47,48 +47,22 @@ class PortAudioWrap
         float                           m_av_mag[FDMDV_NSPEC];
 
     private:
-        PaStream                        *stream;
-        PaStreamParameters              inputBuffer;
-        PaStreamParameters              outputBuffer;
-        void                            *userData;
-        int                             samplerate;
-        unsigned long                   framesPerBuffer;
-        PaStreamCallbackFlags           statusFlags;
-        PaStreamCallback                *streamCallback;
-        PaStreamFinishedCallback        *streamFinishedCallback;
-        const PaStreamCallbackTimeInfo  *timeInfo;
-        struct FDMDV                    *fdmdv_state;
+        PaStream                        *m_pStream;
+        void                            *m_pUserData;
+        PaStreamCallback                *m_pStreamCallback;
+        PaStreamFinishedCallback        *m_pStreamFinishedCallback;
+        const PaStreamCallbackTimeInfo  *m_pTimeInfo;
+        struct FDMDV                    *m_pFDMDV_state;
+        PaStreamParameters              m_inputBuffer;
+        PaStreamParameters              m_outputBuffer;
+        int                             m_samplerate;
+        unsigned long                   m_framesPerBuffer;
+        PaStreamCallbackFlags           m_statusFlags;
+        bool                            m_newdata;
 
     public:
-        void per_frame_rx_processing(
-            short   output_buf[],  /* output buf of decoded speech samples          */
-            int     *n_output_buf, /* how many samples currently in output_buf[]    */
-            int     codec_bits[],  /* current frame of bits for decoder             */
-            short   input_buf[],   /* input buf of modem samples input to demod     */
-            int     *n_input_buf,  /* how many samples currently in input_buf[]     */
-            int     *nin,          /* amount of samples demod needs for next call   */
-            int     *state,        /* used to collect codec_bits[] halves           */
-            struct  CODEC2 *c2     /* Codec 2 states                                */
-        );
 
-        /*
-                static int Callback(
-                                        const void *inBuffer,
-                                        void *outBuffer,
-                                        unsigned long framesPerBuffer,
-                                        const PaStreamCallbackTimeInfo *outTime,
-                                        PaStreamCallbackFlags statusFlags,
-                                        void *userData
-                                   );
-                static int txCallback(
-                                        const void *inBuffer,
-                                        void *outBuffer,
-                                        unsigned long framesPerBuffer,
-                                        const PaStreamCallbackTimeInfo *outTime,
-                                        PaStreamCallbackFlags statusFlags,
-                                        void *userData
-                                     );
-        */
+        void                averageData(float mag_dB[]);
 
         PaDeviceIndex       getDefaultInputDevice();
         PaDeviceIndex       getDefaultOutputDevice();
@@ -96,12 +70,13 @@ class PortAudioWrap
 
         PaError             setFramesPerBuffer(unsigned long size);
         PaError             setSampleRate(unsigned long size);
-        PaError             setStreamFlags(PaStreamFlags flags);
-        PaError             setCallback(PaStreamCallback *streamCallback);
-        PaError             setStreamCallback(PaStream *stream, PaStreamCallback* callback) { streamCallback = callback; return 0;}
-        PaError             setStreamFinishedCallback(PaStream *stream, PaStreamFinishedCallback* streamFinishedCallback);
-        PaError             streamOpen();
 
+        PaError             setStreamFlags(PaStreamFlags flags);
+        PaError             setCallback(PaStreamCallback *m_pStreamCallback);
+        PaError             setStreamCallback(PaStream *stream, PaStreamCallback* callback) { m_pStreamCallback = callback; return 0;}
+        PaError             setStreamFinishedCallback(PaStream *stream, PaStreamFinishedCallback* m_pStreamFinishedCallback);
+
+        void                setInputBuffer(const PaStreamParameters& inputBuffer)   {this->m_inputBuffer = inputBuffer;}
         PaError             setInputDevice(PaDeviceIndex dev);
         PaError             setInputChannelCount(int count);
         int                 getInputChannelCount();
@@ -117,37 +92,26 @@ class PortAudioWrap
         const int           getOutputChannelCount();
         PaError             setOutputSampleFormat(PaSampleFormat format);
         PaError             setOutputLatency(PaTime latency);
-        PaError             streamStart();
-        PaError             streamClose();
         void                setOutputHostApiStreamInfo(void *info = NULL);
         PaTime              getOutputDefaultLowLatency();
-        void                averageData(float mag_dB[]);
 
-        void                setFdmdvState(FDMDV* fdmdv_state)                       {this->fdmdv_state = fdmdv_state;}
-//        void                setFramesPerBuffer(unsigned long framesPerBuffer)       {this->framesPerBuffer = framesPerBuffer;}
-        void                setInputBuffer(const PaStreamParameters& inputBuffer)   {this->inputBuffer = inputBuffer;}
-//        void                setAvMag(float av_mag)                                  {this->m_av_mag = av_mag;}
-        void                setOutputBuffer(const PaStreamParameters& outputBuffer) {this->outputBuffer = outputBuffer;}
-        void                setSamplerate(int samplerate)                           {this->samplerate = samplerate;}
-        void                setStatusFlags(const PaStreamCallbackFlags& statusFlags) {this->statusFlags = statusFlags;}
-        void                setStream(PaStream* stream)                             {this->stream = stream;}
-//        void                setStreamCallback(PaStreamCallback* streamCallback)     {this->streamCallback = streamCallback;}
-        void                setStreamFinishedCallback(PaStreamFinishedCallback* streamFinishedCallback) {this->streamFinishedCallback = streamFinishedCallback;}
-        void                setTimeInfo(PaStreamCallbackTimeInfo* timeInfo)         {this->timeInfo = timeInfo;}
-        void                setUserData(void* userData)                             {this->userData = userData;}
-        FDMDV*              getFdmdvState()                                         {return fdmdv_state;}
-        unsigned long       getFramesPerBuffer() const                              {return framesPerBuffer;}
-        const               PaStreamParameters& getInputBuffer() const              {return inputBuffer;}
-//        const float         *getAvMag(int idx) const                                 {return (float *)&m_av_mag[idx];}
-        const               PaStreamParameters& getOutputBuffer() const             {return outputBuffer;}
-        int                 getSamplerate() const                                   {return samplerate;}
-        const PaStreamCallbackFlags& getStatusFlags() const                         {return statusFlags;}
-        PaStream*           getStream()                                             {return stream;}
-//        PaStreamCallback*  getStreamCallback()                                       {return streamCallback;}
-//        PaStreamFinishedCallback* getStreamFinishedCallback()                       {return streamFinishedCallback;}
-//        PaStreamCallbackTimeInfo* getTimeInfo()                                     {return timeInfo;}
-        void                *getUserData()                                          {return userData;}
+        void                setFdmdvState(FDMDV* fdmdv_state)                       {this->m_pFDMDV_state = fdmdv_state;}
+        void                setOutputBuffer(const PaStreamParameters& outputBuffer) {this->m_outputBuffer = outputBuffer;}
+        void                setTimeInfo(PaStreamCallbackTimeInfo* timeInfo)         {this->m_pTimeInfo = timeInfo;}
+        void                setUserData(void* userData)                             {this->m_pUserData = userData;}
+        unsigned long       getFramesPerBuffer() const                              {return m_framesPerBuffer;}
+        const               PaStreamParameters& getInputBuffer() const              {return m_inputBuffer;}
+        const               PaStreamParameters& getOutputBuffer() const             {return m_outputBuffer;}
+        const               PaStreamCallbackFlags& getStatusFlags() const           {return m_statusFlags;}
 
+        FDMDV*              getFdmdvState()                                         {return m_pFDMDV_state;}
+        int                 getSamplerate() const                                   {return m_samplerate;}
+        PaStream*           getStream()                                             {return m_pStream;}
+        void                *getUserData()                                          {return m_pUserData;}
+        bool                getDataAvail()                                          {return m_newdata;}
+        PaError             streamStart();
+        PaError             streamClose();
+        PaError             streamOpen();
         void                terminate();
         void                stop();
         void                abort();

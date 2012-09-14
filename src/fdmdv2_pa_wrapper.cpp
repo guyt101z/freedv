@@ -23,52 +23,64 @@
 //==========================================================================
 #include "fdmdv2_pa_wrapper.h"
 
+//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
+// PortAudioWrap()
+//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 PortAudioWrap::PortAudioWrap()
 {
-    stream                  = NULL;
-    userData                = NULL;
-    samplerate              = 0;
-    framesPerBuffer         = 0;
-    statusFlags             = 0;
-    streamCallback          = NULL;
-    streamFinishedCallback  = NULL;
-    timeInfo                = 0;
+    m_pStream                   = NULL;
+    m_pUserData                 = NULL;
+    m_samplerate                = 0;
+    m_framesPerBuffer           = 0;
+    m_statusFlags               = 0;
+    m_pStreamCallback           = NULL;
+    m_pStreamFinishedCallback   = NULL;
+    m_pTimeInfo                 = 0;
+    m_newdata                   = false;
+
     loadData();
 }
 
+//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
+// ~PortAudioWrap()
+//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 PortAudioWrap::~PortAudioWrap()
 {
 }
 
-//PaError PortAudioWrap::init()
-//{
-//    return Pa_Initialize();
-//}
-
+//----------------------------------------------------------------
+// streamOpen()
+//----------------------------------------------------------------
 PaError PortAudioWrap::streamOpen()
 {
     return Pa_OpenStream(
-                            &stream,
-                            &inputBuffer,
-                            &outputBuffer,
-                            samplerate,
-                            framesPerBuffer,
-                            statusFlags,
-                            *streamCallback,
-                            userData
+                            &m_pStream,
+                            &m_inputBuffer,
+                            &m_outputBuffer,
+                            m_samplerate,
+                            m_framesPerBuffer,
+                            m_statusFlags,
+                            *m_pStreamCallback,
+                            m_pUserData
                         );
 }
 
+//----------------------------------------------------------------
+// streamStart()
+//----------------------------------------------------------------
 PaError PortAudioWrap::streamStart()
 {
-    return Pa_StartStream(stream);
+    return Pa_StartStream(m_pStream);
 }
 
+//----------------------------------------------------------------
+// streamClose()
+//----------------------------------------------------------------
 PaError PortAudioWrap::streamClose()
 {
     if(isOpen())
     {
-        PaError rv = Pa_CloseStream(stream);
+        PaError rv = Pa_CloseStream(m_pStream);
         return rv;
     }
     else
@@ -77,96 +89,147 @@ PaError PortAudioWrap::streamClose()
     }
 }
 
+//----------------------------------------------------------------
+// terminate()
+//----------------------------------------------------------------
 void PortAudioWrap::terminate()
 {
-    if(Pa_IsStreamStopped(stream) != paNoError)
+    if(Pa_IsStreamStopped(m_pStream) != paNoError)
     {
-        Pa_StopStream(stream);
+        Pa_StopStream(m_pStream);
     }
     Pa_Terminate();
 }
 
+//----------------------------------------------------------------
+// stop()
+//----------------------------------------------------------------
 void PortAudioWrap::stop()
 {
-    Pa_StopStream(stream);
+    Pa_StopStream(m_pStream);
 }
 
+//----------------------------------------------------------------
+// abort()
+//----------------------------------------------------------------
 void PortAudioWrap::abort()
 {
-    Pa_AbortStream(stream);
+    Pa_AbortStream(m_pStream);
 }
 
+//----------------------------------------------------------------
+// isStopped()
+//----------------------------------------------------------------
 bool PortAudioWrap::isStopped() const
 {
-    PaError ret = Pa_IsStreamStopped(stream);
+    PaError ret = Pa_IsStreamStopped(m_pStream);
     return ret;
 }
 
+//----------------------------------------------------------------
+// isActive()
+//----------------------------------------------------------------
 bool PortAudioWrap::isActive() const
 {
-    PaError ret = Pa_IsStreamActive(stream);
+    PaError ret = Pa_IsStreamActive(m_pStream);
     return ret;
 }
 
+//----------------------------------------------------------------
+// isOpen()
+//----------------------------------------------------------------
 bool PortAudioWrap::isOpen() const
 {
-    return (stream != NULL);
+    return (m_pStream != NULL);
 }
 
+//----------------------------------------------------------------
+// getDefaultInputDevice()
+//----------------------------------------------------------------
 PaDeviceIndex PortAudioWrap::getDefaultInputDevice()
 {
     return Pa_GetDefaultInputDevice();
 }
 
+//----------------------------------------------------------------
+// getDefaultOutputDevice()
+//----------------------------------------------------------------
 PaDeviceIndex PortAudioWrap::getDefaultOutputDevice()
 {
     return Pa_GetDefaultOutputDevice();
 }
 
+//----------------------------------------------------------------
+// setInputChannelCount()
+//----------------------------------------------------------------
 PaError PortAudioWrap::setInputChannelCount(int count)
 {
-    inputBuffer.channelCount = count;
+    m_inputBuffer.channelCount = count;
     return paNoError;
 }
 
+//----------------------------------------------------------------
+// getInputChannelCount()
+//----------------------------------------------------------------
 PaError PortAudioWrap::getInputChannelCount()
 {
-    return inputBuffer.channelCount;
+    return m_inputBuffer.channelCount;
 }
 
+//----------------------------------------------------------------
+// setInputSampleFormat()
+//----------------------------------------------------------------
 PaError PortAudioWrap::setInputSampleFormat(PaSampleFormat format)
 {
-    inputBuffer.sampleFormat = format;
+    m_inputBuffer.sampleFormat = format;
     return paNoError;
 }
 
+//----------------------------------------------------------------
+// setInputLatency()
+//----------------------------------------------------------------
 PaError PortAudioWrap::setInputLatency(PaTime latency)
 {
-    inputBuffer.suggestedLatency = latency;
+    m_inputBuffer.suggestedLatency = latency;
     return paNoError;
 }
 
+//----------------------------------------------------------------
+// setInputHostApiStreamInfo()
+//----------------------------------------------------------------
 void PortAudioWrap::setInputHostApiStreamInfo(void *info)
 {
-    inputBuffer.hostApiSpecificStreamInfo = info;
+    m_inputBuffer.hostApiSpecificStreamInfo = info;
 }
 
+//----------------------------------------------------------------
+// getInputDefaultLowLatency()
+//----------------------------------------------------------------
 PaTime  PortAudioWrap::getInputDefaultLowLatency()
 {
-    return Pa_GetDeviceInfo(inputBuffer.device)->defaultLowInputLatency;
+    return Pa_GetDeviceInfo(m_inputBuffer.device)->defaultLowInputLatency;
 }
 
+//----------------------------------------------------------------
+// setOutputChannelCount()
+//----------------------------------------------------------------
 PaError PortAudioWrap::setOutputChannelCount(int count)
 {
-    outputBuffer.channelCount = count;
+    m_outputBuffer.channelCount = count;
     return paNoError;
 }
 
+//----------------------------------------------------------------
+// getOutputChannelCount()
+//----------------------------------------------------------------
 const int PortAudioWrap::getOutputChannelCount()
 {
-    return outputBuffer.channelCount;
+    return m_outputBuffer.channelCount;
 }
 
+//----------------------------------------------------------------
+// getDeviceName()
+//----------------------------------------------------------------
 const char *PortAudioWrap::getDeviceName(PaDeviceIndex dev)
 {
     const PaDeviceInfo *info;
@@ -174,61 +237,91 @@ const char *PortAudioWrap::getDeviceName(PaDeviceIndex dev)
     return info->name;
 }
 
+//----------------------------------------------------------------
+// setOutputSampleFormat()
+//----------------------------------------------------------------
 PaError PortAudioWrap::setOutputSampleFormat(PaSampleFormat format)
 {
-    outputBuffer.sampleFormat = format;
+    m_outputBuffer.sampleFormat = format;
     return paNoError;
 }
 
+//----------------------------------------------------------------
+// setOutputLatency()
+//----------------------------------------------------------------
 PaError PortAudioWrap::setOutputLatency(PaTime latency)
 {
-    outputBuffer.suggestedLatency = latency;
+    m_outputBuffer.suggestedLatency = latency;
     return paNoError;
 }
 
+//----------------------------------------------------------------
+// setOutputHostApiStreamInfo()
+//----------------------------------------------------------------
 void PortAudioWrap::setOutputHostApiStreamInfo(void *info)
 {
-    outputBuffer.hostApiSpecificStreamInfo = info;
+    m_outputBuffer.hostApiSpecificStreamInfo = info;
 }
 
+//----------------------------------------------------------------
+// getOutputDefaultLowLatency()
+//----------------------------------------------------------------
 PaTime  PortAudioWrap::getOutputDefaultLowLatency()
 {
-    return Pa_GetDeviceInfo(outputBuffer.device)->defaultLowOutputLatency;
+    return Pa_GetDeviceInfo(m_outputBuffer.device)->defaultLowOutputLatency;
 }
 
+//----------------------------------------------------------------
+// setFramesPerBuffer()
+//----------------------------------------------------------------
 PaError PortAudioWrap::setFramesPerBuffer(unsigned long size)
 {
-    framesPerBuffer = size;
+    m_framesPerBuffer = size;
     return paNoError;
 }
 
+//----------------------------------------------------------------
+// setSampleRate()
+//----------------------------------------------------------------
 PaError PortAudioWrap::setSampleRate(unsigned long rate)
 {
-    samplerate = rate;
+    m_samplerate = rate;
     return paNoError;
 }
 
+//----------------------------------------------------------------
+// setStreamFlags()
+//----------------------------------------------------------------
 PaError PortAudioWrap::setStreamFlags(PaStreamFlags flags)
 {
-    statusFlags = flags;
+    m_statusFlags = flags;
     return paNoError;
 }
 
+//----------------------------------------------------------------
+// setInputDevice()
+//----------------------------------------------------------------
 PaError PortAudioWrap::setInputDevice(PaDeviceIndex index)
 {
-    inputBuffer.device = index;
+    m_inputBuffer.device = index;
     return paNoError;
 }
 
+//----------------------------------------------------------------
+// setOutputDevice()
+//----------------------------------------------------------------
 PaError PortAudioWrap::setOutputDevice(PaDeviceIndex index)
 {
-    outputBuffer.device = index;
+    m_outputBuffer.device = index;
     return paNoError;
 }
 
+//----------------------------------------------------------------
+// setCallback()
+//----------------------------------------------------------------
 PaError PortAudioWrap::setCallback(PaStreamCallback *callback)
 {
-    streamCallback = callback;
+    m_pStreamCallback = callback;
     return paNoError;
 }
 
@@ -238,179 +331,8 @@ typedef struct
     float               in8k[MEM8 + N8];
 } paCallBackData;
 
-
 //----------------------------------------------------------------
-// per_frame_rx_processing()
-//----------------------------------------------------------------
-void  PortAudioWrap::per_frame_rx_processing(
-                                short   output_buf[],  /* output buf of decoded speech samples          */
-                                int     *n_output_buf, /* how many samples currently in output_buf[]    */
-                                int     codec_bits[],  /* current frame of bits for decoder             */
-                                short   input_buf[],   /* input buf of modem samples input to demod     */
-                                int     *n_input_buf,  /* how many samples currently in input_buf[]     */
-                                int     *nin,          /* amount of samples demod needs for next call   */
-                                int     *state,        /* used to collect codec_bits[] halves           */
-                                struct  CODEC2 *c2     /* Codec 2 states                                */
-                            )
-{
-    struct FDMDV_STATS  stats;
-    int                 sync_bit;
-    float               rx_fdm[FDMDV_MAX_SAMPLES_PER_FRAME];
-    int                 rx_bits[FDMDV_BITS_PER_FRAME];
-    unsigned char       packed_bits[BYTES_PER_CODEC_FRAME];
-    float               rx_spec[FDMDV_NSPEC];
-    int                 i;
-    int                 nin_prev;
-    int                 bit;
-    int                 byte;
-    int                 next_state;
-
-    assert(*n_input_buf <= (2 * FDMDV_NOM_SAMPLES_PER_FRAME));
-
-    /*
-      This while loop will run the demod 0, 1 (nominal) or 2 times:
-
-      0: when tx sample clock runs faster than rx, occasionally we
-         will run out of samples
-
-      1: normal, run decoder once, every 2nd frame output a frame of
-         speech samples to D/A
-
-      2: when tx sample clock runs slower than rx, occasionally we will
-         have enough samples to run demod twice.
-
-      With a +/- 10 Hz sample clock difference at FS=8000Hz (+/- 1250
-      ppm), case 0 or 1 occured about once every 30 seconds.  This is
-      no problem for the decoded audio.
-    */
-    while(*n_input_buf >= *nin)
-    {
-        // demod per frame processing
-        for(i = 0; i < *nin; i++)
-        {
-            rx_fdm[i] = (float)input_buf[i]/FDMDV_SCALE;
-        }
-        nin_prev = *nin;
-        fdmdv_demod(fdmdv_state, rx_bits, &sync_bit, rx_fdm, nin);
-        *n_input_buf -= nin_prev;
-        assert(*n_input_buf >= 0);
-
-        // shift input buffer
-        for(i=0; i<*n_input_buf; i++)
-        {
-            input_buf[i] = input_buf[i+nin_prev];
-        }
-
-        // compute rx spectrum & get demod stats, and update GUI plot data
-        fdmdv_get_rx_spectrum(fdmdv_state, rx_spec, rx_fdm, nin_prev);
-        fdmdv_get_demod_stats(fdmdv_state, &stats);
-        averageData(rx_spec);
-//        aScatter->add_new_samples(stats.rx_symbols);
-//        aTimingEst->add_new_sample(stats.rx_timing);
-//        aFreqEst->add_new_sample(stats.foff);
-//        aSNR->add_new_sample(stats.snr_est);
-        /*
-           State machine to:
-
-           + Mute decoded audio when out of sync.  The demod is synced
-             when we are using the fine freq estimate and SNR is above
-             a thresh.
-
-           + Decode codec bits only if we have a 0,1 sync bit
-             sequence.  Collects two frames of demod bits to decode
-             one frame of codec bits.
-        */
-        next_state = *state;
-        switch(*state)
-        {
-            case 0:
-                // mute output audio when out of sync
-                if(*n_output_buf < 2 * codec2_samples_per_frame(c2) - N8)
-                {
-                    for(i=0; i<N8; i++)
-                    {
-                        output_buf[*n_output_buf + i] = 0;
-                    }
-                    *n_output_buf += N8;
-                }
-                assert(*n_output_buf <= (2 * codec2_samples_per_frame(c2)));
-                if((stats.fest_coarse_fine == 1) && (stats.snr_est > 3.0))
-                {
-                    next_state = 1;
-                }
-                break;
-
-            case 1:
-                if(sync_bit == 0)
-                {
-                    next_state = 2;
-                    // first half of frame of codec bits
-                    memcpy(codec_bits, rx_bits, FDMDV_BITS_PER_FRAME * sizeof(int));
-                }
-                else
-                {
-                    next_state = 1;
-                }
-                if(stats.fest_coarse_fine == 0)
-                {
-                    next_state = 0;
-                }
-                break;
-
-            case 2:
-                next_state = 1;
-                if(stats.fest_coarse_fine == 0)
-                {
-                    next_state = 0;
-                }
-                if(sync_bit == 1)
-                {
-                    // second half of frame of codec bits
-                    memcpy(&codec_bits[FDMDV_BITS_PER_FRAME], rx_bits, FDMDV_BITS_PER_FRAME*sizeof(int));
-                    // pack bits, MSB received first
-                    bit  = 7;
-                    byte = 0;
-                    memset(packed_bits, 0, BYTES_PER_CODEC_FRAME);
-                    for(i = 0; i < BITS_PER_CODEC_FRAME; i++)
-                    {
-                        packed_bits[byte] |= (codec_bits[i] << bit);
-                        bit--;
-                        if(bit < 0)
-                        {
-                            bit = 7;
-                            byte++;
-                        }
-                    }
-                    assert(byte == BYTES_PER_CODEC_FRAME);
-                    // add decoded speech to end of output buffer
-                    if(*n_output_buf <= codec2_samples_per_frame(c2))
-                    {
-                        codec2_decode(c2, &output_buf[*n_output_buf], packed_bits);
-                        *n_output_buf += codec2_samples_per_frame(c2);
-                    }
-                    assert(*n_output_buf <= (2 * codec2_samples_per_frame(c2)));
-                }
-                break;
-        }
-        *state = next_state;
-    }
-}
-
-//----------------------------------------------------------------
-// update average of each spectrum point
-//----------------------------------------------------------------
-void PortAudioWrap::averageData(float mag_dB[])
-{
-    int i;
-
-    for(i = 0; i < FDMDV_NSPEC; i++)
-    {
-        m_av_mag[i] = (1.0 - BETA) * m_av_mag[i] + BETA * mag_dB[i];
-    }
-}
-
-//----------------------------------------------------------------
-// create Dummy Data
+// loadData() : create Dummy Data
 //----------------------------------------------------------------
 void PortAudioWrap::loadData()
 {
@@ -420,3 +342,4 @@ void PortAudioWrap::loadData()
         m_av_mag[i] = i;
     }
 }
+
