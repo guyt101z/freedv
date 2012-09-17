@@ -41,8 +41,11 @@ PlotPanel::PlotPanel(wxFrame* parent) : wxPanel(parent)
 {
     m_pNoteBook         = (wxAuiNotebook *) parent;
     m_pTopFrame         = (MainFrame *)m_pNoteBook->GetParent();
-//    m_bmp               = new wxBitmap(MAX_BMP_X, MAX_BMP_Y, wxBITMAP_SCREEN_DEPTH);
     m_zoomFactor        = 1.0;
+    m_pBmp              = NULL;
+    m_pPix              = NULL;
+    m_firstPass         = true;
+    m_line_color        = 0;
     m_newdata           = false;
     m_clip              = false;
     m_use_bitmap        = true;
@@ -53,19 +56,6 @@ PlotPanel::PlotPanel(wxFrame* parent) : wxPanel(parent)
     m_penSolid          = wxPen(wxColor(0x00, 0x00, 0x00), 1, wxPENSTYLE_SOLID);
     SetBackgroundStyle(wxBG_STYLE_PAINT);
     SetLabelSize(10.0);
-/*
-    wxNativePixelData m_pBmp(*m_bmp);
-    if(!m_pBmp)
-    {
-        // ... raw access to bitmap data unavailable, do something else ...
-        return;
-    }
-    if(m_pBmp.GetWidth() < 20 || m_pBmp.GetHeight() < 20)
-    {
-        // ... complain: the bitmap it too small ...
-        return;
-    }
-*/
 }
 
 //-------------------------------------------------------------------------
@@ -73,9 +63,9 @@ PlotPanel::PlotPanel(wxFrame* parent) : wxPanel(parent)
 //-------------------------------------------------------------------------
 PlotPanel::~PlotPanel()
 {
-    if(!m_bmp->IsNull())
+    if(!m_pBmp->IsNull())
     {
-        delete m_bmp;
+        delete m_pBmp;
     }
 }
 
@@ -120,9 +110,26 @@ void PlotPanel::OnSize(wxSizeEvent& event)
     m_rCtrl     = GetClientRect();
     if(m_use_bitmap)
     {
-        m_bmp = new wxBitmap(m_rCtrl.GetWidth(), m_rCtrl.GetHeight(), wxBITMAP_SCREEN_DEPTH);
+        if(!m_oImage.IsOk())
+        {
+            m_oImage.Create(m_rCtrl.GetWidth(), m_rCtrl.GetHeight(), true);
+        }
+        else
+        {
+            m_oImage.Rescale(m_rCtrl.GetWidth(), m_rCtrl.GetHeight());
+        }
+        m_pBmp = new wxBitmap(m_oImage, wxBITMAP_SCREEN_DEPTH);
+/*
+        if(m_oImage.IsOk())
+        {
+            m_oImage.Destroy();
+        }
+        m_oImage.Create(m_rCtrl.GetWidth(), m_rCtrl.GetHeight(), true);
+        m_pBmp = new wxBitmap(m_oImage, wxBITMAP_SCREEN_DEPTH);
+        m_oImage.Rescale(m_rCtrl.GetWidth(), m_rCtrl.GetHeight());
+*/
         m_firstPass = true;
-        this->Refresh();
+//        this->Refresh();
     }
 }
 
@@ -181,67 +188,81 @@ double PlotPanel::GetZoomFactor(double zf)
 }
 
 //-------------------------------------------------------------------------
+// draw()
+//-------------------------------------------------------------------------
+void PlotPanel::draw(wxAutoBufferedPaintDC& pDC)
+{
+    wxMemoryDC m_mDC;
+    m_mDC.SelectObject(*m_pBmp);
+    m_rCtrl  = GetClientRect();
+    m_rGrid  = m_rCtrl;
+
+    m_rGrid = m_rGrid.Deflate(PLOT_BORDER + (XLEFT_OFFSET/2), (PLOT_BORDER + (YBOTTOM_OFFSET/2)));
+    m_rGrid.Offset(PLOT_BORDER + XLEFT_OFFSET, PLOT_BORDER);
+
+    pDC.Clear();
+    m_rPlot = wxRect(PLOT_BORDER + XLEFT_OFFSET, PLOT_BORDER, m_rGrid.GetWidth(), m_rGrid.GetHeight());
+    if(m_firstPass)
+    {
+        m_firstPass = false;
+        m_mDC.FloodFill(0, 0, VERY_LTGREY_COLOR);
+
+        // Draw a filled rectangle with aborder
+        wxBrush ltGraphBkgBrush = wxBrush(DARK_BLUE_COLOR);
+        m_mDC.SetBrush(ltGraphBkgBrush);
+        m_mDC.SetPen(wxPen(BLACK_COLOR, 0));
+        m_mDC.DrawRectangle(m_rPlot);
+    }
+    if(m_newdata)
+    {
+        m_newdata = false;
+        int t = m_rPlot.GetTop();
+        int l = m_rPlot.GetLeft();
+        int r = m_rPlot.GetRight();
+        int h = m_rPlot.GetHeight();
+        int w = m_rPlot.GetWidth();
+        pDC.Blit(l, t, w, h, &m_mDC, l, t);
+    }
+    drawGraticule(pDC);
+    m_mDC.SetBrush(wxNullBrush);
+    m_mDC.SelectObject(wxNullBitmap);
+}
+
+//-------------------------------------------------------------------------
 // drawGraticule()
 //-------------------------------------------------------------------------
-void PlotPanel::drawGraticule(wxAutoBufferedPaintDC& pdc)
+void PlotPanel::drawGraticule(wxAutoBufferedPaintDC& pDC)
 {
     int p;
     char buf[15];
     wxString s;
 
     // Vertical gridlines
-    pdc.SetPen(m_penShortDash);
-    for(p = (PLOT_BORDER + XLEFT_OFFSET + GRID_INCREMENT); p < ((m_rCtrl.GetWidth() - XLEFT_OFFSET) + GRID_INCREMENT); p += GRID_INCREMENT)
+    pDC.SetPen(m_penShortDash);
+    for(p = (PLOT_BORDER + XLEFT_OFFSET + GRID_INCREMENT); p < ((m_rGrid.GetWidth() - XLEFT_OFFSET) + GRID_INCREMENT); p += GRID_INCREMENT)
     {
-        pdc.DrawLine(p, (m_rGrid.GetHeight() + PLOT_BORDER), p, PLOT_BORDER);
+        pDC.DrawLine(p, (m_rGrid.GetHeight() + PLOT_BORDER), p, PLOT_BORDER);
     }
     // Horizontal gridlines
-    pdc.SetPen(m_penDotDash);
+    pDC.SetPen(m_penDotDash);
     for(p = (m_rGrid.GetHeight() - GRID_INCREMENT); p > PLOT_BORDER; p -= GRID_INCREMENT)
     {
-        pdc.DrawLine(PLOT_BORDER + XLEFT_OFFSET, (p + PLOT_BORDER), (m_rCtrl.GetWidth() + PLOT_BORDER + XLEFT_OFFSET), (p + PLOT_BORDER));
+        pDC.DrawLine(PLOT_BORDER + XLEFT_OFFSET, (p + PLOT_BORDER), (m_rGrid.GetWidth() + PLOT_BORDER + XLEFT_OFFSET), (p + PLOT_BORDER));
     }
     // Label the X-Axis
-    pdc.SetPen(wxPen(GREY_COLOR, 1));
-    for(p = GRID_INCREMENT; p < (m_rCtrl.GetWidth() - YBOTTOM_OFFSET); p += GRID_INCREMENT)
+    pDC.SetPen(wxPen(GREY_COLOR, 1));
+    for(p = GRID_INCREMENT; p < (m_rGrid.GetWidth() - YBOTTOM_OFFSET); p += GRID_INCREMENT)
     {
         sprintf(buf, "%1.1f Hz",(double)(p / 10));
-        pdc.DrawText(buf, p - PLOT_BORDER + XLEFT_OFFSET, m_rGrid.GetHeight() + YBOTTOM_OFFSET/2);
+        pDC.DrawText(buf, p - PLOT_BORDER + XLEFT_OFFSET, m_rGrid.GetHeight() + YBOTTOM_OFFSET/2);
     }
     // Label the Y-Axis
     //for(p = GRID_INCREMENT; p < (h - YBOTTOM_OFFSET); p += GRID_INCREMENT)
     for(p = (m_rGrid.GetHeight() - GRID_INCREMENT); p > PLOT_BORDER; p -= GRID_INCREMENT)
     {
         sprintf(buf, "%1.0f", (double)((m_rGrid.GetHeight() - p) * -10));
-        pdc.DrawText(buf, XLEFT_TEXT_OFFSET, p);
+        pDC.DrawText(buf, XLEFT_TEXT_OFFSET, p);
     }
-}
-
-//-------------------------------------------------------------------------
-// draw()
-//-------------------------------------------------------------------------
-void PlotPanel::draw(wxAutoBufferedPaintDC& pdc)
-{
-//    wxAutoBufferedPaintDC dc(this);
-//    wxMemoryDC memdc(&m_bmp);
-
-    m_rCtrl  = GetClientRect();
-    m_rGrid  = m_rCtrl;
-
-    m_rCtrl.Deflate(PLOT_BORDER + (XLEFT_OFFSET/2), (PLOT_BORDER + (YBOTTOM_OFFSET/2)));
-    m_rCtrl.Offset(PLOT_BORDER + XLEFT_OFFSET, PLOT_BORDER);
-
-    //m_h = m_rCtrl.GetHeight();
-    //m_w = m_rCtrl.GetWidth();
-
-    pdc.Clear();
-
-    // Draw a filled rectangle with aborder
-    wxBrush ltBlueBrush = wxBrush(LIGHT_BLUE_COLOR);
-    pdc.SetBrush(ltBlueBrush);
-    pdc.SetPen(wxPen(BLACK_COLOR, 1));
-    pdc.DrawRectangle(PLOT_BORDER + XLEFT_OFFSET, PLOT_BORDER, m_rCtrl.GetWidth(), m_rCtrl.GetHeight());
-    drawGraticule(pdc);
 }
 
 //-------------------------------------------------------------------------

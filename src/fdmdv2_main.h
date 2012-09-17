@@ -12,6 +12,7 @@
 
 #include <wx/wx.h>
 
+#include "wx/rawbmp.h"
 #include "wx/file.h"
 #include "wx/config.h"
 #include "wx/filename.h"

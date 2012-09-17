@@ -19,6 +19,9 @@
 #define MAX_ZOOM            7
 #define MAX_BMP_X           (400 * MAX_ZOOM)
 #define MAX_BMP_Y           (400 * MAX_ZOOM)
+#define DATA_LINE_HEIGHT    10
+#define TEXT_BASELINE_OFFSET_Y  -5
+
 
 #define wxUSE_FILEDLG       1
 #define wxUSE_LIBPNG        1
@@ -41,6 +44,7 @@
 #define VERY_LTGREY_COLOR   wxColor(0xF8, 0xF8, 0xF8)
 #define WHITE_COLOR         wxColor(0xFF, 0xFF, 0xFF)
 
+#define DARK_BLUE_COLOR     wxColor(0x00, 0x00, 0x80)
 #define BLUE_COLOR          wxColor(0x00, 0x00, 0xFF)
 #define LIGHT_BLUE_COLOR    wxColor(0x80, 0x80, 0xFF)
 
@@ -57,22 +61,6 @@
 #define YELLOW_COLOR        wxColor(0xFF, 0xFF, 0x5E)
 #define LIGHT_YELLOW_COLOR  wxColor(0xFF, 0xFF, 0xB5)
 #define DARK_YELLOW_COLOR   wxColor(0xFF, 0xFF, 0x08)
-
-
-/*
-    wxNullBrush
-    wxBLACK_BRUSH
-    wxBLUE_BRUSH
-    wxCYAN_BRUSH
-    wxGREEN_BRUSH
-    wxYELLOW_BRUSH
-    wxGREY_BRUSH
-    wxLIGHT_GREY_BRUSH
-    wxMEDIUM_GREY_BRUSH
-    wxRED_BRUSH
-    wxTRANSPARENT_BRUSH
-    wxWHITE_BRUSH
-*/
 
 class MainFrame;
 
@@ -103,8 +91,9 @@ class PlotPanel : public wxPanel
         double              m_label_size;
         wxSize              m_Bufsz;
         bool                m_newdata;
-        wxBitmap            *m_bmp;
-        wxNativePixelData   *m_pBmp;
+        wxImage             m_oImage;
+        wxBitmap            *m_pBmp;
+        wxNativePixelData   *m_pPix;
 
         // some useful events
         void            OnMouseMove(wxMouseEvent& event);
@@ -129,8 +118,6 @@ class PlotPanel : public wxPanel
     protected:
         int             m_x;
         int             m_y;
-//        int             m_w;
-//        int             m_h;
         int             m_left;
         int             m_top;
         int             m_prev_w;
@@ -143,6 +130,8 @@ class PlotPanel : public wxPanel
         bool            m_mouseDown;
         bool            m_firstPass;
         double          m_zoomFactor;
+        int             m_greyscale;
+        int             m_line_color;
     DECLARE_EVENT_TABLE()
 };
 #endif //__FDMDV2_PLOT__

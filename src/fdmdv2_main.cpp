@@ -91,16 +91,16 @@ bool MainApp::loadConfig()
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 // Class MainFrame(wxFrame* pa->ent) : TopFrame(parent)
-//
-// @class $(Name)
-// @author $(User)
-// @date $(Date)
-// @file $(CurrentFileName).$(CurrentFileExt)
-// @brief
-//
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
 {
+    /*
+    // @class  $(Name)
+    // @author $(User)
+    // @date   $(Date)
+    // @file   $(CurrentFileName).$(CurrentFileExt)
+    // @brief
+    */
 //    m_radioRunning      = false;
     m_sound             = NULL;
     m_zoom              = 1.;
@@ -127,8 +127,18 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     m_panelDefaultA = new PlotPanel((wxFrame*) m_auiNbookCtrl );
     m_auiNbookCtrl->AddPage(m_panelDefaultA, _("Test A"), true, wxNullBitmap );
 #ifdef USE_TIMER
-//    this->Connect(wxEVT_TIMER, MainFrame::OnTimer);    //, ID_TIMER_WATERFALL);
-    Bind(wxEVT_TIMER, &MainFrame::OnTimer, this);   // ID_MY_WINDOW);
+    m_rxPa = new PortAudioWrap();
+    double f = 0.0;
+    for(int i = 0; i < FDMDV_NSPEC; i++)
+    {
+//        m_rxPa->m_av_mag[i] = sin(i) * 100.0;
+        f = ((double)i / M_PI);
+        f = sin(f);
+        f = 100 * f;
+//        f = f - 50;
+        m_rxPa->m_av_mag[i] = f;
+    }
+    Bind(wxEVT_TIMER, &MainFrame::OnTimer, this);       // ID_MY_WINDOW);
     m_plotTimer.SetOwner(this, ID_TIMER_WATERFALL);
     m_plotTimer.Start(500, wxTIMER_CONTINUOUS);
 #endif
@@ -149,13 +159,20 @@ MainFrame::~MainFrame()
 }
 
 #ifdef USE_TIMER
+//static int cnt = 3;
+
 //----------------------------------------------------------------
 // OnTimer()
 //----------------------------------------------------------------
 void MainFrame::OnTimer(wxTimerEvent &evt)
 {
+//    cnt--;
     m_panelWaterfall->m_newdata = true;
     m_panelWaterfall->Refresh();
+    m_panelSpectrum->m_newdata = true;
+    m_panelSpectrum->Refresh();
+//    m_panelDefaultA->m_newdata = true;
+//     m_panelDefaultA->Refresh();
 }
 #endif
 

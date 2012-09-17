@@ -41,13 +41,119 @@ END_EVENT_TABLE()
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 // Class PlotSpectrum
+//
+// @class $(Name)
+// @author $(User)
+// @date $(Date)
+// @file $(CurrentFileName).$(CurrentFileExt)
+// @brief
+//
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 PlotSpectrum::PlotSpectrum(wxFrame* parent): PlotPanel(parent)
 {
+    m_greyscale     = 0;
+    m_Bufsz         = GetMaxClientSize();
+    m_newdata       = false;
+    m_firstPass     = true;
+    m_line_color    = 0;
     SetLabelSize(10.0);
 }
 
-#define TEXT_BASELINE_OFFSET_Y  -5
+//----------------------------------------------------------------
+// ~PlotSpectrum()
+//----------------------------------------------------------------
+PlotSpectrum::~PlotSpectrum()
+{
+}
+
+//----------------------------------------------------------------
+// draw()
+//----------------------------------------------------------------
+void PlotSpectrum::draw(wxAutoBufferedPaintDC& pDC)
+{
+    wxMemoryDC m_mDC;
+    m_mDC.SelectObject(*m_pBmp);
+    m_rCtrl  = GetClientRect();
+    m_rGrid  = m_rCtrl;
+
+    m_rGrid = m_rGrid.Deflate(PLOT_BORDER + (XLEFT_OFFSET/2), (PLOT_BORDER + (YBOTTOM_OFFSET/2)));
+    m_rGrid.Offset(PLOT_BORDER + XLEFT_OFFSET, PLOT_BORDER);
+
+    pDC.Clear();
+    m_rPlot = wxRect(PLOT_BORDER + XLEFT_OFFSET, PLOT_BORDER, m_rGrid.GetWidth(), m_rGrid.GetHeight());
+    if(m_firstPass)
+    {
+        m_firstPass = false;
+        m_mDC.Clear();
+        m_mDC.FloodFill(0, 0, VERY_LTGREY_COLOR);
+
+        // Draw a filled rectangle with aborder
+//        wxBrush ltGraphBkgBrush = wxBrush(LIGHT_YELLOW_COLOR);
+        wxBrush ltGraphBkgBrush = wxBrush(DARK_GREY_COLOR);
+        m_mDC.SetBrush(ltGraphBkgBrush);
+        m_mDC.SetPen(wxPen(BLACK_COLOR, 0));
+        m_mDC.DrawRectangle(m_rPlot);
+    }
+    if(m_newdata)
+    {
+        m_newdata = false;
+//        plotPixelData(dc);
+#ifdef USE_TIMER
+        int t = m_rPlot.GetTop();
+        int l = m_rPlot.GetLeft();
+        int h = m_rPlot.GetHeight();
+        int w = m_rPlot.GetWidth();
+        //double stride = w / FDMDV_NSPEC;
+
+        wxPen pen;
+        pen.SetColour(DARK_GREEN_COLOR);
+        pen.SetWidth(1);
+        m_mDC.SetPen(pen);
+
+        float *pData = m_pTopFrame->m_rxPa->m_av_mag;
+        for(int x = 1; x < w; x++)
+        {
+//            m_mDC.DrawPoint(x, (int)pData[x]);
+            m_mDC.DrawLine((x - 1), (int)pData[(x - 1)] + (h / 2), x, (int)pData[x] + (h / 2));
+        }
+        pDC.Blit(l, t, w, h, &m_mDC, l, t);
+#endif
+        drawGraticule(pDC);
+    }
+    m_mDC.SetBrush(wxNullBrush);
+    m_mDC.SelectObject(wxNullBitmap);
+}
+
+//-------------------------------------------------------------------------
+// drawData()
+//-------------------------------------------------------------------------
+void PlotSpectrum::drawData()   //wxMemoryDC&  pDC)
+{
+    wxNativePixelData dPix = wxNativePixelData(*m_pBmp, m_rCtrl);
+    m_pPix = &dPix;
+    if(m_pPix == NULL)
+    {
+        return;
+    }
+    wxNativePixelData::Iterator p(*m_pPix);
+
+    int w = m_rPlot.GetWidth();
+    int h = m_rPlot.GetHeight();
+    p.Offset(*m_pPix, XLEFT_OFFSET + 3, h - (DATA_LINE_HEIGHT - 2));
+//    for(int y = 0; y < DATA_LINE_HEIGHT; ++y)
+//    {
+        wxNativePixelData::Iterator rowStart = p;
+        for(int x = 0; x < (w - 1); ++x, ++p)
+        {
+            p.OffsetX(*m_pPix, m_pTopFrame->m_rxPa->m_av_mag[x]);
+            p.Red()     = 0x00;     // m_pTopFrame->m_rxPa->m_av_mag[x];
+            p.Green()   = 0xFF;
+            p.Blue()    = 0x00;     // m_pTopFrame->m_rxPa->m_av_mag[x];
+        }
+        p = rowStart;
+//        p.OffsetY(*m_pPix, 1);
+//    }
+}
 
 //-------------------------------------------------------------------------
 // drawGraticule()
@@ -61,28 +167,28 @@ void PlotSpectrum::drawGraticule(wxAutoBufferedPaintDC&  dc)
 
     // Vertical gridlines
     dc.SetPen(m_penShortDash);
-    for(p = (PLOT_BORDER + XLEFT_OFFSET + GRID_INCREMENT); p < ((m_rCtrl.GetWidth() - XLEFT_OFFSET) + GRID_INCREMENT); p += GRID_INCREMENT)
+    for(p = (PLOT_BORDER + XLEFT_OFFSET + GRID_INCREMENT); p < ((m_rGrid.GetWidth() - XLEFT_OFFSET) + GRID_INCREMENT); p += GRID_INCREMENT)
     {
-        dc.DrawLine(p, (m_rCtrl.GetHeight() + PLOT_BORDER), p, PLOT_BORDER);
+        dc.DrawLine(p, (m_rGrid.GetHeight() + PLOT_BORDER), p, PLOT_BORDER);
     }
 
-    int y_zero = (m_rCtrl.GetHeight() - m_top) / 2 ;
+    int y_zero = (m_rGrid.GetHeight() - m_top) / 2 ;
     dc.SetPen(m_penSolid);
-    dc.DrawLine(PLOT_BORDER + XLEFT_OFFSET, y_zero, (m_rCtrl.GetWidth() + PLOT_BORDER + XLEFT_OFFSET), y_zero);
+    dc.DrawLine(PLOT_BORDER + XLEFT_OFFSET, y_zero, (m_rGrid.GetWidth() + PLOT_BORDER + XLEFT_OFFSET), y_zero);
     sprintf(buf, "%6.0f", 0.0);
     dc.DrawText(buf, XLEFT_TEXT_OFFSET, y_zero + TEXT_BASELINE_OFFSET_Y);
 
     // Horizontal gridlines
     dc.SetPen(m_penDotDash);
-    for(p = 0; (y_zero + p) < m_rCtrl.GetHeight() ; p += GRID_INCREMENT)
+    for(p = 0; (y_zero + p) < m_rGrid.GetHeight() ; p += GRID_INCREMENT)
     {
         if(p > 0)
         {
-            dc.DrawLine(PLOT_BORDER + XLEFT_OFFSET, (y_zero + p), (m_rCtrl.GetWidth() + PLOT_BORDER + XLEFT_OFFSET), (y_zero + p));
+            dc.DrawLine(PLOT_BORDER + XLEFT_OFFSET, (y_zero + p), (m_rGrid.GetWidth() + PLOT_BORDER + XLEFT_OFFSET), (y_zero + p));
             sprintf(buf, "%6.0f", (double)(p) * -10);
             dc.DrawText(buf, XLEFT_TEXT_OFFSET, (y_zero + p + TEXT_BASELINE_OFFSET_Y));
 
-            dc.DrawLine(PLOT_BORDER + XLEFT_OFFSET, (y_zero - p), (m_rCtrl.GetWidth() + PLOT_BORDER + XLEFT_OFFSET), (y_zero - p));
+            dc.DrawLine(PLOT_BORDER + XLEFT_OFFSET, (y_zero - p), (m_rGrid.GetWidth() + PLOT_BORDER + XLEFT_OFFSET), (y_zero - p));
             sprintf(buf, "%6.0f", (double)(p) * 10);
             dc.DrawText(buf, XLEFT_TEXT_OFFSET, (y_zero - p + TEXT_BASELINE_OFFSET_Y));
         }
@@ -95,111 +201,6 @@ void PlotSpectrum::drawGraticule(wxAutoBufferedPaintDC&  dc)
         sprintf(buf, "%1.1f Hz",(double)(p / 10));
         dc.DrawText(buf, p - PLOT_BORDER + XLEFT_OFFSET, m_rCtrl.GetHeight() + YBOTTOM_OFFSET/2);
     }
-}
-
-//----------------------------------------------------------------
-// draw()
-//----------------------------------------------------------------
-void PlotSpectrum::draw(wxAutoBufferedPaintDC&  dc)
-{
-/*
-    float x_px_per_point = 0.0;
-    float y_px_per_dB = 0.0;
-    int   i;
-    int   x1;
-    int   y1;
-    int   x2;
-    int   y2;
-    float mag1, mag2;
-    char  label[20];
-    float px_per_hz;
-*/
-    m_rCtrl  = GetClientRect();
-    m_rGrid  = m_rCtrl;
-
-    m_rGrid.Deflate(PLOT_BORDER + (XLEFT_OFFSET/2), (PLOT_BORDER + (YBOTTOM_OFFSET/2)));
-    m_rGrid.Offset(PLOT_BORDER + XLEFT_OFFSET, PLOT_BORDER);
-
-//    m_rGrid.Deflate(PLOT_BORDER, (PLOT_BORDER + (YBOTTOM_OFFSET/2)));
-//    m_rGrid.Offset(PLOT_BORDER, PLOT_BORDER);
-
-//    m_h = m_rGrid.GetHeight();
-//    m_w = m_rGrid.GetWidth();
-
-    dc.Clear();
-
-    // Draw a filled rectangle with aborder
-    wxBrush ltYellowBrush = wxBrush(LIGHT_YELLOW_COLOR);
-    dc.SetBrush(ltYellowBrush);
-//    dc.SetBrush(BLACK_COLOR);
-//    dc.SetPen(wxPen(BLACK_COLOR, 1));
-    m_top = PLOT_BORDER;
-    m_left = PLOT_BORDER + XLEFT_OFFSET;
-    dc.DrawRectangle(m_left, m_top, m_rCtrl.GetWidth(), m_rCtrl.GetHeight());
-
-    drawGraticule(dc);
-/*
-    Fl_Box::draw();
-    fl_color(FL_BLACK);
-    fl_rectf(x(),y(),w(),h());
-    fl_color(FL_GREEN);
-    fl_line_style(FL_SOLID);
-
-    fl_push_clip(x(),y(),w(),h());
-    //printf("%d %d\n", w(), h());
-*/
-/*
-    dc.SetBrush(*wxBLUE_BRUSH);
-    dc.SetPen(wxPen(YELLOW_COLOR, 2));
-    dc.DrawRectangle(PLOT_BORDER, PLOT_BORDER, m_w, m_h);
-
-    x_px_per_point = (float)m_w / FDMDV_NSPEC;
-    y_px_per_dB = (float)m_h / (MAX_DB - MIN_DB);
-
-
-    // plot spectrum
-    for(i = 0; i < FDMDV_NSPEC - 1; i++)
-    {
-//        mag1 = av_mag[i];
-//        mag2 = av_mag[i+1];
-
-        x1 = m_x + i * x_px_per_point;
-        y1 = m_y + -mag1 * y_px_per_dB;
-        x2 = m_x + (i+1) * x_px_per_point;
-        y2 = m_y + -mag2 * y_px_per_dB;
-//        fl_line(x1,y1,x2,y2);
-    }
-
-    // y axis graticule
-//    fl_line_style(FL_DOT);
-    for(i=MIN_DB; i<MAX_DB; i+=10)
-    {
-        x1 = m_x;
-        y1 = m_y + -i * y_px_per_dB;
-        x2 = m_x + m_w;
-        y2 = y1;
-        //printf("%d %d %d %d\n", x1, y1, x2, y2);
-//        fl_line(x1,y1,x2,y2);
-        sprintf(label, "%d", i);
-//        fl_draw(label, x1, y1);
-    }
-
-    // x axis graticule
-    px_per_hz = (float)m_w/(MAX_HZ-MIN_HZ);
-//    fl_line_style(FL_DOT);
-    for(i = 500; i < MAX_HZ; i += 500)
-    {
-        x1 = m_x + i * px_per_hz;
-        y1 = m_y;
-        x2 = x1;
-        y2 = m_y + m_h;
-        //printf("i=%d %d %d %d %d\n", i, x1, y1, x2, y2);
-//        fl_line(x1,y1,x2,y2);
-        sprintf(label, "%d", i);
-//        fl_draw(label, x1, y2);
-    }
-//    fl_pop_clip();
- */
 }
 
 //----------------------------------------------------------------
@@ -220,7 +221,8 @@ void PlotSpectrum::OnSize(wxSizeEvent& event)
     m_rCtrl     = GetClientRect();
     if(m_use_bitmap)
     {
-        m_bmp = new wxBitmap(m_rCtrl.GetWidth(), m_rCtrl.GetHeight(), wxBITMAP_SCREEN_DEPTH);
+        m_firstPass = true;
+        m_pBmp = new wxBitmap(m_rCtrl.GetWidth(), m_rCtrl.GetHeight(), wxBITMAP_SCREEN_DEPTH);
         this->Refresh();
     }
 }

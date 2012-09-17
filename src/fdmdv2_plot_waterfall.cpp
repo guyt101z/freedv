@@ -74,58 +74,31 @@ PlotWaterfall::PlotWaterfall(wxFrame* parent): PlotPanel(parent)
 }
 
 //----------------------------------------------------------------
+// paintEvent()
+//
+// Called by the system of by wxWidgets when the panel needs
+// to be redrawn. You can also trigger this call by calling
+// Refresh()/Update().
+//----------------------------------------------------------------
+void PlotWaterfall::OnPaint(wxPaintEvent & evt)
+{
+    wxAutoBufferedPaintDC pdc(this);
+    draw(pdc);
+}
+
+//----------------------------------------------------------------
+// OnShow()
+//----------------------------------------------------------------
+void PlotWaterfall::OnShow(wxShowEvent& event)
+{
+}
+
+//----------------------------------------------------------------
 // ~PlotWaterfall()
 //----------------------------------------------------------------
 PlotWaterfall::~PlotWaterfall()
 {
 }
-
-/*
-//----------------------------------------------------------------
-// new_pixel_buf()
-//----------------------------------------------------------------
-void PlotWaterfall::new_pixel_buf(int w, int h)
-{
-//    int i;
-
-    m_prev_w = w;
-    m_prev_h = h;
-
-//    wxMemoryDC m_memDC = new wxMemoryDC();
-
-    if(m_bmp->IsOk())
-    {
-        delete m_bmp;
-        //m_Bufsz = h * w;
-
-        //m_img = new wxImage(sz, pdata, alpha, false);
-        m_bmp = new wxBitmap(w, h, wxBITMAP_SCREEN_DEPTH);
-        //m_pBmp = m_bmp->GetBitmapData();
-    }
-//    m_pixel_buf = new unsigned[buf_sz];
-//    for(i = 0; i < buf_sz; i++)
-//    {
-//        m_pixel_buf[i] = 0;
-//    }
-}
-
-//----------------------------------------------------------------
-//  handle()
-//----------------------------------------------------------------
-int PlotWaterfall::handle(int event)
-{
-    //  detect a left mouse down if inside the window
-    if ((event == FL_NO_EVENT) && (Fl::event_button() == 1))
-    {
-        if ((Fl::event_x() > x()) && (Fl::event_x() < (x() + w())) && (Fl::event_y() > y()) && (Fl::event_y() < (y() + h())))
-        {
-            // show zoomed spectrum window
-            zoomWaterfallWindow->show();
-        }
-    }
-    return 0;
-}
-*/
 
 //----------------------------------------------------------------
 // heatmap()
@@ -163,17 +136,18 @@ unsigned PlotWaterfall::heatmap(float val, float min, float max)
     return  (b << 16) + (g << 8) + r;
 }
 
-#define DATA_LINE_WIDTH  25
+#define PLOT_BOTTOM     0
+#define PLOT_TOP        1
+
+//static long paint_count;
 
 //----------------------------------------------------------------
 // draw()
 //----------------------------------------------------------------
 void PlotWaterfall::draw(wxAutoBufferedPaintDC& pDC)
 {
-    bool rc;
     wxMemoryDC m_mDC;
-    m_mDC.SelectObject(*m_bmp);
-//   m_mDC.SetMapMode(pDC.GetMapMode());
+    m_mDC.SelectObject(*m_pBmp);
     m_rCtrl  = GetClientRect();
     m_rGrid  = m_rCtrl;
 
@@ -181,16 +155,15 @@ void PlotWaterfall::draw(wxAutoBufferedPaintDC& pDC)
     m_rGrid.Offset(PLOT_BORDER + XLEFT_OFFSET, PLOT_BORDER);
 
     pDC.Clear();
+//    m_mDC.Clear();
     m_rPlot = wxRect(PLOT_BORDER + XLEFT_OFFSET, PLOT_BORDER, m_rGrid.GetWidth(), m_rGrid.GetHeight());
-//    m_rPlot =  m_rPlot.Deflate(1, 1);
     if(m_firstPass)
     {
         m_firstPass = false;
         m_mDC.FloodFill(0, 0, VERY_LTGREY_COLOR);
-//        m_rPlot.Offset(1, 1);
 
         // Draw a filled rectangle with aborder
-        wxBrush ltGraphBkgBrush = wxBrush(LIGHT_RED_COLOR);
+        wxBrush ltGraphBkgBrush = wxBrush(LIGHT_BLUE_COLOR);
         m_mDC.SetBrush(ltGraphBkgBrush);
         m_mDC.SetPen(wxPen(BLACK_COLOR, 0));
         m_mDC.DrawRectangle(m_rPlot);
@@ -198,60 +171,57 @@ void PlotWaterfall::draw(wxAutoBufferedPaintDC& pDC)
     if(m_newdata)
     {
         m_newdata = false;
-//        m_rPlot =  m_rPlot.Deflate(2, 2);
-//        m_rPlot.Offset(1, 1);
-
 //        plotPixelData(dc);
 #ifdef USE_TIMER
         int t = m_rPlot.GetTop();
         int l = m_rPlot.GetLeft();
-        int b = m_rPlot.GetBottom();
-        int r = m_rPlot.GetRight();
         int h = m_rPlot.GetHeight();
+//        int b = m_rPlot.GetBottom();
         int w = m_rPlot.GetWidth();
-
-        wxDateTime dt;
-        char buf[15];
-        sprintf(buf, "%9X", (unsigned int)dt.GetTimeNow());
-        wxPen pen;
-        pen.SetCap(wxCAP_BUTT);
-        pen.SetStyle(wxPENSTYLE_SOLID);
-        pen.SetWidth(1);
-        pen.SetColour(BLACK_COLOR);
-        m_mDC.SetPen(pen);
-        m_mDC.DrawText(buf, l + 100, h - 38);
-//        bool rc = pDC.StretchBlit(l, t + DATA_LINE_WIDTH, r, b , &m_mDC, l, t, r, b - DATA_LINE_WIDTH);
-//        bool rc = pDC.StretchBlit(l, t, w, h - DATA_LINE_WIDTH, &m_mDC, l, t + DATA_LINE_WIDTH, w, h - DATA_LINE_WIDTH);
-//        bool rc = pDC.StretchBlit(l, t, w, h, &m_mDC, l, t, w, h);
         int t2 = t + 1;
         int w2 = w - 1;
-        rc = m_mDC.StretchBlit(l, t2, w2, h - (DATA_LINE_WIDTH), &m_mDC, l, t2 + DATA_LINE_WIDTH, w2, h - DATA_LINE_WIDTH);
-        switch(m_line_color)
-        {
-            case 0:
-                pen.SetColour(RED_COLOR);
-                m_line_color = 1;
-                break;
+        int ht = (h - DATA_LINE_HEIGHT);
 
-            case 1:
-                pen.SetColour(YELLOW_COLOR);
-                m_line_color = 2;
-                break;
-
-            case 2:
-                pen.SetColour(BLUE_COLOR);
-                m_line_color = 0;
-                break;
-        }
-        pen.SetWidth(DATA_LINE_WIDTH);
-        m_mDC.SetPen(pen);
-        m_mDC.DrawLine(l + 1, h - (DATA_LINE_WIDTH/2) + 1, r, h - (DATA_LINE_WIDTH/2) + 1);
-        rc = pDC.Blit(l, t, w, h, &m_mDC, l, t);
+        drawData();     //  m_mDC, PLOT_BOTTOM);
+//        m_mDC.StretchBlit(l, t2, w2, ht, &m_mDC, l, t2 + DATA_LINE_HEIGHT, w2, ht - 2);
+        m_mDC.StretchBlit(l, t2, w2, ht, &m_mDC, l, t2 + DATA_LINE_HEIGHT, w2, ht - 2);
+//        pDC.Blit(l, t, w, h, &m_mDC, l, t);                                                   // Scroll Up from Bottom
+        pDC.StretchBlit(l, (h - t) + 4, w, (-h) + 4, &m_mDC, l, t, w, h);                       // Scroll Down from top
 #endif
+        drawGraticule(pDC);
     }
-    drawGraticule(pDC);
     m_mDC.SetBrush(wxNullBrush);
     m_mDC.SelectObject(wxNullBitmap);
+}
+
+//-------------------------------------------------------------------------
+// drawData()
+//-------------------------------------------------------------------------
+void PlotWaterfall::drawData()  //wxMemoryDC&  pDC)
+{
+    wxNativePixelData dPix = wxNativePixelData(*m_pBmp, m_rCtrl);
+    m_pPix = &dPix;
+    if(m_pPix == NULL)
+    {
+        return;
+    }
+    wxNativePixelData::Iterator p(*m_pPix);
+
+    int w = m_rPlot.GetWidth();
+    int h = m_rPlot.GetHeight();
+    p.Offset(*m_pPix, XLEFT_OFFSET + 3, h - (DATA_LINE_HEIGHT - 2));
+    for(int y = 0; y < DATA_LINE_HEIGHT; ++y)
+    {
+        wxNativePixelData::Iterator rowStart = p;
+        for(int x = 0; x < (w - 1); ++x, ++p)
+        {
+            p.Red()     = m_pTopFrame->m_rxPa->m_av_mag[x];
+            p.Green()   = m_pTopFrame->m_rxPa->m_av_mag[x];
+            p.Blue()    = m_pTopFrame->m_rxPa->m_av_mag[x];
+        }
+        p = rowStart;
+        p.OffsetY(*m_pPix, 1);
+    }
 }
 
 //-------------------------------------------------------------------------
@@ -263,12 +233,10 @@ void PlotWaterfall::drawGraticule(wxAutoBufferedPaintDC&  pDC)
     char buf[15];
     wxString s;
 
-    //wxBrush ltGraphBkgBrush = wxBrush(LIGHT_RED_COLOR);
     wxBrush ltGraphBkgBrush;
     ltGraphBkgBrush.SetStyle(wxBRUSHSTYLE_TRANSPARENT);
     pDC.SetBrush(ltGraphBkgBrush);
     pDC.SetPen(wxPen(BLACK_COLOR, 1));
-//    pDC.DrawRectangle(m_rPlot);
 
     // Vertical gridlines
     pDC.SetPen(m_penShortDash);
@@ -287,7 +255,7 @@ void PlotWaterfall::drawGraticule(wxAutoBufferedPaintDC&  pDC)
     for(p = GRID_INCREMENT; p < (m_rGrid.GetWidth() - YBOTTOM_OFFSET); p += GRID_INCREMENT)
     {
         sprintf(buf, "%1.1f Hz",(double)(p / 10));
-        pDC.DrawText(buf, p - PLOT_BORDER + XLEFT_OFFSET, m_rGrid.GetHeight() + YBOTTOM_OFFSET/2);
+        pDC.DrawText(buf, p - PLOT_BORDER + XLEFT_OFFSET, m_rGrid.GetHeight() + YBOTTOM_OFFSET/3);
     }
     // Label the Y-Axis
     for(p = (m_rGrid.GetHeight() - GRID_INCREMENT); p > PLOT_BORDER; p -= GRID_INCREMENT)
@@ -335,7 +303,7 @@ void PlotWaterfall::plotPixelData(wxAutoBufferedPaintDC&  dc)
     intensity_per_dB  = (float)256 /(MAX_DB - MIN_DB);
     last_row = (unsigned int *)m_pBmp + dy *(dy_blocks - 1)* m_rCtrl.GetWidth();
 
-    wxNativePixelData data(*m_bmp);
+    wxNativePixelData data(*m_pBmp);
     if(!data)
     {
         // ... raw access to bitmap data unavailable, do something else ...
@@ -382,41 +350,4 @@ void PlotWaterfall::plotPixelData(wxAutoBufferedPaintDC&  dc)
             }
         }
     }
-}
-
-//----------------------------------------------------------------
-// paintEvent()
-//
-// Called by the system of by wxWidgets when the panel needs
-// to be redrawn. You can also trigger this call by calling
-// Refresh()/Update().
-//----------------------------------------------------------------
-void PlotWaterfall::OnPaint(wxPaintEvent & evt)
-{
-    wxAutoBufferedPaintDC pdc(this);
-    draw(pdc);
-}
-
-//----------------------------------------------------------------
-// OnSize()
-//----------------------------------------------------------------
-//void PlotWaterfall::OnSize(wxSizeEvent& event)
-//{
-//    m_rCtrlPrev = m_rCtrl;
-//    m_rCtrl     = GetClientRect();
-//    if(m_use_bitmap)
-//    {
-//        m_firstPass = true;
-//        m_bmp = new wxBitmap(m_rCtrl.GetWidth(), m_rCtrl.GetHeight(), wxBITMAP_SCREEN_DEPTH);
-//        this->Refresh();
-//    }
-//}
-
-//----------------------------------------------------------------
-// OnShow()
-//----------------------------------------------------------------
-void PlotWaterfall::OnShow(wxShowEvent& event)
-{
-//    wxAutoBufferedPaintDC dc(this);
-//    draw();
 }
