@@ -119,17 +119,7 @@ void PlotPanel::OnSize(wxSizeEvent& event)
             m_oImage.Rescale(m_rCtrl.GetWidth(), m_rCtrl.GetHeight());
         }
         m_pBmp = new wxBitmap(m_oImage, wxBITMAP_SCREEN_DEPTH);
-/*
-        if(m_oImage.IsOk())
-        {
-            m_oImage.Destroy();
-        }
-        m_oImage.Create(m_rCtrl.GetWidth(), m_rCtrl.GetHeight(), true);
-        m_pBmp = new wxBitmap(m_oImage, wxBITMAP_SCREEN_DEPTH);
-        m_oImage.Rescale(m_rCtrl.GetWidth(), m_rCtrl.GetHeight());
-*/
         m_firstPass = true;
-//        this->Refresh();
     }
 }
 

@@ -12,10 +12,12 @@
 
 #include <wx/wx.h>
 
+#include <wx/app.h>
 #include "wx/rawbmp.h"
 #include "wx/file.h"
-#include "wx/config.h"
 #include "wx/filename.h"
+#include "wx/config.h"
+#include <wx/fileconf.h>
 #include "wx/graphics.h"
 #include "wx/mstream.h"
 #include "wx/wfstream.h"
@@ -52,6 +54,9 @@ enum {
         ID_TIMER_SCALAR
     };
 
+#define EXCHANGE_DATA_IN    0
+#define EXCHANGE_DATA_OUT   1
+
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 // Class MainApp
 //
@@ -65,14 +70,37 @@ enum {
 class MainApp : public wxApp
 {
     public:
-        virtual bool OnInit();
-        virtual int OnExit()
-        {
-            return 0;
-        }
-        bool loadConfig();
+        virtual bool        OnInit();
+        virtual int         OnExit();
+
+        wxString            m_strVendName;
+        wxString            m_StrAppName;
+
+        wxRadioButton       m_radioBtnPortAudio;
+        wxRadioButton       m_radioBtnFileOnly;
+
+        wxString            m_textNumChOut;
+        wxString            m_textNumChIn;
+
+        wxString            m_strRxInAudio;
+        wxString            m_strRxOutAudio;
+        wxString            m_textVoiceInput;
+        wxString            m_textVoiceOutput;
+        wxString            m_strSampleRate;
+        wxString            m_strBitrate;
+
+        wxString            m_strRigCtrlPort;
+        wxString            m_strRigCtrlBaud;
+        wxString            m_strRigCtrlDatabits;
+        wxString            m_strRigCtrlStopbits;
+        wxString            m_strRigCtrlParity;
+
+        wxRect              m_rTopWindow;
+
+        bool                loadConfig();
+        bool                saveConfig();
+
     protected:
-        wxConfig *g_config;
 };
 
 // declare global static function wxGetApp()
@@ -148,6 +176,7 @@ class MainFrame : public TopFrame
         // protected event handlers
         virtual void OnCloseFrame(wxCloseEvent& event);
         virtual void OnExitClick(wxCommandEvent& event);
+        //void OnQuit(wxCommandEvent& event);
 
         void averageData(float mag_dB[]);
         void startTxStream();
@@ -204,13 +233,15 @@ class MainFrame : public TopFrame
         void OnUpdateUI( wxUpdateUIEvent& event );
         void OnTimer(wxTimerEvent &evt);
 
+        void OnDeleteConfig(wxCommandEvent&);
+
         wxString LoadUserImage(wxImage& image);
 
     private:
         bool CreateSound(wxSound& snd) const;
         wxString    m_soundFile;
 #ifdef __WXMSW__
-        wxString    m_soundRes;
+//        wxString    m_soundRes;
 #endif // __WXMSW__
         bool        m_useMemory;
         wxTextCtrl* m_tc;

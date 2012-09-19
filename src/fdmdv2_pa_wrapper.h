@@ -28,11 +28,6 @@
 #include "codec2.h"
 #include "portaudio.h"
 
-// Note that many of the older ISA sound cards on PCs do NOT support
-// full duplex audio (simultaneous record and playback).
-// And some only support full duplex at lower sample rates.
-//#define SAMPLE_RATE         (44100)
-//
 #define PA_SAMPLE_TYPE      paFloat32       //paInt16
 #define FRAMES_PER_BUFFER   (64)
 

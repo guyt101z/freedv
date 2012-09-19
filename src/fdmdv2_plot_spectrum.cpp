@@ -34,9 +34,7 @@ BEGIN_EVENT_TABLE(PlotSpectrum, PlotPanel)
     EVT_LEFT_UP         (PlotSpectrum::OnMouseUp)
     EVT_MOUSEWHEEL      (PlotSpectrum::OnMouseWheelMoved)
     EVT_PAINT           (PlotSpectrum::OnPaint)
-    EVT_SIZE            (PlotSpectrum::OnSize)
     EVT_SHOW            (PlotSpectrum::OnShow)
-//    EVT_ERASE_BACKGROUND(PlotSpectrum::OnErase)
 END_EVENT_TABLE()
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
@@ -125,37 +123,6 @@ void PlotSpectrum::draw(wxAutoBufferedPaintDC& pDC)
 }
 
 //-------------------------------------------------------------------------
-// drawData()
-//-------------------------------------------------------------------------
-void PlotSpectrum::drawData()   //wxMemoryDC&  pDC)
-{
-    wxNativePixelData dPix = wxNativePixelData(*m_pBmp, m_rCtrl);
-    m_pPix = &dPix;
-    if(m_pPix == NULL)
-    {
-        return;
-    }
-    wxNativePixelData::Iterator p(*m_pPix);
-
-    int w = m_rPlot.GetWidth();
-    int h = m_rPlot.GetHeight();
-    p.Offset(*m_pPix, XLEFT_OFFSET + 3, h - (DATA_LINE_HEIGHT - 2));
-//    for(int y = 0; y < DATA_LINE_HEIGHT; ++y)
-//    {
-        wxNativePixelData::Iterator rowStart = p;
-        for(int x = 0; x < (w - 1); ++x, ++p)
-        {
-            p.OffsetX(*m_pPix, m_pTopFrame->m_rxPa->m_av_mag[x]);
-            p.Red()     = 0x00;     // m_pTopFrame->m_rxPa->m_av_mag[x];
-            p.Green()   = 0xFF;
-            p.Blue()    = 0x00;     // m_pTopFrame->m_rxPa->m_av_mag[x];
-        }
-        p = rowStart;
-//        p.OffsetY(*m_pPix, 1);
-//    }
-}
-
-//-------------------------------------------------------------------------
 // drawGraticule()
 //-------------------------------------------------------------------------
 void PlotSpectrum::drawGraticule(wxAutoBufferedPaintDC&  dc)
@@ -210,21 +177,6 @@ void PlotSpectrum::OnPaint(wxPaintEvent& event)
 {
     wxAutoBufferedPaintDC dc(this);
     draw(dc);
-}
-
-//----------------------------------------------------------------
-// OnSize()
-//----------------------------------------------------------------
-void PlotSpectrum::OnSize(wxSizeEvent& event)
-{
-    m_rCtrlPrev = m_rCtrl;
-    m_rCtrl     = GetClientRect();
-    if(m_use_bitmap)
-    {
-        m_firstPass = true;
-        m_pBmp = new wxBitmap(m_rCtrl.GetWidth(), m_rCtrl.GetHeight(), wxBITMAP_SCREEN_DEPTH);
-        this->Refresh();
-    }
 }
 
 //----------------------------------------------------------------

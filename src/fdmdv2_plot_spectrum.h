@@ -34,10 +34,8 @@
 class PlotSpectrum : public PlotPanel
 {
     public:
-//        PlotSpectrum(wxFrame* parent, int x, int y, int w, int h);
         PlotSpectrum(wxFrame* parent);
         ~PlotSpectrum();
-//        bool                m_newdata;
 
     protected:
         void        OnPaint(wxPaintEvent& event);
@@ -45,7 +43,6 @@ class PlotSpectrum : public PlotPanel
         void        OnShow(wxShowEvent& event);
         void        drawGraticule(wxAutoBufferedPaintDC&  dc);
         void        draw(wxAutoBufferedPaintDC&  dc);
-        void        drawData();     //wxMemoryDC&  pDC);
 
         DECLARE_EVENT_TABLE()
 };

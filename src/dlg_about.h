@@ -12,7 +12,7 @@
 #ifndef __ABOUT_DIALOG__
 #define __ABOUT_DIALOG__
 
-#include "topFrame.h"
+#include "fdmdv2_main.h"
 
 class AboutDlg : public DlgAbout
 {
@@ -23,6 +23,8 @@ class AboutDlg : public DlgAbout
     public:
         /** Constructor */
         AboutDlg( wxWindow* parent );
+        void ExchangeData(int inout);
+        void OnOK( wxCommandEvent& event );
 
 };
 

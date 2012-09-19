@@ -12,7 +12,7 @@
 #ifndef __OPTIONS_DIALOG__
 #define __OPTIONS_DIALOG__
 
-#include "topFrame.h"
+#include "fdmdv2_main.h"
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 // Class OptionsDlg
@@ -26,6 +26,10 @@ class OptionsDlg : public DlgOptions
     public:
         /** Constructor */
         OptionsDlg( wxWindow* parent );
+        void ExchangeData(int inout);
+        void OnCancel( wxCommandEvent& event );
+        void OnOK( wxCommandEvent& event );
+        void OnApply( wxCommandEvent& event );
 };
 
 #endif // __OPTIONS_DIALOG__

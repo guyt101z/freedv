@@ -10,19 +10,27 @@
 #ifndef __COMPORTS_DIALOG__
 #define __COMPORTS_DIALOG__
 
-#include "topFrame.h"
+#include "fdmdv2_main.h"
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 // Class ComPortsDlg
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 class ComPortsDlg : public DlgComPorts
 {
-    protected:
-        // Handlers for events.
-        void OnListItemSelected( wxListEvent& event );
     public:
         /** Constructor */
         ComPortsDlg( wxWindow* parent );
+        void ExchangeData(int inout);
+
+    protected:
+        // Handlers for events.
+        void OnListItemSelected( wxListEvent& event );
+        void OnCancel( wxCommandEvent& event );
+        void OnOK( wxCommandEvent& event );
+        void OnClose( wxCloseEvent& event );
+        void OnInitDialog( wxInitDialogEvent& event );
+        void OnApply( wxCommandEvent& event );
+
 };
 
 #endif // __COMPORTS_DIALOG__

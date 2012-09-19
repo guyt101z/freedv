@@ -16,7 +16,6 @@
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 AudioDlg::AudioDlg( wxWindow* parent ) : DlgAudio( parent )
 {
-
 }
 
 //-------------------------------------------------------------------------
@@ -24,7 +23,7 @@ AudioDlg::AudioDlg( wxWindow* parent ) : DlgAudio( parent )
 //-------------------------------------------------------------------------
 void AudioDlg::OnCancel( wxCommandEvent& event )
 {
-    this->EndModal(wxID_OK);
+    this->EndModal(wxID_CANCEL);
 }
 
 //-------------------------------------------------------------------------
@@ -40,7 +39,7 @@ void AudioDlg::OnOK( wxCommandEvent& event )
 //-------------------------------------------------------------------------
 void AudioDlg::OnApply( wxCommandEvent& event )
 {
-    this->EndModal(wxID_OK);
+    ExchangeData(EXCHANGE_DATA_OUT);
 }
 
 //-------------------------------------------------------------------------
@@ -56,8 +55,38 @@ void AudioDlg::OnClose( wxCloseEvent& event )
 //-------------------------------------------------------------------------
 void AudioDlg::OnInitDialog( wxInitDialogEvent& event )
 {
-    //wxMessageBox(wxT("got OnInitDialog()"), wxT("Select"), wxOK);
+    ExchangeData(EXCHANGE_DATA_IN);
     populateAudioInfo();
+}
+
+//-------------------------------------------------------------------------
+// ExchangeData()
+//-------------------------------------------------------------------------
+void AudioDlg::ExchangeData(int inout)
+{
+    wxConfigBase *pConfig = wxConfigBase::Get();
+    if(inout == EXCHANGE_DATA_IN)
+    {
+        m_textRxInput->SetValue(wxGetApp().m_strRxInAudio);
+        m_textTxOutput->SetValue(wxGetApp().m_strRxOutAudio);
+        m_textVoiceInput->SetValue(wxGetApp().m_textVoiceInput);
+        m_textVoiceOutput->SetValue(wxGetApp().m_textVoiceOutput);
+    }
+    if(inout == EXCHANGE_DATA_OUT)
+    {
+        wxGetApp().m_strRxInAudio    = m_textRxInput->GetValue();
+        wxGetApp().m_strRxOutAudio   = m_textTxOutput->GetValue();
+        wxGetApp().m_textVoiceInput  = m_textVoiceInput->GetValue();
+        wxGetApp().m_textVoiceOutput = m_textVoiceOutput->GetValue();
+
+        pConfig->Write(wxT("/Audio/RxIn"),          wxGetApp().m_strRxInAudio);
+        pConfig->Write(wxT("/Audio/RxOut"),         wxGetApp().m_strRxOutAudio);
+        pConfig->Write(wxT("/Audio/TxIn"),          wxGetApp().m_textVoiceInput);
+        pConfig->Write(wxT("/Audio/TxOut"),         wxGetApp().m_textVoiceOutput);
+        pConfig->Write(wxT("/Audio/SampleRate"),    wxGetApp().m_strSampleRate);
+        pConfig->Flush();
+    }
+    delete wxConfigBase::Set((wxConfigBase *) NULL);
 }
 
 //-------------------------------------------------------------------------

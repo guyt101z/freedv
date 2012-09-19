@@ -12,8 +12,7 @@
 #ifndef __AUDIO_DIALOG__
 #define __AUDIO_DIALOG__
 
-#include <wx/wx.h>
-#include "topFrame.h"
+#include "fdmdv2_main.h"
 
 #include "portaudio.h"
 #include "portaudiocpp/PortAudioCpp.hxx"
@@ -42,6 +41,7 @@ class AudioDlg : public DlgAudio
         void OnTxOutputSelect( wxCommandEvent& event );
         void OnVoiceInputSelect( wxCommandEvent& event );
         void OnVoiceOutputSelect( wxCommandEvent& event );
+        void ExchangeData(int inout);
 };
 
 #endif // __AUDIO_DIALOG__
