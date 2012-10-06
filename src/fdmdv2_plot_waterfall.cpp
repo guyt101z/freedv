@@ -52,10 +52,10 @@ END_EVENT_TABLE()
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 // Class WaterfallPlot
 //
-// @class $(Name)
-// @author $(User)
-// @date $(Date)
-// @file $(CurrentFileName).$(CurrentFileExt)
+// @class   WaterfallPlot
+// @author  David Witten
+// @date    $(Date)
+// @file    $(CurrentFileName).$(CurrentFileExt)
 // @brief
 //
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
@@ -75,6 +75,12 @@ PlotWaterfall::PlotWaterfall(wxFrame* parent): PlotPanel(parent)
 
 //----------------------------------------------------------------
 // paintEvent()
+//
+// @class $(Name)
+// @author $(User)
+// @date $(Date)
+// @file $(CurrentFileName).$(CurrentFileExt)
+// @brief
 //
 // Called by the system of by wxWidgets when the panel needs
 // to be redrawn. You can also trigger this call by calling

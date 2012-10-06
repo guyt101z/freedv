@@ -12,6 +12,7 @@
 
 #include <wx/wx.h>
 
+#include <wx/tglbtn.h>
 #include <wx/app.h>
 #include "wx/rawbmp.h"
 #include "wx/file.h"
@@ -144,6 +145,14 @@ class MainFrame : public TopFrame
         struct FDMDV    *m_pFDMDV_state;
         wxTimer         m_plotTimer;
 
+//        wxToggleButton* m_togRxID;
+//        wxToggleButton* m_togTxID;
+//        wxToggleButton* m_togBtnOnOff;
+//        wxToggleButton* m_togBtnSplit;
+//        wxToggleButton* m_togBtnAnalog;
+//        wxToggleButton* m_togBtnALC;
+//        wxToggleButton* m_btnTogTX;
+
         static int rxCallback(
                                 const void *inBuffer,
                                 void *outBuffer,
@@ -225,6 +234,14 @@ class MainFrame : public TopFrame
         void OnTogBtnTxID( wxCommandEvent& event );
         void OnTogBtnTXClick( wxCommandEvent& event );
         void OnTogBtnOnOff( wxCommandEvent& event );
+
+        void OnTogBtnSplitClickUI(wxUpdateUIEvent& event);
+        void OnTogBtnAnalogClickUI(wxUpdateUIEvent& event);
+        void OnTogBtnALCClickUI(wxUpdateUIEvent& event);
+        void OnTogBtnRxIDUI(wxUpdateUIEvent& event );
+        void OnTogBtnTxIDUI(wxUpdateUIEvent& event );
+        void OnTogBtnTXClickUI(wxUpdateUIEvent& event );
+        void OnTogBtnOnOffUI(wxUpdateUIEvent& event );
 
         //System Events
         void OnPaint(wxPaintEvent& event);

@@ -11,6 +11,7 @@
 #define __COMPORTS_DIALOG__
 
 #include "fdmdv2_main.h"
+#include "fdmdv2_hdw_ports.h"
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 // Class ComPortsDlg

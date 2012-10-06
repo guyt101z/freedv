@@ -98,10 +98,10 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
 
     tools->AppendSeparator();
     wxMenuItem* m_menuItemToolsConfigDelete;
-	m_menuItemToolsConfigDelete = new wxMenuItem( tools, wxID_ANY, wxString( _("&Delete stored config") ) , wxT("Delete config file/keys"), wxITEM_NORMAL );
+    m_menuItemToolsConfigDelete = new wxMenuItem( tools, wxID_ANY, wxString( _("&Delete stored config") ) , wxT("Delete config file/keys"), wxITEM_NORMAL );
     this->Connect( m_menuItemToolsConfigDelete->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MainFrame::OnDeleteConfig));
 
-	tools->Append( m_menuItemToolsConfigDelete );
+    tools->Append( m_menuItemToolsConfigDelete );
 
 
     // Add Waterfall Plot window
@@ -137,8 +137,8 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     wxGetApp().m_textVoiceInput     = pConfig->Read(wxT("/Audio/TxIn"),         wxT("<m_textVoiceInput>"));
     wxGetApp().m_textVoiceOutput    = pConfig->Read(wxT("/Audio/TxOut"),        wxT("<m_textVoiceOutput>"));
     wxGetApp().m_strSampleRate      = pConfig->Read(wxT("/Audio/SampleRate"),   wxT("48000"));
-    wxGetApp().m_strSampleRate      = pConfig->Read(wxT("/Audio/SampleRate"),   wxT("48000"));
-    wxGetApp().m_strSampleRate      = pConfig->Read(wxT("/Audio/SampleRate"),   wxT("48000"));
+//    wxGetApp().m_strSampleRate      = pConfig->Read(wxT("/Audio/SampleRate"),   wxT("48000"));
+//    wxGetApp().m_strSampleRate      = pConfig->Read(wxT("/Audio/SampleRate"),   wxT("48000"));
 
     wxGetApp().m_strRigCtrlPort     = pConfig->Read("/Rig/Port",                wxT("\\\\.\\com1"));
     wxGetApp().m_strRigCtrlBaud     = pConfig->Read("/Rig/Baud",                wxT("9600"));
@@ -148,6 +148,22 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
 
     pConfig->SetPath(wxT("/"));
 
+//    this->Connect( m_menuItemHelpUpdates->GetId(), wxEVT_UPDATE_UI, wxUpdateUIEventHandler( TopFrame::OnHelpCheckUpdatesUI ) );
+    m_togRxID->Connect( wxEVT_UPDATE_UI, wxUpdateUIEventHandler( MainFrame::OnTogBtnRxIDUI ), NULL, this );
+    m_togTxID->Connect( wxEVT_UPDATE_UI, wxUpdateUIEventHandler( MainFrame::OnTogBtnTxIDUI ), NULL, this );
+    m_togBtnOnOff->Connect( wxEVT_UPDATE_UI, wxUpdateUIEventHandler( MainFrame::OnTogBtnOnOffUI ), NULL, this );
+    m_togBtnSplit->Connect( wxEVT_UPDATE_UI, wxUpdateUIEventHandler( MainFrame::OnTogBtnSplitClickUI ), NULL, this );
+    m_togBtnAnalog->Connect( wxEVT_UPDATE_UI, wxUpdateUIEventHandler( MainFrame::OnTogBtnAnalogClickUI ), NULL, this );
+    m_togBtnALC->Connect( wxEVT_UPDATE_UI, wxUpdateUIEventHandler( MainFrame::OnTogBtnALCClickUI ), NULL, this );
+    m_btnTogTX->Connect( wxEVT_UPDATE_UI, wxUpdateUIEventHandler( MainFrame::OnTogBtnTXClickUI ), NULL, this );
+
+    m_togBtnSplit->Disable();
+    m_togRxID->Disable();
+    m_togTxID->Disable();
+    m_togBtnAnalog->Disable();
+    m_togBtnALC->Disable();
+    m_btnTogTX->Disable();
+
 #ifdef USE_TIMER
     m_rxPa = new PortAudioWrap();
     for(int i = 0; i < FDMDV_NSPEC; i++)
@@ -156,7 +172,9 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     }
     Bind(wxEVT_TIMER, &MainFrame::OnTimer, this);       // ID_MY_WINDOW);
     m_plotTimer.SetOwner(this, ID_TIMER_WATERFALL);
-    m_plotTimer.Start(500, wxTIMER_CONTINUOUS);
+//    m_plotTimer.Start(500, wxTIMER_CONTINUOUS);
+    m_panelWaterfall->m_newdata = true;
+    m_panelWaterfall->Refresh();
 #endif
 }
 
@@ -191,8 +209,14 @@ MainFrame::~MainFrame()
         pConfig->Write(wxT("/Rig/DataBits"),        wxGetApp().m_strRigCtrlDatabits);
         pConfig->Write(wxT("/Rig/StopBits"),        wxGetApp().m_strRigCtrlStopbits);
         pConfig->Write(wxT("/Rig/Parity"),          wxGetApp().m_strRigCtrlParity);
-
     }
+    m_togRxID->Disconnect( wxEVT_UPDATE_UI, wxUpdateUIEventHandler( MainFrame::OnTogBtnRxIDUI ), NULL, this );
+    m_togTxID->Disconnect( wxEVT_UPDATE_UI, wxUpdateUIEventHandler( MainFrame::OnTogBtnTxIDUI ), NULL, this );
+    m_togBtnOnOff->Disconnect( wxEVT_UPDATE_UI, wxUpdateUIEventHandler( MainFrame::OnTogBtnOnOffUI), NULL, this );
+    m_togBtnSplit->Disconnect( wxEVT_UPDATE_UI, wxUpdateUIEventHandler( MainFrame::OnTogBtnSplitClickUI), NULL, this );
+    m_togBtnAnalog->Disconnect( wxEVT_UPDATE_UI, wxUpdateUIEventHandler( MainFrame::OnTogBtnAnalogClickUI), NULL, this );
+    m_togBtnALC->Disconnect( wxEVT_UPDATE_UI, wxUpdateUIEventHandler( MainFrame::OnTogBtnALCClickUI), NULL, this );
+    m_btnTogTX->Disconnect( wxEVT_UPDATE_UI, wxUpdateUIEventHandler( MainFrame::OnTogBtnTXClickUI), NULL, this );
 #ifdef USE_TIMER
     if (m_plotTimer.IsRunning())
     {
@@ -383,16 +407,97 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
 {
     if((!m_TxRunning) || (!m_RxRunning))
     {
+        m_togBtnSplit->Enable();
+        m_togRxID->Enable();
+        m_togTxID->Enable();
+        m_togBtnAnalog->Enable();
+        m_togBtnALC->Enable();
+        m_btnTogTX->Enable();
+
+#ifdef USE_TIMER
+        m_plotTimer.Start(500, wxTIMER_CONTINUOUS);
+#endif
         startRxStream();
         startTxStream();
         m_togBtnOnOff->SetLabel(wxT("Stop"));
     }
     else
     {
+        m_togBtnSplit->Disable();
+        m_togRxID->Disable();
+        m_togTxID->Disable();
+        m_togBtnAnalog->Disable();
+        m_togBtnALC->Disable();
+        m_btnTogTX->Disable();
+#ifdef USE_TIMER
+        m_plotTimer.Stop();
+#endif
         stopRxStream();
         stopTxStream();
         m_togBtnOnOff->SetLabel(wxT("Start"));
     }
+}
+
+//-------------------------------------------------------------------------
+// OnTogBtnSplitClickUI()
+//-------------------------------------------------------------------------
+void MainFrame::OnTogBtnSplitClickUI(wxUpdateUIEvent& event)
+{
+    wxUnusedVar(event);
+//    event.Enable(false);
+}
+
+//-------------------------------------------------------------------------
+// OnTogBtnAnalogClickUI()
+//-------------------------------------------------------------------------
+void MainFrame::OnTogBtnAnalogClickUI(wxUpdateUIEvent& event)
+{
+    wxUnusedVar(event);
+//    event.Enable(false);
+}
+
+//-------------------------------------------------------------------------
+// OnTogBtnALCClickUI()
+//-------------------------------------------------------------------------
+void MainFrame::OnTogBtnALCClickUI(wxUpdateUIEvent& event)
+{
+    wxUnusedVar(event);
+//    event.Enable(false);
+}
+
+//-------------------------------------------------------------------------
+// OnTogBtnRxIDUI()
+//-------------------------------------------------------------------------
+void MainFrame::OnTogBtnRxIDUI(wxUpdateUIEvent& event)
+{
+//    event.Enable(false);
+}
+
+//-------------------------------------------------------------------------
+// OnTogBtnTxIDUI()
+//-------------------------------------------------------------------------
+void MainFrame::OnTogBtnTxIDUI(wxUpdateUIEvent& event)
+{
+    wxUnusedVar(event);
+//    event.Enable(false);
+}
+
+//-------------------------------------------------------------------------
+// OnTogBtnTXClickUI()
+//-------------------------------------------------------------------------
+void MainFrame::OnTogBtnTXClickUI(wxUpdateUIEvent& event)
+{
+    wxUnusedVar(event);
+//    event.Enable(false);
+}
+
+//-------------------------------------------------------------------------
+// OnTogBtnOnOffUI()
+//-------------------------------------------------------------------------
+void MainFrame::OnTogBtnOnOffUI(wxUpdateUIEvent& event)
+{
+    wxUnusedVar(event);
+//    event.Enable(true);
 }
 
 //-------------------------------------------------------------------------
@@ -405,26 +510,26 @@ void MainFrame::startRxStream()
         m_RxRunning = true;
         m_rxPa = new PortAudioWrap();
 
-        m_rxDevIn = m_rxPa->getDefaultInputDevice();                   // default input device
+        m_rxDevIn = m_rxPa->getDefaultInputDevice();                        // default input device
         if(m_rxDevIn == paNoDevice)
         {
             wxMessageBox(wxT("Rx Error: No default input device."), wxT("Error"), wxOK);
             return;
         }
         m_rxErr = m_rxPa->setInputDevice(m_rxDevIn);
-        m_rxErr = m_rxPa->setInputChannelCount(2);                           // stereo input
+        m_rxErr = m_rxPa->setInputChannelCount(2);                          // stereo input
         m_rxErr = m_rxPa->setInputSampleFormat(PA_SAMPLE_TYPE);
         m_rxErr = m_rxPa->setInputLatency(m_rxPa->getInputDefaultLowLatency());
         m_rxPa->setInputHostApiStreamInfo(NULL);
 
-        m_rxDevOut = m_rxPa->getDefaultOutputDevice();                 // default output device
+        m_rxDevOut = m_rxPa->getDefaultOutputDevice();                      // default output device
         if (m_rxDevOut == paNoDevice)
         {
             wxMessageBox(wxT("Rx Error: No default output device."), wxT("Error"), wxOK);
             return;
         }
         m_rxErr = m_rxPa->setOutputDevice(m_rxDevOut);
-        m_rxErr = m_rxPa->setOutputChannelCount(2);                           // stereo input
+        m_rxErr = m_rxPa->setOutputChannelCount(2);                         // stereo input
         m_rxErr = m_rxPa->setOutputSampleFormat(PA_SAMPLE_TYPE);
 
         m_rxErr = m_rxPa->setOutputLatency(m_rxPa->getOutputDefaultLowLatency());
@@ -461,6 +566,18 @@ void MainFrame::stopRxStream()
         m_rxPa->stop();
         m_rxPa->streamClose();
     }
+/*
+        if(m_rxPa->isActive())
+        {
+            m_rxPa->stop();
+            m_rxPa->streamClose();
+        }
+        if(m_rxPa->isOpen())
+        {
+            m_rxPa->streamClose();
+        }
+        m_TxRunning = false;
+*/
 }
 
 //-------------------------------------------------------------------------
@@ -485,26 +602,26 @@ void MainFrame::startTxStream()
         m_TxRunning = true;
         m_txPa = new PortAudioWrap();
 
-        m_txDevIn = m_txPa->getDefaultInputDevice();                   // default input device
+        m_txDevIn = m_txPa->getDefaultInputDevice();                        // default input device
         if(m_txDevIn == paNoDevice)
         {
             wxMessageBox(wxT("Tx Error: No default input device."), wxT("Error"), wxOK);
             return;
         }
         m_txErr = m_txPa->setInputDevice(m_txDevIn);
-        m_txErr = m_txPa->setInputChannelCount(2);                           // stereo input
+        m_txErr = m_txPa->setInputChannelCount(2);                          // stereo input
         m_txErr = m_txPa->setInputSampleFormat(PA_SAMPLE_TYPE);
         m_txErr = m_txPa->setInputLatency(m_txPa->getInputDefaultLowLatency());
         m_txPa->setInputHostApiStreamInfo(NULL);
 
-        m_txDevOut = m_txPa->getDefaultOutputDevice();                 // default output device
+        m_txDevOut = m_txPa->getDefaultOutputDevice();                      // default output device
         if (m_txDevOut == paNoDevice)
         {
             wxMessageBox(wxT("Tx Error: No default output device."), wxT("Error"), wxOK);
             return;
         }
         m_txErr = m_txPa->setOutputDevice(m_txDevOut);
-        m_txErr = m_txPa->setOutputChannelCount(2);                           // stereo input
+        m_txErr = m_txPa->setOutputChannelCount(2);                         // stereo input
         m_txErr = m_txPa->setOutputSampleFormat(PA_SAMPLE_TYPE);
 
         m_txErr = m_txPa->setOutputLatency(m_txPa->getOutputDefaultLowLatency());
@@ -541,6 +658,17 @@ void MainFrame::stopTxStream()
         m_txPa->stop();
         m_txPa->streamClose();
     }
+/*
+        if(m_txPa->isActive())
+        {
+            m_txPa->stop();
+        }
+        if(m_txPa->isOpen())
+        {
+            m_txPa->streamClose();
+        }
+        m_TxRunning = false;
+*/
 }
 
 //-------------------------------------------------------------------------
@@ -560,6 +688,7 @@ void MainFrame::abortTxStream()
 //-------------------------------------------------------------------------
 void MainFrame::OnOpen( wxCommandEvent& event )
 {
+    wxUnusedVar(event);
 }
 
 //-------------------------------------------------------------------------
@@ -567,6 +696,7 @@ void MainFrame::OnOpen( wxCommandEvent& event )
 //-------------------------------------------------------------------------
 void MainFrame::OnOpenUpdateUI( wxUpdateUIEvent& event )
 {
+    wxUnusedVar(event);
 //    wxMessageBox("Got Click!", "OnOpenUpdateUI", wxOK);
 //    event.Skip();
 }
@@ -576,8 +706,10 @@ void MainFrame::OnOpenUpdateUI( wxUpdateUIEvent& event )
 //-------------------------------------------------------------------------
 void MainFrame::OnSaveUpdateUI( wxUpdateUIEvent& event )
 {
+//    wxUnusedVar(event);
 //    wxMessageBox("Got Click!", "OnSaveUpdateUI", wxOK);
 //    event.Skip();
+    event.Enable(false);
 }
 
 //-------------------------------------------------------------------------
@@ -585,6 +717,17 @@ void MainFrame::OnSaveUpdateUI( wxUpdateUIEvent& event )
 //-------------------------------------------------------------------------
 void MainFrame::OnClose( wxCommandEvent& event )
 {
+    wxUnusedVar(event);
+
+    if(m_RxRunning)
+    {
+        stopRxStream();
+    }
+    if(m_TxRunning)
+    {
+        stopTxStream();
+    }
+
     if(m_sound != NULL)
     {
         if(m_sound->IsOk())
@@ -593,6 +736,7 @@ void MainFrame::OnClose( wxCommandEvent& event )
             m_sound = NULL;
         }
     }
+    Close();
 }
 
 //-------------------------------------------------------------------------
@@ -600,6 +744,8 @@ void MainFrame::OnClose( wxCommandEvent& event )
 //-------------------------------------------------------------------------
 void MainFrame::OnCloseUpdateUI( wxUpdateUIEvent& event )
 {
+//    wxUnusedVar(event);
+    event.Enable(false);
 }
 
 //-------------------------------------------------------------------------
@@ -607,6 +753,8 @@ void MainFrame::OnCloseUpdateUI( wxUpdateUIEvent& event )
 //-------------------------------------------------------------------------
 void MainFrame::OnExit( wxCommandEvent& event )
 {
+    //wxUnusedVar(event);
+    OnClose(event);
 //    wxMessageBox("Got Click!", "OnExit", wxOK);
 //    event.Skip();
 }
@@ -625,6 +773,8 @@ void MainFrame::OnCopy( wxCommandEvent& event )
 //-------------------------------------------------------------------------
 void MainFrame::OnCopyUpdateUI( wxUpdateUIEvent& event )
 {
+//    wxUnusedVar(event);
+    event.Enable(false);
 }
 
 //-------------------------------------------------------------------------
@@ -641,6 +791,8 @@ void MainFrame::OnCut( wxCommandEvent& event )
 //-------------------------------------------------------------------------
 void MainFrame::OnCutUpdateUI( wxUpdateUIEvent& event )
 {
+//    wxUnusedVar(event);
+    event.Enable(false);
 }
 
 //-------------------------------------------------------------------------
@@ -657,6 +809,8 @@ void MainFrame::OnPaste( wxCommandEvent& event )
 //-------------------------------------------------------------------------
 void MainFrame::OnPasteUpdateUI( wxUpdateUIEvent& event )
 {
+//    wxUnusedVar(event);
+    event.Enable(false);
 }
 
 //-------------------------------------------------------------------------
@@ -664,6 +818,7 @@ void MainFrame::OnPasteUpdateUI( wxUpdateUIEvent& event )
 //-------------------------------------------------------------------------
 void MainFrame::OnCaptureRxStream( wxCommandEvent& event )
 {
+    wxUnusedVar(event);
 }
 
 //-------------------------------------------------------------------------
@@ -671,6 +826,7 @@ void MainFrame::OnCaptureRxStream( wxCommandEvent& event )
 //-------------------------------------------------------------------------
 void MainFrame::OnCaptureTxStream( wxCommandEvent& event )
 {
+    wxUnusedVar(event);
 }
 
 //-------------------------------------------------------------------------
@@ -678,6 +834,7 @@ void MainFrame::OnCaptureTxStream( wxCommandEvent& event )
 //-------------------------------------------------------------------------
 void MainFrame::OnPlayAudioFile( wxCommandEvent& event )
 {
+    wxUnusedVar(event);
     if(m_sound != NULL)
     {
         if (wxMessageBox(wxT("Current content has not been saved! Proceed?"),wxT("Please confirm"), wxICON_QUESTION | wxYES_NO, this) == wxNO )
@@ -697,7 +854,7 @@ void MainFrame::OnPlayAudioFile( wxCommandEvent& event )
                                 wxFD_OPEN | wxFD_FILE_MUST_EXIST);
     if (openFileDialog.ShowModal() == wxID_CANCEL)
     {
-        return;     // the user changed idea...
+        return;     // the user changed their mind...
     }
     // proceed loading the file chosen by the user;
     m_sound->Play(openFileDialog.GetPath());
@@ -708,6 +865,7 @@ void MainFrame::OnPlayAudioFile( wxCommandEvent& event )
 //-------------------------------------------------------------------------
 void MainFrame::OnToolsAudio( wxCommandEvent& event )
 {
+    wxUnusedVar(event);
     int rv = 0;
     AudioDlg *dlg = new AudioDlg(NULL);
     rv = dlg->ShowModal();
@@ -723,6 +881,7 @@ void MainFrame::OnToolsAudio( wxCommandEvent& event )
 //-------------------------------------------------------------------------
 void MainFrame::OnToolsAudioUI( wxUpdateUIEvent& event )
 {
+    wxUnusedVar(event);
 }
 
 //-------------------------------------------------------------------------
@@ -730,6 +889,7 @@ void MainFrame::OnToolsAudioUI( wxUpdateUIEvent& event )
 //-------------------------------------------------------------------------
 void MainFrame::OnToolsComCfg( wxCommandEvent& event )
 {
+    wxUnusedVar(event);
     int rv = 0;
     ComPortsDlg *dlg = new ComPortsDlg(NULL);
     rv = dlg->ShowModal();
@@ -753,6 +913,7 @@ void MainFrame::OnToolsComCfgUI( wxUpdateUIEvent& event )
 //-------------------------------------------------------------------------
 void MainFrame::OnToolsOptions( wxCommandEvent& event )
 {
+    wxUnusedVar(event);
     int rv = 0;
     OptionsDlg *dlg = new OptionsDlg(NULL);
     rv = dlg->ShowModal();
@@ -768,6 +929,8 @@ void MainFrame::OnToolsOptions( wxCommandEvent& event )
 //-------------------------------------------------------------------------
 void MainFrame::OnToolsOptionsUI( wxUpdateUIEvent& event )
 {
+//    wxUnusedVar(event);
+    event.Enable(false);
 }
 
 //-------------------------------------------------------------------------
@@ -784,6 +947,8 @@ void MainFrame::OnHelpCheckUpdates( wxCommandEvent& event )
 //-------------------------------------------------------------------------
 void MainFrame::OnHelpCheckUpdatesUI( wxUpdateUIEvent& event )
 {
+//    wxUnusedVar(event);
+    event.Enable(false);
 }
 
 //-------------------------------------------------------------------------
@@ -791,7 +956,8 @@ void MainFrame::OnHelpCheckUpdatesUI( wxUpdateUIEvent& event )
 //-------------------------------------------------------------------------
 void MainFrame::OnHelpAbout( wxCommandEvent& event )
 {
-    int rv = 0;
+    wxUnusedVar(event);
+//    int rv = 0;
 //    AboutDlg *dlg = new AboutDlg(NULL);
 //    rv = dlg->ShowModal();
 //    if(rv == wxID_OK)
@@ -886,6 +1052,7 @@ int MainFrame::rxCallback(
 }
 
 //-------------------------------------------------------------------------
+
 // txCallback()
 //-------------------------------------------------------------------------
 int MainFrame::txCallback(
@@ -996,8 +1163,8 @@ void MainFrame::per_frame_rx_processing(
         // compute rx spectrum & get demod stats, and update GUI plot data
         fdmdv_get_rx_spectrum(m_pFDMDV_state, rx_spec, rx_fdm, nin_prev);
         fdmdv_get_demod_stats(m_pFDMDV_state, &stats);
-        averageData(rx_spec);
-        //m_panelWaterfall;
+//        averageData(rx_spec);
+        //m_panelWaterfall->;
         //m_panelScalar;
 //        m_panelScatter->add_new_samples(stats.rx_symbols);
 //        aTimingEst->add_new_sample(stats.rx_timing);
