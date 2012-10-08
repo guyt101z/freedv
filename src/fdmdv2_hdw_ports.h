@@ -26,6 +26,7 @@
 
 #include <string.h>
 #include "wx/wx.h"
+#include <wx/dynarray.h>
 #include "fdmdv2_main.h"
 
 enum
@@ -67,18 +68,33 @@ enum
     DEVICE_TYPE_UNKNOWN
 };
 
-class PortHardware
+class HdwPort;
+
+WX_DECLARE_OBJARRAY(HdwPort, ArrayOfPorts);
+
+//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
+// Class PortList
+//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
+class HdwPort
 {
-private:
-    int count;
-    int device_type;
-    int device_emulation;
+    public:
+        HdwPort();
+        ~HdwPort();
 
-protected:
+    protected:
+        wxString    m_name;
 
-public:
-    PortHardware();
-    ~PortHardware();
+    private:
+        int     m_device_type;
+        int     m_device_emulation;
+
+        void    setType(int portType);
+        int     getList();
+        int     getSerialPorts();
+        int     getUSBPorts();
+        int     getVirtualPorts();
+        int     getParallelPorts();
+        int     getIEEE1394Ports();
 };
 
 

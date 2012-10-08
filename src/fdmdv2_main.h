@@ -45,7 +45,9 @@
 #include "sndfile.h"
 #include "portaudio.h"
 
-#define USE_TIMER 1
+#define _USE_TIMER          1
+#define _DUMMY_DATA         1
+//#define _AUDIO_PASSTHROUGH  1
 
 enum {
         ID_START = wxID_HIGHEST,
@@ -57,6 +59,12 @@ enum {
 
 #define EXCHANGE_DATA_IN    0
 #define EXCHANGE_DATA_OUT   1
+
+typedef struct
+{
+    float in48k[FDMDV_OS_TAPS + N48];
+    float in8k[MEM8 + N8];
+} paCallBackData;
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 // Class MainApp
@@ -123,35 +131,27 @@ class MainFrame : public TopFrame
         MainFrame(wxWindow *parent);
         virtual ~MainFrame();
 
-        PlotPanel*      m_panelDefaultA;
-        PlotSpectrum*   m_panelSpectrum;
-        PlotWaterfall*  m_panelWaterfall;
-        PlotScatter*    m_panelScatter;
-        PlotScalar*     m_panelScalar;
-        bool            m_SquelchActive;
-        bool            m_RxRunning;
-        bool            m_TxRunning;
-        CODEC2          *m_RXCodec2;
-        CODEC2          *m_TXCodec2;
-        PortAudioWrap   *m_rxPa;
-        PortAudioWrap   *m_txPa;
-        PaDeviceIndex   m_rxDevIn;
-        PaDeviceIndex   m_rxDevOut;
-        PaDeviceIndex   m_txDevIn;
-        PaDeviceIndex   m_txDevOut;
-        PaError         m_rxErr;
-        PaError         m_txErr;
-        wxSound         *m_sound;
-        struct FDMDV    *m_pFDMDV_state;
-        wxTimer         m_plotTimer;
-
-//        wxToggleButton* m_togRxID;
-//        wxToggleButton* m_togTxID;
-//        wxToggleButton* m_togBtnOnOff;
-//        wxToggleButton* m_togBtnSplit;
-//        wxToggleButton* m_togBtnAnalog;
-//        wxToggleButton* m_togBtnALC;
-//        wxToggleButton* m_btnTogTX;
+        PlotPanel*              m_panelDefaultA;
+        PlotSpectrum*           m_panelSpectrum;
+        PlotWaterfall*          m_panelWaterfall;
+        PlotScatter*            m_panelScatter;
+        PlotScalar*             m_panelScalar;
+        bool                    m_SquelchActive;
+        bool                    m_RxRunning;
+        bool                    m_TxRunning;
+        FDMDV                   *m_fdmdv2;
+        PortAudioWrap           *m_rxPa;
+        PortAudioWrap           *m_txPa;
+        PaDeviceIndex           m_rxDevIn;
+        PaDeviceIndex           m_rxDevOut;
+        PaDeviceIndex           m_txDevIn;
+        PaDeviceIndex           m_txDevOut;
+        PaError                 m_rxErr;
+        PaError                 m_txErr;
+        wxSound                 *m_sound;
+#ifdef _USE_TIMER
+        wxTimer                 m_plotTimer;
+#endif
 
         static int rxCallback(
                                 const void *inBuffer,
@@ -161,6 +161,7 @@ class MainFrame : public TopFrame
                                 PaStreamCallbackFlags statusFlags,
                                 void *userData
                              );
+
         static int txCallback(
                                 const void *inBuffer,
                                 void *outBuffer,
@@ -170,7 +171,7 @@ class MainFrame : public TopFrame
                                 void *userData
                              );
 
-        void per_frame_rx_processing(
+        static void per_frame_rx_processing(
                                         short   output_buf[],  // output buf of decoded speech samples
                                         int     *n_output_buf, // how many samples currently in output_buf[]
                                         int     codec_bits[],  // current frame of bits for decoder

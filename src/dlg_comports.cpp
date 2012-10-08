@@ -8,18 +8,21 @@
 //                  components of this project)
 //==========================================================================
 #include "dlg_comports.h"
+#include "fdmdv2_hdw_ports.h"
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 // Class ComPortsDlg
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
-ComPortsDlg::ComPortsDlg( wxWindow* parent ) : DlgComPorts( parent )
+ComPortsDlg::ComPortsDlg(wxWindow* parent) : DlgComPorts(parent)
 {
+//    m_serialports = HdwPortList();
+//    m_serialports.setType(PORT_TYPE_SERIAL);
 }
 
 //-------------------------------------------------------------------------
 // OnListItemSelected()
 //-------------------------------------------------------------------------
-void ComPortsDlg::OnListItemSelected( wxListEvent& event )
+void ComPortsDlg::OnListItemSelected(wxListEvent& event)
 {
     // TODO: Implement OnListItemSelected
 }
@@ -61,7 +64,7 @@ void ComPortsDlg::ExchangeData(int inout)
 //-------------------------------------------------------------------------
 // OnCancel()
 //-------------------------------------------------------------------------
-void ComPortsDlg::OnCancel( wxCommandEvent& event )
+void ComPortsDlg::OnCancel(wxCommandEvent& event)
 {
     this->EndModal(wxID_CANCEL);
 }
@@ -69,7 +72,7 @@ void ComPortsDlg::OnCancel( wxCommandEvent& event )
 //-------------------------------------------------------------------------
 // OnOK()
 //-------------------------------------------------------------------------
-void ComPortsDlg::OnOK( wxCommandEvent& event )
+void ComPortsDlg::OnOK(wxCommandEvent& event)
 {
     this->EndModal(wxID_OK);
 }
@@ -77,7 +80,7 @@ void ComPortsDlg::OnOK( wxCommandEvent& event )
 //-------------------------------------------------------------------------
 // OnApply()
 //-------------------------------------------------------------------------
-void ComPortsDlg::OnApply( wxCommandEvent& event )
+void ComPortsDlg::OnApply(wxCommandEvent& event)
 {
     ExchangeData(EXCHANGE_DATA_OUT);
 }
@@ -85,7 +88,7 @@ void ComPortsDlg::OnApply( wxCommandEvent& event )
 //-------------------------------------------------------------------------
 // OnClose()
 //-------------------------------------------------------------------------
-void ComPortsDlg::OnClose( wxCloseEvent& event )
+void ComPortsDlg::OnClose(wxCloseEvent& event)
 {
     this->EndModal(wxID_OK);
 }
@@ -93,7 +96,7 @@ void ComPortsDlg::OnClose( wxCloseEvent& event )
 //-------------------------------------------------------------------------
 // OnInitDialog()
 //-------------------------------------------------------------------------
-void ComPortsDlg::OnInitDialog( wxInitDialogEvent& event )
+void ComPortsDlg::OnInitDialog(wxInitDialogEvent& event)
 {
     ExchangeData(EXCHANGE_DATA_IN);
 //    populateAudioInfo();

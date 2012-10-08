@@ -20,17 +20,18 @@ class ComPortsDlg : public DlgComPorts
 {
     public:
         /** Constructor */
-        ComPortsDlg( wxWindow* parent );
-        void ExchangeData(int inout);
+        ComPortsDlg(wxWindow* parent);
+        void    ExchangeData(int inout);
+        //ArrayOfPorts m_serialports;
 
     protected:
         // Handlers for events.
-        void OnListItemSelected( wxListEvent& event );
-        void OnCancel( wxCommandEvent& event );
-        void OnOK( wxCommandEvent& event );
-        void OnClose( wxCloseEvent& event );
-        void OnInitDialog( wxInitDialogEvent& event );
-        void OnApply( wxCommandEvent& event );
+        void    OnListItemSelected(wxListEvent& event);
+        void    OnCancel(wxCommandEvent& event);
+        void    OnOK(wxCommandEvent& event);
+        void    OnClose(wxCloseEvent& event);
+        void    OnInitDialog(wxInitDialogEvent& event);
+        void    OnApply(wxCommandEvent& event);
 
 };
 

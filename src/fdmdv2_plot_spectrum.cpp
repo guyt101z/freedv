@@ -96,7 +96,7 @@ void PlotSpectrum::draw(wxAutoBufferedPaintDC& pDC)
     {
         m_newdata = false;
 //        plotPixelData(dc);
-#ifdef USE_TIMER
+#ifdef _USE_TIMER
         int t = m_rPlot.GetTop();
         int l = m_rPlot.GetLeft();
         int h = m_rPlot.GetHeight();
