@@ -103,7 +103,6 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
 
     tools->Append(m_menuItemToolsConfigDelete);
 
-
     // Add Waterfall Plot window
     m_panelWaterfall = new PlotWaterfall((wxFrame*) m_auiNbookCtrl);
     m_auiNbookCtrl->AddPage(m_panelWaterfall, _("Waterfall"), true, wxNullBitmap);
@@ -119,8 +118,8 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
 //    m_auiNbookCtrl->AddPage(m_panelWaterfall, _("Scalar"), true, wxNullBitmap);
 
     // Add generic plot window
-    m_panelDefaultA = new PlotPanel((wxFrame*) m_auiNbookCtrl);
-    m_auiNbookCtrl->AddPage(m_panelDefaultA, _("Test A"), true, wxNullBitmap);
+//    m_panelDefaultA = new PlotPanel((wxFrame*) m_auiNbookCtrl);
+//    m_auiNbookCtrl->AddPage(m_panelDefaultA, _("Test A"), true, wxNullBitmap);
 
     wxConfigBase *pConfig = wxConfigBase::Get();
 
@@ -171,6 +170,8 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
 //    m_plotTimer.Start(500, wxTIMER_CONTINUOUS);
 //    m_panelWaterfall->m_newdata = true;
     m_panelWaterfall->Refresh();
+#else
+    Connect(wxEVT_IDLE, wxIdleEventHandler(MainFrame::OnIdle), NULL, this);
 #endif //_USE_TIMER
 }
 
@@ -213,17 +214,22 @@ MainFrame::~MainFrame()
     m_togBtnAnalog->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnAnalogClickUI), NULL, this);
     m_togBtnALC->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnALCClickUI), NULL, this);
     m_btnTogTX->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnTXClickUI), NULL, this);
+
 #ifdef _USE_TIMER
     if(m_plotTimer.IsRunning())
     {
         m_plotTimer.Stop();
         Unbind(wxEVT_TIMER, &MainFrame::OnTimer, this);
     }
+#else
+    Disconnect(wxEVT_IDLE, wxIdleEventHandler(MainFrame::OnIdle), NULL, this);
 #endif //_USE_TIMER
+
     delete wxConfigBase::Set((wxConfigBase *) NULL);
 }
 
 #ifdef _USE_TIMER
+
 //----------------------------------------------------------------
 // OnTimer()
 //----------------------------------------------------------------
@@ -236,6 +242,24 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
 //    m_panelDefaultA->m_newdata = true;
 //    m_panelDefaultA->Refresh();
 }
+
+#else
+
+//----------------------------------------------------------------
+// OnIdle()
+//----------------------------------------------------------------
+void MainFrame::OnIdle(wxIdleEvent& event)
+{
+    if(m_panelWaterfall->m_newdata)
+    {
+        m_panelWaterfall->Refresh();
+    }
+    if(m_panelSpectrum->m_newdata)
+    {
+        m_panelSpectrum->Refresh();
+    }
+}
+
 #endif // _USE_TIMER
 
 //-------------------------------------------------------------------------
@@ -330,12 +354,10 @@ void MainFrame::OnCheckSQClick(wxCommandEvent& event)
     if(!m_SquelchActive)
     {
         m_SquelchActive = true;
-        //wxMessageBox(wxT("Squelch On!"), wxT("Squelch On"), wxOK);
     }
     else
     {
         m_SquelchActive = false;
-        //wxMessageBox(wxT("Squelch Off!"), wxT("Squelch Off"), wxOK);
     }
 }
 
@@ -354,7 +376,6 @@ void MainFrame::OnTogBtnTXClick(wxCommandEvent& event)
 //-------------------------------------------------------------------------
 void MainFrame::OnTogBtnRxID(wxCommandEvent& event)
 {
-//    wxMessageBox(wxT("Got Click!"), wxT("OnTogBtnRxID"), wxOK);
     event.Skip();
 }
 
@@ -363,7 +384,6 @@ void MainFrame::OnTogBtnRxID(wxCommandEvent& event)
 //-------------------------------------------------------------------------
 void MainFrame::OnTogBtnTxID(wxCommandEvent& event)
 {
-//    wxMessageBox(wxT("Got Click!"), wxT("OnTogBtnTxID"), wxOK);
     event.Skip();
 }
 
@@ -372,7 +392,6 @@ void MainFrame::OnTogBtnTxID(wxCommandEvent& event)
 //-------------------------------------------------------------------------
 void MainFrame::OnTogBtnSplitClick(wxCommandEvent& event)
 {
-//    wxMessageBox(wxT("Got Click!"), wxT("OnTogBtnSplitClick"), wxOK);
     event.Skip();
 }
 
@@ -381,7 +400,6 @@ void MainFrame::OnTogBtnSplitClick(wxCommandEvent& event)
 //-------------------------------------------------------------------------
 void MainFrame::OnTogBtnAnalogClick (wxCommandEvent& event)
 {
-//    wxMessageBox(wxT("Got Click!"), wxT("OnTogBtnAnalogClick"), wxOK);
     event.Skip();
 }
 
@@ -392,45 +410,6 @@ void MainFrame::OnTogBtnALCClick(wxCommandEvent& event)
 {
 //    wxMessageBox(wxT("Got Click!"), wxT("OnTogBtnALCClick"), wxOK);
     event.Skip();
-}
-
-
-//-------------------------------------------------------------------------
-// OnTogBtnOnOff()
-//-------------------------------------------------------------------------
-void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
-{
-    if((!m_TxRunning) || (!m_RxRunning))
-    {
-        m_togBtnSplit->Enable();
-        m_togRxID->Enable();
-        m_togTxID->Enable();
-        m_togBtnAnalog->Enable();
-        m_togBtnALC->Enable();
-        m_btnTogTX->Enable();
-
-#ifdef _USE_TIMER
-        m_plotTimer.Start(500, wxTIMER_CONTINUOUS);
-#endif // _USE_TIMER
-        startRxStream();
-        startTxStream();
-        m_togBtnOnOff->SetLabel(wxT("Stop"));
-    }
-    else
-    {
-        m_togBtnSplit->Disable();
-        m_togRxID->Disable();
-        m_togTxID->Disable();
-        m_togBtnAnalog->Disable();
-        m_togBtnALC->Disable();
-        m_btnTogTX->Disable();
-#ifdef _USE_TIMER
-        m_plotTimer.Stop();
-#endif // _USE_TIMER
-        stopRxStream();
-        stopTxStream();
-        m_togBtnOnOff->SetLabel(wxT("Start"));
-    }
 }
 
 //-------------------------------------------------------------------------
@@ -448,7 +427,6 @@ void MainFrame::OnTogBtnSplitClickUI(wxUpdateUIEvent& event)
 void MainFrame::OnTogBtnAnalogClickUI(wxUpdateUIEvent& event)
 {
     wxUnusedVar(event);
-//    event.Enable(false);
 }
 
 //-------------------------------------------------------------------------
@@ -457,7 +435,6 @@ void MainFrame::OnTogBtnAnalogClickUI(wxUpdateUIEvent& event)
 void MainFrame::OnTogBtnALCClickUI(wxUpdateUIEvent& event)
 {
     wxUnusedVar(event);
-//    event.Enable(false);
 }
 
 //-------------------------------------------------------------------------
@@ -465,7 +442,7 @@ void MainFrame::OnTogBtnALCClickUI(wxUpdateUIEvent& event)
 //-------------------------------------------------------------------------
 void MainFrame::OnTogBtnRxIDUI(wxUpdateUIEvent& event)
 {
-//    event.Enable(false);
+    wxUnusedVar(event);
 }
 
 //-------------------------------------------------------------------------
@@ -474,240 +451,12 @@ void MainFrame::OnTogBtnRxIDUI(wxUpdateUIEvent& event)
 void MainFrame::OnTogBtnTxIDUI(wxUpdateUIEvent& event)
 {
     wxUnusedVar(event);
-//    event.Enable(false);
 }
 
 //-------------------------------------------------------------------------
 // OnTogBtnTXClickUI()
 //-------------------------------------------------------------------------
 void MainFrame::OnTogBtnTXClickUI(wxUpdateUIEvent& event)
-{
-    wxUnusedVar(event);
-//    event.Enable(false);
-}
-
-//-------------------------------------------------------------------------
-// OnTogBtnOnOffUI()
-//-------------------------------------------------------------------------
-void MainFrame::OnTogBtnOnOffUI(wxUpdateUIEvent& event)
-{
-    wxUnusedVar(event);
-//    event.Enable(true);
-}
-
-//-------------------------------------------------------------------------
-// startRxStream()
-//-------------------------------------------------------------------------
-void MainFrame::startRxStream()
-{
-    if(!m_RxRunning)
-    {
-        m_RxRunning = true;
-        m_rxPa = new PortAudioWrap();
-
-#ifdef _DUMMY_DATA
-        for(int i = 0; i < FDMDV_NSPEC; i++)
-        {
-            m_rxPa->m_av_mag[i] = sin(((double)i / M_PI)) * 100.0;
-        }
-#else
-        for(int i = 0; i < FDMDV_NSPEC; i++)
-        {
-            m_rxPa->m_av_mag[i] = -40.0;
-        }
-#endif // _DUMMY_DATA
-
-//        m_fdmdv2 = fdmdv_create();
-//        m_RXCodec2 = codec2_create(CODEC2_MODE_1400);
-        //output_buf = (short*)malloc(2*sizeof(short)*codec2_samples_per_frame(codec2));
-/*
-        for(int i = 0; i < MEM8; i++)
-        {
-            cbData.in8k[i] = 0.0;
-        }
-        for(int i = 0; i < FDMDV_OS_TAPS; i++)
-        {
-            cbData.in48k[i] = 0.0;
-        }
-*/
-        m_rxDevIn = m_rxPa->getDefaultInputDevice();                        // default input device
-        if(m_rxDevIn == paNoDevice)
-        {
-            wxMessageBox(wxT("Rx Error: No default input device."), wxT("Error"), wxOK);
-            return;
-        }
-        m_rxErr = m_rxPa->setInputDevice(m_rxDevIn);
-        m_rxErr = m_rxPa->setInputChannelCount(2);                          // stereo input
-        m_rxErr = m_rxPa->setInputSampleFormat(PA_SAMPLE_TYPE);
-        m_rxErr = m_rxPa->setInputLatency(m_rxPa->getInputDefaultLowLatency());
-        m_rxPa->setInputHostApiStreamInfo(NULL);
-
-        m_rxDevOut = m_rxPa->getDefaultOutputDevice();                      // default output device
-        if (m_rxDevOut == paNoDevice)
-        {
-            wxMessageBox(wxT("Rx Error: No default output device."), wxT("Error"), wxOK);
-            return;
-        }
-        m_rxErr = m_rxPa->setOutputDevice(m_rxDevOut);
-        m_rxErr = m_rxPa->setOutputChannelCount(2);                         // stereo input
-        m_rxErr = m_rxPa->setOutputSampleFormat(PA_SAMPLE_TYPE);
-
-        m_rxErr = m_rxPa->setOutputLatency(m_rxPa->getOutputDefaultLowLatency());
-        m_rxPa->setOutputHostApiStreamInfo(NULL);
-
-        m_rxErr = m_rxPa->setFramesPerBuffer(FRAMES_PER_BUFFER);
-        m_rxErr = m_rxPa->setSampleRate(SAMPLE_RATE);
-        m_rxErr = m_rxPa->setStreamFlags(0);
-//        m_rxCB = rxCallback;
-        m_rxErr = m_rxPa->setCallback(rxCallback);
-        m_rxErr = m_rxPa->streamOpen();
-
-        if(m_rxErr != paNoError)
-        {
-            wxMessageBox(wxT("Rx Stream Open/Setup error."), wxT("Error"), wxOK);
-            return;
-        }
-        m_rxErr = m_rxPa->streamStart();
-        if(m_rxErr != paNoError)
-        {
-            wxMessageBox(wxT("Rx Stream Start Error."), wxT("Error"), wxOK);
-            return;
-        }
-    }
-}
-
-//-------------------------------------------------------------------------
-// stopRxStream()
-//-------------------------------------------------------------------------
-void MainFrame::stopRxStream()
-{
-    if(m_RxRunning)
-    {
-        m_RxRunning = false;
-        m_rxPa->stop();
-        m_rxPa->streamClose();
-    }
-/*
-        if(m_rxPa->isActive())
-        {
-            m_rxPa->stop();
-            m_rxPa->streamClose();
-        }
-        if(m_rxPa->isOpen())
-        {
-            m_rxPa->streamClose();
-        }
-        m_TxRunning = false;
-*/
-}
-
-//-------------------------------------------------------------------------
-// abortRxStream()
-//-------------------------------------------------------------------------
-void MainFrame::abortRxStream()
-{
-    if(m_RxRunning)
-    {
-        m_RxRunning = false;
-        m_rxPa->abort();
-    }
-}
-
-//-------------------------------------------------------------------------
-// startTxStream()
-//-------------------------------------------------------------------------
-void MainFrame::startTxStream()
-{
-    if(!m_TxRunning)
-    {
-        m_TxRunning = true;
-        m_txPa = new PortAudioWrap();
-
-        m_txDevIn = m_txPa->getDefaultInputDevice();                        // default input device
-        if(m_txDevIn == paNoDevice)
-        {
-            wxMessageBox(wxT("Tx Error: No default input device."), wxT("Error"), wxOK);
-            return;
-        }
-        m_txErr = m_txPa->setInputDevice(m_txDevIn);
-        m_txErr = m_txPa->setInputChannelCount(2);                          // stereo input
-        m_txErr = m_txPa->setInputSampleFormat(PA_SAMPLE_TYPE);
-        m_txErr = m_txPa->setInputLatency(m_txPa->getInputDefaultLowLatency());
-        m_txPa->setInputHostApiStreamInfo(NULL);
-
-        m_txDevOut = m_txPa->getDefaultOutputDevice();                      // default output device
-        if (m_txDevOut == paNoDevice)
-        {
-            wxMessageBox(wxT("Tx Error: No default output device."), wxT("Error"), wxOK);
-            return;
-        }
-        m_txErr = m_txPa->setOutputDevice(m_txDevOut);
-        m_txErr = m_txPa->setOutputChannelCount(2);                         // stereo input
-        m_txErr = m_txPa->setOutputSampleFormat(PA_SAMPLE_TYPE);
-
-        m_txErr = m_txPa->setOutputLatency(m_txPa->getOutputDefaultLowLatency());
-        m_txPa->setOutputHostApiStreamInfo(NULL);
-
-        m_txErr = m_txPa->setFramesPerBuffer(FRAMES_PER_BUFFER);
-        m_txErr = m_txPa->setSampleRate(SAMPLE_RATE);
-        m_txErr = m_txPa->setStreamFlags(0);
-        m_txErr = m_txPa->setCallback(txCallback);
-        m_txErr = m_txPa->streamOpen();
-
-        if(m_txErr != paNoError)
-        {
-            wxMessageBox(wxT("Tx Stream Open/Setup error."), wxT("Error"), wxOK);
-            return;
-        }
-        m_txErr = m_txPa->streamStart();
-        if(m_txErr != paNoError)
-        {
-            wxMessageBox(wxT("Tx Stream Start Error."), wxT("Error"), wxOK);
-            return;
-        }
-    }
-}
-
-//-------------------------------------------------------------------------
-// stopTxStream()
-//-------------------------------------------------------------------------
-void MainFrame::stopTxStream()
-{
-    if(m_TxRunning)
-    {
-        m_TxRunning = false;
-        m_txPa->stop();
-        m_txPa->streamClose();
-    }
-/*
-        if(m_txPa->isActive())
-        {
-            m_txPa->stop();
-        }
-        if(m_txPa->isOpen())
-        {
-            m_txPa->streamClose();
-        }
-        m_TxRunning = false;
-*/
-}
-
-//-------------------------------------------------------------------------
-// abortTxStream()
-//-------------------------------------------------------------------------
-void MainFrame::abortTxStream()
-{
-    if(m_TxRunning)
-    {
-        m_TxRunning = false;
-        m_txPa->abort();
-    }
-}
-
-//-------------------------------------------------------------------------
-// OnOpen()
-//-------------------------------------------------------------------------
-void MainFrame::OnOpen(wxCommandEvent& event)
 {
     wxUnusedVar(event);
 }
@@ -718,8 +467,6 @@ void MainFrame::OnOpen(wxCommandEvent& event)
 void MainFrame::OnOpenUpdateUI(wxUpdateUIEvent& event)
 {
     wxUnusedVar(event);
-//    wxMessageBox("Got Click!", "OnOpenUpdateUI", wxOK);
-//    event.Skip();
 }
 
 //-------------------------------------------------------------------------
@@ -728,8 +475,6 @@ void MainFrame::OnOpenUpdateUI(wxUpdateUIEvent& event)
 void MainFrame::OnSaveUpdateUI(wxUpdateUIEvent& event)
 {
 //    wxUnusedVar(event);
-//    wxMessageBox("Got Click!", "OnSaveUpdateUI", wxOK);
-//    event.Skip();
     event.Enable(false);
 }
 
@@ -765,7 +510,6 @@ void MainFrame::OnClose(wxCommandEvent& event)
 //-------------------------------------------------------------------------
 void MainFrame::OnCloseUpdateUI(wxUpdateUIEvent& event)
 {
-//    wxUnusedVar(event);
     event.Enable(false);
 }
 
@@ -774,10 +518,7 @@ void MainFrame::OnCloseUpdateUI(wxUpdateUIEvent& event)
 //-------------------------------------------------------------------------
 void MainFrame::OnExit(wxCommandEvent& event)
 {
-    //wxUnusedVar(event);
     OnClose(event);
-//    wxMessageBox("Got Click!", "OnExit", wxOK);
-//    event.Skip();
 }
 
 //-------------------------------------------------------------------------
@@ -785,7 +526,6 @@ void MainFrame::OnExit(wxCommandEvent& event)
 //-------------------------------------------------------------------------
 void MainFrame::OnCopy(wxCommandEvent& event)
 {
-//    wxMessageBox("Got Click!", "OnCopy", wxOK);
     event.Skip();
 }
 
@@ -794,7 +534,6 @@ void MainFrame::OnCopy(wxCommandEvent& event)
 //-------------------------------------------------------------------------
 void MainFrame::OnCopyUpdateUI(wxUpdateUIEvent& event)
 {
-//    wxUnusedVar(event);
     event.Enable(false);
 }
 
@@ -803,7 +542,6 @@ void MainFrame::OnCopyUpdateUI(wxUpdateUIEvent& event)
 //-------------------------------------------------------------------------
 void MainFrame::OnCut(wxCommandEvent& event)
 {
-//    wxMessageBox("Got Click!", "OnCut", wxOK);
     event.Skip();
 }
 
@@ -821,7 +559,6 @@ void MainFrame::OnCutUpdateUI(wxUpdateUIEvent& event)
 //-------------------------------------------------------------------------
 void MainFrame::OnPaste(wxCommandEvent& event)
 {
-//    wxMessageBox("Got Click!", "OnPaste", wxOK);
     event.Skip();
 }
 
@@ -830,7 +567,6 @@ void MainFrame::OnPaste(wxCommandEvent& event)
 //-------------------------------------------------------------------------
 void MainFrame::OnPasteUpdateUI(wxUpdateUIEvent& event)
 {
-//    wxUnusedVar(event);
     event.Enable(false);
 }
 
@@ -968,7 +704,6 @@ void MainFrame::OnHelpCheckUpdates(wxCommandEvent& event)
 //-------------------------------------------------------------------------
 void MainFrame::OnHelpCheckUpdatesUI(wxUpdateUIEvent& event)
 {
-//    wxUnusedVar(event);
     event.Enable(false);
 }
 
@@ -1008,36 +743,321 @@ wxString MainFrame::LoadUserImage(wxImage& image)
 }
 
 //-------------------------------------------------------------------------
-// txCallback()
+// OnTogBtnOnOffUI()
 //-------------------------------------------------------------------------
-int MainFrame::txCallback(
-                            const void *inBuffer,
-                            void *outBuffer,
-                            unsigned long framesPerBuffer,
-                            const PaStreamCallbackTimeInfo *outTime,
-                            PaStreamCallbackFlags statusFlags,
-                            void *userData
-                        )
+void MainFrame::OnTogBtnOnOffUI(wxUpdateUIEvent& event)
 {
-    float *out = (float *) outBuffer;
-    float *in  = (float *) inBuffer;
-    float leftIn;
-    float rightIn;
-    unsigned int i;
+    wxUnusedVar(event);
+}
 
-    if(inBuffer == NULL)
+//-------------------------------------------------------------------------
+// OnTogBtnOnOff()
+//-------------------------------------------------------------------------
+void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
+{
+    if((!m_TxRunning) || (!m_RxRunning))
     {
-        return 0;
+        m_togBtnSplit->Enable();
+        m_togRxID->Enable();
+        m_togTxID->Enable();
+        m_togBtnAnalog->Enable();
+        m_togBtnALC->Enable();
+        m_btnTogTX->Enable();
+
+#ifdef _USE_TIMER
+        m_plotTimer.Start(500, wxTIMER_CONTINUOUS);
+#endif // _USE_TIMER
+        startRxStream();
+//        startTxStream();
+        m_togBtnOnOff->SetLabel(wxT("Stop"));
     }
-    // Read input buffer, process data, and fill output buffer.
-    for(i = 0; i < framesPerBuffer; i++)
+    else
     {
-        leftIn  = *in++;                            // Get interleaved samples from input buffer.
-        rightIn = *in++;
-        *out++  = leftIn * rightIn;                 // ring modulation
-        *out++  = 0.5f * (leftIn + rightIn);        // mixing
+        m_togBtnSplit->Disable();
+        m_togRxID->Disable();
+        m_togTxID->Disable();
+        m_togBtnAnalog->Disable();
+        m_togBtnALC->Disable();
+        m_btnTogTX->Disable();
+#ifdef _USE_TIMER
+        m_plotTimer.Stop();
+#endif // _USE_TIMER
+        stopRxStream();
+//        stopTxStream();
+        m_togBtnOnOff->SetLabel(wxT("Start"));
     }
-    return paContinue;                              // 0;
+}
+
+//----------------------------------------------------------
+// Audio stream processing loop states (globals).
+//----------------------------------------------------------
+/*
+float  Ts = 0.0;
+short  input_buf[2*FDMDV_NOM_SAMPLES_PER_FRAME];
+short *output_buf;
+int    n_input_buf = 0;
+int    nin = FDMDV_NOM_SAMPLES_PER_FRAME;
+int    n_output_buf = 0;
+int    codec_bits[2*FDMDV_BITS_PER_FRAME];
+int    state = 0;
+*/
+
+int             g_nRxIn = FDMDV_NOM_SAMPLES_PER_FRAME;
+float           g_Ts = 0.0;
+
+short           g_RxInBuf[2 * FDMDV_NOM_SAMPLES_PER_FRAME];
+short           *g_pRxOutBuf;
+int             g_nInputBuf = 0;
+
+short           g_TxInBuf[2 * FDMDV_NOM_SAMPLES_PER_FRAME];
+short           *g_pTxOutBuf;
+int             g_nOutputBuf = 0;
+
+
+int             g_CodecBits[2 * FDMDV_BITS_PER_FRAME];
+int             g_State = 0;
+
+float           g_avmag[FDMDV_NSPEC];
+
+//----------------------------------------------------------
+// Global Codec2 thingys.
+//----------------------------------------------------------
+struct CODEC2   *g_pRxCodec2;
+struct CODEC2   *g_pTxCodec2;
+struct FDMDV    *g_pRxFDMDV;
+struct FDMDV    *g_pTxFDMDV;
+
+//-------------------------------------------------------------------------
+// startRxStream()
+//-------------------------------------------------------------------------
+void MainFrame::startRxStream()
+{
+    if(!m_RxRunning)
+    {
+        m_RxRunning = true;
+        m_rxPa = new PortAudioWrap();
+
+#ifdef _DUMMY_DATA
+        for(int i = 0; i < FDMDV_NSPEC; i++)
+        {
+//            m_rxPa->m_av_mag[i] = sin(((double)i / M_PI)) * 100.0;
+            g_avmag[i] = sin(((double)i / M_PI)) * 100.0;
+        }
+#else
+        for(int i = 0; i < FDMDV_NSPEC; i++)
+        {
+//            m_rxPa->m_av_mag[i] = -40.0;
+            g_avmag[i] = -40.0;
+        }
+#endif // _DUMMY_DATA
+
+        g_pRxFDMDV  = fdmdv_create();
+        g_pRxCodec2 = codec2_create(CODEC2_MODE_1400);
+        g_pRxOutBuf = (short*)malloc(2 * sizeof(short) * codec2_samples_per_frame(g_pRxCodec2));
+
+        m_rxDevIn = m_rxPa->getDefaultInputDevice();                        // default input device
+        if(m_rxDevIn == paNoDevice)
+        {
+            wxMessageBox(wxT("Rx Error: No default input device."), wxT("Error"), wxOK);
+            return;
+        }
+        m_rxErr = m_rxPa->setInputDevice(m_rxDevIn);
+        m_rxErr = m_rxPa->setInputChannelCount(2);                          // stereo input
+        m_rxErr = m_rxPa->setInputSampleFormat(PA_SAMPLE_TYPE);
+        m_rxErr = m_rxPa->setInputLatency(m_rxPa->getInputDefaultLowLatency());
+        m_rxPa->setInputHostApiStreamInfo(NULL);
+
+        m_rxDevOut = m_rxPa->getDefaultOutputDevice();                      // default output device
+        if (m_rxDevOut == paNoDevice)
+        {
+            wxMessageBox(wxT("Rx Error: No default output device."), wxT("Error"), wxOK);
+            return;
+        }
+        m_rxErr = m_rxPa->setOutputDevice(m_rxDevOut);
+        m_rxErr = m_rxPa->setOutputChannelCount(2);                         // stereo input
+        m_rxErr = m_rxPa->setOutputSampleFormat(PA_SAMPLE_TYPE);
+
+        m_rxErr = m_rxPa->setOutputLatency(m_rxPa->getOutputDefaultLowLatency());
+        m_rxPa->setOutputHostApiStreamInfo(NULL);
+
+        m_rxErr = m_rxPa->setFramesPerBuffer(FRAMES_PER_BUFFER);
+        m_rxErr = m_rxPa->setSampleRate(SAMPLE_RATE);
+        m_rxErr = m_rxPa->setStreamFlags(0);
+
+        m_rxUserdata = new paCallBackData;
+        m_rxUserdata->pWFPanel = m_panelWaterfall;
+        m_rxUserdata->pSPPanel = m_panelSpectrum;
+
+        for(int i = 0; i < MEM8; i++)
+        {
+            m_rxUserdata->in8k[i] = 0.0;
+        }
+        for(int i = 0; i < FDMDV_OS_TAPS; i++)
+        {
+            m_rxUserdata->in48k[i] = 0.0;
+        }
+
+        m_rxPa->setUserData(m_rxUserdata);
+        m_rxErr = m_rxPa->setCallback(rxCallback);
+        m_rxErr = m_rxPa->streamOpen();
+
+        if(m_rxErr != paNoError)
+        {
+            wxMessageBox(wxT("Rx Stream Open/Setup error."), wxT("Error"), wxOK);
+            return;
+        }
+        m_rxErr = m_rxPa->streamStart();
+        if(m_rxErr != paNoError)
+        {
+            wxMessageBox(wxT("Rx Stream Start Error."), wxT("Error"), wxOK);
+            return;
+        }
+    }
+}
+
+//-------------------------------------------------------------------------
+// stopRxStream()
+//-------------------------------------------------------------------------
+void MainFrame::stopRxStream()
+{
+    if(m_RxRunning)
+    {
+        m_RxRunning = false;
+        m_rxPa->stop();
+        m_rxPa->streamClose();
+        fdmdv_destroy(g_pTxFDMDV);
+        codec2_destroy(g_pTxCodec2);
+//        delete g_RxInBuf;
+        delete m_rxUserdata;
+    }
+/*
+        if(m_rxPa->isActive())
+        {
+            m_rxPa->stop();
+            m_rxPa->streamClose();
+        }
+        if(m_rxPa->isOpen())
+        {
+            m_rxPa->streamClose();
+        }
+        m_TxRunning = false;
+*/
+}
+
+//-------------------------------------------------------------------------
+// abortRxStream()
+//-------------------------------------------------------------------------
+void MainFrame::abortRxStream()
+{
+    if(m_RxRunning)
+    {
+        m_RxRunning = false;
+        m_rxPa->abort();
+    }
+}
+
+//-------------------------------------------------------------------------
+// startTxStream()
+//-------------------------------------------------------------------------
+void MainFrame::startTxStream()
+{
+    if(!m_TxRunning)
+    {
+        m_TxRunning = true;
+        m_txPa = new PortAudioWrap();
+
+        m_txDevIn = m_txPa->getDefaultInputDevice();                        // default input device
+        if(m_txDevIn == paNoDevice)
+        {
+            wxMessageBox(wxT("Tx Error: No default input device."), wxT("Error"), wxOK);
+            return;
+        }
+
+        g_pTxFDMDV  = fdmdv_create();
+        g_pTxCodec2 = codec2_create(CODEC2_MODE_1400);
+        g_pTxOutBuf = (short*)malloc(2*sizeof(short)*codec2_samples_per_frame(g_pTxCodec2));
+
+        m_txErr = m_txPa->setInputDevice(m_txDevIn);
+        m_txErr = m_txPa->setInputChannelCount(2);                          // stereo input
+        m_txErr = m_txPa->setInputSampleFormat(PA_SAMPLE_TYPE);
+        m_txErr = m_txPa->setInputLatency(m_txPa->getInputDefaultLowLatency());
+        m_txPa->setInputHostApiStreamInfo(NULL);
+
+        m_txDevOut = m_txPa->getDefaultOutputDevice();                      // default output device
+        if (m_txDevOut == paNoDevice)
+        {
+            wxMessageBox(wxT("Tx Error: No default output device."), wxT("Error"), wxOK);
+            return;
+        }
+        m_txErr = m_txPa->setOutputDevice(m_txDevOut);
+        m_txErr = m_txPa->setOutputChannelCount(2);                         // stereo input
+        m_txErr = m_txPa->setOutputSampleFormat(PA_SAMPLE_TYPE);
+
+        m_txErr = m_txPa->setOutputLatency(m_txPa->getOutputDefaultLowLatency());
+        m_txPa->setOutputHostApiStreamInfo(NULL);
+
+        m_txErr = m_txPa->setFramesPerBuffer(FRAMES_PER_BUFFER);
+        m_txErr = m_txPa->setSampleRate(SAMPLE_RATE);
+        m_txErr = m_txPa->setStreamFlags(0);
+        m_txErr = m_txPa->setCallback(txCallback);
+        m_txErr = m_txPa->streamOpen();
+
+        if(m_txErr != paNoError)
+        {
+            wxMessageBox(wxT("Tx Stream Open/Setup error."), wxT("Error"), wxOK);
+            return;
+        }
+        m_txErr = m_txPa->streamStart();
+        if(m_txErr != paNoError)
+        {
+            wxMessageBox(wxT("Tx Stream Start Error."), wxT("Error"), wxOK);
+            return;
+        }
+    }
+}
+
+//-------------------------------------------------------------------------
+// stopTxStream()
+//-------------------------------------------------------------------------
+void MainFrame::stopTxStream()
+{
+    if(m_TxRunning)
+    {
+        m_TxRunning = false;
+        m_txPa->stop();
+        m_txPa->streamClose();
+    }
+/*
+        if(m_txPa->isActive())
+        {
+            m_txPa->stop();
+        }
+        if(m_txPa->isOpen())
+        {
+            m_txPa->streamClose();
+        }
+        m_TxRunning = false;
+*/
+}
+
+//-------------------------------------------------------------------------
+// abortTxStream()
+//-------------------------------------------------------------------------
+void MainFrame::abortTxStream()
+{
+    if(m_TxRunning)
+    {
+        m_TxRunning = false;
+        m_txPa->abort();
+    }
+}
+
+//-------------------------------------------------------------------------
+// OnOpen()
+//-------------------------------------------------------------------------
+void MainFrame::OnOpen(wxCommandEvent& event)
+{
+    wxUnusedVar(event);
 }
 
 //----------------------------------------------------------------
@@ -1049,22 +1069,10 @@ void MainFrame::averageData(float mag_dB[])
 
     for(i = 0; i < FDMDV_NSPEC; i++)
     {
-        m_rxPa->m_av_mag[i] = (1.0 - BETA) * m_rxPa->m_av_mag[i] + BETA * mag_dB[i];
+//        m_rxPa->m_av_mag[i] = (1.0 - BETA) * m_rxPa->m_av_mag[i] + BETA * mag_dB[i];
+        g_avmag[i] = (1.0 - BETA) * g_avmag[i] + BETA * mag_dB[i];
     }
 }
-
-// Main processing loop states ------------------
-float  Ts = 0.0;
-short  input_buf[2*FDMDV_NOM_SAMPLES_PER_FRAME];
-int    n_input_buf = 0;
-int    nin = FDMDV_NOM_SAMPLES_PER_FRAME;
-short *output_buf;
-int    n_output_buf = 0;
-int    codec_bits[2*FDMDV_BITS_PER_FRAME];
-int    state = 0;
-struct CODEC2 *g_RXCodec2;
-struct CODEC2 *g_TXCodec2;
-struct FDMDV  *g_pFDMDV_state;
 
 //-------------------------------------------------------------------------
 // rxCallback()
@@ -1078,7 +1086,7 @@ int MainFrame::rxCallback(
                             void            *userData
                          )
 {
-    paCallBackData *cbData = (paCallBackData*)userData;
+    paCallBackData  *cbData = (paCallBackData*)userData;
     unsigned int    i;
     short           *rptr    = (short*)inputBuffer;
     short           *wptr    = (short*)outputBuffer;
@@ -1094,7 +1102,6 @@ int MainFrame::rxCallback(
     assert(inputBuffer != NULL);
 
     // Convert input model samples from 48 to 8 kHz
-
     // just use left channel
     for(i = 0; i < framesPerBuffer; i++, rptr += 2)
     {
@@ -1107,16 +1114,20 @@ int MainFrame::rxCallback(
         in48k[i] = in48k[i + framesPerBuffer];
     }
     // run demod, decoder and update GUI info
-    for(i = 0; i < N8; i++)
+    unsigned int j = N8;
+    //for(i = 0; i < N8; i++)
+    for(i = 0; i < j; i++)
     {
-        input_buf[n_input_buf + i] = (short)out8k[i];
+        g_RxInBuf[g_nInputBuf + i] = (short)out8k[i];
     }
-    n_input_buf += FDMDV_NOM_SAMPLES_PER_FRAME;
-    per_frame_rx_processing(output_buf, &n_output_buf, codec_bits, input_buf, &n_input_buf, &nin, &state, g_RXCodec2);
+    g_nInputBuf += FDMDV_NOM_SAMPLES_PER_FRAME;
+    per_frame_rx_processing(g_pRxOutBuf, &g_nInputBuf, g_CodecBits, g_RxInBuf, &g_nOutputBuf, &g_nRxIn, &g_State, g_pRxCodec2);
+    cbData->pWFPanel->m_newdata = true;
+    cbData->pSPPanel->m_newdata = true;
     // if demod out of sync copy input audio from A/D to aid in tuning
-    if (n_output_buf >= N8)
+    if (g_nOutputBuf >= N8)
     {
-        if(state == 0)
+        if(g_State == 0)
         {
             for(i = 0; i < N8; i++)
             {
@@ -1127,16 +1138,16 @@ int MainFrame::rxCallback(
         {
             for(i = 0; i < N8; i++)
             {
-                in8k[MEM8+i] = output_buf[i];   // decoded spech
+                in8k[MEM8+i] = g_pRxOutBuf[i];   // decoded spech
             }
         }
-        n_output_buf -= N8;
+        g_nOutputBuf -= N8;
     }
-    assert(n_output_buf >= 0);
+    assert(g_nOutputBuf >= 0);
     // shift speech samples in output buffer
-    for(i = 0; i < (unsigned int)n_output_buf; i++)
+    for(i = 0; i < (unsigned int)g_nOutputBuf; i++)
     {
-        output_buf[i] = output_buf[i + N8];
+        g_pRxOutBuf[i] = g_pRxOutBuf[i + N8];
     }
     // Convert output speech to 48 kHz sample rate
     // upsample and update filter memory
@@ -1163,15 +1174,15 @@ int MainFrame::rxCallback(
 // per_frame_rx_processing()
 //----------------------------------------------------------------
  void MainFrame::per_frame_rx_processing(
-                                            short   output_buf[],  // output buf of decoded speech samples
-                                            int     *n_output_buf, // how many samples currently in output_buf[]
-                                            int     codec_bits[],  // current frame of bits for decoder
-                                            short   input_buf[],   // input buf of modem samples input to demod
-                                            int     *n_input_buf,  // how many samples currently in input_buf[]
-                                            int     *nin,          // amount of samples demod needs for next call
-                                            int     *state,        // used to collect codec_bits[] halves
-                                            CODEC2 *c2     // Codec 2 states
-                                      )
+                                            short   output_buf[],   // output buf of decoded speech samples
+                                            int     *n_output_buf,  // how many samples currently in output_buf[]
+                                            int     codec_bits[],   // current frame of bits for decoder
+                                            short   input_buf[],    // input buf of modem samples input to demod
+                                            int     *n_input_buf,   // how many samples currently in input_buf[]
+                                            int     *nin,           // amount of samples demod needs for next call
+                                            int     *state,         // used to collect codec_bits[] halves
+                                            CODEC2  *c2             // Codec 2 states
+                                        )
 {
     struct FDMDV_STATS  stats;
     int                 sync_bit;
@@ -1211,7 +1222,7 @@ int MainFrame::rxCallback(
             rx_fdm[i] = (float)input_buf[i] / FDMDV_SCALE;
         }
         nin_prev = *nin;
-        fdmdv_demod(g_pFDMDV_state, rx_bits, &sync_bit, rx_fdm, nin);
+        fdmdv_demod(g_pRxFDMDV, rx_bits, &sync_bit, rx_fdm, nin);
         *n_input_buf -= nin_prev;
         assert(*n_input_buf >= 0);
 
@@ -1222,15 +1233,15 @@ int MainFrame::rxCallback(
         }
 
         // compute rx spectrum & get demod stats, and update GUI plot data
-        fdmdv_get_rx_spectrum(g_pFDMDV_state, rx_spec, rx_fdm, nin_prev);
-        fdmdv_get_demod_stats(g_pFDMDV_state, &stats);
-//        averageData(rx_spec);
-        //m_panelWaterfall->;
-        //m_panelScalar;
-//        m_panelScatter->add_new_samples(stats.rx_symbols);
-//        aTimingEst->add_new_sample(stats.rx_timing);
-//        aFreqEst->add_new_sample(stats.foff);
-//        aSNR->add_new_sample(stats.snr_est);
+        fdmdv_get_rx_spectrum(g_pRxFDMDV, rx_spec, rx_fdm, nin_prev);
+        fdmdv_get_demod_stats(g_pRxFDMDV, &stats);
+        // Average Data
+        // averageData(rx_spec);
+        for(i = 0; i < FDMDV_NSPEC; i++)
+        {
+            // m_rxPa->m_av_mag[i] = (1.0 - BETA) * m_rxPa->m_av_mag[i] + BETA * rx_spec[i];
+            g_avmag[i] = (1.0 - BETA) * g_avmag[i] + BETA * rx_spec[i];
+        }
         //
         //   State machine to:
         //
@@ -1316,6 +1327,39 @@ int MainFrame::rxCallback(
         }
         *state = next_state;
     }
+}
+
+//-------------------------------------------------------------------------
+// txCallback()
+//-------------------------------------------------------------------------
+int MainFrame::txCallback(
+                            const void *inBuffer,
+                            void *outBuffer,
+                            unsigned long framesPerBuffer,
+                            const PaStreamCallbackTimeInfo *outTime,
+                            PaStreamCallbackFlags statusFlags,
+                            void *userData
+                        )
+{
+    float *out = (float *) outBuffer;
+    float *in  = (float *) inBuffer;
+    float leftIn;
+    float rightIn;
+    unsigned int i;
+
+    if(inBuffer == NULL)
+    {
+        return 0;
+    }
+    // Read input buffer, process data, and fill output buffer.
+    for(i = 0; i < framesPerBuffer; i++)
+    {
+        leftIn  = *in++;                            // Get interleaved samples from input buffer.
+        rightIn = *in++;
+        *out++  = leftIn * rightIn;                 // ring modulation
+        *out++  = 0.5f * (leftIn + rightIn);        // mixing
+    }
+    return paContinue;                              // 0;
 }
 
 //-------------------------------------------------------------------------

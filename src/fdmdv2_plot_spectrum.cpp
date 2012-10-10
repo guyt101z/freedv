@@ -28,6 +28,8 @@
 #include "fdmdv2_main.h"
 #include "fdmdv2_plot_spectrum.h"
 
+extern float *g_avmag;
+
 BEGIN_EVENT_TABLE(PlotSpectrum, PlotPanel)
     EVT_MOTION          (PlotSpectrum::OnMouseMove)
     EVT_LEFT_DOWN       (PlotSpectrum::OnMouseDown)
@@ -108,7 +110,8 @@ void PlotSpectrum::draw(wxAutoBufferedPaintDC& pDC)
         pen.SetWidth(1);
         m_mDC.SetPen(pen);
 
-        float *pData = m_pTopFrame->m_rxPa->m_av_mag;
+//        float *pData = m_pTopFrame->m_rxPa->m_av_mag;
+        float *pData = g_avmag;
         for(int x = 1; x < w; x++)
         {
 //            m_mDC.DrawPoint(x, (int)pData[x]);

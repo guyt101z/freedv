@@ -38,7 +38,7 @@ PortAudioWrap::PortAudioWrap()
     m_pTimeInfo                 = 0;
     m_newdata                   = false;
 
-    loadData();
+//    loadData();
 }
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
@@ -325,12 +325,7 @@ PaError PortAudioWrap::setCallback(PaStreamCallback *callback)
     return paNoError;
 }
 
-typedef struct
-{
-    float               in48k[FDMDV_OS_TAPS + N48];
-    float               in8k[MEM8 + N8];
-} paCallBackData;
-
+/*
 //----------------------------------------------------------------
 // loadData() : create Dummy Data
 //----------------------------------------------------------------
@@ -342,4 +337,4 @@ void PortAudioWrap::loadData()
         m_av_mag[i] = i;
     }
 }
-
+*/

@@ -38,6 +38,9 @@
   block.
 
 */
+
+extern float *g_avmag;
+
 BEGIN_EVENT_TABLE(PlotWaterfall, PlotPanel)
     EVT_PAINT           (PlotWaterfall::OnPaint)
     EVT_MOTION          (PlotWaterfall::OnMouseMove)
@@ -163,22 +166,23 @@ void PlotWaterfall::draw(wxAutoBufferedPaintDC& pDC)
     pDC.Clear();
 //    m_mDC.Clear();
     m_rPlot = wxRect(PLOT_BORDER + XLEFT_OFFSET, PLOT_BORDER, m_rGrid.GetWidth(), m_rGrid.GetHeight());
-    if(m_firstPass)
-    {
-        m_firstPass = false;
-        m_mDC.FloodFill(0, 0, VERY_LTGREY_COLOR);
+//    if(m_firstPass)
+//    {
+//        m_firstPass = false;
+//        m_mDC.FloodFill(0, 0, VERY_LTGREY_COLOR);
 
         // Draw a filled rectangle with aborder
-        wxBrush ltGraphBkgBrush = wxBrush(DARK_BLUE_COLOR);
-        m_mDC.SetBrush(ltGraphBkgBrush);
-        m_mDC.SetPen(wxPen(BLACK_COLOR, 0));
-        m_mDC.DrawRectangle(m_rPlot);
+//        wxBrush ltGraphBkgBrush = wxBrush(DARK_BLUE_COLOR);
+//        m_mDC.SetBrush(ltGraphBkgBrush);
+//        m_mDC.SetPen(wxPen(BLACK_COLOR, 0));
+//        m_mDC.DrawRectangle(m_rPlot);
 
-//        pDC.SetBrush(ltGraphBkgBrush);
-//        pDC.SetPen(wxPen(BLACK_COLOR, 0));
-//        pDC.DrawRectangle(m_rPlot);
-        drawGraticule(pDC);
-    }
+//    }
+    wxBrush ltGraphBkgBrush = wxBrush(DARK_BLUE_COLOR);
+    pDC.SetBrush(ltGraphBkgBrush);
+    pDC.SetPen(wxPen(BLACK_COLOR, 0));
+    pDC.DrawRectangle(m_rPlot);
+    drawGraticule(pDC);
     if(m_newdata)
     {
         m_newdata = false;
@@ -224,9 +228,13 @@ void PlotWaterfall::drawData()  //wxMemoryDC&  pDC)
         wxNativePixelData::Iterator rowStart = p;
         for(int x = 0; x < (w - 1); ++x, ++p)
         {
-            p.Red()     = m_pTopFrame->m_rxPa->m_av_mag[x];
-            p.Green()   = m_pTopFrame->m_rxPa->m_av_mag[x];
-            p.Blue()    = m_pTopFrame->m_rxPa->m_av_mag[x];
+//            p.Red()     = m_pTopFrame->m_rxPa->m_av_mag[x];
+//            p.Green()   = m_pTopFrame->m_rxPa->m_av_mag[x];
+//            p.Blue()    = m_pTopFrame->m_rxPa->m_av_mag[x];
+
+            p.Red()     = g_avmag[x];
+            p.Green()   = g_avmag[x];
+            p.Blue()    = g_avmag[x];
         }
         p = rowStart;
         p.OffsetY(*m_pPix, 1);
@@ -315,12 +323,12 @@ void PlotWaterfall::plotPixelData(wxAutoBufferedPaintDC&  dc)
     wxNativePixelData data(*m_pBmp);
     if(!data)
     {
-        // ... raw access to bitmap data unavailable, do something else ...
+        wxMessageBox(wxT("Unable to access Bitmap Data"), wxT("Error"));
         return;
     }
     if(data.GetWidth() < 20 || data.GetHeight() < 20)
     {
-        // ... complain: the bitmap it too small ...
+        wxMessageBox(wxT("Bitmap is too small to use"), wxT("Warning"));
         return;
     }
     wxNativePixelData::Iterator p(data);
@@ -330,7 +338,8 @@ void PlotWaterfall::plotPixelData(wxAutoBufferedPaintDC&  dc)
     {
         index = px * spec_index_per_px;
         // intensity = intensity_per_dB * (m_av_mag[index] - MIN_DB);
-        intensity = intensity_per_dB * (((MainFrame *)GetParent())->m_rxPa->m_av_mag[index] - MIN_DB);
+        intensity = intensity_per_dB * (g_avmag[index] - MIN_DB);
+//        intensity = intensity_per_dB * (((MainFrame *)GetParent())->m_rxPa->m_av_mag[index] - MIN_DB);
 //        intensity = intensity_per_dB * (((MainFrame *)GetParent())->m_av_mag[index] - MIN_DB);
         if(intensity > 255)
         {

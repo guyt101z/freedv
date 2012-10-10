@@ -46,11 +46,11 @@
 
 #define MIN_DB              -40.0
 #define MAX_DB              0.0
-#define BETA                0.1  // constant for time averageing spectrum data
+#define BETA                0.1     // constant for time averageing spectrum data
 #define MIN_HZ              0
 #define MAX_HZ              4000
-#define WATERFALL_SECS_Y    5    // number of seconds respresented by y axis of waterfall
-#define DT                  0.02 // time between samples
+#define WATERFALL_SECS_Y    5       // number of seconds respresented by y axis of waterfall
+#define DT                  0.02    // time between samples
 #define FS                  8000    // FDMDV modem sample rate
 
 #define SCATTER_MEM         (FDMDV_NSYM)*50

@@ -55,16 +55,10 @@ enum {
         ID_TIMER_SPECTRUM,
         ID_TIMER_SCATTER,
         ID_TIMER_SCALAR
-    };
+     };
 
 #define EXCHANGE_DATA_IN    0
 #define EXCHANGE_DATA_OUT   1
-
-typedef struct
-{
-    float in48k[FDMDV_OS_TAPS + N48];
-    float in8k[MEM8 + N8];
-} paCallBackData;
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 // Class MainApp
@@ -116,6 +110,18 @@ class MainApp : public wxApp
 DECLARE_APP(MainApp)
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
+// paCallBackData
+//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
+typedef struct
+{
+    PlotSpectrum    *pSPPanel;
+    PlotWaterfall   *pWFPanel;
+//    float           *mag_dB;
+    float           in48k[FDMDV_OS_TAPS + N48];
+    float           in8k[MEM8 + N8];
+} paCallBackData;
+
+//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 // Class MainFrame
 //
 // @class $(Name)
@@ -131,7 +137,7 @@ class MainFrame : public TopFrame
         MainFrame(wxWindow *parent);
         virtual ~MainFrame();
 
-        PlotPanel*              m_panelDefaultA;
+//        PlotPanel*              m_panelDefaultA;
         PlotSpectrum*           m_panelSpectrum;
         PlotWaterfall*          m_panelWaterfall;
         PlotScatter*            m_panelScatter;
@@ -139,9 +145,10 @@ class MainFrame : public TopFrame
         bool                    m_SquelchActive;
         bool                    m_RxRunning;
         bool                    m_TxRunning;
-        FDMDV                   *m_fdmdv2;
         PortAudioWrap           *m_rxPa;
         PortAudioWrap           *m_txPa;
+        paCallBackData          *m_rxUserdata;
+        paCallBackData          *m_txUserdata;
         PaDeviceIndex           m_rxDevIn;
         PaDeviceIndex           m_rxDevOut;
         PaDeviceIndex           m_txDevIn;
@@ -249,9 +256,12 @@ class MainFrame : public TopFrame
         void OnClose( wxCloseEvent& event );
         void OnSize( wxSizeEvent& event );
         void OnUpdateUI( wxUpdateUIEvent& event );
-        void OnTimer(wxTimerEvent &evt);
-
         void OnDeleteConfig(wxCommandEvent&);
+#ifdef _USE_TIMER
+        void OnTimer(wxTimerEvent &evt);
+#else
+        void OnIdle(wxIdleEvent &evt);
+#endif
 
         wxString LoadUserImage(wxImage& image);
 

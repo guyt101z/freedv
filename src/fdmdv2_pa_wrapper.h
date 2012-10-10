@@ -28,7 +28,7 @@
 #include "codec2.h"
 #include "portaudio.h"
 
-#define PA_SAMPLE_TYPE      paFloat32       //paInt16
+#define PA_SAMPLE_TYPE      paInt16         //paFloat32
 #define FRAMES_PER_BUFFER   (64)
 
 typedef float SAMPLE;
@@ -39,7 +39,7 @@ class PortAudioWrap
         PortAudioWrap();
         ~PortAudioWrap();
 
-        float                           m_av_mag[FDMDV_NSPEC];
+//        float                           m_av_mag[FDMDV_NSPEC];
 
     private:
         PaStream                        *m_pStream;
@@ -113,5 +113,5 @@ class PortAudioWrap
         bool                isOpen() const;
         bool                isStopped() const;
         bool                isActive() const;
-        void                loadData();
+//        void                loadData();
 };
