@@ -248,10 +248,12 @@ void PlotWaterfall::drawGraticule(wxAutoBufferedPaintDC&  pDC)
 {
     int p;
     char buf[15];
+	
     wxString s;
 
     wxBrush ltGraphBkgBrush;
     ltGraphBkgBrush.SetStyle(wxBRUSHSTYLE_TRANSPARENT);
+    ltGraphBkgBrush.SetColour(*wxBLACK);
     pDC.SetBrush(ltGraphBkgBrush);
     pDC.SetPen(wxPen(BLACK_COLOR, 1));
 
