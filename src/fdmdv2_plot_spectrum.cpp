@@ -28,7 +28,7 @@
 #include "fdmdv2_main.h"
 #include "fdmdv2_plot_spectrum.h"
 
-extern float *g_avmag;
+extern float g_avmag[];
 
 BEGIN_EVENT_TABLE(PlotSpectrum, PlotPanel)
     EVT_MOTION          (PlotSpectrum::OnMouseMove)

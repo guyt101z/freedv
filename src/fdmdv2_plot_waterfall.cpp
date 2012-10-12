@@ -237,7 +237,7 @@ void PlotWaterfall::drawData()  //wxMemoryDC&  pDC)
             p.Blue()    = g_avmag[x];
         }
         p = rowStart;
-	 p.OffsetY(*m_pPix, 1);
+        p.OffsetY(*m_pPix, 1);
     }
 }
 
@@ -248,7 +248,7 @@ void PlotWaterfall::drawGraticule(wxAutoBufferedPaintDC&  pDC)
 {
     int p;
     char buf[15];
-	
+
     wxString s;
 
     wxBrush ltGraphBkgBrush;

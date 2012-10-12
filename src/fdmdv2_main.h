@@ -79,8 +79,8 @@ class MainApp : public wxApp
         wxString            m_strVendName;
         wxString            m_StrAppName;
 
-        wxRadioButton       m_radioBtnPortAudio;
-        wxRadioButton       m_radioBtnFileOnly;
+//        wxRadioButton       m_radioBtnPortAudio;
+//        wxRadioButton       m_radioBtnFileOnly;
 
         wxString            m_textNumChOut;
         wxString            m_textNumChIn;
