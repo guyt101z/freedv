@@ -39,7 +39,7 @@
 
 */
 
-extern float *g_avmag;
+extern float g_avmag[];
 
 BEGIN_EVENT_TABLE(PlotWaterfall, PlotPanel)
     EVT_PAINT           (PlotWaterfall::OnPaint)
@@ -237,7 +237,7 @@ void PlotWaterfall::drawData()  //wxMemoryDC&  pDC)
             p.Blue()    = g_avmag[x];
         }
         p = rowStart;
-        p.OffsetY(*m_pPix, 1);
+	 p.OffsetY(*m_pPix, 1);
     }
 }
 
