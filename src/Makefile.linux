@@ -2,14 +2,17 @@
 # David Rowe 10 Oct 2012
 # test Makefile to help David R get up to speed
 
-WX_CONFIG=/home/david/Desktop/wxWidgets-2.9.4/build_gtk/wx-config
+WX_GTK_PATH=/home/david/Desktop/wxWidgets-2.9.4/build_gtk
+CODEC2_PATH=/home/david/codec2-dev
+
+WX_CONFIG=$(WX_GTK_PATH)/wx-config
 WX_CPPFLAGS = $(shell $(WX_CONFIG) --cxxflags)
 WX_LIBS = $(shell $(WX_CONFIG) --libs core, base, aui)
-CODEC2_INC=-I/home/david/codec2-dev/src
-CODEC2_LIB=/home/david/codec2-dev/src/.libs/libcodec2.a
+CODEC2_INC=-I$(CODEC2_PATH)/src
+CODEC2_LIB=$(CODEC2_PATH)/src/.libs/libcodec2.a
+
 CPP_FLAGS = $(WX_CPPFLAGS) $(CODEC2_INC) -I../extern/include -g -Wall
 LIBS = $(WX_LIBS) $(CODEC2_LIB) -lm /usr/lib/libportaudiocpp.so.0 -lpthread 
-#LIBS = $(WX_LIBS) $(CODEC2_LIB) -lm  -lpthread 
 
 OBJS = topFrame.o \
 fdmdv2_main.o \
@@ -25,12 +28,6 @@ dlg_comports.o \
 dlg_options.o
 
 all: fdmdv2
-
-hworld.o: /home/david/tmp/hworld.cpp 
-	g++ $(CPP_FLAGS) -c $< -o $@
-
-hworld: hworld.o
-	g++ -o hworld hworld.o $(CPP_FLAGS) $(LIBS)
 
 fdmdv2: $(OBJS)
 	g++ -o fdmdv2 $(OBJS) $(CPP_FLAGS) $(LIBS)
