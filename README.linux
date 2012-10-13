@@ -1,0 +1,55 @@
+README.linux for fdmdv2
+Created by David Rowe
+Oct 14 2012
+
+BUILDING fdmdv2 for Linux
+=========================
+
+Build wxWidgets
+---------------
+
+1. Download wxWidgets 2.9.4 or later and untar
+
+2. Build the gtk version:
+    
+   $ cd wxWidgets-2.9.4
+   $ mkdir build_gtk
+   $ cd build_gtk
+   $ ../configure
+   $ make
+
+3. You don't actually have to "make install" wxWidgets (unless you
+   really want to), it can be used by fdmdv2 out of the directory you
+   build it in.
+
+Build portaudio
+---------------
+
+1. Download and untar pa_stable_V19
+
+2. Build with C++ enabled
+
+   $ ./configure --enable-cxx
+   $ make
+
+3. I did a "sudo make install" on this, and removed the default
+   Unbuntu portaudio libs as they were an earlier version.  It's
+   probably possible to build fdmdv2 without "make install".
+
+Build codec2-dev
+----------------
+
+1. See codec2-dev/README. No need to "make install"
+
+Build fdmdv2
+------------
+
+1. svn co fdmdv2
+
+2. Modify the paths at the top of src/Makefile.linux for wxWidgets and codec2-dev
+
+3. 
+   cd fdmdv2/src 
+   make -f Makefile.linux
+
+
