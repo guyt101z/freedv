@@ -750,13 +750,20 @@ void MainFrame::OnTogBtnOnOffUI(wxUpdateUIEvent& event)
     wxUnusedVar(event);
 }
 
+//----------------------------------------------------------
+// Global Codec2 thingys - just one reqd for tx & rx
+//----------------------------------------------------------
+struct CODEC2   *g_pCodec2;
+struct FDMDV    *g_pFDMDV;
+
 //-------------------------------------------------------------------------
 // OnTogBtnOnOff()
 //-------------------------------------------------------------------------
 void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
 {
-    if((!m_TxRunning) || (!m_RxRunning))
+    if((!m_RxRunning))
     {
+	printf("starting ...\n");
         m_togBtnSplit->Enable();
         m_togRxID->Enable();
         m_togTxID->Enable();
@@ -764,8 +771,12 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
         m_togBtnALC->Enable();
         m_btnTogTX->Enable();
 
+        g_pFDMDV  = fdmdv_create();
+        g_pCodec2 = codec2_create(CODEC2_MODE_1400);
+
 #ifdef _USE_TIMER
-        m_plotTimer.Start(500, wxTIMER_CONTINUOUS);
+	// DR: disable this puppy for now as it's causing a lot of error messages
+        //m_plotTimer.Start(500, wxTIMER_CONTINUOUS);
 #endif // _USE_TIMER
         startRxStream();
 //        startTxStream();
@@ -773,6 +784,7 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
     }
     else
     {
+	printf("stopping ...\n");
         m_togBtnSplit->Disable();
         m_togRxID->Disable();
         m_togTxID->Disable();
@@ -780,7 +792,7 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
         m_togBtnALC->Disable();
         m_btnTogTX->Disable();
 #ifdef _USE_TIMER
-        m_plotTimer.Stop();
+        //m_plotTimer.Stop();
 #endif // _USE_TIMER
         stopRxStream();
 //        stopTxStream();
@@ -819,13 +831,6 @@ int             g_State = 0;
 
 float           g_avmag[FDMDV_NSPEC];
 
-//----------------------------------------------------------
-// Global Codec2 thingys.
-//----------------------------------------------------------
-struct CODEC2   *g_pRxCodec2;
-struct CODEC2   *g_pTxCodec2;
-struct FDMDV    *g_pRxFDMDV;
-struct FDMDV    *g_pTxFDMDV;
 
 //-------------------------------------------------------------------------
 // startRxStream()
@@ -851,9 +856,7 @@ void MainFrame::startRxStream()
         }
 #endif // _DUMMY_DATA
 
-        g_pRxFDMDV  = fdmdv_create();
-        g_pRxCodec2 = codec2_create(CODEC2_MODE_1400);
-        g_pRxOutBuf = (short*)malloc(2 * sizeof(short) * codec2_samples_per_frame(g_pRxCodec2));
+        g_pRxOutBuf = (short*)malloc(2 * sizeof(short) * codec2_samples_per_frame(g_pCodec2));
 
         m_rxDevIn = m_rxPa->getDefaultInputDevice();                        // default input device
         if(m_rxDevIn == paNoDevice)
@@ -925,8 +928,8 @@ void MainFrame::stopRxStream()
         m_RxRunning = false;
         m_rxPa->stop();
         m_rxPa->streamClose();
-        fdmdv_destroy(g_pTxFDMDV);
-        codec2_destroy(g_pTxCodec2);
+        fdmdv_destroy(g_pFDMDV);
+        codec2_destroy(g_pCodec2);
 //        delete g_RxInBuf;
         delete m_rxUserdata;
     }
@@ -973,9 +976,7 @@ void MainFrame::startTxStream()
             return;
         }
 
-        g_pTxFDMDV  = fdmdv_create();
-        g_pTxCodec2 = codec2_create(CODEC2_MODE_1400);
-        g_pTxOutBuf = (short*)malloc(2*sizeof(short)*codec2_samples_per_frame(g_pTxCodec2));
+        g_pTxOutBuf = (short*)malloc(2*sizeof(short)*codec2_samples_per_frame(g_pCodec2));
 
         m_txErr = m_txPa->setInputDevice(m_txDevIn);
         m_txErr = m_txPa->setInputChannelCount(2);                          // stereo input
@@ -1101,6 +1102,7 @@ int MainFrame::rxCallback(
 
     assert(inputBuffer != NULL);
 
+#ifdef RX_CB
     // Convert input model samples from 48 to 8 kHz
     // just use left channel
     for(i = 0; i < framesPerBuffer; i++, rptr += 2)
@@ -1121,7 +1123,7 @@ int MainFrame::rxCallback(
         g_RxInBuf[g_nInputBuf + i] = (short)out8k[i];
     }
     g_nInputBuf += FDMDV_NOM_SAMPLES_PER_FRAME;
-    per_frame_rx_processing(g_pRxOutBuf, &g_nInputBuf, g_CodecBits, g_RxInBuf, &g_nOutputBuf, &g_nRxIn, &g_State, g_pRxCodec2);
+    per_frame_rx_processing(g_pRxOutBuf, &g_nInputBuf, g_CodecBits, g_RxInBuf, &g_nOutputBuf, &g_nRxIn, &g_State, g_pCodec2);
     cbData->pWFPanel->m_newdata = true;
     cbData->pSPPanel->m_newdata = true;
     // if demod out of sync copy input audio from A/D to aid in tuning
@@ -1167,6 +1169,7 @@ int MainFrame::rxCallback(
         wptr[0] = out48k_short[i];
         wptr[1] = out48k_short[i];
     }
+#endif
     return paContinue;
 }
 
@@ -1222,7 +1225,7 @@ int MainFrame::rxCallback(
             rx_fdm[i] = (float)input_buf[i] / FDMDV_SCALE;
         }
         nin_prev = *nin;
-        fdmdv_demod(g_pRxFDMDV, rx_bits, &sync_bit, rx_fdm, nin);
+        fdmdv_demod(g_pFDMDV, rx_bits, &sync_bit, rx_fdm, nin);
         *n_input_buf -= nin_prev;
         assert(*n_input_buf >= 0);
 
@@ -1233,8 +1236,8 @@ int MainFrame::rxCallback(
         }
 
         // compute rx spectrum & get demod stats, and update GUI plot data
-        fdmdv_get_rx_spectrum(g_pRxFDMDV, rx_spec, rx_fdm, nin_prev);
-        fdmdv_get_demod_stats(g_pRxFDMDV, &stats);
+        fdmdv_get_rx_spectrum(g_pFDMDV, rx_spec, rx_fdm, nin_prev);
+        fdmdv_get_demod_stats(g_pFDMDV, &stats);
         // Average Data
         // averageData(rx_spec);
         for(i = 0; i < FDMDV_NSPEC; i++)

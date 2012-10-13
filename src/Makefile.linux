@@ -1,6 +1,9 @@
 # src/Makefile.linux
 # David Rowe 10 Oct 2012
-# test Makefile to help David R get up to speed
+#
+# Makefile for Linux to help David R get up to speed
+#
+# $ make -f Makefile.linux
 
 WX_GTK_PATH=/home/david/Desktop/wxWidgets-2.9.4/build_gtk
 CODEC2_PATH=/home/david/codec2-dev
