@@ -780,7 +780,8 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
 #endif // _USE_TIMER
         startRxStream();
 //        startTxStream();
-        m_togBtnOnOff->SetLabel(wxT("Stop"));
+        if (m_RxRunning)
+	    m_togBtnOnOff->SetLabel(wxT("Stop"));
     }
     else
     {
@@ -862,7 +863,9 @@ void MainFrame::startRxStream()
         if(m_rxDevIn == paNoDevice)
         {
             wxMessageBox(wxT("Rx Error: No default input device."), wxT("Error"), wxOK);
-            return;
+	    delete m_rxPa;
+	    m_RxRunning = false;
+	    return;
         }
         m_rxErr = m_rxPa->setInputDevice(m_rxDevIn);
         m_rxErr = m_rxPa->setInputChannelCount(2);                          // stereo input
@@ -874,6 +877,8 @@ void MainFrame::startRxStream()
         if (m_rxDevOut == paNoDevice)
         {
             wxMessageBox(wxT("Rx Error: No default output device."), wxT("Error"), wxOK);
+	    delete m_rxPa;
+	    m_RxRunning = false;	    
             return;
         }
         m_rxErr = m_rxPa->setOutputDevice(m_rxDevOut);
@@ -883,7 +888,7 @@ void MainFrame::startRxStream()
         m_rxErr = m_rxPa->setOutputLatency(m_rxPa->getOutputDefaultLowLatency());
         m_rxPa->setOutputHostApiStreamInfo(NULL);
 
-        m_rxErr = m_rxPa->setFramesPerBuffer(FRAMES_PER_BUFFER);
+	m_rxErr = m_rxPa->setFramesPerBuffer(PA_FPB);
         m_rxErr = m_rxPa->setSampleRate(SAMPLE_RATE);
         m_rxErr = m_rxPa->setStreamFlags(0);
 
@@ -900,6 +905,9 @@ void MainFrame::startRxStream()
             m_rxUserdata->in48k[i] = 0.0;
         }
 
+	m_rxUserdata->infifo = fifo_create(2*N48);
+	m_rxUserdata->outfifo = fifo_create(2*N48);
+
         m_rxPa->setUserData(m_rxUserdata);
         m_rxErr = m_rxPa->setCallback(rxCallback);
         m_rxErr = m_rxPa->streamOpen();
@@ -907,13 +915,21 @@ void MainFrame::startRxStream()
         if(m_rxErr != paNoError)
         {
             wxMessageBox(wxT("Rx Stream Open/Setup error."), wxT("Error"), wxOK);
-            return;
+ 	    delete m_rxPa;
+	    fifo_destroy(m_rxUserdata->infifo);
+	    fifo_destroy(m_rxUserdata->outfifo);
+	    m_RxRunning = false;	    
+	    return;
         }
         m_rxErr = m_rxPa->streamStart();
         if(m_rxErr != paNoError)
         {
             wxMessageBox(wxT("Rx Stream Start Error."), wxT("Error"), wxOK);
-            return;
+  	    delete m_rxPa;
+	    fifo_destroy(m_rxUserdata->infifo);
+	    fifo_destroy(m_rxUserdata->outfifo);
+	    m_RxRunning = false;	    
+	    return;
         }
     }
 }
@@ -931,6 +947,8 @@ void MainFrame::stopRxStream()
         fdmdv_destroy(g_pFDMDV);
         codec2_destroy(g_pCodec2);
 //        delete g_RxInBuf;
+	fifo_destroy(m_rxUserdata->infifo);
+	fifo_destroy(m_rxUserdata->outfifo);
         delete m_rxUserdata;
     }
 /*
@@ -1096,80 +1114,133 @@ int MainFrame::rxCallback(
     float           out8k[N8];
     float           out48k[N48];
     short           out48k_short[N48];
+    short           in48k_short[N48];
+    short           indata[MAX_FPB];
+    short           outdata[MAX_FPB];
 
     (void) timeInfo;
     (void) statusFlags;
 
     assert(inputBuffer != NULL);
-
-#ifdef RX_CB
-    // Convert input model samples from 48 to 8 kHz
-    // just use left channel
-    for(i = 0; i < framesPerBuffer; i++, rptr += 2)
-    {
-        in48k[i + FDMDV_OS_TAPS] = *rptr;
-    }
-    // downsample and update filter memory
-    fdmdv_48_to_8(out8k, &in48k[FDMDV_OS_TAPS], N8);
-    for(i = 0; i < FDMDV_OS_TAPS; i++)
-    {
-        in48k[i] = in48k[i + framesPerBuffer];
-    }
-    // run demod, decoder and update GUI info
-    unsigned int j = N8;
-    //for(i = 0; i < N8; i++)
-    for(i = 0; i < j; i++)
-    {
-        g_RxInBuf[g_nInputBuf + i] = (short)out8k[i];
-    }
-    g_nInputBuf += FDMDV_NOM_SAMPLES_PER_FRAME;
-    per_frame_rx_processing(g_pRxOutBuf, &g_nInputBuf, g_CodecBits, g_RxInBuf, &g_nOutputBuf, &g_nRxIn, &g_State, g_pCodec2);
-    cbData->pWFPanel->m_newdata = true;
-    cbData->pSPPanel->m_newdata = true;
-    // if demod out of sync copy input audio from A/D to aid in tuning
-    if (g_nOutputBuf >= N8)
-    {
-        if(g_State == 0)
-        {
-            for(i = 0; i < N8; i++)
-            {
-                in8k[MEM8 + i] = out8k[i];       // A/D signal
-            }
-        }
-        else
-        {
-            for(i = 0; i < N8; i++)
-            {
-                in8k[MEM8+i] = g_pRxOutBuf[i];   // decoded spech
-            }
-        }
-        g_nOutputBuf -= N8;
-    }
-    assert(g_nOutputBuf >= 0);
-    // shift speech samples in output buffer
-    for(i = 0; i < (unsigned int)g_nOutputBuf; i++)
-    {
-        g_pRxOutBuf[i] = g_pRxOutBuf[i + N8];
-    }
-    // Convert output speech to 48 kHz sample rate
-    // upsample and update filter memory
-    fdmdv_8_to_48(out48k, &in8k[MEM8], N8);
-    for(i = 0; i < MEM8; i++)
-    {
-        in8k[i] = in8k[i + N8];
-    }
     assert(outputBuffer != NULL);
-    // write signal to both channels
-    for(i = 0; i < N48; i++)
-    {
-        out48k_short[i] = (short)out48k[i];
+
+    /* 
+       framesPerBuffer is portaudio-speak for number of samples we
+       actually get from the record side and need to provide to the
+       play side. On Linux (at least) it was found that
+       framesPerBuffer may not always be what we ask for in the
+       framesPerBuffer field of Pa_OpenStream.  For example a request
+       for 960 sample buffers lead to framesPerBuffer = 1024.
+
+       To perform the 48 to 8 kHz conversion we need an integer
+       multiple of FDMDV_OS samples to support the interpolation and
+       decimation.  As we can't guarantee the size of framesPerBuffer
+       we do a little FIFO buffering.
+    */
+
+    /* assemble a mono buffer (just use left channel) and write to FIFO */
+
+    assert(framesPerBuffer < MAX_FPB);
+    for(i=0; i<framesPerBuffer; i++,rptr+=2)
+	indata[i] = *rptr;
+    fifo_write(cbData->infifo, indata, framesPerBuffer);
+
+    /* while we have enough samples available ... */
+
+    while (fifo_read(cbData->infifo, in48k_short, N48) == 0) {
+
+	/* convert to float */
+
+	for(i=0; i<N48; i++)
+	    in48k[FDMDV_OS_TAPS + i] = in48k_short[i];
+
+	// downsample and update filter memory
+	fdmdv_48_to_8(out8k, &in48k[FDMDV_OS_TAPS], N8);
+	for(i = 0; i < FDMDV_OS_TAPS; i++)
+	{
+	    in48k[i] = in48k[i + N48];
+	}
+#ifdef RX_CB
+	// run demod, decoder and update GUI info
+	for(i = 0; i < N8; i++)
+	{
+	    g_RxInBuf[g_nInputBuf + i] = (short)out8k[i];
+	}
+	g_nInputBuf += FDMDV_NOM_SAMPLES_PER_FRAME;
+	per_frame_rx_processing(g_pRxOutBuf, &g_nInputBuf, g_CodecBits, g_RxInBuf, &g_nOutputBuf, &g_nRxIn, &g_State, g_pCodec2);
+    
+	cbData->pWFPanel->m_newdata = true;
+	cbData->pSPPanel->m_newdata = true;
+    
+	// if demod out of sync copy input audio from A/D to aid in tuning
+	if (g_nOutputBuf >= N8)
+        {
+	    if(g_State == 0)
+            {
+		for(i = 0; i < N8; i++)
+                {
+		    in8k[MEM8 + i] = out8k[i];       // A/D signal
+		}
+	    }
+	    else
+	    {
+		for(i = 0; i < N8; i++)
+                {
+		    in8k[MEM8+i] = g_pRxOutBuf[i];   // decoded spech
+		}
+	    }
+	    g_nOutputBuf -= N8;
+	}
+	assert(g_nOutputBuf >= 0);
+	// shift speech samples in output buffer
+	for(i = 0; i < (unsigned int)g_nOutputBuf; i++)
+        {
+	    g_pRxOutBuf[i] = g_pRxOutBuf[i + N8];
+	}
+ #endif
+ 
+	/* test: echo input to output */
+	for(i=0; i<N8; i++)
+	    in8k[MEM8+i] = out8k[i];
+
+	// Convert output speech to 48 kHz sample rate
+	// upsample and update filter memory
+	fdmdv_8_to_48(out48k, &in8k[MEM8], N8);
+	for(i = 0; i < MEM8; i++)
+        {
+	    in8k[i] = in8k[i + N8];
+        }
+	assert(outputBuffer != NULL);
+
+	// write signal to fifo
+	for(i = 0; i < N48; i++)
+        {
+	    out48k_short[i] = (short)out48k[i];
+	}
+
+	fifo_write(cbData->outfifo, out48k_short, N48);
     }
-    for(i = 0; i < framesPerBuffer; i++, wptr += 2)
-    {
-        wptr[0] = out48k_short[i];
-        wptr[1] = out48k_short[i];
+
+   /* OK now set up output samples */
+
+    if (fifo_read(cbData->outfifo, outdata, framesPerBuffer) == 0) {
+
+	/* write signal to both channels */
+
+	for(i=0; i<framesPerBuffer; i++,wptr+=2) {
+	    wptr[0] = outdata[i]; 
+	    wptr[1] = outdata[i]; 
+	}
     }
-#endif
+    else {
+	//printf("no data\n");
+	/* zero output if no data available */
+	for(i=0; i<framesPerBuffer; i++,wptr+=2) {
+	    wptr[0] = 0; 
+	    wptr[1] = 0; 
+	}
+    }
+
     return paContinue;
 }
 

@@ -30,6 +30,7 @@
 
 #include "codec2.h"
 #include "fdmdv.h"
+#include "fifo.h"
 
 #include "topFrame.h"
 #include "dlg_about.h"
@@ -119,6 +120,8 @@ typedef struct
 //    float           *mag_dB;
     float           in48k[FDMDV_OS_TAPS + N48];
     float           in8k[MEM8 + N8];
+    struct FIFO    *infifo;
+    struct FIFO    *outfifo;
 } paCallBackData;
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
