@@ -1160,17 +1160,18 @@ int MainFrame::rxCallback(
 	{
 	    in48k[i] = in48k[i + N48];
 	}
-#ifdef RX_CB
+
+	assert((g_nInputBuf + N8) <= 2 * FDMDV_NOM_SAMPLES_PER_FRAME);
 	// run demod, decoder and update GUI info
 	for(i = 0; i < N8; i++)
 	{
 	    g_RxInBuf[g_nInputBuf + i] = (short)out8k[i];
 	}
 	g_nInputBuf += FDMDV_NOM_SAMPLES_PER_FRAME;
-	per_frame_rx_processing(g_pRxOutBuf, &g_nInputBuf, g_CodecBits, g_RxInBuf, &g_nOutputBuf, &g_nRxIn, &g_State, g_pCodec2);
+	per_frame_rx_processing(g_pRxOutBuf, &g_nOutputBuf, g_CodecBits, g_RxInBuf, &g_nInputBuf, &g_nRxIn, &g_State, g_pCodec2);
     
-	cbData->pWFPanel->m_newdata = true;
-	cbData->pSPPanel->m_newdata = true;
+	//cbData->pWFPanel->m_newdata = true;
+	//cbData->pSPPanel->m_newdata = true;
     
 	// if demod out of sync copy input audio from A/D to aid in tuning
 	if (g_nOutputBuf >= N8)
@@ -1197,9 +1198,8 @@ int MainFrame::rxCallback(
         {
 	    g_pRxOutBuf[i] = g_pRxOutBuf[i + N8];
 	}
- #endif
- 
-	/* test: echo input to output */
+  
+	/* test: echo input to output, make this loopback option */
 	for(i=0; i<N8; i++)
 	    in8k[MEM8+i] = out8k[i];
 
@@ -1221,7 +1221,7 @@ int MainFrame::rxCallback(
 	fifo_write(cbData->outfifo, out48k_short, N48);
     }
 
-   /* OK now set up output samples */
+    /* OK now set up output samples */
 
     if (fifo_read(cbData->outfifo, outdata, framesPerBuffer) == 0) {
 
