@@ -208,7 +208,7 @@ void PlotPanel::draw(wxAutoBufferedPaintDC& pDC)
         m_newdata = false;
         int t = m_rPlot.GetTop();
         int l = m_rPlot.GetLeft();
-        int r = m_rPlot.GetRight();
+//        int r = m_rPlot.GetRight();
         int h = m_rPlot.GetHeight();
         int w = m_rPlot.GetWidth();
         pDC.Blit(l, t, w, h, &m_mDC, l, t);

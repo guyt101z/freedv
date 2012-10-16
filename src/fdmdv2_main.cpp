@@ -802,6 +802,22 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
 }
 
 //----------------------------------------------------------
+// OnTogBtnLoopRx()
+//----------------------------------------------------------
+void MainFrame::OnTogBtnLoopRx( wxCommandEvent& event )
+{
+    wxMessageBox(wxT("Got Click!"), wxT("OnTogBtnLoopRx()"), wxOK);
+}
+
+//----------------------------------------------------------
+// OnTogBtnLoopTx()
+//----------------------------------------------------------
+void MainFrame::OnTogBtnLoopTx( wxCommandEvent& event )
+{
+    wxMessageBox(wxT("Got Click!"), wxT("OnTogBtnLoopRx()"), wxOK);
+}
+
+//----------------------------------------------------------
 // Audio stream processing loop states (globals).
 //----------------------------------------------------------
 /*
@@ -878,7 +894,7 @@ void MainFrame::startRxStream()
         {
             wxMessageBox(wxT("Rx Error: No default output device."), wxT("Error"), wxOK);
 	    delete m_rxPa;
-	    m_RxRunning = false;	    
+	    m_RxRunning = false;
             return;
         }
         m_rxErr = m_rxPa->setOutputDevice(m_rxDevOut);
@@ -918,7 +934,6 @@ void MainFrame::startRxStream()
  	    delete m_rxPa;
 	    fifo_destroy(m_rxUserdata->infifo);
 	    fifo_destroy(m_rxUserdata->outfifo);
-	    m_RxRunning = false;	    
 	    return;
         }
         m_rxErr = m_rxPa->streamStart();
@@ -928,7 +943,6 @@ void MainFrame::startRxStream()
   	    delete m_rxPa;
 	    fifo_destroy(m_rxUserdata->infifo);
 	    fifo_destroy(m_rxUserdata->outfifo);
-	    m_RxRunning = false;	    
 	    return;
         }
     }
@@ -1123,8 +1137,7 @@ int MainFrame::rxCallback(
 
     assert(inputBuffer != NULL);
     assert(outputBuffer != NULL);
-
-    /* 
+    /*
        framesPerBuffer is portaudio-speak for number of samples we
        actually get from the record side and need to provide to the
        play side. On Linux (at least) it was found that
@@ -1169,10 +1182,9 @@ int MainFrame::rxCallback(
 	}
 	g_nInputBuf += FDMDV_NOM_SAMPLES_PER_FRAME;
 	per_frame_rx_processing(g_pRxOutBuf, &g_nOutputBuf, g_CodecBits, g_RxInBuf, &g_nInputBuf, &g_nRxIn, &g_State, g_pCodec2);
-    
 	//cbData->pWFPanel->m_newdata = true;
 	//cbData->pSPPanel->m_newdata = true;
-    
+
 	// if demod out of sync copy input audio from A/D to aid in tuning
 	if (g_nOutputBuf >= N8)
         {
@@ -1198,7 +1210,7 @@ int MainFrame::rxCallback(
         {
 	    g_pRxOutBuf[i] = g_pRxOutBuf[i + N8];
 	}
-  
+
 	/* test: echo input to output, make this loopback option */
 	for(i=0; i<N8; i++)
 	    in8k[MEM8+i] = out8k[i];
@@ -1228,16 +1240,16 @@ int MainFrame::rxCallback(
 	/* write signal to both channels */
 
 	for(i=0; i<framesPerBuffer; i++,wptr+=2) {
-	    wptr[0] = outdata[i]; 
-	    wptr[1] = outdata[i]; 
+	    wptr[0] = outdata[i];
+	    wptr[1] = outdata[i];
 	}
     }
     else {
 	//printf("no data\n");
 	/* zero output if no data available */
 	for(i=0; i<framesPerBuffer; i++,wptr+=2) {
-	    wptr[0] = 0; 
-	    wptr[1] = 0; 
+	    wptr[0] = 0;
+	    wptr[1] = 0;
 	}
     }
 
