@@ -111,6 +111,9 @@ class TopFrame : public wxFrame
         virtual void OnCmdSliderScrollChanged( wxScrollEvent& event ) { event.Skip(); }
         virtual void OnSliderScrollTop( wxScrollEvent& event ) { event.Skip(); }
         virtual void OnCheckSQClick( wxCommandEvent& event ) { event.Skip(); }
+
+        virtual void OnTogBtnLoopRx( wxCommandEvent& event ) { event.Skip(); }
+        virtual void OnTogBtnLoopTx( wxCommandEvent& event ) { event.Skip(); }
         virtual void OnTogBtnOnOff( wxCommandEvent& event ) { event.Skip(); }
         virtual void OnTogBtnSplitClick( wxCommandEvent& event ) { event.Skip(); }
         virtual void OnTogBtnAnalogClick( wxCommandEvent& event ) { event.Skip(); }
@@ -133,6 +136,8 @@ class TopFrame : public wxFrame
         wxToggleButton* m_togBtnAnalog;
         wxToggleButton* m_togBtnALC;
         wxToggleButton* m_btnTogTX;
+        wxToggleButton* m_togBtnLoopRx;
+        wxToggleButton* m_togBtnLoopTx;
 
         wxAuiNotebook* m_auiNbookCtrl;
 
