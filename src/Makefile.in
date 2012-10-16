@@ -75,6 +75,7 @@ LIBOBJS = @LIBOBJS@
 #../3rdparty/portaudio/bindings/cpp/include \
 #../3rdparty/libsndfile/include \
 #../3rdparty/libsamplerate-0.1.8/src 
+
 LIBS = -lsndfile-1 \
 -lcodec2 \
 -lportaudio \
@@ -166,14 +167,17 @@ AM_CFLAGS = -I../src -fPIC -Wall -O3 -g
 AUTOMAKE_OPTS = gnu
 NAME = fdmdv2
 AM_CPPFLAGS = $(AM_CFLAGS) 
-WX_FLAGS = -mthreads -DHAVE_W32API_H -D__WXMSW__ -DNDEBUG -D_UNICODE -IC:\bin\wxWidgets-2.9.4\lib\gcc_dll\mswu -IC:\bin\wxWidgets-2.9.4\include -DWXUSINGDLL -Wno-ctor-dtor-privacy -pipe -fmessage-length=0
+# WX_FLAGS = -mthreads -DHAVE_W32API_H -D__WXMSW__ -DNDEBUG -D_UNICODE -IC:\bin\wxWidgets-2.9.4\lib\gcc_dll\mswu -IC:\bin\wxWidgets-2.9.4\include -DWXUSINGDLL -Wno-ctor-dtor-privacy -pipe -fmessage-length=0
+WX_FLAGS = -mthreads -DHAVE_W32API_H -D__WXMSW__ -DNDEBUG -D_UNICODE -I/bin/wxWidgets-2.9.4/lib/gcc_dll/mswu -I/bin/wxWidgets-2.9.4/include -DWXUSINGDLL -Wno-ctor-dtor-privacy -pipe -fmessage-length=0
 CONFIG_CLEAN_FILES = *.o *.exe
 EXE_EXT = .exe
 GPP = mingw32-g++.exe
-WXWIN = C:\bin\wxWidgets-2.9.4
+# WXWIN = C:\bin\wxWidgets-2.9.4
+WXWIN = /bin/wxWidgets-2.9.4
 # PATH=$(WXWIN)\lib\gcc_dll;$(PATH)
-WXCFG = gcc_dll\mswu
-UNIT_TEST_PP_SRC_DIR = C:\bin\UnitTest++-1.3
+# WXCFG = gcc_dll\mswu
+WXCFG = gcc_dll/mswu
+UNIT_TEST_PP_SRC_DIR = /bin/UnitTest++-1.3
 SRC = topFrame.cpp \
 fdmdv2_main.cpp \
 fdmdv2_plot.cpp \
@@ -202,17 +206,19 @@ dlg_comports.$(OBJEXT) \
 dlg_options.$(OBJEXT)
 
 INCLUDE_PATHS = -I. \
--IC:\bin\wxWidgets-2.9.4\lib\gcc_dll\mswu \
--IC:\bin\wxWidgets-2.9.4\include \
--I/bin/MinGW/msys/1.0/local/include \
--I../../codec2-dev/src \
--I../3rdparty/portaudio/include \
--I../3rdparty/portaudio/bindings/cpp/include \
--I../3rdparty/libsndfile/include \
--I../3rdparty/libsamplerate-0.1.8/src 
+-I/bin/wxWidgets-2.9.4/lib/gcc_dll/mswu \
+-I/bin/wxWidgets-2.9.4/include \
+-I/bin/MinGW-4.6.1/msys/1.0/local/include \
+-I../../codec2-dev/src 
+
+#-I../3rdparty/portaudio/include \
+#-I../3rdparty/portaudio/bindings/cpp/include \
+#-I../3rdparty/libsndfile/include \
+#-I../3rdparty/libsamplerate-0.1.8/src 
 
 LIB_FLAGS = -lm -lpthread 
-LIB_PATHS = -LC:\bin\wxWidgets-2.9.4\lib\gcc_dll -L../extern/lib 
+LIB_PATHS = -LC:/bin/wxWidgets-2.9.4/lib/gcc_dll -L/bin/MinGW-4.6.1/msys/1.0/local/lib 
+# LIB_PATHS = -L/c/bin/wxWidgets-2.9.4/lib/gcc_dll -L/c/bin/MinGW-4.6.1/msys/1.0/local/lib 
 all: all-am
 
 .SUFFIXES:
@@ -387,11 +393,6 @@ uninstall-am:
 	install-strip installcheck installcheck-am installdirs \
 	maintainer-clean maintainer-clean-generic mostlyclean \
 	mostlyclean-generic pdf pdf-am ps ps-am uninstall uninstall-am
-
-#../3rdparty/portaudio/lib \
-#../3rdparty/portaudio/bindings/cpp/lib \
-#../3rdparty/libsndfile/lib 
-#../3rdparty/libsamplerate-0.1.8/src 
 
 topFrame.$(OBJEXT): topFrame.cpp topFrame.h 
 	$(GPP) -c $(DEFINES) $(INCLUDE_PATHS) $(CFLAGS) $(WX_FLAGS) topframe.cpp

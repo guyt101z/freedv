@@ -121,6 +121,7 @@ void PlotPanel::OnSize(wxSizeEvent& event)
         m_pBmp = new wxBitmap(m_oImage, wxBITMAP_SCREEN_DEPTH);
         m_firstPass = true;
     }
+    this->Refresh();
 }
 
 //-------------------------------------------------------------------------
