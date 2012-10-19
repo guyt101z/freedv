@@ -186,7 +186,7 @@ void PlotWaterfall::draw(wxAutoBufferedPaintDC& pDC)
     if(m_newdata)
     {
         m_newdata = false;
-//        plotPixelData(dc);
+        plotPixelData(pDC);
 //#ifdef _USE_TIMER
         int t = m_rPlot.GetTop();
         int l = m_rPlot.GetLeft();
@@ -196,7 +196,7 @@ void PlotWaterfall::draw(wxAutoBufferedPaintDC& pDC)
         int w2 = w - 1;
         int ht = (h - DATA_LINE_HEIGHT);
 
-        drawData();     //  m_mDC, PLOT_BOTTOM);
+        //drawData();     //  m_mDC, PLOT_BOTTOM);
         m_mDC.StretchBlit(l, t2, w2, ht, &m_mDC, l, t2 + DATA_LINE_HEIGHT, w2, ht - 2);
 //        pDC.Blit(l, t, w, h, &m_mDC, l, t);                                                   // Scroll Up from Bottom
         pDC.StretchBlit(l, (h - t) + 4, w, (-h) + 4, &m_mDC, l, t, w, h);                       // Scroll Down from top

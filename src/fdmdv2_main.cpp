@@ -163,7 +163,6 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
 
 //    m_menuItemPlayAudioFile->Enable(false);
 
-
 #ifdef _USE_TIMER
     Bind(wxEVT_TIMER, &MainFrame::OnTimer, this);       // ID_MY_WINDOW);
     m_plotTimer.SetOwner(this, ID_TIMER_WATERFALL);
