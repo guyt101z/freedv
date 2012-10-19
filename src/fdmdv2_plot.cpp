@@ -106,10 +106,12 @@ void PlotPanel::OnErase(wxEraseEvent& event)
 //-------------------------------------------------------------------------
 void PlotPanel::OnSize(wxSizeEvent& event)
 {
+    printf("PlotPanel::OnSize\n");
     m_rCtrlPrev = m_rCtrl;
     m_rCtrl     = GetClientRect();
     if(m_use_bitmap)
     {
+	printf("  m_use_bitmap\n");
         if(!m_oImage.IsOk())
         {
             m_oImage.Create(m_rCtrl.GetWidth(), m_rCtrl.GetHeight(), true);
@@ -119,6 +121,10 @@ void PlotPanel::OnSize(wxSizeEvent& event)
             m_oImage.Rescale(m_rCtrl.GetWidth(), m_rCtrl.GetHeight());
         }
         m_pBmp = new wxBitmap(m_oImage, wxBITMAP_SCREEN_DEPTH);
+        //m_pBmp = new wxBitmap(m_rCtrl.GetWidth(), m_rCtrl.GetHeight(), 24);
+	
+	printf("  create bitmap m_pBmp 0x%x width: %d height: %d\n", 
+	       (unsigned int)m_pBmp, m_rCtrl.GetWidth(), m_rCtrl.GetHeight());
         m_firstPass = true;
     }
     this->Refresh();

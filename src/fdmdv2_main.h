@@ -40,7 +40,11 @@
 #include "fdmdv2_plot.h"
 #include "fdmdv2_plot_scalar.h"
 #include "fdmdv2_plot_scatter.h"
+#ifdef __LINUX__
+#include "fdmdv2_plot_waterfall_linux.h"
+#else
 #include "fdmdv2_plot_waterfall.h"
+#endif
 #include "fdmdv2_plot_spectrum.h"
 #include "fdmdv2_pa_wrapper.h"
 #include "sndfile.h"
