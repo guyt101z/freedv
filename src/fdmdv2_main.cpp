@@ -1,4 +1,4 @@
-//==========================================================================
+ //==========================================================================
 // Name:            fdmdv2_main.cpp
 //
 // Purpose:         Implements simple wxWidgets application with GUI.
@@ -88,9 +88,11 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     // @brief
     */
 //    m_radioRunning      = false;
-    m_sound             = NULL;
+//    m_sound             = NULL;
+    m_sfFile            = NULL;
     m_zoom              = 1.;
     m_SquelchActive     = false;
+
     if(Pa_Initialize())
     {
         wxMessageBox(wxT("Port Audio failed to initialize"), wxT("Pa_Initialize"), wxOK);
@@ -117,10 +119,6 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
 //    m_panelScalar = new PlotScalar((wxFrame*) m_auiNbookCtrl, 500, 500);
 //    m_auiNbookCtrl->AddPage(m_panelWaterfall, _("Scalar"), true, wxNullBitmap);
 
-    // Add generic plot window
-//    m_panelDefaultA = new PlotPanel((wxFrame*) m_auiNbookCtrl);
-//    m_auiNbookCtrl->AddPage(m_panelDefaultA, _("Test A"), true, wxNullBitmap);
-
     wxConfigBase *pConfig = wxConfigBase::Get();
 
     // restore frame position and size
@@ -136,8 +134,6 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     wxGetApp().m_textVoiceInput     = pConfig->Read(wxT("/Audio/TxIn"),         wxT("<m_textVoiceInput>"));
     wxGetApp().m_textVoiceOutput    = pConfig->Read(wxT("/Audio/TxOut"),        wxT("<m_textVoiceOutput>"));
     wxGetApp().m_strSampleRate      = pConfig->Read(wxT("/Audio/SampleRate"),   wxT("48000"));
-//    wxGetApp().m_strSampleRate      = pConfig->Read(wxT("/Audio/SampleRate"),   wxT("48000"));
-//    wxGetApp().m_strSampleRate      = pConfig->Read(wxT("/Audio/SampleRate"),   wxT("48000"));
 
     wxGetApp().m_strRigCtrlPort     = pConfig->Read("/Rig/Port",                wxT("\\\\.\\com1"));
     wxGetApp().m_strRigCtrlBaud     = pConfig->Read("/Rig/Baud",                wxT("9600"));
@@ -162,15 +158,22 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     m_togBtnAnalog->Disable();
     m_togBtnALC->Disable();
     m_btnTogTX->Disable();
+    m_togBtnLoopRx->Disable();
+    m_togBtnLoopTx->Disable();
+
+//    m_menuItemPlayAudioFile->Enable(false);
+
 
 #ifdef _USE_TIMER
     Bind(wxEVT_TIMER, &MainFrame::OnTimer, this);       // ID_MY_WINDOW);
     m_plotTimer.SetOwner(this, ID_TIMER_WATERFALL);
 //    m_rxPa = new PortAudioWrap();
-//    m_plotTimer.Start(500, wxTIMER_CONTINUOUS);
+//    m_plotTimer.Start(_REFRESH_TIMER_PERIOD, wxTIMER_CONTINUOUS);
 //    m_panelWaterfall->m_newdata = true;
     m_panelWaterfall->Refresh();
-#else
+#endif
+
+#ifdef _USE_ONIDLE
     Connect(wxEVT_IDLE, wxIdleEventHandler(MainFrame::OnIdle), NULL, this);
 #endif //_USE_TIMER
 }
@@ -214,22 +217,27 @@ MainFrame::~MainFrame()
     m_togBtnAnalog->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnAnalogClickUI), NULL, this);
     m_togBtnALC->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnALCClickUI), NULL, this);
     m_btnTogTX->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnTXClickUI), NULL, this);
-
+    if(m_sfFile != NULL)
+    {
+        sf_close(m_sfFile);
+        m_sfFile = NULL;
+    }
 #ifdef _USE_TIMER
     if(m_plotTimer.IsRunning())
     {
         m_plotTimer.Stop();
         Unbind(wxEVT_TIMER, &MainFrame::OnTimer, this);
     }
-#else
-    Disconnect(wxEVT_IDLE, wxIdleEventHandler(MainFrame::OnIdle), NULL, this);
 #endif //_USE_TIMER
+
+#ifdef _USE_ONIDLE
+    Disconnect(wxEVT_IDLE, wxIdleEventHandler(MainFrame::OnIdle), NULL, this);
+#endif // _USE_ONIDLE
 
     delete wxConfigBase::Set((wxConfigBase *) NULL);
 }
 
 #ifdef _USE_TIMER
-
 //----------------------------------------------------------------
 // OnTimer()
 //----------------------------------------------------------------
@@ -239,12 +247,10 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
     m_panelWaterfall->Refresh();
     m_panelSpectrum->m_newdata = true;
     m_panelSpectrum->Refresh();
-//    m_panelDefaultA->m_newdata = true;
-//    m_panelDefaultA->Refresh();
 }
+#endif
 
-#else
-
+#ifdef _USE_ONIDLE
 //----------------------------------------------------------------
 // OnIdle()
 //----------------------------------------------------------------
@@ -259,7 +265,6 @@ void MainFrame::OnIdle(wxIdleEvent& event)
         m_panelSpectrum->Refresh();
     }
 }
-
 #endif // _USE_TIMER
 
 //-------------------------------------------------------------------------
@@ -342,7 +347,6 @@ void MainFrame::OnSliderScrollTop(wxScrollEvent& event)
 //-------------------------------------------------------------------------
 void MainFrame::OnSliderScrollBottom(wxScrollEvent& event)
 {
-//    wxMessageBox(wxT("Got Click!"), wxT("OnSliderScrollBottom"), wxOK);
     event.Skip();
 }
 
@@ -366,9 +370,9 @@ void MainFrame::OnCheckSQClick(wxCommandEvent& event)
 //-------------------------------------------------------------------------
 void MainFrame::OnTogBtnTXClick(wxCommandEvent& event)
 {
-    m_soundFile = wxT("./hts1a.wav");
-    m_sound = new wxSound(m_soundFile, false);
-    m_sound->Play();
+//    m_soundFile = wxT("./hts1a.wav");
+//    m_sound = new wxSound(m_soundFile, false);
+//    m_sound->Play();
 }
 
 //-------------------------------------------------------------------------
@@ -412,6 +416,210 @@ void MainFrame::OnTogBtnALCClick(wxCommandEvent& event)
     event.Skip();
 }
 
+//-------------------------------------------------------------------------
+// OnOpen()
+//-------------------------------------------------------------------------
+void MainFrame::OnOpen(wxCommandEvent& event)
+{
+    wxUnusedVar(event);
+    wxFileDialog openFileDialog(
+                                    this,
+                                    wxT("Open Sound File"),
+                                    wxEmptyString,
+                                    wxEmptyString,
+//                                    (const wxChar *)NULL,
+                                    wxT("RAW files (*.raw)|*.raw|")
+                                    wxT("WAV files (*.wav)|*.wav|")
+                                    wxT("Octave 2.0 files (*.mat4)|*.mat4|")
+                                    wxT("Octave 2.1 files (*.mat5)|*.mat5|")
+                                    wxT("FLAC files (*.flc)|*.flc|")
+                                    wxT("All files (*.*)|*.*"),
+                                    wxFD_OPEN | wxFD_FILE_MUST_EXIST
+                                );
+    if(openFileDialog.ShowModal() == wxID_CANCEL)
+    {
+        return;     // the user changed their mind...
+    }
+    wxString extension;
+    m_soundFile = openFileDialog.GetPath();
+    wxFileName::SplitPath(m_soundFile, NULL, NULL, &extension);
+    //wxLogError("Cannot open file '%s'.", openFileDialog.GetPath());
+#ifdef _READ_WITH_SNDFILE
+    m_sfInfo.format = 0;
+    if(!extension.IsEmpty())
+    {
+        extension.LowerCase();
+        if(extension == wxT("raw"))
+        {
+            m_sfInfo.format     = SF_FORMAT_RAW | SF_FORMAT_PCM_U8;
+            m_sfInfo.channels   = 2;
+            m_sfInfo.samplerate = 8000;
+        }
+    }
+    m_sfFile    = sf_open(m_soundFile, SFM_READ, &m_sfInfo);
+    if(m_sfFile == NULL)
+    {
+        wxString strErr = sf_strerror(NULL);
+        wxMessageBox(strErr, wxT("File Error"), wxOK);
+        return;
+    }
+#endif // _READ_WITH_SNDFILE
+    SetStatusText(wxT("File: ") + m_soundFile, 0);
+//    bool saved = false;
+}
+
+//-------------------------------------------------------------------------
+// OnPlayAudioFile()
+//-------------------------------------------------------------------------
+void MainFrame::OnPlayAudioFile(wxCommandEvent& event)
+{
+    wxUnusedVar(event);
+/*
+    // proceed loading the file chosen by the user;
+    m_sound->Play(openFileDialog.GetPath());
+*/
+}
+
+//-------------------------------------------------------------------------
+// OnSave()
+//-------------------------------------------------------------------------
+void MainFrame::OnSave(wxCommandEvent& WXUNUSED(event))
+{
+/*
+    wxString savefilename = wxFileSelector(
+                                            wxT("Save Sound File"),
+                                            wxEmptyString,
+                                            wxEmptyString,
+                                            (const wxChar *)NULL,
+                                            wxT("WAV files (*.wav)|*.wav|")
+                                            wxT("RAW files (*.raw)|*.raw|")
+                                            wxT("SPEEX files (*.spx)|*.spx|")
+                                            wxT("FLAC files (*.flc)|*.flc|"),
+                                            wxFD_SAVE,
+                                            this
+                                          );
+    if(savefilename.empty())
+    {
+        return;
+    }
+    wxString extension;
+    wxFileName::SplitPath(savefilename, NULL, NULL, &extension);
+    bool saved = false;
+    if(!saved)
+    {
+        // This one guesses image format from filename extension
+        // (it may fail if the extension is not recognized):
+        //image.SaveFile(savefilename);
+    }
+*/
+}
+
+//-------------------------------------------------------------------------
+// OnClose()
+//-------------------------------------------------------------------------
+void MainFrame::OnClose(wxCommandEvent& event)
+{
+    wxUnusedVar(event);
+
+#ifdef _USE_TIMER
+    //DMW Reenable for the nonce...
+    m_plotTimer.Stop();
+#endif // _USE_TIMER
+    if(m_sfFile != NULL)
+    {
+        sf_close(m_sfFile);
+        m_sfFile = NULL;
+    }
+    if(m_RxRunning)
+    {
+        stopRxStream();
+    }
+    if(m_TxRunning)
+    {
+        stopTxStream();
+    }
+    m_togBtnSplit->Disable();
+    m_togRxID->Disable();
+    m_togTxID->Disable();
+    m_togBtnAnalog->Disable();
+    m_togBtnALC->Disable();
+    m_btnTogTX->Disable();
+    m_togBtnLoopRx->Disable();
+    m_togBtnLoopTx->Disable();
+/*
+    This is an artifact of my early use of the default wxWidgets
+    sound facility. the wxSound interface is simplistic and and
+    unsuitable for this project's purposes.
+
+    if(m_sound != NULL)
+    {
+        if(m_sound->IsOk())
+        {
+            m_sound->Stop();
+            m_sound = NULL;
+        }
+    }
+*/
+}
+
+//-------------------------------------------------------------------------
+// OnExit()
+//-------------------------------------------------------------------------
+void MainFrame::OnExit(wxCommandEvent& event)
+{
+//    OnClose(event);
+    if(m_RxRunning)
+    {
+        stopRxStream();
+    }
+    if(m_TxRunning)
+    {
+        stopTxStream();
+    }
+    Close();
+}
+
+//-------------------------------------------------------------------------
+// OnCopy()
+//-------------------------------------------------------------------------
+void MainFrame::OnCopy(wxCommandEvent& event)
+{
+    event.Skip();
+}
+
+//-------------------------------------------------------------------------
+// OnCut()
+//-------------------------------------------------------------------------
+void MainFrame::OnCut(wxCommandEvent& event)
+{
+    event.Skip();
+}
+
+//-------------------------------------------------------------------------
+// OnPaste()
+//-------------------------------------------------------------------------
+void MainFrame::OnPaste(wxCommandEvent& event)
+{
+    event.Skip();
+}
+
+//-------------------------------------------------------------------------
+// OnCaptureRxStream()
+//-------------------------------------------------------------------------
+void MainFrame::OnCaptureRxStream(wxCommandEvent& event)
+{
+    wxUnusedVar(event);
+}
+
+//-------------------------------------------------------------------------
+// OnCaptureTxStream()
+//-------------------------------------------------------------------------
+void MainFrame::OnCaptureTxStream(wxCommandEvent& event)
+{
+    wxUnusedVar(event);
+}
+
+/*
 //-------------------------------------------------------------------------
 // OnTogBtnSplitClickUI()
 //-------------------------------------------------------------------------
@@ -479,70 +687,11 @@ void MainFrame::OnSaveUpdateUI(wxUpdateUIEvent& event)
 }
 
 //-------------------------------------------------------------------------
-// OnClose()
-//-------------------------------------------------------------------------
-void MainFrame::OnClose(wxCommandEvent& event)
-{
-    wxUnusedVar(event);
-
-    if(m_RxRunning)
-    {
-        stopRxStream();
-    }
-    if(m_TxRunning)
-    {
-        stopTxStream();
-    }
-
-    if(m_sound != NULL)
-    {
-        if(m_sound->IsOk())
-        {
-            m_sound->Stop();
-            m_sound = NULL;
-        }
-    }
-    Close();
-}
-
-//-------------------------------------------------------------------------
 // OnCloseUpdateUI()
 //-------------------------------------------------------------------------
 void MainFrame::OnCloseUpdateUI(wxUpdateUIEvent& event)
 {
-    event.Enable(false);
-}
-
-//-------------------------------------------------------------------------
-// OnExit()
-//-------------------------------------------------------------------------
-void MainFrame::OnExit(wxCommandEvent& event)
-{
-    OnClose(event);
-}
-
-//-------------------------------------------------------------------------
-// OnCopy()
-//-------------------------------------------------------------------------
-void MainFrame::OnCopy(wxCommandEvent& event)
-{
-    event.Skip();
-}
-
-//-------------------------------------------------------------------------
-// OnCopyUpdateUI()
-//-------------------------------------------------------------------------
-void MainFrame::OnCopyUpdateUI(wxUpdateUIEvent& event)
-{
-    event.Enable(false);
-}
-
-//-------------------------------------------------------------------------
-// OnCut()
-//-------------------------------------------------------------------------
-void MainFrame::OnCut(wxCommandEvent& event)
-{
-    event.Skip();
+//    event.Enable(false);
 }
 
 //-------------------------------------------------------------------------
@@ -555,11 +704,11 @@ void MainFrame::OnCutUpdateUI(wxUpdateUIEvent& event)
 }
 
 //-------------------------------------------------------------------------
-// OnPaste()
+// OnCopyUpdateUI()
 //-------------------------------------------------------------------------
-void MainFrame::OnPaste(wxCommandEvent& event)
+void MainFrame::OnCopyUpdateUI(wxUpdateUIEvent& event)
 {
-    event.Skip();
+    event.Enable(false);
 }
 
 //-------------------------------------------------------------------------
@@ -571,51 +720,14 @@ void MainFrame::OnPasteUpdateUI(wxUpdateUIEvent& event)
 }
 
 //-------------------------------------------------------------------------
-// OnCaptureRxStream()
+// OnTogBtnOnOffUI()
 //-------------------------------------------------------------------------
-void MainFrame::OnCaptureRxStream(wxCommandEvent& event)
+void MainFrame::OnTogBtnOnOffUI(wxUpdateUIEvent& event)
 {
     wxUnusedVar(event);
 }
 
-//-------------------------------------------------------------------------
-// OnCaptureTxStream()
-//-------------------------------------------------------------------------
-void MainFrame::OnCaptureTxStream(wxCommandEvent& event)
-{
-    wxUnusedVar(event);
-}
-
-//-------------------------------------------------------------------------
-// OnPlayAudioFile()
-//-------------------------------------------------------------------------
-void MainFrame::OnPlayAudioFile(wxCommandEvent& event)
-{
-    wxUnusedVar(event);
-    if(m_sound != NULL)
-    {
-        if (wxMessageBox(wxT("Current content has not been saved! Proceed?"),wxT("Please confirm"), wxICON_QUESTION | wxYES_NO, this) == wxNO)
-        {
-            return;
-        }
-    }
-    wxFileDialog openFileDialog(this,
-                                wxT("Open Sound file"),
-                                wxEmptyString,
-                                wxEmptyString,
-                                wxT("WAV files (*.wav)|*.wav|")
-                                wxT("RAW files (*.raw)|*.raw|")
-                                wxT("SPEEX files (*.spx)|*.spx|")
-                                wxT("FLAC files (*.flc)|*.flc|")
-                                wxT("All files (*.*)|*.*|"),
-                                wxFD_OPEN | wxFD_FILE_MUST_EXIST);
-    if (openFileDialog.ShowModal() == wxID_CANCEL)
-    {
-        return;     // the user changed their mind...
-    }
-    // proceed loading the file chosen by the user;
-    m_sound->Play(openFileDialog.GetPath());
-}
+*/
 
 //-------------------------------------------------------------------------
 // OnToolsAudio()
@@ -723,6 +835,7 @@ void MainFrame::OnHelpAbout(wxCommandEvent& event)
 //    delete dlg;
 }
 
+/*
 //-------------------------------------------------------------------------
 // LoadUserImage()
 //-------------------------------------------------------------------------
@@ -741,14 +854,7 @@ wxString MainFrame::LoadUserImage(wxImage& image)
     }
     return filename;
 }
-
-//-------------------------------------------------------------------------
-// OnTogBtnOnOffUI()
-//-------------------------------------------------------------------------
-void MainFrame::OnTogBtnOnOffUI(wxUpdateUIEvent& event)
-{
-    wxUnusedVar(event);
-}
+*/
 
 //----------------------------------------------------------
 // Global Codec2 thingys - just one reqd for tx & rx
@@ -763,6 +869,8 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
 {
     if((!m_RxRunning))
     {
+        m_RxRunning = true;
+
         printf("starting ...\n");
 
         m_togBtnSplit->Enable();
@@ -771,13 +879,15 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
         m_togBtnAnalog->Enable();
         m_togBtnALC->Enable();
         m_btnTogTX->Enable();
+        m_togBtnLoopRx->Enable();
+        m_togBtnLoopTx->Enable();
 
         g_pFDMDV  = fdmdv_create();
         g_pCodec2 = codec2_create(CODEC2_MODE_1400);
 
 #ifdef _USE_TIMER
-        // DR: disable this puppy for now as it's causing a lot of error messages
-        //m_plotTimer.Start(500, wxTIMER_CONTINUOUS);
+        //DMW Reenable for the nonce... // DR: disable this puppy for now as it's causing a lot of error messages
+        m_plotTimer.Start(_REFRESH_TIMER_PERIOD, wxTIMER_CONTINUOUS);
 #endif // _USE_TIMER
         startRxStream();
 //        startTxStream();
@@ -788,6 +898,7 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
     }
     else
     {
+        m_RxRunning = false;
         printf("stopping ...\n");
 
         m_togBtnSplit->Disable();
@@ -796,8 +907,11 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
         m_togBtnAnalog->Disable();
         m_togBtnALC->Disable();
         m_btnTogTX->Disable();
+        m_togBtnLoopRx->Disable();
+        m_togBtnLoopTx->Disable();
 #ifdef _USE_TIMER
-        //m_plotTimer.Stop();
+        //DMW Reenable for the nonce...
+        m_plotTimer.Stop();
 #endif // _USE_TIMER
         stopRxStream();
 //        stopTxStream();
@@ -824,17 +938,6 @@ void MainFrame::OnTogBtnLoopTx( wxCommandEvent& event )
 //----------------------------------------------------------
 // Audio stream processing loop states (globals).
 //----------------------------------------------------------
-/*
-float  Ts = 0.0;
-short  input_buf[2*FDMDV_NOM_SAMPLES_PER_FRAME];
-short *output_buf;
-int    n_input_buf = 0;
-int    nin = FDMDV_NOM_SAMPLES_PER_FRAME;
-int    n_output_buf = 0;
-int    codec_bits[2*FDMDV_BITS_PER_FRAME];
-int    state = 0;
-*/
-
 int             g_nRxIn = FDMDV_NOM_SAMPLES_PER_FRAME;
 float           g_Ts = 0.0;
 
@@ -966,8 +1069,8 @@ void MainFrame::stopRxStream()
         fdmdv_destroy(g_pFDMDV);
         codec2_destroy(g_pCodec2);
 //        delete g_RxInBuf;
-    fifo_destroy(m_rxUserdata->infifo);
-    fifo_destroy(m_rxUserdata->outfifo);
+        fifo_destroy(m_rxUserdata->infifo);
+        fifo_destroy(m_rxUserdata->outfifo);
         delete m_rxUserdata;
     }
 /*
@@ -1090,14 +1193,6 @@ void MainFrame::abortTxStream()
     }
 }
 
-//-------------------------------------------------------------------------
-// OnOpen()
-//-------------------------------------------------------------------------
-void MainFrame::OnOpen(wxCommandEvent& event)
-{
-    wxUnusedVar(event);
-}
-
 //----------------------------------------------------------------
 // update average of each spectrum point
 //----------------------------------------------------------------
@@ -1156,8 +1251,7 @@ int MainFrame::rxCallback(
        we do a little FIFO buffering.
     */
 
-    /* assemble a mono buffer (just use left channel) and write to FIFO */
-
+    // assemble a mono buffer (just use left channel) and write to FIFO
     assert(framesPerBuffer < MAX_FPB);
     for(i = 0; i < framesPerBuffer; i++, rptr += 2)
     {
@@ -1165,14 +1259,14 @@ int MainFrame::rxCallback(
     }
     fifo_write(cbData->infifo, indata, framesPerBuffer);
 
-    /* while we have enough samples available ... */
+    // while we have enough samples available ...
     while (fifo_read(cbData->infifo, in48k_short, N48) == 0)
     {
-        /* convert to float */
-
-        for(i=0; i<N48; i++)
+        // convert to float
+        for(i = 0; i < N48; i++)
+        {
             in48k[FDMDV_OS_TAPS + i] = in48k_short[i];
-
+        }
         // downsample and update filter memory
         fdmdv_48_to_8(out8k, &in48k[FDMDV_OS_TAPS], N8);
         for(i = 0; i < FDMDV_OS_TAPS; i++)
@@ -1211,39 +1305,40 @@ int MainFrame::rxCallback(
             g_nOutputBuf -= N8;
         }
         assert(g_nOutputBuf >= 0);
+
         // shift speech samples in output buffer
         for(i = 0; i < (unsigned int)g_nOutputBuf; i++)
         {
             g_pRxOutBuf[i] = g_pRxOutBuf[i + N8];
         }
 
-        /* test: echo input to output, make this loopback option */
-        for(i=0; i<N8; i++)
+        // test: echo input to output, make this loopback option
+        for(i=0; i < N8; i++)
+        {
             in8k[MEM8+i] = out8k[i];
-
+        }
         // Convert output speech to 48 kHz sample rate
         // upsample and update filter memory
         fdmdv_8_to_48(out48k, &in8k[MEM8], N8);
         for(i = 0; i < MEM8; i++)
-            {
+        {
             in8k[i] = in8k[i + N8];
-            }
+        }
         assert(outputBuffer != NULL);
 
         // write signal to fifo
         for(i = 0; i < N48; i++)
-            {
+        {
             out48k_short[i] = (short)out48k[i];
         }
-
         fifo_write(cbData->outfifo, out48k_short, N48);
     }
 
-    /* OK now set up output samples */
+    // OK now set up output samples
     if (fifo_read(cbData->outfifo, outdata, framesPerBuffer) == 0)
     {
-        /* write signal to both channels */
-        for(i=0; i<framesPerBuffer; i++,wptr+=2)
+        // write signal to both channels */
+        for(i = 0; i < framesPerBuffer; i++, wptr += 2)
         {
             wptr[0] = outdata[i];
             wptr[1] = outdata[i];
@@ -1252,14 +1347,13 @@ int MainFrame::rxCallback(
     else
     {
         //printf("no data\n");
-        /* zero output if no data available */
-        for(i=0; i<framesPerBuffer; i++,wptr+=2)
+        // zero output if no data available */
+        for(i = 0; i < framesPerBuffer; i++, wptr += 2)
         {
             wptr[0] = 0;
             wptr[1] = 0;
         }
     }
-
     return paContinue;
 }
 
@@ -1455,34 +1549,3 @@ int MainFrame::txCallback(
     return paContinue;                              // 0;
 }
 
-//-------------------------------------------------------------------------
-// OnSave()
-//-------------------------------------------------------------------------
-void MainFrame::OnSave(wxCommandEvent& WXUNUSED(event))
-{
-/*
-    wxString savefilename = wxFileSelector(wxT("Save Sound File"),
-                                           wxEmptyString,
-                                           wxEmptyString,
-                                           (const wxChar *)NULL,
-                                           wxT("WAV files (*.wav)|*.wav|")
-                                           wxT("RAW files (*.raw)|*.raw|")
-                                           wxT("SPEEX files (*.spx)|*.spx|")
-                                           wxT("FLAC files (*.flc)|*.flc|"),
-                                           wxFD_SAVE,
-                                           this);
-    if(savefilename.empty())
-    {
-        return;
-    }
-    wxString extension;
-    wxFileName::SplitPath(savefilename, NULL, NULL, &extension);
-    bool saved = false;
-    if(!saved)
-    {
-        // This one guesses image format from filename extension
-        // (it may fail if the extension is not recognized):
-        //image.SaveFile(savefilename);
-    }
-*/
-}

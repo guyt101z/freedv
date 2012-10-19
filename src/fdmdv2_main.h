@@ -46,9 +46,12 @@
 #include "sndfile.h"
 #include "portaudio.h"
 
-#define _USE_TIMER          1
-#define _DUMMY_DATA         1
-//#define _AUDIO_PASSTHROUGH  1
+#define _USE_TIMER              1
+//#define _USE_ONIDLE             1
+#define _DUMMY_DATA             1
+//#define _AUDIO_PASSTHROUGH    1
+#define _REFRESH_TIMER_PERIOD   1000
+#define _READ_WITH_SNDFILE      1
 
 enum {
         ID_START = wxID_HIGHEST,
@@ -158,7 +161,7 @@ class MainFrame : public TopFrame
         PaDeviceIndex           m_txDevOut;
         PaError                 m_rxErr;
         PaError                 m_txErr;
-        wxSound                 *m_sound;
+//        wxSound                 *m_sound;
 #ifdef _USE_TIMER
         wxTimer                 m_plotTimer;
 #endif
@@ -207,18 +210,18 @@ class MainFrame : public TopFrame
         void abortRxStream();
 
         void OnOpen( wxCommandEvent& event );
-        void OnOpenUpdateUI( wxUpdateUIEvent& event );
+//        void OnOpenUpdateUI( wxUpdateUIEvent& event );
         void OnSave( wxCommandEvent& event );
-        void OnSaveUpdateUI( wxUpdateUIEvent& event );
+//        void OnSaveUpdateUI( wxUpdateUIEvent& event );
         void OnClose( wxCommandEvent& event );
-        void OnCloseUpdateUI( wxUpdateUIEvent& event );
+//        void OnCloseUpdateUI( wxUpdateUIEvent& event );
         void OnExit( wxCommandEvent& event );
         void OnCopy( wxCommandEvent& event );
-        void OnCopyUpdateUI( wxUpdateUIEvent& event );
+//        void OnCopyUpdateUI( wxUpdateUIEvent& event );
         void OnCut( wxCommandEvent& event );
-        void OnCutUpdateUI( wxUpdateUIEvent& event );
+//        void OnCutUpdateUI( wxUpdateUIEvent& event );
         void OnPaste( wxCommandEvent& event );
-        void OnPasteUpdateUI( wxUpdateUIEvent& event );
+//        void OnPasteUpdateUI( wxUpdateUIEvent& event );
         void OnToolsAudio( wxCommandEvent& event );
         void OnToolsAudioUI( wxUpdateUIEvent& event );
         void OnToolsComCfg( wxCommandEvent& event );
@@ -248,13 +251,13 @@ class MainFrame : public TopFrame
         void OnTogBtnLoopRx( wxCommandEvent& event );
         void OnTogBtnLoopTx( wxCommandEvent& event );
 
-        void OnTogBtnSplitClickUI(wxUpdateUIEvent& event);
-        void OnTogBtnAnalogClickUI(wxUpdateUIEvent& event);
-        void OnTogBtnALCClickUI(wxUpdateUIEvent& event);
-        void OnTogBtnRxIDUI(wxUpdateUIEvent& event );
-        void OnTogBtnTxIDUI(wxUpdateUIEvent& event );
-        void OnTogBtnTXClickUI(wxUpdateUIEvent& event );
-        void OnTogBtnOnOffUI(wxUpdateUIEvent& event );
+//        void OnTogBtnSplitClickUI(wxUpdateUIEvent& event);
+//        void OnTogBtnAnalogClickUI(wxUpdateUIEvent& event);
+//        void OnTogBtnALCClickUI(wxUpdateUIEvent& event);
+//        void OnTogBtnRxIDUI(wxUpdateUIEvent& event );
+//        void OnTogBtnTxIDUI(wxUpdateUIEvent& event );
+//        void OnTogBtnTXClickUI(wxUpdateUIEvent& event );
+//        void OnTogBtnOnOffUI(wxUpdateUIEvent& event );
 
         //System Events
         void OnPaint(wxPaintEvent& event);
@@ -264,15 +267,16 @@ class MainFrame : public TopFrame
         void OnDeleteConfig(wxCommandEvent&);
 #ifdef _USE_TIMER
         void OnTimer(wxTimerEvent &evt);
-#else
+#endif
+#ifdef _USE_ONIDLE
         void OnIdle(wxIdleEvent &evt);
 #endif
-
-        wxString LoadUserImage(wxImage& image);
-
+//        wxString LoadUserImage(wxImage& image);
     private:
         bool CreateSound(wxSound& snd) const;
         wxString    m_soundFile;
+        SF_INFO     m_sfInfo;
+        SNDFILE     *m_sfFile;
 #ifdef __WXMSW__
 //        wxString    m_soundRes;
 #endif // __WXMSW__
