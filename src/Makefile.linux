@@ -15,7 +15,7 @@ CODEC2_INC=-I$(CODEC2_PATH)/src
 CODEC2_LIB=$(CODEC2_PATH)/src/.libs/libcodec2.a
 
 CPP_FLAGS = $(WX_CPPFLAGS) $(CODEC2_INC) -I../extern/include -g -Wall
-LIBS = $(WX_LIBS) $(CODEC2_LIB) -lm -lportaudiocpp -lpthread 
+LIBS = $(WX_LIBS) $(CODEC2_LIB) -lm -lportaudiocpp -lpthread -lsndfile
 
 OBJS = topFrame.o \
 fdmdv2_main.o \
