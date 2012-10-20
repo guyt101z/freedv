@@ -868,9 +868,7 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
 {
     if((!m_RxRunning))
     {
-        m_RxRunning = true;
-
-        printf("starting ...\n");
+	printf("starting ...\n");
 
         m_togBtnSplit->Enable();
         m_togRxID->Enable();
@@ -897,7 +895,6 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
     }
     else
     {
-        m_RxRunning = false;
         printf("stopping ...\n");
 
         m_togBtnSplit->Disable();
@@ -960,8 +957,11 @@ float           g_avmag[FDMDV_NSPEC];
 //-------------------------------------------------------------------------
 void MainFrame::startRxStream()
 {
+    printf("startRxStream\n");
     if(!m_RxRunning)
     {
+	printf("  !m_RxRunning\n");
+
         m_RxRunning = true;
         m_rxPa = new PortAudioWrap();
 
@@ -1052,6 +1052,7 @@ void MainFrame::startRxStream()
             fifo_destroy(m_rxUserdata->outfifo);
             return;
         }
+	printf("end startRxStream\n");
     }
 }
 
@@ -1062,6 +1063,7 @@ void MainFrame::stopRxStream()
 {
     if(m_RxRunning)
     {
+	printf("  stopRxStream(), m_RxRunning true\n");
         m_RxRunning = false;
         m_rxPa->stop();
         m_rxPa->streamClose();

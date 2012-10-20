@@ -38,7 +38,7 @@
 #define MIN_HZ              0
 #define MAX_HZ              4000
 #define WATERFALL_SECS_Y    5       // number of seconds respresented by y axis of waterfall
-#define DT                  0.02    // time between samples
+#define DT                  0.5    // time between samples
 #define FS                  8000    // FDMDV modem sample rate
 
 // Scatter diagram 

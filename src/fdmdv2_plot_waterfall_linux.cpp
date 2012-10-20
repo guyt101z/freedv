@@ -236,7 +236,7 @@ void PlotWaterfall::draw(wxAutoBufferedPaintDC& pDC)
     {
 	printf("  m_newdata\n");
         m_newdata = false;
-        //plotPixelData(pDC);
+        plotPixelData(pDC);
 //#ifdef _USE_TIMER
         int t = m_rPlot.GetTop();
         int l = m_rPlot.GetLeft();
@@ -247,9 +247,9 @@ void PlotWaterfall::draw(wxAutoBufferedPaintDC& pDC)
         int ht = (h - DATA_LINE_HEIGHT);
 
 	printf("t %d l %d h %d w %d t2 %d w2 %d ht %d\n", t,l,h,w,t2,w2,ht);
-        drawData();     //  m_mDC, PLOT_BOTTOM);
+        //drawData();     //  m_mDC, PLOT_BOTTOM);
 	pDC.DrawLine(0,0,100,100);
-	pDC.DrawBitmap( *m_pBitmap, 0, 0/*SIZE+5+pDC.GetCharHeight()*/);
+	pDC.DrawBitmap( *m_pBitmap, 0, 0);
 	//pDC.DrawBitmap(*m_pBmp, 0, 0, true);
 	pDC.DrawLine(200,200,0,200);
         //m_mDC.StretchBlit(l, t2, w2, ht, &m_mDC, l, t2 + DATA_LINE_HEIGHT, w2, ht - 2);
@@ -267,80 +267,6 @@ void PlotWaterfall::draw(wxAutoBufferedPaintDC& pDC)
     delete m_pBitmap;
 }
 
-//-------------------------------------------------------------------------
-// drawData()
-//-------------------------------------------------------------------------
-void PlotWaterfall::drawData()  //wxMemoryDC&  pDC)
-{
-    int w = m_rPlot.GetWidth();
-    int h = m_rPlot.GetHeight();
-    printf("  drawData w = %d h = %d\n", w, h);
-    wxNativePixelData data(*m_pBmp);
-    if ( !data )
-        {
-            wxLogError(wxT("Failed to gain raw access to bitmap data"));
-            return;
-        }
-
-    wxNativePixelData::Iterator p(data);
-    p.Offset(data, 100, 100);
-    for ( int y = 0; y < 20; ++y )
-        {
-            wxNativePixelData::Iterator rowStart = p;
-
-            int r = y < h/3 ? 255 : 0,
-                g = (h/3 <= y) && (y < 2*(h/3)) ? 255 : 0,
-                b = 2*(h/3) <= y ? 255 : 0;
-	    r=g=b=128;
-
-            for ( int x = 0; x < 20; ++x )
-		{
-		    p.Red() = r;
-		    p.Green() = g;
-		    p.Blue() = b;
-		    //printf("%d %d %d\n", r, g, b);
-		    ++p; // same as p.OffsetX(1)
-		}
-
-            p = rowStart;
-            p.OffsetY(data, 1);
-        }
-
-#ifdef PREV
-    wxNativePixelData dPix = wxNativePixelData(*m_pBmp, m_rCtrl);
-    m_pPix = &dPix;
-    if(m_pPix == NULL)
-    {
-        return;
-    }
-    wxNativePixelData::Iterator p(*m_pPix);
-
-    int w = m_rPlot.GetWidth();
-    int h = m_rPlot.GetHeight();
-    p.Offset(*m_pPix, XLEFT_OFFSET + 3, h - (DATA_LINE_HEIGHT - 2));
-    for(int y = 0; y < DATA_LINE_HEIGHT; ++y)
-    {
-        wxNativePixelData::Iterator rowStart = p;
-        for(int x = 0; x < (w - 1); ++x, ++p)
-        {
-//            p.Red()     = m_pTopFrame->m_rxPa->m_av_mag[x];
-//            p.Green()   = m_pTopFrame->m_rxPa->m_av_mag[x];
-//            p.Blue()    = m_pTopFrame->m_rxPa->m_av_mag[x];
-/*
-
-	    p.Red()     = g_avmag[x];
-            p.Green()   = g_avmag[x];
-            p.Blue()    = g_avmag[x];
-*/
-	    p.Red()     = 0;
-            p.Green()   = 0;
-            p.Blue()    = 255;
-        }
-        p = rowStart;
-        p.OffsetY(*m_pPix, 1);
-    }
-#endif
-}
 
 //-------------------------------------------------------------------------
 // drawGraticule()
@@ -405,70 +331,63 @@ void PlotWaterfall::plotPixelData(wxAutoBufferedPaintDC&  dc)
     unsigned    *pdest;
     unsigned    *psrc;
 
+    wxNativePixelData data1(*m_pBitmap);
+
     // determine dy, the height of one "block"
     px_per_sec = (float)m_rCtrl.GetHeight() / WATERFALL_SECS_Y;
     dy = DT * px_per_sec;
+
     // number of dy high blocks in spectrogram
     dy_blocks = m_rCtrl.GetHeight()/ dy;
-    // shift previous bit map
+
+    intensity_per_dB  = (float)256 /(MAX_DB - MIN_DB);
+    spec_index_per_px = (float)FDMDV_NSPEC / (float) m_rCtrl.GetWidth();
+
+    printf("h %d w %d px_per_sec %d dy %d dy_blocks %d spec_index_per_px: %f\n", 
+	   m_rCtrl.GetHeight(), m_rCtrl.GetWidth(), px_per_sec, 
+	   dy, dy_blocks, spec_index_per_px);
+
+    // shift previous bit map up one row of blocks ----------------------------
+
+#ifdef SHIFT_UP
     bytes_in_row_of_blocks = dy * m_rCtrl.GetWidth() * sizeof(unsigned);
     for(b = 0; b < dy_blocks - 1; b++)
     {
-        pdest = (unsigned int *)m_pBmp + b * m_rCtrl.GetWidth() * dy;
-        psrc  = (unsigned int *)m_pBmp + (b + 1) * m_rCtrl.GetWidth() * dy;
-        memcpy(pdest, psrc, bytes_in_row_of_blocks);
+        pdest = (unsigned int *)m_pBitmap + b * m_rCtrl.GetWidth() * dy;
+        psrc  = (unsigned int *)m_pBitmap + (b + 1) * m_rCtrl.GetWidth() * dy;
+        //memcpy(pdest, psrc, bytes_in_row_of_blocks);
     }
     // create a new row of blocks at bottom
-    spec_index_per_px = (float)FDMDV_NSPEC / (float) m_rCtrl.GetWidth();
-    intensity_per_dB  = (float)256 /(MAX_DB - MIN_DB);
-    last_row = (unsigned int *)m_pBmp + dy *(dy_blocks - 1)* m_rCtrl.GetWidth();
+    last_row = (unsigned int *)m_pBitmap + dy *(dy_blocks - 1)* m_rCtrl.GetWidth();
+#endif
 
-    wxNativePixelData data(*m_pBmp);
-    if(!data)
-    {
-        wxMessageBox(wxT("Unable to access Bitmap Data"), wxT("Error"));
-        return;
-    }
-    if(data.GetWidth() < 20 || data.GetHeight() < 20)
-    {
-        wxMessageBox(wxT("Bitmap is too small to use"), wxT("Warning"));
-        return;
-    }
+    // Draw last line using latest amplitude data -----------------------------
+
+    wxNativePixelData data(*m_pBitmap);
+    assert(data != NULL);
     wxNativePixelData::Iterator p(data);
-    // we draw a (10, 10)-(20, 20) rect manually using the given r, g, b
-    p.Offset(data, 10, 10);
-    for(px = 0; px < m_rCtrl.GetWidth(); px++)
+    p.OffsetY(data, dy *(dy_blocks - 1));
+    printf("Y offset: %d\n", dy *(dy_blocks - 1));
+
+    for(py = 0; py < dy; py++)
     {
-        index = px * spec_index_per_px;
-        // intensity = intensity_per_dB * (m_av_mag[index] - MIN_DB);
-        intensity = intensity_per_dB * (g_avmag[index] - MIN_DB);
-//        intensity = intensity_per_dB * (((MainFrame *)GetParent())->m_rxPa->m_av_mag[index] - MIN_DB);
-//        intensity = intensity_per_dB * (((MainFrame *)GetParent())->m_av_mag[index] - MIN_DB);
-        if(intensity > 255)
+	wxNativePixelData::Iterator rowStart = p;
+
+	for(px = 0; px < m_rCtrl.GetWidth(); px++)
         {
-            intensity = 255;
+	    index = px * spec_index_per_px;
+	    intensity = intensity_per_dB * (g_avmag[index] - MIN_DB);
+	    if(intensity > 255) intensity = 255;
+	    if (intensity < 0) intensity = 0;
+	    //printf("%d %f %d \n", index, g_avmag[index], intensity);
+
+	    p.Red() = m_heatmap_lut[intensity] & 0xff;
+	    p.Green() = (m_heatmap_lut[intensity] >> 8) & 0xff;
+	    p.Blue() = (m_heatmap_lut[intensity] >> 16) & 0xff;
+	    ++p;
         }
-        if(intensity > 255)
-        {
-            intensity = 255;
-        }
-        if (intensity < 0)
-        {
-            intensity = 0;
-        }
-        if(m_greyscale)
-        {
-            for(py = 0; py < dy; py++)
-            {
-                last_row[px + py * m_rCtrl.GetWidth()] = intensity << 8;
-            }
-        }
-        else
-        {
-            for(py = 0; py < dy; py++)
-            {
-                last_row[px + py * m_rCtrl.GetWidth()] = m_heatmap_lut[intensity];
-            }
-        }
+
+	p = rowStart;
+	p.OffsetY(data, 1);
     }
 }
