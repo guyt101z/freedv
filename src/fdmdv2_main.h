@@ -54,7 +54,7 @@
 //#define _USE_ONIDLE             1
 #define _DUMMY_DATA             1
 //#define _AUDIO_PASSTHROUGH    1
-#define _REFRESH_TIMER_PERIOD   1000
+#define _REFRESH_TIMER_PERIOD   (DT*1000)
 #define _READ_WITH_SNDFILE      1
 
 enum {
