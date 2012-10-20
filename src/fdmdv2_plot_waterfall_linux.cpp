@@ -25,21 +25,8 @@
 #include <string.h>
 #include "wx/wx.h"
 #include "fdmdv2_main.h"
-#include "fdmdv2_plot_waterfall_linux.h"
 
-/*
-
-  Notes:
-
-  The height h() pixels represents WATERFALL_SECS_Y of data.  Every DT
-  seconds we get a vector of FDMDV_NSPEC spectrum samples which we use
-  to update the last row.  The height of each row is dy pixels, which
-  maps to DT seconds.  We call each dy high rectangle of pixels a
-  block.
-
-*/
-
-extern float g_avmag[];
+extern float g_avmag[]; // magnitude spectrum passed in to draw() 
 
 BEGIN_EVENT_TABLE(PlotWaterfall, PlotPanel)
     EVT_PAINT           (PlotWaterfall::OnPaint)
@@ -49,7 +36,6 @@ BEGIN_EVENT_TABLE(PlotWaterfall, PlotPanel)
     EVT_MOUSEWHEEL      (PlotWaterfall::OnMouseWheelMoved)
     EVT_SIZE            (PlotWaterfall::OnSize)
     EVT_SHOW            (PlotWaterfall::OnShow)
-//    EVT_ERASE_BACKGROUND(PlotWaterfall::OnErase)
 END_EVENT_TABLE()
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
@@ -77,38 +63,26 @@ PlotWaterfall::PlotWaterfall(wxFrame* parent): PlotPanel(parent)
     SetLabelSize(10.0);
 }
 
-void PlotWaterfall::InitBitmap(int xsize, int ysize)
-    {
-        // draw some colourful stripes without alpha
-	//printf("m_pBitmap 0x%x\n", (unsigned int)m_pBitmap);
-        wxNativePixelData data(*m_pBitmap);
-        if ( !data )
-        {
-            wxLogError(wxT("InitBitmap: Failed to gain raw access to bitmap data"));
-            return;
-        }
+// When the window size gets set we can work outthe size of the window
+// we plot in and allocate a bit map of the correct size
 
-        wxNativePixelData::Iterator p(data);
-        for ( int y = 0; y < ysize; ++y )
-        {
-            wxNativePixelData::Iterator rowStart = p;
+void PlotWaterfall::OnSize(wxSizeEvent& event) {
 
-            int r = y < ysize/3 ? 255 : 0,
-                g = (ysize/3 <= y) && (y < 2*(ysize/3)) ? 255 : 0,
-                b = 2*(ysize/3) <= y ? 255 : 0;
+    m_rCtrl  = GetClientRect();
 
-            for ( int x = 0; x < xsize; ++x )
-            {
-                p.Red() = r;
-                p.Green() = g;
-                p.Blue() = b;
-                ++p; // same as p.OffsetX(1)
-            }
+    // m_rGrid is coords of inner window we actually plot to.  We defalte it a bit
+    // to leave room for axis labels.
 
-            p = rowStart;
-            p.OffsetY(data, 1);
-        }
-    }
+    m_rGrid  = m_rCtrl;
+    m_rGrid = m_rGrid.Deflate(PLOT_BORDER + (XLEFT_OFFSET/2), (PLOT_BORDER + (YBOTTOM_OFFSET/2)));
+    //m_rGrid.Offset(PLOT_BORDER + XLEFT_OFFSET, PLOT_BORDER);
+    //m_rGrid = m_rGrid.Deflate(PLOT_BORDER + (XLEFT_OFFSET*2), (PLOT_BORDER + (YBOTTOM_OFFSET*2)));
+    //m_rGrid.Offset(PLOT_BORDER + XLEFT_OFFSET, PLOT_BORDER);
+
+    // we want a bit map the size of  m_rGrid
+
+    m_pBmp = new wxBitmap(m_rGrid.GetWidth(), m_rGrid.GetHeight(), 24);
+}
 
 //----------------------------------------------------------------
 // paintEvent()
@@ -125,7 +99,6 @@ void PlotWaterfall::InitBitmap(int xsize, int ysize)
 //----------------------------------------------------------------
 void PlotWaterfall::OnPaint(wxPaintEvent & evt)
 {
-    printf("OnPaint\n");
     wxAutoBufferedPaintDC pdc(this);
     draw(pdc);
 }
@@ -180,91 +153,35 @@ unsigned PlotWaterfall::heatmap(float val, float min, float max)
     return  (b << 16) + (g << 8) + r;
 }
 
-#define PLOT_BOTTOM     0
-#define PLOT_TOP        1
-
-//static long paint_count;
-
 //----------------------------------------------------------------
 // draw()
 //----------------------------------------------------------------
 void PlotWaterfall::draw(wxAutoBufferedPaintDC& pDC)
 {
-    printf("  draw m_pBmp 0x%x\n", (unsigned int)m_pBmp);
-
-    //m_pBitmap = new wxBitmap(SIZE, SIZE, 24);
-    
-    { 
-	wxRect m_rCtrl  = GetClientRect();
-	printf("%d %d\n", m_rCtrl.GetWidth(), m_rCtrl.GetHeight());
-	m_pBitmap = new wxBitmap(m_rCtrl.GetWidth(), m_rCtrl.GetHeight(), 24);
-	InitBitmap(m_rCtrl.GetWidth(), m_rCtrl.GetHeight());
-   }
-    
-    printf("m_pBitmap 0x%x\n", (unsigned int)m_pBitmap);
-
-    wxMemoryDC m_mDC;
-    m_mDC.SelectObject(*m_pBmp);
-    m_rCtrl  = GetClientRect();
-    m_rGrid  = m_rCtrl;
-
-    m_rGrid = m_rGrid.Deflate(PLOT_BORDER + (XLEFT_OFFSET/2), (PLOT_BORDER + (YBOTTOM_OFFSET/2)));
-    m_rGrid.Offset(PLOT_BORDER + XLEFT_OFFSET, PLOT_BORDER);
-
+    printf("PlotWaterfall::draw  m_newdata: %d\n", m_newdata);
     pDC.Clear();
-//    m_mDC.Clear();
-    m_rPlot = wxRect(PLOT_BORDER + XLEFT_OFFSET, PLOT_BORDER, m_rGrid.GetWidth(), m_rGrid.GetHeight());
-//    if(m_firstPass)
-//    {
-//        m_firstPass = false;
-//        m_mDC.FloodFill(0, 0, VERY_LTGREY_COLOR);
-
-        // Draw a filled rectangle with aborder
-//        wxBrush ltGraphBkgBrush = wxBrush(DARK_BLUE_COLOR);
-//        m_mDC.SetBrush(ltGraphBkgBrush);
-//        m_mDC.SetPen(wxPen(BLACK_COLOR, 0));
-//        m_mDC.DrawRectangle(m_rPlot);
-
-//    }
-    wxBrush ltGraphBkgBrush = wxBrush(DARK_BLUE_COLOR);
-    pDC.SetBrush(ltGraphBkgBrush);
-    pDC.SetPen(wxPen(BLACK_COLOR, 0));
-    pDC.DrawRectangle(m_rPlot);
-    drawGraticule(pDC);
 
     if(m_newdata)
     {
-	printf("  m_newdata\n");
         m_newdata = false;
         plotPixelData(pDC);
-//#ifdef _USE_TIMER
-        int t = m_rPlot.GetTop();
-        int l = m_rPlot.GetLeft();
-        int h = m_rPlot.GetHeight();
-        int w = m_rPlot.GetWidth();
-        int t2 = t + 1;
-        int w2 = w - 1;
-        int ht = (h - DATA_LINE_HEIGHT);
-
-	printf("t %d l %d h %d w %d t2 %d w2 %d ht %d\n", t,l,h,w,t2,w2,ht);
-        //drawData();     //  m_mDC, PLOT_BOTTOM);
-	pDC.DrawLine(0,0,100,100);
-	pDC.DrawBitmap( *m_pBitmap, 0, 0);
-	//pDC.DrawBitmap(*m_pBmp, 0, 0, true);
-	pDC.DrawLine(200,200,0,200);
-        //m_mDC.StretchBlit(l, t2, w2, ht, &m_mDC, l, t2 + DATA_LINE_HEIGHT, w2, ht - 2);
-        //pDC.Blit(l, t, w, h, &m_mDC, l, t);                                                   // Scroll Up from Bottom
-//        pDC.StretchBlit(l, (h - t) + 4, w, (-h) + 4, &m_mDC, l, t, w, h);                       // Scroll Down from top
-//        pDC.StretchBlit(l, (h - t) + 4, w, h - 4, &m_mDC, l, t, w, h);                       // Scroll Down from top
-//#endif
-#ifdef TMP
-#endif
-        //drawGraticule(pDC);
+	pDC.DrawBitmap(*m_pBmp, PLOT_BORDER + XLEFT_OFFSET, PLOT_BORDER);
     }
-    m_mDC.SetBrush(wxNullBrush);
-    m_mDC.SelectObject(wxNullBitmap);
+    else {
+	
+	// no data to plot so just erase to black.  Blue looks nicer
+	// but is same colour as low amplitude signal
 
-    delete m_pBitmap;
+	m_rPlot = wxRect(PLOT_BORDER + XLEFT_OFFSET, PLOT_BORDER, m_rGrid.GetWidth(), m_rGrid.GetHeight());
+	wxBrush ltGraphBkgBrush = wxBrush(BLACK_COLOR);
+	pDC.SetBrush(ltGraphBkgBrush);
+	pDC.SetPen(wxPen(BLACK_COLOR, 0));
+	pDC.DrawRectangle(m_rPlot);
+	//printf("x %d y %d w %d h %d\n", m_rPlot.x, m_rPlot.y, m_rPlot.width, m_rPlot.height);
+    }
+    
+    drawGraticule(pDC);
+
 }
 
 
@@ -322,52 +239,77 @@ void PlotWaterfall::plotPixelData(wxAutoBufferedPaintDC&  dc)
     int         index;
     int         dy;
     int         dy_blocks;
-    int         bytes_in_row_of_blocks;
     int         b;
     int         px;
     int         py;
     int         intensity;
-    unsigned    *last_row;
-    unsigned    *pdest;
-    unsigned    *psrc;
 
-    wxNativePixelData data1(*m_pBitmap);
+    /*
+      Design Notes:
+
+      The height in pixels represents WATERFALL_SECS_Y of data.  Every DT
+      seconds we get a vector of FDMDV_NSPEC spectrum samples which we use
+      to update the last row.  The height of each row is dy pixels, which
+      maps to DT seconds.  We call each dy high rectangle of pixels a
+      block.
+
+    */
 
     // determine dy, the height of one "block"
-    px_per_sec = (float)m_rCtrl.GetHeight() / WATERFALL_SECS_Y;
+    px_per_sec = (float)m_rGrid.GetHeight() / WATERFALL_SECS_Y;
     dy = DT * px_per_sec;
 
     // number of dy high blocks in spectrogram
-    dy_blocks = m_rCtrl.GetHeight()/ dy;
+    dy_blocks = m_rGrid.GetHeight()/ dy;
 
     intensity_per_dB  = (float)256 /(MAX_DB - MIN_DB);
-    spec_index_per_px = (float)FDMDV_NSPEC / (float) m_rCtrl.GetWidth();
-
+    spec_index_per_px = (float)FDMDV_NSPEC / (float) m_rGrid.GetWidth();
+    
+    /*
     printf("h %d w %d px_per_sec %d dy %d dy_blocks %d spec_index_per_px: %f\n", 
-	   m_rCtrl.GetHeight(), m_rCtrl.GetWidth(), px_per_sec, 
+	   m_rGrid.GetHeight(), m_rGrid.GetWidth(), px_per_sec, 
 	   dy, dy_blocks, spec_index_per_px);
+    */
 
-    // shift previous bit map up one row of blocks ----------------------------
+    // Shift previous bit map up one row of blocks ----------------------------
 
-#ifdef SHIFT_UP
-    bytes_in_row_of_blocks = dy * m_rCtrl.GetWidth() * sizeof(unsigned);
-    for(b = 0; b < dy_blocks - 1; b++)
-    {
-        pdest = (unsigned int *)m_pBitmap + b * m_rCtrl.GetWidth() * dy;
-        psrc  = (unsigned int *)m_pBitmap + (b + 1) * m_rCtrl.GetWidth() * dy;
-        //memcpy(pdest, psrc, bytes_in_row_of_blocks);
-    }
-    // create a new row of blocks at bottom
-    last_row = (unsigned int *)m_pBitmap + dy *(dy_blocks - 1)* m_rCtrl.GetWidth();
-#endif
-
-    // Draw last line using latest amplitude data -----------------------------
-
-    wxNativePixelData data(*m_pBitmap);
+    wxNativePixelData data(*m_pBmp);
     assert(data != NULL);
-    wxNativePixelData::Iterator p(data);
+    wxNativePixelData::Iterator bitMapStart(data);
+    wxNativePixelData::Iterator p = bitMapStart;
+
+    for(b = 0; b < dy_blocks - 1; b++) {
+	wxNativePixelData::Iterator psrc = bitMapStart;
+	wxNativePixelData::Iterator pdest = bitMapStart;
+	pdest.OffsetY(data, dy * b);
+	psrc.OffsetY(data, dy * (b+1));
+
+	// copy one line of blocks
+
+	for(py = 0; py < dy; py++) {
+	    wxNativePixelData::Iterator pdestRowStart = pdest;
+	    wxNativePixelData::Iterator psrcRowStart = psrc;
+
+	    for(px = 0; px < m_rGrid.GetWidth(); px++) {
+		pdest.Red() = psrc.Red();
+		pdest.Green() = psrc.Green();
+		pdest.Blue() = psrc.Blue();
+		pdest++;
+		psrc++;
+	    }
+
+	    pdest = pdestRowStart;
+	    pdest.OffsetY(data, 1);
+	    psrc = psrcRowStart;
+	    psrc.OffsetY(data, 1);	    
+        }
+
+    }
+
+    // Draw last line of blocks using latest amplitude data ------------------
+
+    p = bitMapStart;
     p.OffsetY(data, dy *(dy_blocks - 1));
-    printf("Y offset: %d\n", dy *(dy_blocks - 1));
 
     for(py = 0; py < dy; py++)
     {

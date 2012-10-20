@@ -32,8 +32,10 @@ dlg_options.o
 
 all: fdmdv2
 
-fdmdv2: $(OBJS)
+fdmdv2: $(OBJS) fdmdv2_main.h
 	g++ -o fdmdv2 $(OBJS) $(CPP_FLAGS) $(LIBS)
+
+fdmdv2_main.h: fdmdv2_defines.h fdmdv2_plot.h fdmdv2_plot_scalar.h fdmdv2_plot_waterfall_linux.h fdmdv2_plot_scatter.h fdmdv2_plot_spectrum.h fdmdv2_pa_wrapper.h
 
 %.o: %.cpp
 	g++ $(CPP_FLAGS) -c $< -o $@

@@ -106,7 +106,6 @@ void PlotPanel::OnErase(wxEraseEvent& event)
 //-------------------------------------------------------------------------
 void PlotPanel::OnSize(wxSizeEvent& event)
 {
-    printf("PlotPanel::OnSize\n");
     m_rCtrlPrev = m_rCtrl;
     m_rCtrl     = GetClientRect();
     if(m_use_bitmap)
@@ -184,6 +183,7 @@ double PlotPanel::GetZoomFactor(double zf)
 //-------------------------------------------------------------------------
 void PlotPanel::draw(wxAutoBufferedPaintDC& pDC)
 {
+    printf("PlotPanel::draw()");
     wxMemoryDC m_mDC;
     m_mDC.SelectObject(*m_pBmp);
     m_rCtrl  = GetClientRect();
