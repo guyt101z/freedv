@@ -1000,6 +1000,7 @@ void MainFrame::startRxStream()
         {
             wxMessageBox(wxT("Rx Error: No default output device."), wxT("Error"), wxOK);
             delete m_rxPa;
+	    free(g_pRxOutBuf);
             m_RxRunning = false;
             return;
         }
@@ -1041,6 +1042,7 @@ void MainFrame::startRxStream()
             delete m_rxPa;
             fifo_destroy(m_rxUserdata->infifo);
             fifo_destroy(m_rxUserdata->outfifo);
+	    free(g_pRxOutBuf);
             return;
         }
         m_rxErr = m_rxPa->streamStart();
@@ -1050,7 +1052,8 @@ void MainFrame::startRxStream()
             delete m_rxPa;
             fifo_destroy(m_rxUserdata->infifo);
             fifo_destroy(m_rxUserdata->outfifo);
-            return;
+	    free(g_pRxOutBuf);
+           return;
         }
 	printf("end startRxStream\n");
     }
@@ -1067,9 +1070,10 @@ void MainFrame::stopRxStream()
         m_RxRunning = false;
         m_rxPa->stop();
         m_rxPa->streamClose();
+	delete m_rxPa;
         fdmdv_destroy(g_pFDMDV);
         codec2_destroy(g_pCodec2);
-//        delete g_RxInBuf;
+	free(g_pRxOutBuf);
         fifo_destroy(m_rxUserdata->infifo);
         fifo_destroy(m_rxUserdata->outfifo);
         delete m_rxUserdata;
