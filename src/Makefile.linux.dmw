@@ -1,0 +1,45 @@
+# src/Makefile.linux
+# David Rowe 10 Oct 2012
+#
+# Makefile for Linux to help David R get up to speed
+#
+# $ make -f Makefile.linux
+
+WX_GTK_PATH=/home/wittend/Projects/wxWidgets-2.9.4/build_gtk
+CODEC2_PATH=/home/wittend/Projects/codec2-dev
+
+WX_CONFIG=$(WX_GTK_PATH)/wx-config
+WX_CPPFLAGS = $(shell $(WX_CONFIG) --cxxflags)
+WX_LIBS = $(shell $(WX_CONFIG) --libs core, base, aui)
+CODEC2_INC=-I$(CODEC2_PATH)/src
+CODEC2_LIB=$(CODEC2_PATH)/src/.libs/libcodec2.a
+
+CPP_FLAGS = $(WX_CPPFLAGS) $(CODEC2_INC) -I../extern/include -g -Wall
+LIBS = $(WX_LIBS) $(CODEC2_LIB) -lm -lportaudiocpp -lpthread -lsndfile
+
+OBJS = topFrame.o \
+fdmdv2_main.o \
+fdmdv2_plot.o \
+fdmdv2_plot_scalar.o \
+fdmdv2_plot_scatter.o \
+fdmdv2_plot_spectrum.o \
+fdmdv2_plot_waterfall_linux.o \
+fdmdv2_pa_wrapper.o \
+dlg_about.o \
+dlg_audio.o \
+dlg_comports.o \
+dlg_options.o
+
+all: fdmdv2
+
+fdmdv2: $(OBJS) fdmdv2_main.h
+	g++ -o fdmdv2 $(OBJS) $(CPP_FLAGS) $(LIBS)
+
+fdmdv2_main.h: fdmdv2_defines.h fdmdv2_plot.h fdmdv2_plot_scalar.h fdmdv2_plot_waterfall_linux.h fdmdv2_plot_scatter.h fdmdv2_plot_spectrum.h fdmdv2_pa_wrapper.h
+
+%.o: %.cpp
+	g++ $(CPP_FLAGS) -c $< -o $@
+
+clean:
+	rm -f *.o fdmdv2
+
