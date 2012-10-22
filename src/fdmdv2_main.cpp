@@ -598,18 +598,18 @@ void MainFrame::OnPaste(wxCommandEvent& event)
 //-------------------------------------------------------------------------
 // OnCaptureRxStream()
 //-------------------------------------------------------------------------
-void MainFrame::OnCaptureRxStream(wxCommandEvent& event)
-{
-    wxUnusedVar(event);
-}
+//void MainFrame::OnCaptureRxStream(wxCommandEvent& event)
+//{
+//    wxUnusedVar(event);
+//}
 
 //-------------------------------------------------------------------------
 // OnCaptureTxStream()
 //-------------------------------------------------------------------------
-void MainFrame::OnCaptureTxStream(wxCommandEvent& event)
-{
-    wxUnusedVar(event);
-}
+//void MainFrame::OnCaptureTxStream(wxCommandEvent& event)
+//{
+//    wxUnusedVar(event);
+//}
 
 /*
 //-------------------------------------------------------------------------

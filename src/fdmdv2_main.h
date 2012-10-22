@@ -232,8 +232,8 @@ class MainFrame : public TopFrame
         void OnToolsComCfgUI( wxUpdateUIEvent& event );
         void OnToolsOptions( wxCommandEvent& event );
         void OnToolsOptionsUI( wxUpdateUIEvent& event );
-        void OnCaptureRxStream( wxCommandEvent& event );
-        void OnCaptureTxStream( wxCommandEvent& event );
+        //void OnCaptureRxStream( wxCommandEvent& event );
+       // void OnCaptureTxStream( wxCommandEvent& event );
         void OnPlayAudioFile( wxCommandEvent& event );
         void OnHelpCheckUpdates( wxCommandEvent& event );
         void OnHelpCheckUpdatesUI( wxUpdateUIEvent& event );
