@@ -63,7 +63,7 @@ class PlotWaterfall : public PlotPanel
         void        OnShow(wxShowEvent& event);
         void        drawGraticule(wxAutoBufferedPaintDC&  dc);
         void        draw(wxAutoBufferedPaintDC& pdc);
-        void        plotPixelData(wxAutoBufferedPaintDC&  dc);
+        void        plotPixelData();
 
         DECLARE_EVENT_TABLE()
 };

@@ -255,6 +255,7 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
 //----------------------------------------------------------------
 void MainFrame::OnIdle(wxIdleEvent& event)
 {
+    printf("OnIdle\n");
     if(m_panelWaterfall->m_newdata)
     {
         m_panelWaterfall->Refresh();
@@ -411,7 +412,8 @@ void MainFrame::OnTogBtnAnalogClick (wxCommandEvent& event)
 //-------------------------------------------------------------------------
 void MainFrame::OnTogBtnALCClick(wxCommandEvent& event)
 {
-//    wxMessageBox(wxT("Got Click!"), wxT("OnTogBtnALCClick"), wxOK);
+    wxMessageBox(wxT("Got Click!"), wxT("OnTogBtnALCClick"), wxOK);
+
     event.Skip();
 }
 
@@ -887,7 +889,7 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
         m_plotTimer.Start(_REFRESH_TIMER_PERIOD, wxTIMER_CONTINUOUS);
 #endif // _USE_TIMER
         startRxStream();
-//        startTxStream();
+        //startTxStream();
         if (m_RxRunning)
         {
             m_togBtnOnOff->SetLabel(wxT("Stop"));
@@ -920,7 +922,7 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
 //----------------------------------------------------------
 void MainFrame::OnTogBtnLoopRx( wxCommandEvent& event )
 {
-    wxMessageBox(wxT("Got Click!"), wxT("OnTogBtnLoopRx()"), wxOK);
+     wxMessageBox(wxT("Got Click!"), wxT("OnTogBtnLoopRx()"), wxOK);
 }
 
 //----------------------------------------------------------
@@ -1053,7 +1055,7 @@ void MainFrame::startRxStream()
             fifo_destroy(m_rxUserdata->infifo);
             fifo_destroy(m_rxUserdata->outfifo);
 	    free(g_pRxOutBuf);
-           return;
+	    return;
         }
 	printf("end startRxStream\n");
     }

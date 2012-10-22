@@ -70,16 +70,13 @@ void PlotWaterfall::OnSize(wxSizeEvent& event) {
 
     m_rCtrl  = GetClientRect();
 
-    // m_rGrid is coords of inner window we actually plot to.  We defalte it a bit
+    // m_rGrid is coords of inner window we actually plot to.  We deflate it a bit
     // to leave room for axis labels.
 
     m_rGrid  = m_rCtrl;
     m_rGrid = m_rGrid.Deflate(PLOT_BORDER + (XLEFT_OFFSET/2), (PLOT_BORDER + (YBOTTOM_OFFSET/2)));
-    //m_rGrid.Offset(PLOT_BORDER + XLEFT_OFFSET, PLOT_BORDER);
-    //m_rGrid = m_rGrid.Deflate(PLOT_BORDER + (XLEFT_OFFSET*2), (PLOT_BORDER + (YBOTTOM_OFFSET*2)));
-    //m_rGrid.Offset(PLOT_BORDER + XLEFT_OFFSET, PLOT_BORDER);
 
-    // we want a bit map the size of  m_rGrid
+    // we want a bit map the size of m_rGrid
 
     m_pBmp = new wxBitmap(m_rGrid.GetWidth(), m_rGrid.GetHeight(), 24);
 }
@@ -158,13 +155,11 @@ unsigned PlotWaterfall::heatmap(float val, float min, float max)
 //----------------------------------------------------------------
 void PlotWaterfall::draw(wxAutoBufferedPaintDC& pDC)
 {
-    printf("PlotWaterfall::draw  m_newdata: %d\n", m_newdata);
-    pDC.Clear();
 
     if(m_newdata)
     {
         m_newdata = false;
-        plotPixelData(pDC);
+        plotPixelData();
 	pDC.DrawBitmap(*m_pBmp, PLOT_BORDER + XLEFT_OFFSET, PLOT_BORDER);
     }
     else {
@@ -172,12 +167,14 @@ void PlotWaterfall::draw(wxAutoBufferedPaintDC& pDC)
 	// no data to plot so just erase to black.  Blue looks nicer
 	// but is same colour as low amplitude signal
 
+	// Bug: When Stop is pressed this code doesn't erase the lower 
+	// 25% of the Waterfall Window
+
 	m_rPlot = wxRect(PLOT_BORDER + XLEFT_OFFSET, PLOT_BORDER, m_rGrid.GetWidth(), m_rGrid.GetHeight());
 	wxBrush ltGraphBkgBrush = wxBrush(BLACK_COLOR);
 	pDC.SetBrush(ltGraphBkgBrush);
 	pDC.SetPen(wxPen(BLACK_COLOR, 0));
 	pDC.DrawRectangle(m_rPlot);
-	//printf("x %d y %d w %d h %d\n", m_rPlot.x, m_rPlot.y, m_rPlot.width, m_rPlot.height);
     }
     
     drawGraticule(pDC);
@@ -231,7 +228,7 @@ void PlotWaterfall::drawGraticule(wxAutoBufferedPaintDC&  pDC)
 //-------------------------------------------------------------------------
 // plotPixelData()
 //-------------------------------------------------------------------------
-void PlotWaterfall::plotPixelData(wxAutoBufferedPaintDC&  dc)
+void PlotWaterfall::plotPixelData()
 {
     float       spec_index_per_px;
     float       intensity_per_dB;
