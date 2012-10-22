@@ -72,7 +72,7 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     tools->Append(m_menuItemOptions);
 
     tools->AppendSeparator();
-
+/*
     wxMenuItem* m_menuItemCaptRxStream;
     m_menuItemCaptRxStream = new wxMenuItem(tools, wxID_ANY, wxString(_("Capture Rx Stream")) + wxT('\t') + wxT("Capture receive stream to file."), wxEmptyString, wxITEM_NORMAL);
     #ifdef __WXMSW__
@@ -90,7 +90,7 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     m_menuItemCaptTxStream->SetBitmap(wxNullBitmap);
     #endif
     tools->Append(m_menuItemCaptTxStream);
-
+*/
     tools->AppendSeparator();
 
     wxMenuItem* m_menuItemPlayAudioFile;
@@ -357,8 +357,8 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     this->Connect(m_menuItemRigCtrlCfg->GetId(), wxEVT_UPDATE_UI, wxUpdateUIEventHandler(TopFrame::OnToolsComCfgUI));
     this->Connect(m_menuItemOptions->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(TopFrame::OnToolsOptions));
     this->Connect(m_menuItemOptions->GetId(), wxEVT_UPDATE_UI, wxUpdateUIEventHandler(TopFrame::OnToolsOptionsUI));
-    this->Connect(m_menuItemCaptRxStream->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(TopFrame::OnCaptureRxStream));
-    this->Connect(m_menuItemCaptTxStream->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(TopFrame::OnCaptureTxStream));
+//    this->Connect(m_menuItemCaptRxStream->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(TopFrame::OnCaptureRxStream));
+//    this->Connect(m_menuItemCaptTxStream->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(TopFrame::OnCaptureTxStream));
     this->Connect(m_menuItemPlayAudioFile->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(TopFrame::OnPlayAudioFile));
     this->Connect(m_menuItemHelpUpdates->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(TopFrame::OnHelpCheckUpdates));
     this->Connect(m_menuItemHelpUpdates->GetId(), wxEVT_UPDATE_UI, wxUpdateUIEventHandler(TopFrame::OnHelpCheckUpdatesUI));

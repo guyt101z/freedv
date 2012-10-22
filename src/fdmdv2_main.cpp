@@ -4,6 +4,7 @@
 // Purpose:         Implements simple wxWidgets application with GUI.
 // Created:         Apr. 9, 2012
 // Initial author:  David Witten
+// Derived from:    code written by David Rowe
 // License:
 //
 //  Copyright (C) 2012 David Witten
@@ -113,12 +114,6 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     m_panelSpectrum = new PlotSpectrum((wxFrame*) m_auiNbookCtrl);
     m_auiNbookCtrl->AddPage(m_panelSpectrum, _("Spectrum"), true, wxNullBitmap);
 
-//    m_panelScatter = new PlotScatter((wxFrame*) m_auiNbookCtrl);
-//    m_auiNbookCtrl->AddPage(m_panelWaterfall, _("Scatter"), true, wxNullBitmap);
-
-//    m_panelScalar = new PlotScalar((wxFrame*) m_auiNbookCtrl, 500, 500);
-//    m_auiNbookCtrl->AddPage(m_panelWaterfall, _("Scalar"), true, wxNullBitmap);
-
     wxConfigBase *pConfig = wxConfigBase::Get();
 
     // restore frame position and size
@@ -166,9 +161,6 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
 #ifdef _USE_TIMER
     Bind(wxEVT_TIMER, &MainFrame::OnTimer, this);       // ID_MY_WINDOW);
     m_plotTimer.SetOwner(this, ID_TIMER_WATERFALL);
-//    m_rxPa = new PortAudioWrap();
-//    m_plotTimer.Start(_REFRESH_TIMER_PERIOD, wxTIMER_CONTINUOUS);
-//    m_panelWaterfall->m_newdata = true;
     m_panelWaterfall->Refresh();
 #endif
 
@@ -568,7 +560,6 @@ void MainFrame::OnClose(wxCommandEvent& event)
 //-------------------------------------------------------------------------
 void MainFrame::OnExit(wxCommandEvent& event)
 {
-//    OnClose(event);
     if(m_RxRunning)
     {
         stopRxStream();
@@ -622,63 +613,6 @@ void MainFrame::OnCaptureTxStream(wxCommandEvent& event)
 
 /*
 //-------------------------------------------------------------------------
-// OnTogBtnSplitClickUI()
-//-------------------------------------------------------------------------
-void MainFrame::OnTogBtnSplitClickUI(wxUpdateUIEvent& event)
-{
-    wxUnusedVar(event);
-//    event.Enable(false);
-}
-
-//-------------------------------------------------------------------------
-// OnTogBtnAnalogClickUI()
-//-------------------------------------------------------------------------
-void MainFrame::OnTogBtnAnalogClickUI(wxUpdateUIEvent& event)
-{
-    wxUnusedVar(event);
-}
-
-//-------------------------------------------------------------------------
-// OnTogBtnALCClickUI()
-//-------------------------------------------------------------------------
-void MainFrame::OnTogBtnALCClickUI(wxUpdateUIEvent& event)
-{
-    wxUnusedVar(event);
-}
-
-//-------------------------------------------------------------------------
-// OnTogBtnRxIDUI()
-//-------------------------------------------------------------------------
-void MainFrame::OnTogBtnRxIDUI(wxUpdateUIEvent& event)
-{
-    wxUnusedVar(event);
-}
-
-//-------------------------------------------------------------------------
-// OnTogBtnTxIDUI()
-//-------------------------------------------------------------------------
-void MainFrame::OnTogBtnTxIDUI(wxUpdateUIEvent& event)
-{
-    wxUnusedVar(event);
-}
-
-//-------------------------------------------------------------------------
-// OnTogBtnTXClickUI()
-//-------------------------------------------------------------------------
-void MainFrame::OnTogBtnTXClickUI(wxUpdateUIEvent& event)
-{
-    wxUnusedVar(event);
-}
-
-//-------------------------------------------------------------------------
-// OnOpenUpdateUI()
-//-------------------------------------------------------------------------
-void MainFrame::OnOpenUpdateUI(wxUpdateUIEvent& event)
-{
-    wxUnusedVar(event);
-}
-
-//-------------------------------------------------------------------------
 // OnSaveUpdateUI()
 //-------------------------------------------------------------------------
 void MainFrame::OnSaveUpdateUI(wxUpdateUIEvent& event)
@@ -719,15 +653,6 @@ void MainFrame::OnPasteUpdateUI(wxUpdateUIEvent& event)
 {
     event.Enable(false);
 }
-
-//-------------------------------------------------------------------------
-// OnTogBtnOnOffUI()
-//-------------------------------------------------------------------------
-void MainFrame::OnTogBtnOnOffUI(wxUpdateUIEvent& event)
-{
-    wxUnusedVar(event);
-}
-
 */
 
 //-------------------------------------------------------------------------
@@ -971,13 +896,13 @@ void MainFrame::startRxStream()
         for(int i = 0; i < FDMDV_NSPEC; i++)
         {
 //            m_rxPa->m_av_mag[i] = sin(((double)i / M_PI)) * 100.0;
-            g_avmag[i] = sin(((double)i / M_PI)) * 100.0;
+            g_avmag[i] = (float)sin(((double)i / M_PI)) * 100.0;
         }
 #else
         for(int i = 0; i < FDMDV_NSPEC; i++)
         {
 //            m_rxPa->m_av_mag[i] = -40.0;
-            g_avmag[i] = -40.0;
+            g_avmag[i] = (float)-40.0;
         }
 #endif // _DUMMY_DATA
 
@@ -1024,11 +949,11 @@ void MainFrame::startRxStream()
 
         for(int i = 0; i < MEM8; i++)
         {
-            m_rxUserdata->in8k[i] = 0.0;
+            m_rxUserdata->in8k[i] = (float)0.0;
         }
         for(int i = 0; i < FDMDV_OS_TAPS; i++)
         {
-            m_rxUserdata->in48k[i] = 0.0;
+            m_rxUserdata->in48k[i] = (float)0.0;
         }
 
         m_rxUserdata->infifo = fifo_create(2*N48);
