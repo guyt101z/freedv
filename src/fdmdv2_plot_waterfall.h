@@ -43,17 +43,14 @@ class PlotWaterfall : public PlotPanel
     public:
         PlotWaterfall(wxFrame* parent);
         ~PlotWaterfall();
-//        bool                m_newdata;
 
     protected:
-    //    unsigned    *m_pixel_buf;
         unsigned    m_heatmap_lut[256];
         wxMemoryDC  m_mDC;
 
         unsigned    heatmap(float val, float min, float max);
 
         void        OnPaint(wxPaintEvent & evt);
-        //void        OnSize(wxSizeEvent& event);
         void        OnShow(wxShowEvent& event);
         void        drawGraticule(wxAutoBufferedPaintDC&  dc);
         void        draw(wxAutoBufferedPaintDC& pdc);
