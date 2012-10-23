@@ -312,9 +312,11 @@ void PlotWaterfall::plotPixelData()
     {
 	wxNativePixelData::Iterator rowStart = p;
 
-	for(px = 0; px < m_rCtrl.GetWidth(); px++)
+	for(px = 0; px < m_rGrid.GetWidth(); px++)
         {
 	    index = px * spec_index_per_px;
+	    assert(index < FDMDV_NSPEC);
+
 	    intensity = intensity_per_dB * (g_avmag[index] - MIN_DB);
 	    if(intensity > 255) intensity = 255;
 	    if (intensity < 0) intensity = 0;
