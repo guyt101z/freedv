@@ -96,8 +96,8 @@ void PlotWaterfall::OnSize(wxSizeEvent& event) {
 //----------------------------------------------------------------
 void PlotWaterfall::OnPaint(wxPaintEvent & evt)
 {
-    wxAutoBufferedPaintDC pdc(this);
-    draw(pdc);
+    wxAutoBufferedPaintDC dc(this);
+    draw(dc);
 }
 
 //----------------------------------------------------------------
@@ -153,14 +153,14 @@ unsigned PlotWaterfall::heatmap(float val, float min, float max)
 //----------------------------------------------------------------
 // draw()
 //----------------------------------------------------------------
-void PlotWaterfall::draw(wxAutoBufferedPaintDC& pDC)
+void PlotWaterfall::draw(wxAutoBufferedPaintDC& dc)
 {
 
     if(m_newdata)
     {
         m_newdata = false;
         plotPixelData();
-	pDC.DrawBitmap(*m_pBmp, PLOT_BORDER + XLEFT_OFFSET, PLOT_BORDER);
+	dc.DrawBitmap(*m_pBmp, PLOT_BORDER + XLEFT_OFFSET, PLOT_BORDER);
     }
     else {
 	
@@ -172,12 +172,12 @@ void PlotWaterfall::draw(wxAutoBufferedPaintDC& pDC)
 
 	m_rPlot = wxRect(PLOT_BORDER + XLEFT_OFFSET, PLOT_BORDER, m_rGrid.GetWidth(), m_rGrid.GetHeight());
 	wxBrush ltGraphBkgBrush = wxBrush(BLACK_COLOR);
-	pDC.SetBrush(ltGraphBkgBrush);
-	pDC.SetPen(wxPen(BLACK_COLOR, 0));
-	pDC.DrawRectangle(m_rPlot);
+	dc.SetBrush(ltGraphBkgBrush);
+	dc.SetPen(wxPen(BLACK_COLOR, 0));
+	dc.DrawRectangle(m_rPlot);
     }
     
-    drawGraticule(pDC);
+    drawGraticule(dc);
 
 }
 
@@ -185,7 +185,7 @@ void PlotWaterfall::draw(wxAutoBufferedPaintDC& pDC)
 //-------------------------------------------------------------------------
 // drawGraticule()
 //-------------------------------------------------------------------------
-void PlotWaterfall::drawGraticule(wxAutoBufferedPaintDC&  pDC)
+void PlotWaterfall::drawGraticule(wxAutoBufferedPaintDC& dc)
 {
     int p;
     char buf[15];
@@ -195,33 +195,33 @@ void PlotWaterfall::drawGraticule(wxAutoBufferedPaintDC&  pDC)
     wxBrush ltGraphBkgBrush;
     ltGraphBkgBrush.SetStyle(wxBRUSHSTYLE_TRANSPARENT);
     ltGraphBkgBrush.SetColour(*wxBLACK);
-    pDC.SetBrush(ltGraphBkgBrush);
-    pDC.SetPen(wxPen(BLACK_COLOR, 1));
+    dc.SetBrush(ltGraphBkgBrush);
+    dc.SetPen(wxPen(BLACK_COLOR, 1));
 
     // Vertical gridlines
-    pDC.SetPen(m_penShortDash);
+    dc.SetPen(m_penShortDash);
     for(p = (PLOT_BORDER + XLEFT_OFFSET + GRID_INCREMENT); p < ((m_rGrid.GetWidth() - XLEFT_OFFSET) + GRID_INCREMENT); p += GRID_INCREMENT)
     {
-        pDC.DrawLine(p, (m_rGrid.GetHeight() + PLOT_BORDER), p, PLOT_BORDER);
+        dc.DrawLine(p, (m_rGrid.GetHeight() + PLOT_BORDER), p, PLOT_BORDER);
     }
     // Horizontal gridlines
-    pDC.SetPen(m_penDotDash);
+    dc.SetPen(m_penDotDash);
     for(p = (m_rGrid.GetHeight() - GRID_INCREMENT); p > PLOT_BORDER; p -= GRID_INCREMENT)
     {
-        pDC.DrawLine(PLOT_BORDER + XLEFT_OFFSET, (p + PLOT_BORDER), (m_rGrid.GetWidth() + PLOT_BORDER + XLEFT_OFFSET), (p + PLOT_BORDER));
+        dc.DrawLine(PLOT_BORDER + XLEFT_OFFSET, (p + PLOT_BORDER), (m_rGrid.GetWidth() + PLOT_BORDER + XLEFT_OFFSET), (p + PLOT_BORDER));
     }
     // Label the X-Axis
-    pDC.SetPen(wxPen(GREY_COLOR, 1));
+    dc.SetPen(wxPen(GREY_COLOR, 1));
     for(p = GRID_INCREMENT; p < (m_rGrid.GetWidth() - YBOTTOM_OFFSET); p += GRID_INCREMENT)
     {
         sprintf(buf, "%1.1f Hz",(double)(p / 10));
-        pDC.DrawText(buf, p - PLOT_BORDER + XLEFT_OFFSET, m_rGrid.GetHeight() + YBOTTOM_OFFSET/3);
+        dc.DrawText(buf, p - PLOT_BORDER + XLEFT_OFFSET, m_rGrid.GetHeight() + YBOTTOM_OFFSET/3);
     }
     // Label the Y-Axis
     for(p = (m_rGrid.GetHeight() - GRID_INCREMENT); p > PLOT_BORDER; p -= GRID_INCREMENT)
     {
         sprintf(buf, "%1.0f", (double)((m_rGrid.GetHeight() - p) * 10));
-        pDC.DrawText(buf, XLEFT_TEXT_OFFSET, p);
+        dc.DrawText(buf, XLEFT_TEXT_OFFSET, p);
     }
 }
 

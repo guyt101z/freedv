@@ -43,18 +43,9 @@ class PlotWaterfall : public PlotPanel
     public:
         PlotWaterfall(wxFrame* parent);
         ~PlotWaterfall();
-//        bool                m_newdata;
 
-    enum
-    {
-        BORDER = 15,
-        SIZE = 150,
-        REAL_SIZE = SIZE - 2*BORDER
-    };
     protected:
-    //    unsigned    *m_pixel_buf;
         unsigned    m_heatmap_lut[256];
-        wxMemoryDC  m_mDC;
 
         unsigned    heatmap(float val, float min, float max);
 
@@ -62,7 +53,7 @@ class PlotWaterfall : public PlotPanel
         void        OnSize(wxSizeEvent& event);
         void        OnShow(wxShowEvent& event);
         void        drawGraticule(wxAutoBufferedPaintDC&  dc);
-        void        draw(wxAutoBufferedPaintDC& pdc);
+        void        draw(wxAutoBufferedPaintDC& dc);
         void        plotPixelData();
 
         DECLARE_EVENT_TABLE()
