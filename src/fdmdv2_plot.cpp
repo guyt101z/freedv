@@ -63,7 +63,7 @@ PlotPanel::PlotPanel(wxFrame* parent) : wxPanel(parent)
 //-------------------------------------------------------------------------
 PlotPanel::~PlotPanel()
 {
-    if(!m_pBmp->IsNull())
+    if(m_pBmp != NULL)
     {
         delete m_pBmp;
     }

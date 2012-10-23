@@ -41,8 +41,8 @@ class PlotSpectrum : public PlotPanel
         void        OnPaint(wxPaintEvent& event);
         void        OnSize(wxSizeEvent& event);
         void        OnShow(wxShowEvent& event);
-        void        drawGraticule(wxAutoBufferedPaintDC&  dc);
-        void        draw(wxAutoBufferedPaintDC&  dc);
+        void        drawGraticule(wxAutoBufferedPaintDC& dc);
+        void        draw(wxAutoBufferedPaintDC& dc);
 
         DECLARE_EVENT_TABLE()
 };

@@ -32,13 +32,15 @@
 
 #define FDMDV_NSPEC         512
 
-#define MIN_DB              -40.0
+#define MIN_DB             -40.0    // minimum of spectram/waterfall DB axis
 #define MAX_DB              0.0
+#define STEP_DB             10.0
 #define BETA                0.1     // constant for time averageing spectrum data
-#define MIN_HZ              0
-#define MAX_HZ              4000
+#define MIN_HZ              0       // min freq on Waterfall and Spectrum
+#define MAX_HZ              4000    // max freq on Waterfall and Spectrum
+#define STEP_HZ             500     // freq step on Waterfall and Spectrum graticule
 #define WATERFALL_SECS_Y    5       // number of seconds respresented by y axis of waterfall
-#define DT                  0.5    // time between samples
+#define DT                  0.1     // time between Waterfall updates
 #define FS                  8000    // FDMDV modem sample rate
 
 // Scatter diagram 
@@ -47,16 +49,9 @@
 #define SCATTER_X_MAX       3.0
 #define SCATTER_Y_MAX       3.0
 
-// main window params
-#define W                   1200
-#define W3                  (W/3)
-#define H                   600
-#define H2                  (H/2)
-#define SP                  20
-
 // sample rate I/O & conversion constants
-#define MAX_FPB             2048                           // maximum value of framesPerBuffer
-#define PA_FPB              512                            // nominal value of framesPerBuffer
+#define MAX_FPB             2048                           // maximum value of portAudio framesPerBuffer
+#define PA_FPB              512                            // nominal value of portAudio framesPerBuffer
 #define SAMPLE_RATE         48000                          // 48 kHz sampling rate rec. as we can trust accuracy of sound card
 #define N8                  FDMDV_NOM_SAMPLES_PER_FRAME    // processing buffer size at 8 kHz
 #define MEM8                (FDMDV_OS_TAPS/FDMDV_OS)

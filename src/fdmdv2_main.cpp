@@ -161,7 +161,7 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
 #ifdef _USE_TIMER
     Bind(wxEVT_TIMER, &MainFrame::OnTimer, this);       // ID_MY_WINDOW);
     m_plotTimer.SetOwner(this, ID_TIMER_WATERFALL);
-    m_panelWaterfall->Refresh();
+    //m_panelWaterfall->Refresh();
 #endif
 
 #ifdef _USE_ONIDLE
@@ -236,8 +236,8 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
 {
     m_panelWaterfall->m_newdata = true;
     m_panelWaterfall->Refresh();
-    //m_panelSpectrum->m_newdata = true;
-    //m_panelSpectrum->Refresh();
+    m_panelSpectrum->m_newdata = true;
+    m_panelSpectrum->Refresh();
 }
 #endif
 
@@ -1245,10 +1245,12 @@ int MainFrame::rxCallback(
         }
 
         // test: echo input to output, make this loopback option
+	/*
         for(i=0; i < N8; i++)
         {
             in8k[MEM8+i] = out8k[i];
         }
+	*/
         // Convert output speech to 48 kHz sample rate
         // upsample and update filter memory
         fdmdv_8_to_48(out48k, &in8k[MEM8], N8);
