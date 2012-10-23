@@ -61,13 +61,20 @@ PlotWaterfall::PlotWaterfall(wxFrame* parent): PlotPanel(parent)
     m_firstPass     = true;
     m_line_color    = 0;
     SetLabelSize(10.0);
+
+    m_pBmp = NULL;
 }
 
 // When the window size gets set we can work outthe size of the window
 // we plot in and allocate a bit map of the correct size
 
 void PlotWaterfall::OnSize(wxSizeEvent& event) {
+    printf("PlotWaterfall::OnSize\n");
 
+    // resize bit map
+
+    delete m_pBmp;
+    
     m_rCtrl  = GetClientRect();
 
     // m_rGrid is coords of inner window we actually plot to.  We deflate it a bit
@@ -96,6 +103,7 @@ void PlotWaterfall::OnSize(wxSizeEvent& event) {
 //----------------------------------------------------------------
 void PlotWaterfall::OnPaint(wxPaintEvent & evt)
 {
+    printf("PlotWaterfall::OnPaint\n");
     wxAutoBufferedPaintDC dc(this);
     draw(dc);
 }
@@ -155,6 +163,19 @@ unsigned PlotWaterfall::heatmap(float val, float min, float max)
 //----------------------------------------------------------------
 void PlotWaterfall::draw(wxAutoBufferedPaintDC& dc)
 {
+    m_rCtrl  = GetClientRect();
+
+    // m_rGrid is coords of inner window we actually plot to.  We deflate it a bit
+    // to leave room for axis labels.
+
+    m_rGrid = m_rCtrl;
+    m_rGrid = m_rGrid.Deflate(PLOT_BORDER + (XLEFT_OFFSET/2), (PLOT_BORDER + (YBOTTOM_OFFSET/2)));
+
+    if (m_pBmp == NULL) {
+	// we want a bit map the size of m_rGrid
+
+	m_pBmp = new wxBitmap(m_rGrid.GetWidth(), m_rGrid.GetHeight(), 24);
+    }
 
     if(m_newdata)
     {
