@@ -228,10 +228,6 @@ void PlotWaterfall::drawData()  //wxMemoryDC&  pDC)
         wxNativePixelData::Iterator rowStart = p;
         for(int x = 0; x < (w - 1); ++x, ++p)
         {
-//            p.Red()     = m_pTopFrame->m_rxPa->m_av_mag[x];
-//            p.Green()   = m_pTopFrame->m_rxPa->m_av_mag[x];
-//            p.Blue()    = m_pTopFrame->m_rxPa->m_av_mag[x];
-
             p.Red()     = g_avmag[x];
             p.Green()   = g_avmag[x];
             p.Blue()    = g_avmag[x];
@@ -339,14 +335,7 @@ void PlotWaterfall::plotPixelData(wxAutoBufferedPaintDC&  dc)
     for(px = 0; px < m_rCtrl.GetWidth(); px++)
     {
         index = px * spec_index_per_px;
-        // intensity = intensity_per_dB * (m_av_mag[index] - MIN_DB);
         intensity = intensity_per_dB * (g_avmag[index] - MIN_DB);
-//        intensity = intensity_per_dB * (((MainFrame *)GetParent())->m_rxPa->m_av_mag[index] - MIN_DB);
-//        intensity = intensity_per_dB * (((MainFrame *)GetParent())->m_av_mag[index] - MIN_DB);
-        if(intensity > 255)
-        {
-            intensity = 255;
-        }
         if(intensity > 255)
         {
             intensity = 255;

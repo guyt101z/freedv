@@ -41,15 +41,16 @@ END_EVENT_TABLE()
 //----------------------------------------------------------------
 // PlotScalar()
 //----------------------------------------------------------------
-PlotScalar::PlotScalar(wxFrame* parent, int x_max_, int y_max_): PlotPanel(parent)
+//PlotScalar::PlotScalar(wxFrame* parent, int x_max_, int y_max_): PlotPanel(parent)
+PlotScalar::PlotScalar(wxFrame* parent): PlotPanel(parent)
 {
     int i;
 
     //align(FL_ALIGN_TOP);
     //labelsize(10);
 
-    m_x_max = x_max_;
-    m_y_max = y_max_;
+//    m_x_max = x_max_;
+//    m_y_max = y_max_;
     m_mem = new float[m_x_max];
 
     for(i = 0; i < m_x_max; i++)

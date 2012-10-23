@@ -40,11 +40,11 @@
 #include "fdmdv2_plot.h"
 #include "fdmdv2_plot_scalar.h"
 #include "fdmdv2_plot_scatter.h"
-#ifdef __LINUX__
+//#ifdef __LINUX__
 #include "fdmdv2_plot_waterfall_linux.h"
-#else
-#include "fdmdv2_plot_waterfall.h"
-#endif
+//#else
+//#include "fdmdv2_plot_waterfall.h"
+//#endif
 #include "fdmdv2_plot_spectrum.h"
 #include "fdmdv2_pa_wrapper.h"
 #include "sndfile.h"
@@ -105,6 +105,11 @@ class MainApp : public wxApp
         wxString            m_strRigCtrlDatabits;
         wxString            m_strRigCtrlStopbits;
         wxString            m_strRigCtrlParity;
+        int                 m_show_wf;
+        int                 m_show_spect;
+        int                 m_show_scatter;
+        int                 m_show_timing;
+        int                 m_show_freq;
 
         wxRect              m_rTopWindow;
 
@@ -147,11 +152,11 @@ class MainFrame : public TopFrame
         MainFrame(wxWindow *parent);
         virtual ~MainFrame();
 
-//        PlotPanel*              m_panelDefaultA;
         PlotSpectrum*           m_panelSpectrum;
         PlotWaterfall*          m_panelWaterfall;
         PlotScatter*            m_panelScatter;
-        PlotScalar*             m_panelScalar;
+        PlotScalar*             m_panelTimeOffset;
+        PlotScalar*             m_panelFreqOffset;
         bool                    m_SquelchActive;
         bool                    m_RxRunning;
         bool                    m_TxRunning;
@@ -165,7 +170,6 @@ class MainFrame : public TopFrame
         PaDeviceIndex           m_txDevOut;
         PaError                 m_rxErr;
         PaError                 m_txErr;
-//        wxSound                 *m_sound;
 #ifdef _USE_TIMER
         wxTimer                 m_plotTimer;
 #endif

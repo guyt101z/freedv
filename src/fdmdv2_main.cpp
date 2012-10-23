@@ -106,14 +106,6 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
 
     tools->Append(m_menuItemToolsConfigDelete);
 
-    // Add Waterfall Plot window
-    m_panelWaterfall = new PlotWaterfall((wxFrame*) m_auiNbookCtrl);
-    m_auiNbookCtrl->AddPage(m_panelWaterfall, _("Waterfall"), true, wxNullBitmap);
-
-    // Add Spectrum Plot window
-    m_panelSpectrum = new PlotSpectrum((wxFrame*) m_auiNbookCtrl);
-    m_auiNbookCtrl->AddPage(m_panelSpectrum, _("Spectrum"), true, wxNullBitmap);
-
     wxConfigBase *pConfig = wxConfigBase::Get();
 
     // restore frame position and size
@@ -121,9 +113,44 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     int y = pConfig->Read(wxT("/MainFrame/left"),      50);
     int w = pConfig->Read(wxT("/MainFrame/width"),     650);
     int h = pConfig->Read(wxT("/MainFrame/height"),    400);
+    wxGetApp().m_show_wf      = pConfig->Read(wxT("/MainFrame/show_wf"),      1);
+    wxGetApp().m_show_spect   = pConfig->Read(wxT("/MainFrame/show_spect"),   1);
+    wxGetApp().m_show_scatter = pConfig->Read(wxT("/MainFrame/show_scatter"), 1);
+    wxGetApp().m_show_timing  = pConfig->Read(wxT("/MainFrame/show_timing"),  1);
+    wxGetApp().m_show_freq    = pConfig->Read(wxT("/MainFrame/show_freq"),    1);
     Move(x, y);
     SetClientSize(w, h);
 
+    if(wxGetApp().m_show_wf)
+    {
+        // Add Waterfall Plot window
+        m_panelWaterfall = new PlotWaterfall((wxFrame*) m_auiNbookCtrl);
+        m_auiNbookCtrl->AddPage(m_panelWaterfall, _("Waterfall"), true, wxNullBitmap);
+    }
+    if(wxGetApp().m_show_spect)
+    {
+        // Add Spectrum Plot window
+        m_panelSpectrum = new PlotSpectrum((wxFrame*) m_auiNbookCtrl);
+        m_auiNbookCtrl->AddPage(m_panelSpectrum, _("Spectrum"), true, wxNullBitmap);
+    }
+    if(wxGetApp().m_show_scatter)
+    {
+        // Add Scatter Plot window
+        m_panelScatter = new PlotScatter((wxFrame*) m_auiNbookCtrl);
+        m_auiNbookCtrl->AddPage(m_panelScatter, _("Scatter"), true, wxNullBitmap);
+    }
+    if(wxGetApp().m_show_timing)
+    {
+        // Add Timing Offset window
+        m_panelTimeOffset = new PlotScalar((wxFrame*) m_auiNbookCtrl);
+        m_auiNbookCtrl->AddPage(m_panelTimeOffset, L"Timing \u0394", true, wxNullBitmap);
+    }
+    if(wxGetApp().m_show_freq )
+    {
+        // Add Frequency Offset window
+        m_panelFreqOffset = new PlotScalar((wxFrame*) m_auiNbookCtrl);
+        m_auiNbookCtrl->AddPage(m_panelFreqOffset, L"Frequency \u0394", true, wxNullBitmap);
+    }
     wxGetApp().m_strRxInAudio       = pConfig->Read(wxT("/Audio/RxIn"),         wxT("<m_strRxInAudio>"));
     wxGetApp().m_strRxOutAudio      = pConfig->Read(wxT("/Audio/RxOut"),        wxT("<m_strRxOutAudio>"));
     wxGetApp().m_textVoiceInput     = pConfig->Read(wxT("/Audio/TxIn"),         wxT("<m_textVoiceInput>"));
@@ -184,22 +211,27 @@ MainFrame::~MainFrame()
     {
         GetClientSize(&w, &h);
         GetPosition(&x, &y);
-        pConfig->Write(wxT("/MainFrame/top"),       (long) x);
-        pConfig->Write(wxT("/MainFrame/left"),      (long) y);
-        pConfig->Write(wxT("/MainFrame/width"),     (long) w);
-        pConfig->Write(wxT("/MainFrame/height"),    (long) h);
+        pConfig->Write(wxT("/MainFrame/top"),           (long) x);
+        pConfig->Write(wxT("/MainFrame/left"),          (long) y);
+        pConfig->Write(wxT("/MainFrame/width"),         (long) w);
+        pConfig->Write(wxT("/MainFrame/height"),        (long) h);
+        pConfig->Write(wxT("/MainFrame/show_wf"),       wxGetApp().m_show_wf);
+        pConfig->Write(wxT("/MainFrame/show_spect"),    wxGetApp().m_show_spect);
+        pConfig->Write(wxT("/MainFrame/show_scatter"),  wxGetApp().m_show_scatter);
+        pConfig->Write(wxT("/MainFrame/show_timing"),   wxGetApp().m_show_timing);
+        pConfig->Write(wxT("/MainFrame/show_freq"),     wxGetApp().m_show_freq);
 
-        pConfig->Write(wxT("/Audio/RxIn"),          wxGetApp().m_strRxInAudio);
-        pConfig->Write(wxT("/Audio/RxOut"),         wxGetApp().m_strRxOutAudio);
-        pConfig->Write(wxT("/Audio/TxIn"),          wxGetApp().m_textVoiceInput);
-        pConfig->Write(wxT("/Audio/TxOut"),         wxGetApp().m_textVoiceOutput);
-        pConfig->Write(wxT("/Audio/SampleRate"),    wxGetApp().m_strSampleRate);
+        pConfig->Write(wxT("/Audio/RxIn"),              wxGetApp().m_strRxInAudio);
+        pConfig->Write(wxT("/Audio/RxOut"),             wxGetApp().m_strRxOutAudio);
+        pConfig->Write(wxT("/Audio/TxIn"),              wxGetApp().m_textVoiceInput);
+        pConfig->Write(wxT("/Audio/TxOut"),             wxGetApp().m_textVoiceOutput);
+        pConfig->Write(wxT("/Audio/SampleRate"),        wxGetApp().m_strSampleRate);
 
-        pConfig->Write(wxT("/Rig/Port"),            wxGetApp().m_strRigCtrlPort);
-        pConfig->Write(wxT("/Rig/Baud"),            wxGetApp().m_strRigCtrlBaud);
-        pConfig->Write(wxT("/Rig/DataBits"),        wxGetApp().m_strRigCtrlDatabits);
-        pConfig->Write(wxT("/Rig/StopBits"),        wxGetApp().m_strRigCtrlStopbits);
-        pConfig->Write(wxT("/Rig/Parity"),          wxGetApp().m_strRigCtrlParity);
+        pConfig->Write(wxT("/Rig/Port"),                wxGetApp().m_strRigCtrlPort);
+        pConfig->Write(wxT("/Rig/Baud"),                wxGetApp().m_strRigCtrlBaud);
+        pConfig->Write(wxT("/Rig/DataBits"),            wxGetApp().m_strRigCtrlDatabits);
+        pConfig->Write(wxT("/Rig/StopBits"),            wxGetApp().m_strRigCtrlStopbits);
+        pConfig->Write(wxT("/Rig/Parity"),              wxGetApp().m_strRigCtrlParity);
     }
     m_togRxID->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnRxIDUI), NULL, this);
     m_togTxID->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnTxIDUI), NULL, this);
