@@ -32,6 +32,14 @@
 #define wxUSE_PCX       1
 #define wxUSE_LIBTIFF   1
 
+//----------------------------------------------------------
+// Global Codec2 & modem states - just one reqd for tx & rx
+//----------------------------------------------------------
+struct CODEC2      *g_pCodec2;
+struct FDMDV       *g_pFDMDV;
+
+struct FDMDV_STATS  g_stats;
+
 // initialize the application
 IMPLEMENT_APP(MainApp);
 
@@ -270,6 +278,10 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
     m_panelWaterfall->Refresh();
     m_panelSpectrum->m_newdata = true;
     m_panelSpectrum->Refresh();
+
+    m_panelScatter->add_new_samples(g_stats.rx_symbols);
+    m_panelScatter->m_newdata = true;
+    m_panelScatter->Refresh();
 }
 #endif
 
@@ -814,11 +826,6 @@ wxString MainFrame::LoadUserImage(wxImage& image)
 }
 */
 
-//----------------------------------------------------------
-// Global Codec2 thingys - just one reqd for tx & rx
-//----------------------------------------------------------
-struct CODEC2   *g_pCodec2;
-struct FDMDV    *g_pFDMDV;
 
 //-------------------------------------------------------------------------
 // OnTogBtnOnOff()
@@ -1337,7 +1344,6 @@ int MainFrame::rxCallback(
                                             CODEC2  *c2             // Codec 2 states
                                         )
 {
-    struct FDMDV_STATS  stats;
     int                 sync_bit;
     float               rx_fdm[FDMDV_MAX_SAMPLES_PER_FRAME];
     int                 rx_bits[FDMDV_BITS_PER_FRAME];
@@ -1387,14 +1393,14 @@ int MainFrame::rxCallback(
 
         // compute rx spectrum & get demod stats, and update GUI plot data
         fdmdv_get_rx_spectrum(g_pFDMDV, rx_spec, rx_fdm, nin_prev);
-        fdmdv_get_demod_stats(g_pFDMDV, &stats);
+        fdmdv_get_demod_stats(g_pFDMDV, &g_stats);
+
         // Average Data
-        // averageData(rx_spec);
         for(i = 0; i < FDMDV_NSPEC; i++)
         {
-            // m_rxPa->m_av_mag[i] = (1.0 - BETA) * m_rxPa->m_av_mag[i] + BETA * rx_spec[i];
             g_avmag[i] = (1.0 - BETA) * g_avmag[i] + BETA * rx_spec[i];
         }
+	
         //
         //   State machine to:
         //
@@ -1420,7 +1426,7 @@ int MainFrame::rxCallback(
                     *n_output_buf += N8;
                 }
                 assert(*n_output_buf <= (2 * codec2_samples_per_frame(c2)));
-                if((stats.fest_coarse_fine == 1) && (stats.snr_est > 3.0))
+                if((g_stats.fest_coarse_fine == 1) && (g_stats.snr_est > 3.0))
                 {
                     next_state = 1;
                 }
@@ -1437,7 +1443,7 @@ int MainFrame::rxCallback(
                 {
                     next_state = 1;
                 }
-                if(stats.fest_coarse_fine == 0)
+                if(g_stats.fest_coarse_fine == 0)
                 {
                     next_state = 0;
                 }
@@ -1445,7 +1451,7 @@ int MainFrame::rxCallback(
 
             case 2:
                 next_state = 1;
-                if(stats.fest_coarse_fine == 0)
+                if(g_stats.fest_coarse_fine == 0)
                 {
                     next_state = 0;
                 }

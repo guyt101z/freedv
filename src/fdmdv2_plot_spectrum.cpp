@@ -96,7 +96,8 @@ void PlotSpectrum::draw(wxAutoBufferedPaintDC& dc)
 
     // m_rGrid is coords of inner window we actually plot to.  We deflate it a bit
     // to leave room for axis labels.  We need to work this out every time we draw
-    // as window may have been resized
+    // as OnSize() may not be called before OnPaint(), for example when a new tab
+    // is selected
 
     m_rGrid  = m_rCtrl;
     m_rGrid = m_rGrid.Deflate(PLOT_BORDER + (XLEFT_OFFSET/2), (PLOT_BORDER + (YBOTTOM_OFFSET/2)));

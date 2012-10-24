@@ -49,8 +49,6 @@ PlotScalar::PlotScalar(wxFrame* parent): PlotPanel(parent)
     //align(FL_ALIGN_TOP);
     //labelsize(10);
 
-//    m_x_max = x_max_;
-//    m_y_max = y_max_;
     m_mem = new float[m_x_max];
 
     for(i = 0; i < m_x_max; i++)
@@ -201,8 +199,6 @@ void PlotScalar::OnPaint(wxPaintEvent& event)
 //----------------------------------------------------------------
 void PlotScalar::OnSize(wxSizeEvent& event)
 {
-//    wxAutoBufferedPaintDC dc(this);
-//    draw(dc);
 }
 
 //----------------------------------------------------------------
@@ -210,6 +206,4 @@ void PlotScalar::OnSize(wxSizeEvent& event)
 //----------------------------------------------------------------
 void PlotScalar::OnShow(wxShowEvent& event)
 {
-//    wxAutoBufferedPaintDC dc(this);
- //   draw(dc);
 }

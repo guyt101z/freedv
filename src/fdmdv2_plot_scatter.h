@@ -35,15 +35,15 @@
 class PlotScatter : public PlotPanel
 {
     public:
-       PlotScatter(wxFrame* parent);
+        PlotScatter(wxFrame* parent);
         ~PlotScatter(){};
+	void add_new_samples(COMP samples[]);
 
     protected:
-        COMP m_mem[SCATTER_MEM];
+        COMP m_mem[SCATTER_MEM_SYMS];
         COMP m_new_samples[FDMDV_NSYM];
 
         void draw(wxAutoBufferedPaintDC&  dc);
-        void add_new_samples(COMP samples[]);
         void OnPaint(wxPaintEvent& event);
         void OnSize(wxSizeEvent& event);
         void OnShow(wxShowEvent& event);

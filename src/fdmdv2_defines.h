@@ -40,12 +40,15 @@
 #define MAX_F_HZ            4000    // max freq on Waterfall and Spectrum
 #define STEP_F_HZ           500     // freq step on Waterfall and Spectrum graticule
 #define WATERFALL_SECS_Y    5       // number of seconds respresented by y axis of waterfall
-#define DT                  0.1     // time between Waterfall updates
+#define DT                  0.1     // time between real time graphing updates
 #define FS                  8000    // FDMDV modem sample rate
 
 // Scatter diagram 
 
-#define SCATTER_MEM         (FDMDV_NSYM)*50
+#define SCATTER_MEM_SECS    2
+// (symbols/frame)/(graphics update period) = symbols/s sent to scatter memory
+// memory (symbols) = secs of memory * symbols/sec
+#define SCATTER_MEM_SYMS    ((int)(SCATTER_MEM_SECS*(FDMDV_NSYM/DT)))
 #define SCATTER_X_MAX       3.0
 #define SCATTER_Y_MAX       3.0
 

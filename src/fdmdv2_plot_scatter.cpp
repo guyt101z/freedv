@@ -44,78 +44,67 @@ PlotScatter::PlotScatter(wxFrame* parent) : PlotPanel(parent)
 {
     int i;
 
-    //align(FL_ALIGN_TOP);
-    //labelsize(10);
-
-    for(i=0; i < SCATTER_MEM; i++)
+    for(i=0; i < SCATTER_MEM_SYMS; i++)
     {
         m_mem[i].real = 0.0;
         m_mem[i].imag = 0.0;
     }
-    m_prev_w = 0;
-    m_prev_h = 0;
-    m_prev_x = 0;
-    m_prev_y = 0;
 }
 
 //----------------------------------------------------------------
 // draw()
 //----------------------------------------------------------------
-void PlotScatter::draw(wxAutoBufferedPaintDC&  dc)
+void PlotScatter::draw(wxAutoBufferedPaintDC& dc)
 {
     float x_scale;
     float y_scale;
-    int   i;
-    int   j;
-    int   x1;
-    int   y1;
+    int   i,j;
+    int   x;
+    int   y;
 
-    //Fl_Box::draw();
+    m_rCtrl = GetClientRect();
+    m_rGrid = m_rCtrl;
+    m_rGrid = m_rGrid.Deflate(PLOT_BORDER + (XLEFT_OFFSET/2), (PLOT_BORDER + (YBOTTOM_OFFSET/2)));
 
-    /* detect resizing of window */
-    if((m_rCtrl.GetHeight() != m_prev_h) || (m_rCtrl.GetWidth() != m_prev_w) || (m_x != m_prev_x) || (m_y != m_prev_y))
-    {
-        //fl_color(FL_BLACK);
-        //fl_rectf(x(),y(),w(),h());
-        m_prev_h = m_rCtrl.GetHeight();
-        m_prev_w = m_rCtrl.GetWidth();
-        m_prev_x = m_x;
-        m_prev_y = m_y;
-    }
+    // black background
 
-    //fl_push_clip(x(),y(),w(),h());
+    m_rPlot = wxRect(PLOT_BORDER + XLEFT_OFFSET, PLOT_BORDER, m_rGrid.GetWidth(), m_rGrid.GetHeight());
+    wxBrush ltGraphBkgBrush = wxBrush(BLACK_COLOR);
+    dc.SetBrush(ltGraphBkgBrush);
+    dc.SetPen(wxPen(BLACK_COLOR, 0));
+    dc.DrawRectangle(m_rPlot);
+    x_scale = (float)m_rGrid.GetWidth()/SCATTER_X_MAX;
+    y_scale = (float)m_rGrid.GetHeight()/SCATTER_Y_MAX;
 
-    x_scale = m_rCtrl.GetWidth()/SCATTER_X_MAX;
-    y_scale = m_rCtrl.GetHeight()/SCATTER_Y_MAX;
-
-    // erase last samples
-    //fl_color(FL_BLACK);
-
-    for(i=0; i<FDMDV_NSYM; i++)
-    {
-        x1 = x_scale * m_mem[i].real + m_x + m_rCtrl.GetWidth()/2;
-        y1 = y_scale * m_mem[i].imag + m_y + m_rCtrl.GetHeight()/2;
-        dc.DrawPoint(x1, y1);
-        //fl_point(x1, y1);
-        m_mem[i] = m_mem[i+FDMDV_NSYM];
-    }
+    wxPen pen;
+    pen.SetColour(LIGHT_GREEN_COLOR);
+    pen.SetWidth(1);
+    dc.SetPen(pen);
 
     // shift memory
-    for(i = FDMDV_NSYM; i < SCATTER_MEM-FDMDV_NSYM; i++)
+
+    for(i = 0; i < SCATTER_MEM_SYMS-FDMDV_NSYM; i++)
     {
         m_mem[i] = m_mem[i+FDMDV_NSYM];
     }
 
-    // draw new samples
-    //fl_color(FL_GREEN);
-    for(i = SCATTER_MEM-FDMDV_NSYM, j = 0; i < SCATTER_MEM; i++,j++)
+    // new samples
+
+    for(j=0; i < SCATTER_MEM_SYMS; i++,j++)
     {
-        x1 = x_scale * m_new_samples[j].real + m_x + m_rCtrl.GetWidth()/2;
-        y1 = y_scale * m_new_samples[j].imag + m_y + m_rCtrl.GetHeight()/2;
-        //fl_point(x1, y1);
         m_mem[i] = m_new_samples[j];
     }
-   // fl_pop_clip();
+
+    // draw all samples
+
+    for(i = 0; i < SCATTER_MEM_SYMS; i++)
+    {
+        x = x_scale * m_mem[i].real + m_rGrid.GetWidth()/2;
+        y = y_scale * m_mem[i].imag + m_rGrid.GetHeight()/2;
+	x += PLOT_BORDER + XLEFT_OFFSET;
+	y += PLOT_BORDER;
+	dc.DrawPoint(x, y);
+    }
 }
 
 //----------------------------------------------------------------
@@ -128,6 +117,8 @@ void PlotScatter::add_new_samples(COMP samples[])
     for(i = 0; i < FDMDV_NSYM; i++)
     {
         m_new_samples[i] = samples[i];
+        //m_new_samples[i].real = 1 - 2*(i%2) + 0.1*(float)rand()/RAND_MAX;
+        //m_new_samples[i].imag = 1 - 2*(i%2) + 0.1*(float)rand()/RAND_MAX;
     }
 }
 
@@ -145,8 +136,7 @@ void PlotScatter::OnPaint(wxPaintEvent& event)
 //----------------------------------------------------------------
 void PlotScatter::OnSize(wxSizeEvent& event)
 {
-//    wxAutoBufferedPaintDC dc(this);
-//    draw(dc);
+    // todo: clear screen
 }
 
 //----------------------------------------------------------------
@@ -154,6 +144,5 @@ void PlotScatter::OnSize(wxSizeEvent& event)
 //----------------------------------------------------------------
 void PlotScatter::OnShow(wxShowEvent& event)
 {
-//    paintNow();
 }
 

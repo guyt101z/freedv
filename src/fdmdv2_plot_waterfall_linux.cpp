@@ -69,8 +69,6 @@ PlotWaterfall::PlotWaterfall(wxFrame* parent): PlotPanel(parent)
 // we plot in and allocate a bit map of the correct size
 
 void PlotWaterfall::OnSize(wxSizeEvent& event) {
-    printf("PlotWaterfall::OnSize\n");
-
     // resize bit map
 
     delete m_pBmp;
@@ -103,7 +101,6 @@ void PlotWaterfall::OnSize(wxSizeEvent& event) {
 //----------------------------------------------------------------
 void PlotWaterfall::OnPaint(wxPaintEvent & evt)
 {
-    printf("PlotWaterfall::OnPaint\n");
     wxAutoBufferedPaintDC dc(this);
     draw(dc);
 }
