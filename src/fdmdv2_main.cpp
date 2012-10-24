@@ -153,7 +153,7 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
         m_panelTimeOffset = new PlotScalar((wxFrame*) m_auiNbookCtrl);
         m_auiNbookCtrl->AddPage(m_panelTimeOffset, L"Timing \u0394", true, wxNullBitmap);
     }
-    if(wxGetApp().m_show_freq )
+    if(wxGetApp().m_show_freq)
     {
         // Add Frequency Offset window
         m_panelFreqOffset = new PlotScalar((wxFrame*) m_auiNbookCtrl);
