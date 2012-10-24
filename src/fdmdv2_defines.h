@@ -32,9 +32,9 @@
 
 #define FDMDV_NSPEC         512
 
-#define MIN_AMP_DB         -40.0    // min of spectrogram/waterfall amplitude axis
-#define MAX_AMP_DB          0.0     // max of spectrogram/waterfall amplitude axis
-#define STEP_AMP_DB         5.0     // amplitude axis step
+#define MIN_MAG_DB        -40.0     // min of spectrogram/waterfall magnitude axis
+#define MAX_MAG_DB          0.0     // max of spectrogram/waterfall magnitude axis
+#define STEP_MAG_DB         5.0     // magnitude axis step
 #define BETA                0.1     // constant for time averageing spectrum data
 #define MIN_F_HZ            0       // min freq on Waterfall and Spectrum
 #define MAX_F_HZ            4000    // max freq on Waterfall and Spectrum

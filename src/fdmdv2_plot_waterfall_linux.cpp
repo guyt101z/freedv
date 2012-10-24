@@ -229,7 +229,6 @@ void PlotWaterfall::drawGraticule(wxAutoBufferedPaintDC& dc)
     // Vertical gridlines
 
     dc.SetPen(m_penShortDash);
-
     for(f=STEP_F_HZ; f<MAX_F_HZ; f+=STEP_F_HZ) {
 	x = f*freq_hz_to_px;
 	x += PLOT_BORDER + XLEFT_OFFSET;
@@ -241,6 +240,7 @@ void PlotWaterfall::drawGraticule(wxAutoBufferedPaintDC& dc)
 
     // Horizontal gridlines
 
+    dc.SetPen(m_penDotDash);
     for(time=0; time<=WATERFALL_SECS_Y; time++) {
 	y = m_rGrid.GetHeight() - time*time_s_to_py;
 	y += PLOT_BORDER;
@@ -251,33 +251,6 @@ void PlotWaterfall::drawGraticule(wxAutoBufferedPaintDC& dc)
         dc.DrawText(buf, PLOT_BORDER + XLEFT_OFFSET - text_w - XLEFT_TEXT_OFFSET, y-text_h/2);
    }
 
-#ifdef OLD
-    // Vertical gridlines
-    dc.SetPen(m_penShortDash);
-    for(p = (PLOT_BORDER + XLEFT_OFFSET + GRID_INCREMENT); p < ((m_rGrid.GetWidth() - XLEFT_OFFSET) + GRID_INCREMENT); p += GRID_INCREMENT)
-    {
-        dc.DrawLine(p, (m_rGrid.GetHeight() + PLOT_BORDER), p, PLOT_BORDER);
-    }
-    // Horizontal gridlines
-    dc.SetPen(m_penDotDash);
-    for(p = (m_rGrid.GetHeight() - GRID_INCREMENT); p > PLOT_BORDER; p -= GRID_INCREMENT)
-    {
-        dc.DrawLine(PLOT_BORDER + XLEFT_OFFSET, (p + PLOT_BORDER), (m_rGrid.GetWidth() + PLOT_BORDER + XLEFT_OFFSET), (p + PLOT_BORDER));
-    }
-    // Label the X-Axis
-    dc.SetPen(wxPen(GREY_COLOR, 1));
-    for(p = GRID_INCREMENT; p < (m_rGrid.GetWidth() - YBOTTOM_OFFSET); p += GRID_INCREMENT)
-    {
-        sprintf(buf, "%1.1f Hz",(double)(p / 10));
-        dc.DrawText(buf, p - PLOT_BORDER + XLEFT_OFFSET, m_rGrid.GetHeight() + YBOTTOM_OFFSET/3);
-    }
-    // Label the Y-Axis
-    for(p = (m_rGrid.GetHeight() - GRID_INCREMENT); p > PLOT_BORDER; p -= GRID_INCREMENT)
-    {
-        sprintf(buf, "%1.0f", (double)((m_rGrid.GetHeight() - p) * 10));
-        dc.DrawText(buf, XLEFT_TEXT_OFFSET, p);
-    }
-#endif
 }
 
 //-------------------------------------------------------------------------
@@ -314,7 +287,7 @@ void PlotWaterfall::plotPixelData()
     // number of dy high blocks in spectrogram
     dy_blocks = m_rGrid.GetHeight()/ dy;
 
-    intensity_per_dB  = (float)256 /(MAX_AMP_DB - MIN_AMP_DB);
+    intensity_per_dB  = (float)256 /(MAX_MAG_DB - MIN_MAG_DB);
     spec_index_per_px = (float)FDMDV_NSPEC / (float) m_rGrid.GetWidth();
     
     /*
@@ -372,7 +345,7 @@ void PlotWaterfall::plotPixelData()
 	    index = px * spec_index_per_px;
 	    assert(index < FDMDV_NSPEC);
 
-	    intensity = intensity_per_dB * (g_avmag[index] - MIN_AMP_DB);
+	    intensity = intensity_per_dB * (g_avmag[index] - MIN_MAG_DB);
 	    if(intensity > 255) intensity = 255;
 	    if (intensity < 0) intensity = 0;
 	    //printf("%d %f %d \n", index, g_avmag[index], intensity);

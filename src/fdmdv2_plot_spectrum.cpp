@@ -95,7 +95,8 @@ void PlotSpectrum::draw(wxAutoBufferedPaintDC& dc)
     m_rCtrl  = GetClientRect();
 
     // m_rGrid is coords of inner window we actually plot to.  We deflate it a bit
-    // to leave room for axis labels.
+    // to leave room for axis labels.  We need to work this out every time we draw
+    // as window may have been resized
 
     m_rGrid  = m_rCtrl;
     m_rGrid = m_rGrid.Deflate(PLOT_BORDER + (XLEFT_OFFSET/2), (PLOT_BORDER + (YBOTTOM_OFFSET/2)));
@@ -108,65 +109,45 @@ void PlotSpectrum::draw(wxAutoBufferedPaintDC& dc)
     dc.SetPen(wxPen(BLACK_COLOR, 0));
     dc.DrawRectangle(m_rPlot);
 
-    // graticule
+    // draw spectrum
 
-    drawGraticule(dc);
-
-#ifdef OLD
-
-    wxMemoryDC m_mDC;
-    m_mDC.SelectObject(*m_pBmp);
-    m_rCtrl  = GetClientRect();
-    m_rGrid  = m_rCtrl;
-
-    m_rGrid = m_rGrid.Deflate(PLOT_BORDER + (XLEFT_OFFSET/2), (PLOT_BORDER + (YBOTTOM_OFFSET/2)));
-    m_rGrid.Offset(PLOT_BORDER + XLEFT_OFFSET, PLOT_BORDER);
-
-    pDC.Clear();
-    m_rPlot = wxRect(PLOT_BORDER + XLEFT_OFFSET, PLOT_BORDER, m_rGrid.GetWidth(), m_rGrid.GetHeight());
-    if(m_firstPass)
-    {
-        m_firstPass = false;
-        m_mDC.Clear();
-        m_mDC.FloodFill(0, 0, VERY_LTGREY_COLOR);
-
-        // Draw a filled rectangle with aborder
-//        wxBrush ltGraphBkgBrush = wxBrush(LIGHT_YELLOW_COLOR);
-        wxBrush ltGraphBkgBrush = wxBrush(DARK_GREY_COLOR);
-        m_mDC.SetBrush(ltGraphBkgBrush);
-        m_mDC.SetPen(wxPen(BLACK_COLOR, 0));
-        m_mDC.DrawRectangle(m_rPlot);
-    }
     if(m_newdata)
     {
+	int   x, y, prev_x, prev_y, index;
+	float index_to_px, mag_dB_to_py, mag;
+
         m_newdata = false;
-//        plotPixelData(dc);
-#ifdef _USE_TIMER
-        int t = m_rPlot.GetTop();
-        int l = m_rPlot.GetLeft();
-        int h = m_rPlot.GetHeight();
-        int w = m_rPlot.GetWidth();
-        //double stride = w / FDMDV_NSPEC;
 
         wxPen pen;
         pen.SetColour(DARK_GREEN_COLOR);
         pen.SetWidth(1);
-        m_mDC.SetPen(pen);
+        dc.SetPen(pen);
 
-//        float *pData = m_pTopFrame->m_rxPa->m_av_mag;
-        float *pData = g_avmag;
-        for(int x = 1; x < w; x++)
+	index_to_px = (float)m_rGrid.GetWidth()/FDMDV_NSPEC;
+	mag_dB_to_py = (float)m_rGrid.GetHeight()/(MAX_MAG_DB-MIN_MAG_DB);
+
+	prev_x = PLOT_BORDER + XLEFT_OFFSET;
+	prev_y = PLOT_BORDER;
+        for(index = 0; index < FDMDV_NSPEC; index++)
         {
-//            m_mDC.DrawPoint(x, (int)pData[x]);
-            m_mDC.DrawLine((x - 1), (int)pData[(x - 1)] + (h / 2), x, (int)pData[x] + (h / 2));
+            x = index*index_to_px;
+	    mag = g_avmag[index];
+	    if (mag > MAX_MAG_DB) mag = MAX_MAG_DB;
+	    if (mag < MIN_MAG_DB) mag = MIN_MAG_DB;
+	    y = -mag * mag_dB_to_py;
+
+	    x += PLOT_BORDER + XLEFT_OFFSET;
+	    y += PLOT_BORDER;
+
+	    dc.DrawLine(x, y, prev_x, prev_y);
+	    prev_x = x; prev_y = y;
         }
-        pDC.Blit(l, t, w, h, &m_mDC, l, t);
-#endif
-        drawGraticule(pDC);
     }
-    m_mDC.SetBrush(wxNullBrush);
-    m_mDC.SelectObject(wxNullBitmap);
-#endif
+
+    // and finally draw Graticule
+
+    drawGraticule(dc);
+
 }
 
 //-------------------------------------------------------------------------
@@ -177,7 +158,7 @@ void PlotSpectrum::drawGraticule(wxAutoBufferedPaintDC&  dc)
     int      x, y, text_w, text_h;
     char     buf[15];
     wxString s;
-    float    f, amplitude, freq_hz_to_px, ampl_dB_to_py;
+    float    f, mag, freq_hz_to_px, mag_dB_to_py;
 
     wxBrush ltGraphBkgBrush;
     ltGraphBkgBrush.SetStyle(wxBRUSHSTYLE_TRANSPARENT);
@@ -186,7 +167,7 @@ void PlotSpectrum::drawGraticule(wxAutoBufferedPaintDC&  dc)
     dc.SetPen(wxPen(BLACK_COLOR, 1));
 
     freq_hz_to_px = (float)m_rGrid.GetWidth()/(MAX_F_HZ-MIN_F_HZ);
-    ampl_dB_to_py = (float)m_rGrid.GetHeight()/(MAX_AMP_DB-MIN_AMP_DB);
+    mag_dB_to_py = (float)m_rGrid.GetHeight()/(MAX_MAG_DB-MIN_MAG_DB);
 
     // upper LH coords of plot area are (PLOT_BORDER + XLEFT_OFFSET, PLOT_BORDER)
     // lower RH coords of plot area are (PLOT_BORDER + XLEFT_OFFSET + m_rGrid.GetWidth(), 
@@ -195,7 +176,6 @@ void PlotSpectrum::drawGraticule(wxAutoBufferedPaintDC&  dc)
     // Vertical gridlines
 
     dc.SetPen(m_penShortDash);
-
     for(f=STEP_F_HZ; f<MAX_F_HZ; f+=STEP_F_HZ) {
 	x = f*freq_hz_to_px;
 	x += PLOT_BORDER + XLEFT_OFFSET;
@@ -207,12 +187,13 @@ void PlotSpectrum::drawGraticule(wxAutoBufferedPaintDC&  dc)
 
     // Horizontal gridlines
 
-    for(amplitude=MIN_AMP_DB; amplitude<=MAX_AMP_DB; amplitude+=STEP_AMP_DB) {
-	y = -amplitude*ampl_dB_to_py;
+    dc.SetPen(m_penDotDash);
+    for(mag=MIN_MAG_DB; mag<=MAX_MAG_DB; mag+=STEP_MAG_DB) {
+	y = -mag*mag_dB_to_py;
 	y += PLOT_BORDER;
 	dc.DrawLine(PLOT_BORDER + XLEFT_OFFSET, y, 
 		    (m_rGrid.GetWidth() + PLOT_BORDER + XLEFT_OFFSET), y);
-        sprintf(buf, "%3.0fdB", amplitude);
+        sprintf(buf, "%3.0fdB", mag);
 	GetTextExtent(buf, &text_w, &text_h);
         dc.DrawText(buf, PLOT_BORDER + XLEFT_OFFSET - text_w - XLEFT_TEXT_OFFSET, y-text_h/2);
    }
