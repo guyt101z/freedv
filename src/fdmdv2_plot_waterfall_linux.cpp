@@ -208,10 +208,10 @@ void PlotWaterfall::draw(wxAutoBufferedPaintDC& dc)
 //-------------------------------------------------------------------------
 void PlotWaterfall::drawGraticule(wxAutoBufferedPaintDC& dc)
 {
-    int p;
-    char buf[15];
-
+    int      x, y, text_w, text_h;
+    char     buf[15];
     wxString s;
+    float    f, time, freq_hz_to_px, time_s_to_py;
 
     wxBrush ltGraphBkgBrush;
     ltGraphBkgBrush.SetStyle(wxBRUSHSTYLE_TRANSPARENT);
@@ -219,6 +219,39 @@ void PlotWaterfall::drawGraticule(wxAutoBufferedPaintDC& dc)
     dc.SetBrush(ltGraphBkgBrush);
     dc.SetPen(wxPen(BLACK_COLOR, 1));
 
+    freq_hz_to_px = (float)m_rGrid.GetWidth()/(MAX_F_HZ-MIN_F_HZ);
+    time_s_to_py = (float)m_rGrid.GetHeight()/WATERFALL_SECS_Y;
+
+    // upper LH coords of plot area are (PLOT_BORDER + XLEFT_OFFSET, PLOT_BORDER)
+    // lower RH coords of plot area are (PLOT_BORDER + XLEFT_OFFSET + m_rGrid.GetWidth(), 
+    //                                   PLOT_BORDER + m_rGrid.GetHeight())
+
+    // Vertical gridlines
+
+    dc.SetPen(m_penShortDash);
+
+    for(f=STEP_F_HZ; f<MAX_F_HZ; f+=STEP_F_HZ) {
+	x = f*freq_hz_to_px;
+	x += PLOT_BORDER + XLEFT_OFFSET;
+        dc.DrawLine(x, m_rGrid.GetHeight() + PLOT_BORDER, x, PLOT_BORDER);
+        sprintf(buf, "%4.0fHz", f);
+	GetTextExtent(buf, &text_w, &text_h);
+        dc.DrawText(buf, x - text_w/2, m_rGrid.GetHeight() + PLOT_BORDER + YBOTTOM_TEXT_OFFSET);
+    }
+
+    // Horizontal gridlines
+
+    for(time=0; time<=WATERFALL_SECS_Y; time++) {
+	y = m_rGrid.GetHeight() - time*time_s_to_py;
+	y += PLOT_BORDER;
+	dc.DrawLine(PLOT_BORDER + XLEFT_OFFSET, y, 
+		    (m_rGrid.GetWidth() + PLOT_BORDER + XLEFT_OFFSET), y);
+        sprintf(buf, "%3.0fs", time);
+	GetTextExtent(buf, &text_w, &text_h);
+        dc.DrawText(buf, PLOT_BORDER + XLEFT_OFFSET - text_w - XLEFT_TEXT_OFFSET, y-text_h/2);
+   }
+
+#ifdef OLD
     // Vertical gridlines
     dc.SetPen(m_penShortDash);
     for(p = (PLOT_BORDER + XLEFT_OFFSET + GRID_INCREMENT); p < ((m_rGrid.GetWidth() - XLEFT_OFFSET) + GRID_INCREMENT); p += GRID_INCREMENT)
@@ -244,6 +277,7 @@ void PlotWaterfall::drawGraticule(wxAutoBufferedPaintDC& dc)
         sprintf(buf, "%1.0f", (double)((m_rGrid.GetHeight() - p) * 10));
         dc.DrawText(buf, XLEFT_TEXT_OFFSET, p);
     }
+#endif
 }
 
 //-------------------------------------------------------------------------
@@ -280,7 +314,7 @@ void PlotWaterfall::plotPixelData()
     // number of dy high blocks in spectrogram
     dy_blocks = m_rGrid.GetHeight()/ dy;
 
-    intensity_per_dB  = (float)256 /(MAX_DB - MIN_DB);
+    intensity_per_dB  = (float)256 /(MAX_AMP_DB - MIN_AMP_DB);
     spec_index_per_px = (float)FDMDV_NSPEC / (float) m_rGrid.GetWidth();
     
     /*
@@ -338,7 +372,7 @@ void PlotWaterfall::plotPixelData()
 	    index = px * spec_index_per_px;
 	    assert(index < FDMDV_NSPEC);
 
-	    intensity = intensity_per_dB * (g_avmag[index] - MIN_DB);
+	    intensity = intensity_per_dB * (g_avmag[index] - MIN_AMP_DB);
 	    if(intensity > 255) intensity = 255;
 	    if (intensity < 0) intensity = 0;
 	    //printf("%d %f %d \n", index, g_avmag[index], intensity);

@@ -69,7 +69,6 @@ PlotSpectrum::~PlotSpectrum()
 // OnSize()
 //----------------------------------------------------------------
 void PlotSpectrum::OnSize(wxSizeEvent& event) {
-    printf("PlotSpectrum::OnSize\n");
 }
 
 //----------------------------------------------------------------
@@ -77,7 +76,6 @@ void PlotSpectrum::OnSize(wxSizeEvent& event) {
 //----------------------------------------------------------------
 void PlotSpectrum::OnPaint(wxPaintEvent& event)
 {
-    printf("PlotSpectrum::OnPaint\n");
     wxAutoBufferedPaintDC dc(this);
     draw(dc);
 }
@@ -179,7 +177,7 @@ void PlotSpectrum::drawGraticule(wxAutoBufferedPaintDC&  dc)
     int      x, y, text_w, text_h;
     char     buf[15];
     wxString s;
-    float    f, dB, freq_hz_to_px, ampl_dB_to_px;
+    float    f, amplitude, freq_hz_to_px, ampl_dB_to_py;
 
     wxBrush ltGraphBkgBrush;
     ltGraphBkgBrush.SetStyle(wxBRUSHSTYLE_TRANSPARENT);
@@ -187,8 +185,8 @@ void PlotSpectrum::drawGraticule(wxAutoBufferedPaintDC&  dc)
     dc.SetBrush(ltGraphBkgBrush);
     dc.SetPen(wxPen(BLACK_COLOR, 1));
 
-    freq_hz_to_px = (float)m_rGrid.GetWidth()/(MAX_HZ-MIN_HZ);
-    ampl_dB_to_px = (float)m_rGrid.GetHeight()/(MAX_DB-MIN_DB);
+    freq_hz_to_px = (float)m_rGrid.GetWidth()/(MAX_F_HZ-MIN_F_HZ);
+    ampl_dB_to_py = (float)m_rGrid.GetHeight()/(MAX_AMP_DB-MIN_AMP_DB);
 
     // upper LH coords of plot area are (PLOT_BORDER + XLEFT_OFFSET, PLOT_BORDER)
     // lower RH coords of plot area are (PLOT_BORDER + XLEFT_OFFSET + m_rGrid.GetWidth(), 
@@ -198,7 +196,7 @@ void PlotSpectrum::drawGraticule(wxAutoBufferedPaintDC&  dc)
 
     dc.SetPen(m_penShortDash);
 
-    for(f=STEP_HZ; f<MAX_HZ; f+=STEP_HZ) {
+    for(f=STEP_F_HZ; f<MAX_F_HZ; f+=STEP_F_HZ) {
 	x = f*freq_hz_to_px;
 	x += PLOT_BORDER + XLEFT_OFFSET;
         dc.DrawLine(x, m_rGrid.GetHeight() + PLOT_BORDER, x, PLOT_BORDER);
@@ -209,12 +207,12 @@ void PlotSpectrum::drawGraticule(wxAutoBufferedPaintDC&  dc)
 
     // Horizontal gridlines
 
-    for(dB=MIN_DB; dB<MAX_DB; dB+=STEP_DB) {
-	y = m_rGrid.GetHeight() + dB*ampl_dB_to_px;
+    for(amplitude=MIN_AMP_DB; amplitude<=MAX_AMP_DB; amplitude+=STEP_AMP_DB) {
+	y = -amplitude*ampl_dB_to_py;
 	y += PLOT_BORDER;
 	dc.DrawLine(PLOT_BORDER + XLEFT_OFFSET, y, 
 		    (m_rGrid.GetWidth() + PLOT_BORDER + XLEFT_OFFSET), y);
-        sprintf(buf, "%3.0fdB", dB);
+        sprintf(buf, "%3.0fdB", amplitude);
 	GetTextExtent(buf, &text_w, &text_h);
         dc.DrawText(buf, PLOT_BORDER + XLEFT_OFFSET - text_w - XLEFT_TEXT_OFFSET, y-text_h/2);
    }

@@ -32,13 +32,13 @@
 
 #define FDMDV_NSPEC         512
 
-#define MIN_DB             -40.0    // minimum of spectram/waterfall DB axis
-#define MAX_DB              0.0
-#define STEP_DB             10.0
+#define MIN_AMP_DB         -40.0    // min of spectrogram/waterfall amplitude axis
+#define MAX_AMP_DB          0.0     // max of spectrogram/waterfall amplitude axis
+#define STEP_AMP_DB         5.0     // amplitude axis step
 #define BETA                0.1     // constant for time averageing spectrum data
-#define MIN_HZ              0       // min freq on Waterfall and Spectrum
-#define MAX_HZ              4000    // max freq on Waterfall and Spectrum
-#define STEP_HZ             500     // freq step on Waterfall and Spectrum graticule
+#define MIN_F_HZ            0       // min freq on Waterfall and Spectrum
+#define MAX_F_HZ            4000    // max freq on Waterfall and Spectrum
+#define STEP_F_HZ           500     // freq step on Waterfall and Spectrum graticule
 #define WATERFALL_SECS_Y    5       // number of seconds respresented by y axis of waterfall
 #define DT                  0.1     // time between Waterfall updates
 #define FS                  8000    // FDMDV modem sample rate
