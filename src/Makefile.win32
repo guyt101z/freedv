@@ -1,0 +1,45 @@
+# src/Makefile.win32
+# David Rowe 26 Oct 2012
+#
+# Makefile for Win32 on msys/Mingw to help David R get up to speed
+#
+# $ make -f Makefile.linux
+
+CODEC2_PATH=$(HOME)/codec2-dev
+INCLUDE_PATH=/usr/local/include
+
+WX_CONFIG=wx-config
+WX_CPPFLAGS = $(shell $(WX_CONFIG) --cxxflags)
+WX_LIBS = $(shell $(WX_CONFIG) --libs core, base, aui, adv)
+CODEC2_INC=$(CODEC2_PATH)/src 
+CODEC2_LIB=$(CODEC2_PATH)/src/.libs/libcodec2.a
+
+CPP_FLAGS = -I$(INCLUDE_PATH) $(WX_CPPFLAGS) -I$(CODEC2_INC) -I../extern/include -g -Wall
+LIBS = $(WX_LIBS) $(CODEC2_LIB) -lm -lportaudiocpp -lportaudio -lpthread -lsndfile
+
+OBJS = topFrame.o \
+fdmdv2_main.o \
+fdmdv2_plot.o \
+fdmdv2_plot_scalar.o \
+fdmdv2_plot_scatter.o \
+fdmdv2_plot_spectrum.o \
+fdmdv2_plot_waterfall_linux.o \
+fdmdv2_pa_wrapper.o \
+dlg_about.o \
+dlg_audio.o \
+dlg_comports.o \
+dlg_options.o
+
+HDRS = fdmdv2_main.h fdmdv2_defines.h fdmdv2_plot.h fdmdv2_plot_scalar.h fdmdv2_plot_waterfall_linux.h fdmdv2_plot_scatter.h fdmdv2_plot_spectrum.h fdmdv2_pa_wrapper.h
+
+all: fdmdv2
+
+fdmdv2: $(OBJS) 
+	g++ -o fdmdv2 $(OBJS) $(CPP_FLAGS) $(LIBS)
+
+%.o: %.cpp $(HDRS) Makefile
+	g++ $(CPP_FLAGS) -c $< -o $@
+
+clean:
+	rm -f *.o fdmdv2
+

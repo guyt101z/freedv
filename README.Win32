@@ -1,0 +1,33 @@
+README.Win32
+David Rowe 27 Oct 2012
+
+Notes on building fdmdv2 for Windows.  This is how David R did it,
+Dave Witten used a different approach.  Many variations are possible.
+
+1. Install MinGW & the mysys shell
+   + pwd -W prints true Win32 directory
+   + I also installed emacs and a svn binary
+
+2. "make install" for various packages below put DLLs in /usr/local/lib
+   "cd /usr/local/lib; pwd -W" to find the Win32 directory
+   add this to the Windows PATH (Control Panel - System - Advanced)
+
+3. WxWidgets:
+   download 2.9.4 tar ball
+   mkdir build-debug; cd build-debug
+   ./configure --with-msw
+   make && make install
+
+4. PortAudio:
+   download latest V19
+   ./configure --enable-cxx
+   make && make install
+
+5. libndfile:
+   download lastest source tar all (not Win32 binaries)
+   ./configure && make && make install
+
+6. svn co fdmdv2
+   cd fdmdv2/src
+   Make -f Makefile.Win32
+

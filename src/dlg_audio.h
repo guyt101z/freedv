@@ -16,7 +16,7 @@
 
 #include "portaudio.h"
 #include "portaudiocpp/PortAudioCpp.hxx"
-#ifdef WIN32
+#ifdef WIN32_ASIO
 #include "portaudiocpp/AsioDeviceAdapter.hxx"
 #endif
 
