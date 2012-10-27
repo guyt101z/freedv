@@ -174,6 +174,8 @@ void PlotWaterfall::draw(wxAutoBufferedPaintDC& dc)
 	m_pBmp = new wxBitmap(m_rGrid.GetWidth(), m_rGrid.GetHeight(), 24);
     }
 
+    dc.Clear();
+
     if(m_newdata)
     {
         m_newdata = false;

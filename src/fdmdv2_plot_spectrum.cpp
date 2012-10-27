@@ -102,6 +102,8 @@ void PlotSpectrum::draw(wxAutoBufferedPaintDC& dc)
     m_rGrid  = m_rCtrl;
     m_rGrid = m_rGrid.Deflate(PLOT_BORDER + (XLEFT_OFFSET/2), (PLOT_BORDER + (YBOTTOM_OFFSET/2)));
 
+    dc.Clear();
+
     // black background
 
     m_rPlot = wxRect(PLOT_BORDER + XLEFT_OFFSET, PLOT_BORDER, m_rGrid.GetWidth(), m_rGrid.GetHeight());

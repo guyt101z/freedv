@@ -68,6 +68,7 @@ void PlotScatter::draw(wxAutoBufferedPaintDC& dc)
 
     // black background
 
+    dc.Clear();
     m_rPlot = wxRect(PLOT_BORDER + XLEFT_OFFSET, PLOT_BORDER, m_rGrid.GetWidth(), m_rGrid.GetHeight());
     wxBrush ltGraphBkgBrush = wxBrush(BLACK_COLOR);
     dc.SetBrush(ltGraphBkgBrush);

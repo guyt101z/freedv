@@ -3,7 +3,7 @@
 #
 # Makefile for Win32 on msys/Mingw to help David R get up to speed
 #
-# $ make -f Makefile.linux
+# $ make -f Makefile.Win32
 
 CODEC2_PATH=$(HOME)/codec2-dev
 INCLUDE_PATH=/usr/local/include
@@ -37,7 +37,7 @@ all: fdmdv2
 fdmdv2: $(OBJS) 
 	g++ -o fdmdv2 $(OBJS) $(CPP_FLAGS) $(LIBS)
 
-%.o: %.cpp $(HDRS) Makefile
+%.o: %.cpp $(HDRS) Makefile.win32
 	g++ $(CPP_FLAGS) -c $< -o $@
 
 clean:
