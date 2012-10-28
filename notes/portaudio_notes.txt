@@ -1,3 +1,79 @@
+David Witten wittend@wwrinc.com
+10:17 AM (0 minutes ago)
+
+to david 
+David,
+
+First, you mentioned audio breakups you were experiencing on Linux.
+My sources related to Portaudio say that this is usually a frame
+buffer sizing issue.  More frames introduces latency, but less can
+cause breakups in the flow.
+
+Short answer:  Concerning that header file, assuming that you
+downloaded and expanded the PortAudio source tarball (or zip file) you
+need a path to [ portaudio/bindings/cpp/source/portaudiocpp/ ] for
+your include search.
+
+You may not want to run against the default windows shared libraries.
+I believe that they default to WMMA, which is pretty poor.
+
+This gets you into the fun parts of building portaudio stuff.  I
+attaching that particular file because I can't remember if it was
+missing for some reason or just not in an obvious place.
+
+I have notes about portaudio in fdmdv2/notes,  but the upshot is that
+I built the main dll with:
+
+ ./configure --with-winapi=directx --with-dxdir=/dxsdk
+--enable-cxx=yes --enable-shared=yes  --with-host_os=mingw
+make
+make install
+
+This puts the libfiles in predictable places in msys's little
+universe, so that they can be found by the linker.  This does not
+necessarily make them easy to find when you want to run fdmdv2 from
+the desktop, so I usually move a copy to wherever I am trying to run
+fdmdv2 from.
+
+I intend to clean up some of this business before I'm done, but the
+project as it stands uses portaudio in two ways.  The main structure
+of the program accesses portaudio through a thin wrapper that I wrote
+(fdmdv_pa_wrapper.h).  The current (largely non-functional)  audio
+configuration dialog uses the portaudiocpp binding wrapper provided by
+the portaudio bundle.  The code for it lives in [
+portaudio/bindings/cpp ] and involves a separate Makefile that lives
+in there.  There is no good reason for this, it is the consequence of
+multiple strategies I explored.
+
+Portaudio *can* be built in a way that supports multiple Windows sound
+APIs simultaneously.  The FLDigi people seem to have done this.  If
+you drop in the dll's lifted from a recent DLDigi implementation for
+Windows, GCC will link with them and will see all of the APS's
+available.  I posted the question of how to build the DLLs myself in
+this way on the appropriate portaudio list and was told that it could
+only be done using SCons.  I decided that life was too short for that
+right now and just built the dlls for direct sound, which has good
+latency and is supported by Microsoft.
+
+Even restricting myself to DirectSound, I found that things were *not*
+completely simple.  I had to locate a version of the direct sound SDK
+that had stuff where the build expected it to be.  The most current
+ones did not seem to work. I can zip this up and put it into the SVN,
+but it is MS's code.
+
+I also built libraries for ASIO, WMMA, and other options early on, but
+it seemed somewhat pointless at that point.  The ones I am using are
+just for DirectSound.  I can use the ones from FLDigi if I want.  You
+will find my built DLLs scattered around the build, often in the
+/Release subfolders.  This is sloppy but is just for my convenience.
+
+Good luck,
+
+Dave
+
+===========================================
+!!! Track record trying to build PortAudio
+===========================================
 
 build:
 make clean

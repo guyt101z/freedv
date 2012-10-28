@@ -47,7 +47,7 @@ void AudioDlg::OnApply( wxCommandEvent& event )
 //-------------------------------------------------------------------------
 void AudioDlg::OnClose( wxCloseEvent& event )
 {
-    this->EndModal(wxID_OK);
+    this->EndModal(wxOK);
 }
 
 //-------------------------------------------------------------------------
