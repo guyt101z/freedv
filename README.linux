@@ -2,6 +2,12 @@ README.linux for fdmdv2
 Created by David Rowe
 Oct 14 2012
 
+Linux usage Notes
+=================
+
+1. Config is stored in ~/.FMDV2, rm this file to restore defaults
+
+
 BUILDING fdmdv2 for Linux
 =========================
 
@@ -10,31 +16,62 @@ Build wxWidgets
 
 1. Download wxWidgets 2.9.4 or later and untar
 
-2. Build the gtk version:
-    
+2. Install GTK development files (e.g. on Ubuntu libgtk2.0-dev)
+
+3. Build the gtk version:
+
    $ cd wxWidgets-2.9.4
    $ mkdir build_gtk
    $ cd build_gtk
    $ ../configure
    $ make
 
-3. You don't actually have to "make install" wxWidgets (unless you
+4. You don't actually have to "make install" wxWidgets (unless you
    really want to), it can be used by fdmdv2 out of the directory you
    build it in.
 
 Build portaudio
 ---------------
 
-1. Download and untar pa_stable_V19
+1. Make sure ALSA development support (libasound and headers) is
+   present.  Portaudio will work with OSS but I found I couldn't
+   adjust the mic gain using OSS.  On a modern version of Ubuntu the
+   ALSA libs can be installed with:
 
-2. Build with C++ enabled
+     sudo apt-get install libasound-dev
+
+   Note I had problems with the ALSA development library on Ubuntu
+   9.10, so used OSS andput up with not being able to adjust the mic
+   gain.
+
+2. Download and untar pa_stable_V19
+
+3. Configure with C++ enabled:
 
    $ ./configure --enable-cxx
-   $ make
 
-3. I did a "sudo make install" on this, and removed the default
-   Unbuntu portaudio libs as they were an earlier version.  It's
-   probably possible to build fdmdv2 without "make install".
+   <snip>:
+
+   Configuration summary:
+
+       Target ...................... i686-pc-linux-gnu
+       C++ bindings ................ yes
+       Debug output ................ no
+
+       ALSA ........................ yes
+       ASIHPI ...................... no
+
+       OSS ......................... yes
+       JACK ........................ no
+
+4. $ make
+
+5. You can test Portaudio with bin/pa_devs & bin/patest_sine8.
+
+6. I used a "sudo make install", and removed the default Unbuntu
+   portaudio libs as they were an earlier version.  It's probably
+   possible to build fdmdv2 without "make install", by passing
+   --prefix to the ./configure stage.
 
 Build codec2-dev
 ----------------
@@ -52,4 +89,35 @@ Build fdmdv2
    cd fdmdv2/src 
    make -f Makefile.linux
 
+
+TODO
+====
+
+[ ] Stopping Waterfall
+    + When Stop pressed lower 25% of Waterfall isn't erased
+[ ] Axis labels on Waterfall incorrect
+[ ] CPU load very high for waterfall, proportional to screen size
+[X] resizing Waterfall
+    + bit map is used for memory of waterfall, so resizing will cause some
+      probs as previous memory will be for a different size
+    + so if we resize, need to delete old memory, zero new bit map
+[ ] minimum window size so we don't lose buttons and get waterfall/spectrum text
+    pressed together
+[ ] tell take lights for over/underflow realtime type issues
+[ ] lights for clipping of audio input/ouput
+
+IDEAS
+=====
+
+1. Tabbed page option that draws block diagram of system and draws line
+between sound devices and modem blocks.  Lines move depending if we
+are in sync, audio pass thru etc
+
+2. On sound device for each "port" make a file one of the options, so we can 
+
+3. (Thomas Kocourek n4fwd) Context sesnitive help.
+
+4. Look at how people hook up and use program, stop common mistakes or assumptions
+
+5. speech Waveform I/O.  Look for clipping
 

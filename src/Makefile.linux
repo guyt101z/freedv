@@ -14,7 +14,7 @@ WX_LIBS = $(shell $(WX_CONFIG) --libs core, base, aui, adv)
 CODEC2_INC=-I$(CODEC2_PATH)/src
 CODEC2_LIB=$(CODEC2_PATH)/src/.libs/libcodec2.a
 
-CPP_FLAGS = $(WX_CPPFLAGS) $(CODEC2_INC) -I../extern/include -g -Wall
+CPP_FLAGS = $(WX_CPPFLAGS) $(CODEC2_INC) -I../extern/include -g -Wall -O3
 LIBS = $(WX_LIBS) $(CODEC2_LIB) -lm -lportaudiocpp -lpthread -lsndfile
 
 OBJS = topFrame.o \
@@ -37,7 +37,7 @@ all: fdmdv2
 fdmdv2: $(OBJS) 
 	g++ -o fdmdv2 $(OBJS) $(CPP_FLAGS) $(LIBS)
 
-%.o: %.cpp $(HDRS)
+%.o: %.cpp $(HDRS) Makefile.linux
 	g++ $(CPP_FLAGS) -c $< -o $@
 
 

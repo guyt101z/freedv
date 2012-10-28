@@ -1181,6 +1181,16 @@ void MainFrame::averageData(float mag_dB[])
 //-------------------------------------------------------------------------
 // rxCallback()
 //-------------------------------------------------------------------------
+
+/* 
+   todo:
+
+   + add tests to determine if we have real time audio I/O problems,
+     for example lost samples, buffer overflow, too slow processing
+   + should flag the user so they can tune the system
+   + maybe compute time spent doing demod compared to time between calls
+*/
+
 int MainFrame::rxCallback(
                             const void      *inputBuffer,
                             void            *outputBuffer,
@@ -1202,9 +1212,13 @@ int MainFrame::rxCallback(
     short           in48k_short[N48];
     short           indata[MAX_FPB];
     short           outdata[MAX_FPB];
+    int             ret;
 
     (void) timeInfo;
     (void) statusFlags;
+
+    //if (statusFlags)
+    //	printf("0x%x\n", statusFlags);
 
     assert(inputBuffer != NULL);
     assert(outputBuffer != NULL);
@@ -1221,15 +1235,16 @@ int MainFrame::rxCallback(
        decimation.  As we can't guarantee the size of framesPerBuffer
        we do a little FIFO buffering.
     */
-
+    
     // assemble a mono buffer (just use left channel) and write to FIFO
     assert(framesPerBuffer < MAX_FPB);
     for(i = 0; i < framesPerBuffer; i++, rptr += 2)
     {
         indata[i] = *rptr;
     }
-    fifo_write(cbData->infifo, indata, framesPerBuffer);
-
+    ret = fifo_write(cbData->infifo, indata, framesPerBuffer);
+    assert(ret != -1);
+    
     // while we have enough samples available ...
     while (fifo_read(cbData->infifo, in48k_short, N48) == 0)
     {
@@ -1253,17 +1268,16 @@ int MainFrame::rxCallback(
         }
         g_nInputBuf += FDMDV_NOM_SAMPLES_PER_FRAME;
         per_frame_rx_processing(g_pRxOutBuf, &g_nOutputBuf, g_CodecBits, g_RxInBuf, &g_nInputBuf, &g_nRxIn, &g_State, g_pCodec2);
-        //cbData->pWFPanel->m_newdata = true;
-        //cbData->pSPPanel->m_newdata = true;
 
-        // if demod out of sync copy input audio from A/D to aid in tuning
+	// prepare output buffer for D/A (speaker)
         if (g_nOutputBuf >= N8)
         {
+	    // if demod out of sync copy input audio from A/D to aid in tuning
             if(g_State == 0)
             {
                 for(i = 0; i < N8; i++)
                 {
-                    in8k[MEM8 + i] = out8k[i];       // A/D signal
+                    in8k[MEM8 + i] = out8k[i];       // echo A/D signal
                 }
             }
             else
@@ -1370,7 +1384,7 @@ int MainFrame::rxCallback(
     //     have enough samples to run demod twice.
     //
     //  With a +/- 10 Hz sample clock difference at FS=8000Hz (+/- 1250
-    //  ppm), case 0 or 1 occured about once every 30 seconds.  This is
+    //  ppm), case 0 or 2 occured about once every 30 seconds.  This is
     //  no problem for the decoded audio.
     //
     while(*n_input_buf >= *nin)
@@ -1395,7 +1409,7 @@ int MainFrame::rxCallback(
         fdmdv_get_rx_spectrum(g_pFDMDV, rx_spec, rx_fdm, nin_prev);
         fdmdv_get_demod_stats(g_pFDMDV, &g_stats);
 
-        // Average Data
+        // Average rx spectrum data using a simple IIR low pass filter
         for(i = 0; i < FDMDV_NSPEC; i++)
         {
             g_avmag[i] = (1.0 - BETA) * g_avmag[i] + BETA * rx_spec[i];
