@@ -134,6 +134,8 @@ typedef struct
     float           in8k[MEM8 + N8];
     struct FIFO    *infifo;
     struct FIFO    *outfifo;
+    struct FIFO    *rxinfifo;
+    struct FIFO    *rxoutfifo;
 } paCallBackData;
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
@@ -193,11 +195,9 @@ class MainFrame : public TopFrame
                              );
 
         static void per_frame_rx_processing(
-                                        short   output_buf[],  // output buf of decoded speech samples
-                                        int     *n_output_buf, // how many samples currently in output_buf[]
+                                        FIFO    *output_fifo,   // decoded speech samples
                                         int     codec_bits[],  // current frame of bits for decoder
-                                        short   input_buf[],   // input buf of modem samples input to demod
-                                        int     *n_input_buf,  // how many samples currently in input_buf[]
+                                        FIFO    *input_fifo,   // modem samples input to demod
                                         int     *nin,          // amount of samples demod needs for next call
                                         int     *state,        // used to collect codec_bits[] halves
                                         struct  CODEC2 *c2     // Codec 2 states

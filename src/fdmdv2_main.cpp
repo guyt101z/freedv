@@ -903,15 +903,6 @@ void MainFrame::OnTogBtnLoopTx( wxCommandEvent& event )
 int             g_nRxIn = FDMDV_NOM_SAMPLES_PER_FRAME;
 float           g_Ts = 0.0;
 
-short           g_RxInBuf[2 * FDMDV_NOM_SAMPLES_PER_FRAME];
-short           *g_pRxOutBuf;
-int             g_nInputBuf = 0;
-
-short           g_TxInBuf[2 * FDMDV_NOM_SAMPLES_PER_FRAME];
-short           *g_pTxOutBuf;
-int             g_nOutputBuf = 0;
-
-
 int             g_CodecBits[2 * FDMDV_BITS_PER_FRAME];
 int             g_State = 0;
 
@@ -930,22 +921,6 @@ void MainFrame::startRxStream()
 
         m_RxRunning = true;
         m_rxPa = new PortAudioWrap();
-
-#ifdef _DUMMY_DATA
-        for(int i = 0; i < FDMDV_NSPEC; i++)
-        {
-//            m_rxPa->m_av_mag[i] = sin(((double)i / M_PI)) * 100.0;
-            g_avmag[i] = (float)sin(((double)i / M_PI)) * 100.0;
-        }
-#else
-        for(int i = 0; i < FDMDV_NSPEC; i++)
-        {
-//            m_rxPa->m_av_mag[i] = -40.0;
-            g_avmag[i] = (float)-40.0;
-        }
-#endif // _DUMMY_DATA
-
-        g_pRxOutBuf = (short*)malloc(2 * sizeof(short) * codec2_samples_per_frame(g_pCodec2));
 
         m_rxDevIn = m_rxPa->getDefaultInputDevice();                        // default input device
         if(m_rxDevIn == paNoDevice)
@@ -966,7 +941,6 @@ void MainFrame::startRxStream()
         {
             wxMessageBox(wxT("Rx Error: No default output device."), wxT("Error"), wxOK);
             delete m_rxPa;
-	    free(g_pRxOutBuf);
             m_RxRunning = false;
             return;
         }
@@ -997,6 +971,8 @@ void MainFrame::startRxStream()
 
         m_rxUserdata->infifo = fifo_create(2*N48);
         m_rxUserdata->outfifo = fifo_create(2*N48);
+        m_rxUserdata->rxinfifo = fifo_create(2 * FDMDV_NOM_SAMPLES_PER_FRAME);
+        m_rxUserdata->rxoutfifo = fifo_create(2 * codec2_samples_per_frame(g_pCodec2));
 
         m_rxPa->setUserData(m_rxUserdata);
         m_rxErr = m_rxPa->setCallback(rxCallback);
@@ -1008,7 +984,8 @@ void MainFrame::startRxStream()
             delete m_rxPa;
             fifo_destroy(m_rxUserdata->infifo);
             fifo_destroy(m_rxUserdata->outfifo);
-	    free(g_pRxOutBuf);
+            fifo_destroy(m_rxUserdata->rxinfifo);
+            fifo_destroy(m_rxUserdata->rxoutfifo);
             return;
         }
         m_rxErr = m_rxPa->streamStart();
@@ -1018,7 +995,8 @@ void MainFrame::startRxStream()
             delete m_rxPa;
             fifo_destroy(m_rxUserdata->infifo);
             fifo_destroy(m_rxUserdata->outfifo);
-	    free(g_pRxOutBuf);
+            fifo_destroy(m_rxUserdata->rxinfifo);
+            fifo_destroy(m_rxUserdata->rxoutfifo);
 	    return;
         }
 	printf("end startRxStream\n");
@@ -1039,9 +1017,10 @@ void MainFrame::stopRxStream()
 	delete m_rxPa;
         fdmdv_destroy(g_pFDMDV);
         codec2_destroy(g_pCodec2);
-	free(g_pRxOutBuf);
         fifo_destroy(m_rxUserdata->infifo);
         fifo_destroy(m_rxUserdata->outfifo);
+        fifo_destroy(m_rxUserdata->rxinfifo);
+        fifo_destroy(m_rxUserdata->rxoutfifo);
         delete m_rxUserdata;
     }
 /*
@@ -1086,8 +1065,6 @@ void MainFrame::startTxStream()
             wxMessageBox(wxT("Tx Error: No default input device."), wxT("Error"), wxOK);
             return;
         }
-
-        g_pTxOutBuf = (short*)malloc(2*sizeof(short)*codec2_samples_per_frame(g_pCodec2));
 
         m_txErr = m_txPa->setInputDevice(m_txDevIn);
         m_txErr = m_txPa->setInputChannelCount(2);                          // stereo input
@@ -1173,9 +1150,20 @@ void MainFrame::averageData(float mag_dB[])
 
     for(i = 0; i < FDMDV_NSPEC; i++)
     {
-//        m_rxPa->m_av_mag[i] = (1.0 - BETA) * m_rxPa->m_av_mag[i] + BETA * mag_dB[i];
         g_avmag[i] = (1.0 - BETA) * g_avmag[i] + BETA * mag_dB[i];
     }
+}
+
+inline void short_to_float(float out_float[], short in_short[], int n) {
+    int i;
+    for(i=0; i<n; i++)
+	out_float[i] = (float)in_short[i];
+}
+
+inline void float_to_short(short out_short[], float in_float[], int n) {
+    int i;
+    for(i=0; i<n; i++)
+	out_short[i] = (short)in_float[i];
 }
 
 //-------------------------------------------------------------------------
@@ -1206,7 +1194,9 @@ int MainFrame::rxCallback(
     short           *wptr    = (short*)outputBuffer;
     float           *in8k    = cbData->in8k;
     float           *in48k   = cbData->in48k;
+    short           in8k_short[N8];
     float           out8k[N8];
+    short           out8k_short[N8];
     float           out48k[N48];
     short           out48k_short[N48];
     short           in48k_short[N48];
@@ -1233,7 +1223,11 @@ int MainFrame::rxCallback(
        To perform the 48 to 8 kHz conversion we need an integer
        multiple of FDMDV_OS samples to support the interpolation and
        decimation.  As we can't guarantee the size of framesPerBuffer
-       we do a little FIFO buffering.
+       we do a little FIFO buffering to interface the different input
+       and output number of sample requirements.
+
+       We also use FIFOs at the input of the demod and output of the
+       decoder to interface between different buffer sizes.
     */
     
     // assemble a mono buffer (just use left channel) and write to FIFO
@@ -1245,83 +1239,36 @@ int MainFrame::rxCallback(
     ret = fifo_write(cbData->infifo, indata, framesPerBuffer);
     assert(ret != -1);
     
-    // while we have enough samples available ...
+    // while we have enough input samples available ...
+
     while (fifo_read(cbData->infifo, in48k_short, N48) == 0)
     {
-        // convert to float
-        for(i = 0; i < N48; i++)
-        {
-            in48k[FDMDV_OS_TAPS + i] = in48k_short[i];
-        }
-        // downsample and update filter memory
+	// note: modifying fdmdv_48_to_8() to use shorts for sample I/O
+        //       would remove all these float to short conversions
+
+	short_to_float(&in48k[FDMDV_OS_TAPS], in48k_short, N48);
         fdmdv_48_to_8(out8k, &in48k[FDMDV_OS_TAPS], N8);
-        for(i = 0; i < FDMDV_OS_TAPS; i++)
-        {
-            in48k[i] = in48k[i + N48];
-        }
+	float_to_short(out8k_short, out8k, N8);
+	fifo_write(cbData->rxinfifo, out8k_short, N8);
 
-        assert((g_nInputBuf + N8) <= 2 * FDMDV_NOM_SAMPLES_PER_FRAME);
-        // run demod, decoder and update GUI info
-        for(i = 0; i < N8; i++)
-        {
-            g_RxInBuf[g_nInputBuf + i] = (short)out8k[i];
-        }
-        g_nInputBuf += FDMDV_NOM_SAMPLES_PER_FRAME;
-        per_frame_rx_processing(g_pRxOutBuf, &g_nOutputBuf, g_CodecBits, g_RxInBuf, &g_nInputBuf, &g_nRxIn, &g_State, g_pCodec2);
+        per_frame_rx_processing(cbData->rxoutfifo, g_CodecBits, cbData->rxinfifo, &g_nRxIn, &g_State, g_pCodec2);
 
-	// prepare output buffer for D/A (speaker)
-        if (g_nOutputBuf >= N8)
-        {
-	    // if demod out of sync copy input audio from A/D to aid in tuning
-            if(g_State == 0)
-            {
-                for(i = 0; i < N8; i++)
-                {
-                    in8k[MEM8 + i] = out8k[i];       // echo A/D signal
-                }
-            }
-            else
-            {
-                for(i = 0; i < N8; i++)
-                {
-                    in8k[MEM8+i] = g_pRxOutBuf[i];   // decoded spech
-                }
-            }
-            g_nOutputBuf -= N8;
-        }
-        assert(g_nOutputBuf >= 0);
+	// if demod out of sync copy input audio from A/D to aid in tuning
 
-        // shift speech samples in output buffer
-        for(i = 0; i < (unsigned int)g_nOutputBuf; i++)
-        {
-            g_pRxOutBuf[i] = g_pRxOutBuf[i + N8];
-        }
+	if (g_State == 0)
+	    memcpy(&in8k[MEM8], out8k, sizeof(float)*N8);
+	else {
+	    fifo_read(cbData->rxoutfifo, in8k_short, N8);	    
+	    short_to_float(&in8k[MEM8], in8k_short, N8);
+	}
 
-        // test: echo input to output, make this loopback option
-	/*
-        for(i=0; i < N8; i++)
-        {
-            in8k[MEM8+i] = out8k[i];
-        }
-	*/
-        // Convert output speech to 48 kHz sample rate
-        // upsample and update filter memory
         fdmdv_8_to_48(out48k, &in8k[MEM8], N8);
-        for(i = 0; i < MEM8; i++)
-        {
-            in8k[i] = in8k[i + N8];
-        }
-        assert(outputBuffer != NULL);
-
-        // write signal to fifo
-        for(i = 0; i < N48; i++)
-        {
-            out48k_short[i] = (short)out48k[i];
-        }
+	float_to_short(out48k_short, out48k, N48);
         fifo_write(cbData->outfifo, out48k_short, N48);
     }
 
     // OK now set up output samples
+
     if (fifo_read(cbData->outfifo, outdata, framesPerBuffer) == 0)
     {
         // write signal to both channels */
@@ -1333,8 +1280,7 @@ int MainFrame::rxCallback(
     }
     else
     {
-        //printf("no data\n");
-        // zero output if no data available */
+        // zero output if no data available
         for(i = 0; i < framesPerBuffer; i++, wptr += 2)
         {
             wptr[0] = 0;
@@ -1347,18 +1293,18 @@ int MainFrame::rxCallback(
 //----------------------------------------------------------------
 // per_frame_rx_processing()
 //----------------------------------------------------------------
- void MainFrame::per_frame_rx_processing(
-                                            short   output_buf[],   // output buf of decoded speech samples
-                                            int     *n_output_buf,  // how many samples currently in output_buf[]
-                                            int     codec_bits[],   // current frame of bits for decoder
-                                            short   input_buf[],    // input buf of modem samples input to demod
-                                            int     *n_input_buf,   // how many samples currently in input_buf[]
+void MainFrame::per_frame_rx_processing(
+                                            FIFO    *output_fifo,   // decoded speech samples
+                                            int      codec_bits[],  // current frame of bits for decoder
+                                            FIFO    *input_fifo,    // modem samples input to demod
                                             int     *nin,           // amount of samples demod needs for next call
                                             int     *state,         // used to collect codec_bits[] halves
                                             CODEC2  *c2             // Codec 2 states
                                         )
 {
     int                 sync_bit;
+    short               input_buf[FDMDV_MAX_SAMPLES_PER_FRAME];
+    short               output_buf[N8*2];
     float               rx_fdm[FDMDV_MAX_SAMPLES_PER_FRAME];
     int                 rx_bits[FDMDV_BITS_PER_FRAME];
     unsigned char       packed_bits[BYTES_PER_CODEC_FRAME];
@@ -1368,9 +1314,7 @@ int MainFrame::rxCallback(
     int                 bit;
     int                 byte;
     int                 next_state;
-
-    assert(*n_input_buf <= (2 * FDMDV_NOM_SAMPLES_PER_FRAME));
-
+    
     //
     //  This while loop will run the demod 0, 1 (nominal) or 2 times:
     //
@@ -1387,7 +1331,8 @@ int MainFrame::rxCallback(
     //  ppm), case 0 or 2 occured about once every 30 seconds.  This is
     //  no problem for the decoded audio.
     //
-    while(*n_input_buf >= *nin)
+
+    while (fifo_read(input_fifo, input_buf, *nin) == 0)    
     {
         // demod per frame processing
         for(i = 0; i < *nin; i++)
@@ -1396,14 +1341,6 @@ int MainFrame::rxCallback(
         }
         nin_prev = *nin;
         fdmdv_demod(g_pFDMDV, rx_bits, &sync_bit, rx_fdm, nin);
-        *n_input_buf -= nin_prev;
-        assert(*n_input_buf >= 0);
-
-        // shift input buffer
-        for(i = 0; i < *n_input_buf; i++)
-        {
-            input_buf[i] = input_buf[i + nin_prev];
-        }
 
         // compute rx spectrum & get demod stats, and update GUI plot data
         fdmdv_get_rx_spectrum(g_pFDMDV, rx_spec, rx_fdm, nin_prev);
@@ -1431,6 +1368,7 @@ int MainFrame::rxCallback(
         {
             case 0:
                 // mute output audio when out of sync
+#ifdef PREV
                 if(*n_output_buf < 2 * codec2_samples_per_frame(c2) - N8)
                 {
                     for(i = 0; i < N8; i++)
@@ -1440,6 +1378,11 @@ int MainFrame::rxCallback(
                     *n_output_buf += N8;
                 }
                 assert(*n_output_buf <= (2 * codec2_samples_per_frame(c2)));
+#endif
+		for(i = 0; i < N8; i++)
+		    output_buf[i] = 0;
+		fifo_write(output_fifo, output_buf, N8);
+
                 if((g_stats.fest_coarse_fine == 1) && (g_stats.snr_est > 3.0))
                 {
                     next_state = 1;
@@ -1488,13 +1431,13 @@ int MainFrame::rxCallback(
                         }
                     }
                     assert(byte == BYTES_PER_CODEC_FRAME);
+
                     // add decoded speech to end of output buffer
-                    if(*n_output_buf <= codec2_samples_per_frame(c2))
-                    {
-                        codec2_decode(c2, &output_buf[*n_output_buf], packed_bits);
-                        *n_output_buf += codec2_samples_per_frame(c2);
-                    }
-                    assert(*n_output_buf <= (2 * codec2_samples_per_frame(c2)));
+
+		    assert(codec2_samples_per_frame(c2) <= (2*N8));
+		    codec2_decode(c2, output_buf, packed_bits);
+		    fifo_write(output_fifo, output_buf, codec2_samples_per_frame(c2));
+
                 }
                 break;
         }
