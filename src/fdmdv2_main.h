@@ -135,8 +135,8 @@ typedef struct
 
     float           in48k1[FDMDV_OS_TAPS + N48];
     float           in8k1[MEM8 + N8];
-    float           in48k2[FDMDV_OS_TAPS + N48];
-    float           in8k2[MEM8 + N8];
+    float           in48k2[FDMDV_OS_TAPS + 2*N48];
+    float           in8k2[MEM8 + 2*N8];
 
     // FIFOs attached to first sound card
 
@@ -152,11 +152,6 @@ typedef struct
 
     struct FIFO    *rxinfifo;
     struct FIFO    *rxoutfifo;
-
-    // FIFOs for tx process
-
-    struct FIFO    *txinfifo;
-    struct FIFO    *txoutfifo;
 
 } paCallBackData;
 
@@ -228,9 +223,9 @@ class MainFrame : public TopFrame
                                     );
 
         static void per_frame_tx_processing(
-                                            FIFO    *output_fifo,   // ouput modulated samples
-                                            FIFO    *input_fifo,    // speech sample input
-                                            CODEC2  *c2             // Codec 2 states
+                                            short   tx_fdm_scaled[], // ouput modulated samples
+                                            short   input_buf[],     // speech sample input
+                                            CODEC2  *c2              // Codec 2 states
 					    );
 
 	int initPortAudioDevice(PortAudioWrap *pa, int inDevice, int outDevice, int soundCard);

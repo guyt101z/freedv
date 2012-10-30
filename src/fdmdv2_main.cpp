@@ -921,8 +921,6 @@ void MainFrame::destroy_fifos(void)
     fifo_destroy(m_rxUserdata->outfifo2);
     fifo_destroy(m_rxUserdata->rxinfifo);
     fifo_destroy(m_rxUserdata->rxoutfifo);
-    fifo_destroy(m_rxUserdata->txinfifo);
-    fifo_destroy(m_rxUserdata->txoutfifo);
 }
 
 int MainFrame::initPortAudioDevice(PortAudioWrap *pa, int inDevice, int outDevice, int soundCard)
@@ -958,6 +956,12 @@ int MainFrame::initPortAudioDevice(PortAudioWrap *pa, int inDevice, int outDevic
 
     // init params that affect input and output
 
+    /* 
+       On a good day framesPerBuffer in callback will be PA_FPB.  It
+       was found that you dont always get framesPerBuffer exactly
+       equal PA_PFB, for example when I wanted framesPerBuffer ==
+       PA_PFB == 960 samples.
+    */
     pa->setFramesPerBuffer(PA_FPB);
     pa->setSampleRate(SAMPLE_RATE);
     pa->setStreamFlags(0);    
@@ -1055,14 +1059,24 @@ void MainFrame::startRxStream()
 	// create FIFOs used to interface between different buffer sizes
 
         m_rxUserdata->infifo1 = fifo_create(2*N48);
-        m_rxUserdata->outfifo1 = fifo_create(2*N48);
+
+	/*
+	  During soundcard 1 callback, outfifo1 is read in PA_FPB = 1024 sample blocks.
+
+	  In tx processing:
+	    + if outfifo1 has less than framesPerBuffer = PA_FPB = 1024 samples
+	    + then tx process generates a 40ms @ 48kHz = 1920 sample blocks
+	    + so we could have 1023 + 1920 samples
+	    + so lets make it 1920*2 in size
+	*/
+
+        m_rxUserdata->outfifo1 = fifo_create(4*N48);
+
         m_rxUserdata->infifo2 = fifo_create(2*N48);
         m_rxUserdata->outfifo2 = fifo_create(2*N48);
 
         m_rxUserdata->rxinfifo = fifo_create(2 * FDMDV_NOM_SAMPLES_PER_FRAME);
         m_rxUserdata->rxoutfifo = fifo_create(2 * codec2_samples_per_frame(g_pCodec2));
-        m_rxUserdata->txinfifo = fifo_create(codec2_samples_per_frame(g_pCodec2));
-        m_rxUserdata->txoutfifo = fifo_create(2 * FDMDV_NOM_SAMPLES_PER_FRAME);
 
 	// question: can same callback data be used for both callbacks?
 	// Is there a chance of them both being called at the same time?
@@ -1316,16 +1330,16 @@ int MainFrame::rxCallback(
     // temp buffers re-used by tx and rx processing
 
     short           in8k_short[N8];
-    float           out8k[N8];
+    float           out8k[2*N8];
     short           out8k_short[N8];
-    float           out48k[N48];
-    short           out48k_short[N48];
-    short           in48k_short[N48];
+    float           out48k[2*N48];
+    short           out48k_short[2*N48];
+    short           in48k_short[2*N48];
     short           indata[MAX_FPB];
     short           outdata[MAX_FPB];
 
     int             ret;
-    unsigned int    i, nrxloops;
+    unsigned int    i;
 
     (void) timeInfo;
     (void) statusFlags;
@@ -1374,7 +1388,6 @@ int MainFrame::rxCallback(
     
     // while we have enough input samples available ...
 
-    nrxloops = 0;
     while (fifo_read(cbData->infifo1, in48k_short, N48) == 0)
     {
 	// note: modifying fdmdv_48_to_8() to use shorts for sample I/O
@@ -1403,8 +1416,6 @@ int MainFrame::rxCallback(
 	    fifo_write(cbData->outfifo1, out48k_short, N48);
 	else
 	    fifo_write(cbData->outfifo2, out48k_short, N48);
-
-	nrxloops++;
     }
 
     //
@@ -1413,13 +1424,19 @@ int MainFrame::rxCallback(
 
     if (g_nSoundCards == 2 ) {
 
-	// iterate tx as many times as rx, effectively locking tx
-	// processing to sample rate of sound card 1.  We want to make
-	// sure that modulator samples are uninterrupted by
-	// differences in sample rate between this sound card and
-	// audio I/O soundcard 2.
+	// Make sure we have at least framesPerBuffer modulator output
+	// samples.  This locks the modulator to the sample
+	// rate of sound card 1.  We want to make sure that modulator
+	// samples are uninterrupted by differences in sample rate
+	// between this sound card and sound card 2.
 	
-	for(i=0; i<nrxloops; i++) {
+	// Typical values are framesPerBuffer=1024, and each iteration
+	// of the tx processing generates 320*FDMDV_OS=1920 samples at
+	// 48kHz, so this loop will run 0 or 1 times.
+
+	while((unsigned)fifo_n(cbData->outfifo1) < framesPerBuffer) {
+	    short tx_speech_in[2*N8];
+	    short tx_mod_out[2*N8];
 
 	    // infifo2 is written to by another sound card so it may
 	    // over or underflow, but we don't realy care.  It will
@@ -1427,22 +1444,26 @@ int MainFrame::rxCallback(
 	    // to codec2_enc, possibly making a click every now and
 	    // again in the decoded audio at the other end.
 
-	    memset(in8k_short, 0, sizeof(short)*N8);
-	    fifo_read(cbData->infifo2, in8k_short, N8);   
+	    // zero speech input just in case infifo2 underflows
 
-	    short_to_float(&in48k2[FDMDV_OS_TAPS], in48k_short, N48);
-	    fdmdv_48_to_8(out8k, &in48k2[FDMDV_OS_TAPS], N8);
-	    float_to_short(out8k_short, out8k, N8);
-	    fifo_write(cbData->txinfifo, out8k_short, N8);
+	    memset(in48k_short, 0, sizeof(short)*2*N48); 
 
-	    per_frame_tx_processing(cbData->txoutfifo, cbData->txinfifo, g_pCodec2);
+	    // Codec 2 @ 1400 bit/s requires 40ms of input speech
+
+	    fifo_read(cbData->infifo2, in48k_short, 2*N48);
+	    short_to_float(&in48k2[FDMDV_OS_TAPS], in48k_short, 2*N48);
+	    fdmdv_48_to_8(out8k, &in48k2[FDMDV_OS_TAPS], 2*N8);
+	    float_to_short(tx_speech_in, out8k, 2*N8);
+	    assert(codec2_samples_per_frame(g_pCodec2) == (2*N8));
+
+	    per_frame_tx_processing(tx_mod_out, tx_speech_in, g_pCodec2);
 	    
-	    while(fifo_read(cbData->txoutfifo, in8k_short, N8) == 0) {   
-		short_to_float(&in8k2[MEM8], in8k_short, N8);
-		fdmdv_8_to_48(out48k, &in8k2[MEM8], N8);
-		float_to_short(out48k_short, out48k, N48);
-		//fifo_write(cbData->outfifo1, out48k_short, N48);
-	    }
+	    // output 40ms of modem tone
+
+	    short_to_float(&in8k2[MEM8], tx_mod_out, 2*N8);
+	    fdmdv_8_to_48(out48k, &in8k2[MEM8], 2*N8);
+	    float_to_short(out48k_short, out48k, 2*N48);
+	    fifo_write(cbData->outfifo1, out48k_short, 2*N48);
 	}
     }
 
@@ -1615,52 +1636,45 @@ void MainFrame::per_frame_rx_processing(
 }
 
 void MainFrame::per_frame_tx_processing(
-                                            FIFO    *output_fifo,   // ouput modulated samples
-                                            FIFO    *input_fifo,    // speech sample input
+                                            short   tx_fdm_scaled[],// ouput modulated samples
+                                            short   input_buf[],    // speech sample input
                                             CODEC2  *c2             // Codec 2 states
                                         )
 {
-    short          input_buf[2*N8];
     unsigned char  packed_bits[BYTES_PER_CODEC_FRAME];
     int            bits[BITS_PER_CODEC_FRAME];
     COMP           tx_fdm[2*FDMDV_NOM_SAMPLES_PER_FRAME];
-    short          tx_fdm_scaled[2*FDMDV_NOM_SAMPLES_PER_FRAME];
     int            sync_bit;
     int            i, bit, byte;
 
-    assert(codec2_samples_per_frame(c2) <= (2*N8));
+    codec2_encode(c2, packed_bits, input_buf);
 
-    while (fifo_read(input_fifo, input_buf, codec2_samples_per_frame(c2)) == 0) {
-	codec2_encode(c2, packed_bits, input_buf);
+    /* unpack bits, MSB first */
 
-	/* unpack bits, MSB first */
-
-	bit = 7; byte = 0;
-	for(i=0; i<BITS_PER_CODEC_FRAME; i++) {
-	    bits[i] = (packed_bits[byte] >> bit) & 0x1;
-	    bit--;
-	    if (bit < 0) {
-		bit = 7;
-		byte++;
-	    }
+    bit = 7; byte = 0;
+    for(i=0; i<BITS_PER_CODEC_FRAME; i++) {
+	bits[i] = (packed_bits[byte] >> bit) & 0x1;
+	bit--;
+	if (bit < 0) {
+	    bit = 7;
+	    byte++;
 	}
-	assert(byte == BYTES_PER_CODEC_FRAME);
-
-	/* modulate even and odd frames */
-
-	fdmdv_mod(g_pFDMDV, tx_fdm, bits, &sync_bit);
-	assert(sync_bit == 1);
-
-	fdmdv_mod(g_pFDMDV, &tx_fdm[FDMDV_NOM_SAMPLES_PER_FRAME], &bits[FDMDV_BITS_PER_FRAME], &sync_bit);
-	assert(sync_bit == 0);
-
-	/* scale and convert shorts */
-
-	for(i=0; i<2*FDMDV_NOM_SAMPLES_PER_FRAME; i++)
-	    tx_fdm_scaled[i] = FDMDV_SCALE * tx_fdm[i].real;
-
-	fifo_write(output_fifo,  tx_fdm_scaled, 2*FDMDV_NOM_SAMPLES_PER_FRAME);
     }
+    assert(byte == BYTES_PER_CODEC_FRAME);
+
+    /* modulate even and odd frames */
+
+    fdmdv_mod(g_pFDMDV, tx_fdm, bits, &sync_bit);
+    assert(sync_bit == 1);
+
+    fdmdv_mod(g_pFDMDV, &tx_fdm[FDMDV_NOM_SAMPLES_PER_FRAME], &bits[FDMDV_BITS_PER_FRAME], &sync_bit);
+    assert(sync_bit == 0);
+
+    /* scale and convert shorts */
+
+    for(i=0; i<2*FDMDV_NOM_SAMPLES_PER_FRAME; i++)
+	tx_fdm_scaled[i] = FDMDV_SCALE * tx_fdm[i].real;
+
 }
 
 //-------------------------------------------------------------------------
