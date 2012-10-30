@@ -40,6 +40,10 @@ struct FDMDV       *g_pFDMDV;
 
 struct FDMDV_STATS  g_stats;
 
+int g_nSoundCards = 2;
+int g_soundCard1DeviceNum = 0;
+int g_soundCard2DeviceNum = 1;
+
 // initialize the application
 IMPLEMENT_APP(MainApp);
 
@@ -909,97 +913,221 @@ int             g_State = 0;
 float           g_avmag[FDMDV_NSPEC];
 
 
+void MainFrame::destroy_fifos(void)
+{
+    fifo_destroy(m_rxUserdata->infifo1);
+    fifo_destroy(m_rxUserdata->outfifo1);
+    fifo_destroy(m_rxUserdata->infifo2);
+    fifo_destroy(m_rxUserdata->outfifo2);
+    fifo_destroy(m_rxUserdata->rxinfifo);
+    fifo_destroy(m_rxUserdata->rxoutfifo);
+    fifo_destroy(m_rxUserdata->txinfifo);
+    fifo_destroy(m_rxUserdata->txoutfifo);
+}
+
+int MainFrame::initPortAudioDevice(PortAudioWrap *pa, int inDevice, int outDevice, int soundCard)
+{
+    char s[256];
+
+    if (inDevice == paNoDevice) {
+	sprintf(s,"No input audio device available for Sound Card %d", soundCard);
+	wxString wxs(s);
+	wxMessageBox(wxs, wxT("Error"), wxOK);
+    }
+    if (outDevice == paNoDevice) {
+	sprintf(s,"No output audio device available for Sound Card %d", soundCard);
+	wxString wxs(s);
+	wxMessageBox(wxs, wxT("Error"), wxOK);
+    }
+
+    // init input params
+
+    pa->setInputDevice(m_rxDevIn);
+    pa->setInputChannelCount(2);                          // stereo input
+    pa->setInputSampleFormat(PA_SAMPLE_TYPE);
+    pa->setInputLatency(m_rxPa->getInputDefaultLowLatency());
+    pa->setInputHostApiStreamInfo(NULL);
+
+    // init output params
+
+    pa->setOutputDevice(m_rxDevOut);
+    pa->setOutputChannelCount(2);                         // stereo input
+    pa->setOutputSampleFormat(PA_SAMPLE_TYPE);
+    pa->setOutputLatency(m_rxPa->getOutputDefaultLowLatency());
+    pa->setOutputHostApiStreamInfo(NULL);
+
+    // init params that affect input and output
+
+    pa->setFramesPerBuffer(PA_FPB);
+    pa->setSampleRate(SAMPLE_RATE);
+    pa->setStreamFlags(0);    
+
+    return 0;
+}
+
 //-------------------------------------------------------------------------
 // startRxStream()
 //-------------------------------------------------------------------------
 void MainFrame::startRxStream()
 {
-    printf("startRxStream\n");
     if(!m_RxRunning)
     {
-	printf("  !m_RxRunning\n");
 
         m_RxRunning = true;
+
         m_rxPa = new PortAudioWrap();
 
-        m_rxDevIn = m_rxPa->getDefaultInputDevice();                        // default input device
-        if(m_rxDevIn == paNoDevice)
-        {
-            wxMessageBox(wxT("Rx Error: No default input device."), wxT("Error"), wxOK);
+	// Init Sound card 1 ----------------------------------------------
+
+        if (g_soundCard1DeviceNum != -1) {
+
+	    // user has specified the sound card device
+
+	    if (m_rxPa->getDeviceCount() < g_soundCard1DeviceNum) {
+		wxMessageBox(wxT("Sound Card 1 not present"), wxT("Error"), wxOK);
+		delete m_rxPa;
+		return;
+	    }
+
+	    m_rxDevIn = g_soundCard1DeviceNum;
+	    m_rxDevOut = g_soundCard1DeviceNum;	    
+	}
+	else {
+	    // not specified - use default
+	    m_rxDevIn = m_rxPa->getDefaultInputDevice();
+	    m_rxDevOut = m_rxPa->getDefaultOutputDevice();
+	}
+
+	if (initPortAudioDevice(m_rxPa, m_rxDevIn, m_rxDevOut, 1) != 0) {
             delete m_rxPa;
             m_RxRunning = false;
-            return;
-        }
-        m_rxErr = m_rxPa->setInputDevice(m_rxDevIn);
-        m_rxErr = m_rxPa->setInputChannelCount(2);                          // stereo input
-        m_rxErr = m_rxPa->setInputSampleFormat(PA_SAMPLE_TYPE);
-        m_rxErr = m_rxPa->setInputLatency(m_rxPa->getInputDefaultLowLatency());
-        m_rxPa->setInputHostApiStreamInfo(NULL);
+            return;	    
+	}
 
-        m_rxDevOut = m_rxPa->getDefaultOutputDevice();                      // default output device
-        if (m_rxDevOut == paNoDevice)
-        {
-            wxMessageBox(wxT("Rx Error: No default output device."), wxT("Error"), wxOK);
-            delete m_rxPa;
-            m_RxRunning = false;
-            return;
-        }
-        m_rxErr = m_rxPa->setOutputDevice(m_rxDevOut);
-        m_rxErr = m_rxPa->setOutputChannelCount(2);                         // stereo input
-        m_rxErr = m_rxPa->setOutputSampleFormat(PA_SAMPLE_TYPE);
+	// Init Sound Card 2 ------------------------------------------------
 
-        m_rxErr = m_rxPa->setOutputLatency(m_rxPa->getOutputDefaultLowLatency());
-        m_rxPa->setOutputHostApiStreamInfo(NULL);
+	if (g_nSoundCards == 2) {
 
-        m_rxErr = m_rxPa->setFramesPerBuffer(PA_FPB);
+	    m_txPa = new PortAudioWrap();
 
-        m_rxErr = m_rxPa->setSampleRate(SAMPLE_RATE);
-        m_rxErr = m_rxPa->setStreamFlags(0);
+	    assert(g_soundCard2DeviceNum != -1);
+	    printf("m_txPa->getDeviceCount() %d\n", m_txPa->getDeviceCount());
+
+	    if (m_txPa->getDeviceCount() < g_soundCard2DeviceNum) {
+		wxMessageBox(wxT("Sound Card 2 not present"), wxT("Error"), wxOK);
+		delete m_rxPa;
+		delete m_txPa;
+		return;
+	    }
+	    
+	    m_txDevIn = g_soundCard2DeviceNum;
+	    m_txDevOut = g_soundCard2DeviceNum;
+
+	    if (initPortAudioDevice(m_txPa, m_txDevIn, m_txDevOut, 2) != 0) {
+		delete m_rxPa;
+		delete m_txPa;
+		m_RxRunning = false;
+		return;	    
+	    }
+
+	    printf("finish init sound card 2...\n");
+	}
+
+	// Init call back data structure ----------------------------------------------
 
         m_rxUserdata = new paCallBackData;
         m_rxUserdata->pWFPanel = m_panelWaterfall;
         m_rxUserdata->pSPPanel = m_panelSpectrum;
 
+	// init 48 - 8 kHz sample rate conversion filter memories
+
         for(int i = 0; i < MEM8; i++)
         {
-            m_rxUserdata->in8k[i] = (float)0.0;
+            m_rxUserdata->in8k1[i] = (float)0.0;
+            m_rxUserdata->in8k2[i] = (float)0.0;
         }
         for(int i = 0; i < FDMDV_OS_TAPS; i++)
         {
-            m_rxUserdata->in48k[i] = (float)0.0;
+            m_rxUserdata->in48k1[i] = (float)0.0;
+            m_rxUserdata->in48k2[i] = (float)0.0;
         }
 
-        m_rxUserdata->infifo = fifo_create(2*N48);
-        m_rxUserdata->outfifo = fifo_create(2*N48);
+	// create FIFOs used to interface between different buffer sizes
+
+        m_rxUserdata->infifo1 = fifo_create(2*N48);
+        m_rxUserdata->outfifo1 = fifo_create(2*N48);
+        m_rxUserdata->infifo2 = fifo_create(2*N48);
+        m_rxUserdata->outfifo2 = fifo_create(2*N48);
+
         m_rxUserdata->rxinfifo = fifo_create(2 * FDMDV_NOM_SAMPLES_PER_FRAME);
         m_rxUserdata->rxoutfifo = fifo_create(2 * codec2_samples_per_frame(g_pCodec2));
+        m_rxUserdata->txinfifo = fifo_create(codec2_samples_per_frame(g_pCodec2));
+        m_rxUserdata->txoutfifo = fifo_create(2 * FDMDV_NOM_SAMPLES_PER_FRAME);
 
-        m_rxPa->setUserData(m_rxUserdata);
+	// question: can same callback data be used for both callbacks?
+	// Is there a chance of them both being called at the same time?
+        // we could maybe use a mutex ...
+
+	// Start sound card 1 ----------------------------------------------------------
+
+	m_rxPa->setUserData(m_rxUserdata);
         m_rxErr = m_rxPa->setCallback(rxCallback);
         m_rxErr = m_rxPa->streamOpen();
 
         if(m_rxErr != paNoError)
         {
-            wxMessageBox(wxT("Rx Stream Open/Setup error."), wxT("Error"), wxOK);
+            wxMessageBox(wxT("Sound Card 1 Open/Setup error."), wxT("Error"), wxOK);
             delete m_rxPa;
-            fifo_destroy(m_rxUserdata->infifo);
-            fifo_destroy(m_rxUserdata->outfifo);
-            fifo_destroy(m_rxUserdata->rxinfifo);
-            fifo_destroy(m_rxUserdata->rxoutfifo);
+            delete m_txPa;
+            destroy_fifos();
+	    delete m_rxUserdata;
             return;
         }
         m_rxErr = m_rxPa->streamStart();
         if(m_rxErr != paNoError)
         {
-            wxMessageBox(wxT("Rx Stream Start Error."), wxT("Error"), wxOK);
+            wxMessageBox(wxT("Sound Card 1 Stream Start Error."), wxT("Error"), wxOK);
             delete m_rxPa;
-            fifo_destroy(m_rxUserdata->infifo);
-            fifo_destroy(m_rxUserdata->outfifo);
-            fifo_destroy(m_rxUserdata->rxinfifo);
-            fifo_destroy(m_rxUserdata->rxoutfifo);
+	    destroy_fifos();
+	    delete m_rxUserdata;
 	    return;
         }
-	printf("end startRxStream\n");
+
+	// Start sound card 2 ----------------------------------------------------------
+
+	if (g_nSoundCards == 2) {
+	    printf("starting sound card 2...\n");
+#ifdef TMP
+	    m_txPa->setUserData(m_rxUserdata);          // note same user-data as first card call back!
+	    m_txErr = m_txPa->setCallback(txCallback);
+	    m_txErr = m_txPa->streamOpen();
+
+	    if(m_txErr != paNoError)
+	    {
+		wxMessageBox(wxT("Sound Card 2 Open/Setup error."), wxT("Error"), wxOK);
+		m_rxPa->stop();
+		m_rxPa->streamClose();
+		delete m_rxPa;
+		delete m_txPa;
+		destroy_fifos();
+		delete m_rxUserdata;
+		return;
+	    }
+	    m_txErr = m_txPa->streamStart();
+	    if(m_txErr != paNoError)
+	    {
+		wxMessageBox(wxT("Sound Card 2 Start Error."), wxT("Error"), wxOK);
+		m_rxPa->stop();
+		m_rxPa->streamClose();
+		delete m_rxPa;
+		delete m_txPa;
+		destroy_fifos();
+		delete m_rxUserdata;
+		return;
+	    }
+#endif
+	}
+
     }
 }
 
@@ -1015,26 +1143,12 @@ void MainFrame::stopRxStream()
         m_rxPa->stop();
         m_rxPa->streamClose();
 	delete m_rxPa;
+	destroy_fifos();
+        delete m_rxUserdata;
         fdmdv_destroy(g_pFDMDV);
         codec2_destroy(g_pCodec2);
-        fifo_destroy(m_rxUserdata->infifo);
-        fifo_destroy(m_rxUserdata->outfifo);
-        fifo_destroy(m_rxUserdata->rxinfifo);
-        fifo_destroy(m_rxUserdata->rxoutfifo);
-        delete m_rxUserdata;
     }
-/*
-        if(m_rxPa->isActive())
-        {
-            m_rxPa->stop();
-            m_rxPa->streamClose();
-        }
-        if(m_rxPa->isOpen())
-        {
-            m_rxPa->streamClose();
-        }
-        m_TxRunning = false;
-*/
+
 }
 
 //-------------------------------------------------------------------------
@@ -1189,11 +1303,18 @@ int MainFrame::rxCallback(
                          )
 {
     paCallBackData  *cbData = (paCallBackData*)userData;
-    unsigned int    i;
     short           *rptr    = (short*)inputBuffer;
     short           *wptr    = (short*)outputBuffer;
-    float           *in8k    = cbData->in8k;
-    float           *in48k   = cbData->in48k;
+
+    // 48 to 8 kHz sample rate conversion filter states
+
+    float           *in8k1   = cbData->in8k1;
+    float           *in48k1  = cbData->in48k1;
+    float           *in8k2   = cbData->in8k2;
+    float           *in48k2  = cbData->in48k2;
+
+    // temp buffers re-used by tx and rx processing
+
     short           in8k_short[N8];
     float           out8k[N8];
     short           out8k_short[N8];
@@ -1202,7 +1323,9 @@ int MainFrame::rxCallback(
     short           in48k_short[N48];
     short           indata[MAX_FPB];
     short           outdata[MAX_FPB];
+
     int             ret;
+    unsigned int    i, nrxloops;
 
     (void) timeInfo;
     (void) statusFlags;
@@ -1221,55 +1344,111 @@ int MainFrame::rxCallback(
        for 960 sample buffers lead to framesPerBuffer = 1024.
 
        To perform the 48 to 8 kHz conversion we need an integer
-       multiple of FDMDV_OS samples to support the interpolation and
-       decimation.  As we can't guarantee the size of framesPerBuffer
-       we do a little FIFO buffering to interface the different input
-       and output number of sample requirements.
+       multiple of FDMDV_OS samples.  As we can't guarantee the size
+       of framesPerBuffer we do a little FIFO buffering to interface
+       the different input and output number of sample requirements.
 
-       We also use FIFOs at the input of the demod and output of the
-       decoder to interface between different buffer sizes.
+       We also use FIFOs at the input and output of the rx and tx
+       processing to interface between different buffer sizes.  For
+       example the number of samples rqd for the demod is time
+       varying. 
+
+       It does result in a bunch of code that's a hard to
+       understand. So I can't help think there is a better way to do this
+       ....
     */
     
+    //
+    //  RX side processing --------------------------------------------
+    //
+
     // assemble a mono buffer (just use left channel) and write to FIFO
+
     assert(framesPerBuffer < MAX_FPB);
     for(i = 0; i < framesPerBuffer; i++, rptr += 2)
     {
         indata[i] = *rptr;
     }
-    ret = fifo_write(cbData->infifo, indata, framesPerBuffer);
+    ret = fifo_write(cbData->infifo1, indata, framesPerBuffer);
     assert(ret != -1);
     
     // while we have enough input samples available ...
 
-    while (fifo_read(cbData->infifo, in48k_short, N48) == 0)
+    nrxloops = 0;
+    while (fifo_read(cbData->infifo1, in48k_short, N48) == 0)
     {
 	// note: modifying fdmdv_48_to_8() to use shorts for sample I/O
         //       would remove all these float to short conversions
 
-	short_to_float(&in48k[FDMDV_OS_TAPS], in48k_short, N48);
-        fdmdv_48_to_8(out8k, &in48k[FDMDV_OS_TAPS], N8);
+	short_to_float(&in48k1[FDMDV_OS_TAPS], in48k_short, N48);
+        fdmdv_48_to_8(out8k, &in48k1[FDMDV_OS_TAPS], N8);
 	float_to_short(out8k_short, out8k, N8);
 	fifo_write(cbData->rxinfifo, out8k_short, N8);
 
         per_frame_rx_processing(cbData->rxoutfifo, g_CodecBits, cbData->rxinfifo, &g_nRxIn, &g_State, g_pCodec2);
 
-	// if demod out of sync copy input audio from A/D to aid in tuning
+	// if demod out of sync echo audio at input to demod to
+	// headset aid in tuning (ie we hear SSB radio output)
 
 	if (g_State == 0)
-	    memcpy(&in8k[MEM8], out8k, sizeof(float)*N8);
+	    memcpy(&in8k1[MEM8], out8k, sizeof(float)*N8);
 	else {
 	    fifo_read(cbData->rxoutfifo, in8k_short, N8);	    
-	    short_to_float(&in8k[MEM8], in8k_short, N8);
+	    short_to_float(&in8k1[MEM8], in8k_short, N8);
 	}
 
-        fdmdv_8_to_48(out48k, &in8k[MEM8], N8);
+        fdmdv_8_to_48(out48k, &in8k1[MEM8], N8);
 	float_to_short(out48k_short, out48k, N48);
-        fifo_write(cbData->outfifo, out48k_short, N48);
+        if (g_nSoundCards == 1)
+	    fifo_write(cbData->outfifo1, out48k_short, N48);
+	else
+	    fifo_write(cbData->outfifo2, out48k_short, N48);
+
+	nrxloops++;
     }
 
-    // OK now set up output samples
+    //
+    //  TX side processing --------------------------------------------
+    //
 
-    if (fifo_read(cbData->outfifo, outdata, framesPerBuffer) == 0)
+    if (g_nSoundCards == 2 ) {
+
+	// iterate tx as many times as rx, effectively locking tx
+	// processing to sample rate of sound card 1.  We want to make
+	// sure that modulator samples are uninterrupted by
+	// differences in sample rate between this sound card and
+	// audio I/O soundcard 2.
+	
+	for(i=0; i<nrxloops; i++) {
+
+	    // infifo2 is written to by another sound card so it may
+	    // over or underflow, but we don't realy care.  It will
+	    // just result in a short interruption in audio being fed
+	    // to codec2_enc, possibly making a click every now and
+	    // again in the decoded audio at the other end.
+
+	    memset(in8k_short, 0, sizeof(short)*N8);
+	    fifo_read(cbData->infifo2, in8k_short, N8);   
+
+	    short_to_float(&in48k2[FDMDV_OS_TAPS], in48k_short, N48);
+	    fdmdv_48_to_8(out8k, &in48k2[FDMDV_OS_TAPS], N8);
+	    float_to_short(out8k_short, out8k, N8);
+	    fifo_write(cbData->txinfifo, out8k_short, N8);
+
+	    per_frame_tx_processing(cbData->txoutfifo, cbData->txinfifo, g_pCodec2);
+	    
+	    while(fifo_read(cbData->txoutfifo, in8k_short, N8) == 0) {   
+		short_to_float(&in8k2[MEM8], in8k_short, N8);
+		fdmdv_8_to_48(out48k, &in8k2[MEM8], N8);
+		float_to_short(out48k_short, out48k, N48);
+		//fifo_write(cbData->outfifo1, out48k_short, N48);
+	    }
+	}
+    }
+
+    // OK now set up output samples for this callback
+
+    if (fifo_read(cbData->outfifo1, outdata, framesPerBuffer) == 0)
     {
         // write signal to both channels */
         for(i = 0; i < framesPerBuffer; i++, wptr += 2)
@@ -1280,7 +1459,7 @@ int MainFrame::rxCallback(
     }
     else
     {
-        // zero output if no data available
+       // zero output if no data available
         for(i = 0; i < framesPerBuffer; i++, wptr += 2)
         {
             wptr[0] = 0;
@@ -1368,17 +1547,7 @@ void MainFrame::per_frame_rx_processing(
         {
             case 0:
                 // mute output audio when out of sync
-#ifdef PREV
-                if(*n_output_buf < 2 * codec2_samples_per_frame(c2) - N8)
-                {
-                    for(i = 0; i < N8; i++)
-                    {
-                        output_buf[*n_output_buf + i] = 0;
-                    }
-                    *n_output_buf += N8;
-                }
-                assert(*n_output_buf <= (2 * codec2_samples_per_frame(c2)));
-#endif
+
 		for(i = 0; i < N8; i++)
 		    output_buf[i] = 0;
 		fifo_write(output_fifo, output_buf, N8);
@@ -1445,36 +1614,105 @@ void MainFrame::per_frame_rx_processing(
     }
 }
 
+void MainFrame::per_frame_tx_processing(
+                                            FIFO    *output_fifo,   // ouput modulated samples
+                                            FIFO    *input_fifo,    // speech sample input
+                                            CODEC2  *c2             // Codec 2 states
+                                        )
+{
+    short          input_buf[2*N8];
+    unsigned char  packed_bits[BYTES_PER_CODEC_FRAME];
+    int            bits[BITS_PER_CODEC_FRAME];
+    COMP           tx_fdm[2*FDMDV_NOM_SAMPLES_PER_FRAME];
+    short          tx_fdm_scaled[2*FDMDV_NOM_SAMPLES_PER_FRAME];
+    int            sync_bit;
+    int            i, bit, byte;
+
+    assert(codec2_samples_per_frame(c2) <= (2*N8));
+
+    while (fifo_read(input_fifo, input_buf, codec2_samples_per_frame(c2)) == 0) {
+	codec2_encode(c2, packed_bits, input_buf);
+
+	/* unpack bits, MSB first */
+
+	bit = 7; byte = 0;
+	for(i=0; i<BITS_PER_CODEC_FRAME; i++) {
+	    bits[i] = (packed_bits[byte] >> bit) & 0x1;
+	    bit--;
+	    if (bit < 0) {
+		bit = 7;
+		byte++;
+	    }
+	}
+	assert(byte == BYTES_PER_CODEC_FRAME);
+
+	/* modulate even and odd frames */
+
+	fdmdv_mod(g_pFDMDV, tx_fdm, bits, &sync_bit);
+	assert(sync_bit == 1);
+
+	fdmdv_mod(g_pFDMDV, &tx_fdm[FDMDV_NOM_SAMPLES_PER_FRAME], &bits[FDMDV_BITS_PER_FRAME], &sync_bit);
+	assert(sync_bit == 0);
+
+	/* scale and convert shorts */
+
+	for(i=0; i<2*FDMDV_NOM_SAMPLES_PER_FRAME; i++)
+	    tx_fdm_scaled[i] = FDMDV_SCALE * tx_fdm[i].real;
+
+	fifo_write(output_fifo,  tx_fdm_scaled, 2*FDMDV_NOM_SAMPLES_PER_FRAME);
+    }
+}
+
 //-------------------------------------------------------------------------
 // txCallback()
 //-------------------------------------------------------------------------
 int MainFrame::txCallback(
-                            const void *inBuffer,
-                            void *outBuffer,
+                            const void *inputBuffer,
+                            void *outputBuffer,
                             unsigned long framesPerBuffer,
                             const PaStreamCallbackTimeInfo *outTime,
                             PaStreamCallbackFlags statusFlags,
                             void *userData
                         )
 {
-    float *out = (float *) outBuffer;
-    float *in  = (float *) inBuffer;
-    float leftIn;
-    float rightIn;
-    unsigned int i;
+    paCallBackData  *cbData = (paCallBackData*)userData;
+    unsigned int    i;
+    short           *rptr    = (short*)inputBuffer;
+    short           *wptr    = (short*)outputBuffer;
+    short           indata[MAX_FPB];
+    short           outdata[MAX_FPB];
 
-    if(inBuffer == NULL)
+    // assemble a mono buffer (just use left channel) and write to FIFO
+
+    assert(framesPerBuffer < MAX_FPB);
+
+    for(i = 0; i < framesPerBuffer; i++, rptr += 2)
     {
-        return 0;
+        indata[i] = *rptr;
     }
-    // Read input buffer, process data, and fill output buffer.
-    for(i = 0; i < framesPerBuffer; i++)
+    fifo_write(cbData->infifo2, indata, framesPerBuffer);
+
+    // OK now set up output samples for this callback
+
+    if (fifo_read(cbData->outfifo2, outdata, framesPerBuffer) == 0)
     {
-        leftIn  = *in++;                            // Get interleaved samples from input buffer.
-        rightIn = *in++;
-        *out++  = leftIn * rightIn;                 // ring modulation
-        *out++  = 0.5f * (leftIn + rightIn);        // mixing
+        // write signal to both channels */
+        for(i = 0; i < framesPerBuffer; i++, wptr += 2)
+        {
+            wptr[0] = outdata[i];
+            wptr[1] = outdata[i];
+        }
     }
-    return paContinue;                              // 0;
+    else
+    {
+        // zero output if no data available
+        for(i = 0; i < framesPerBuffer; i++, wptr += 2)
+        {
+            wptr[0] = 0;
+            wptr[1] = 0;
+        }
+    }
+
+    return paContinue;
 }
 

@@ -129,13 +129,35 @@ typedef struct
 {
     PlotSpectrum    *pSPPanel;
     PlotWaterfall   *pWFPanel;
-//    float           *mag_dB;
-    float           in48k[FDMDV_OS_TAPS + N48];
-    float           in8k[MEM8 + N8];
-    struct FIFO    *infifo;
-    struct FIFO    *outfifo;
+
+    // state variables (filter memories) for sample rate conversion
+    // 1 & 2 denote which sound card's audio they handle
+
+    float           in48k1[FDMDV_OS_TAPS + N48];
+    float           in8k1[MEM8 + N8];
+    float           in48k2[FDMDV_OS_TAPS + N48];
+    float           in8k2[MEM8 + N8];
+
+    // FIFOs attached to first sound card
+
+    struct FIFO    *infifo1;
+    struct FIFO    *outfifo1;
+
+    // FIFOs attached to second sound card
+
+    struct FIFO    *infifo2;
+    struct FIFO    *outfifo2;
+
+    // FIFOs for rx process
+
     struct FIFO    *rxinfifo;
     struct FIFO    *rxoutfifo;
+
+    // FIFOs for tx process
+
+    struct FIFO    *txinfifo;
+    struct FIFO    *txoutfifo;
+
 } paCallBackData;
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
@@ -176,6 +198,8 @@ class MainFrame : public TopFrame
         wxTimer                 m_plotTimer;
 #endif
 
+	void destroy_fifos(void);
+
         static int rxCallback(
                                 const void *inBuffer,
                                 void *outBuffer,
@@ -202,6 +226,14 @@ class MainFrame : public TopFrame
                                         int     *state,        // used to collect codec_bits[] halves
                                         struct  CODEC2 *c2     // Codec 2 states
                                     );
+
+        static void per_frame_tx_processing(
+                                            FIFO    *output_fifo,   // ouput modulated samples
+                                            FIFO    *input_fifo,    // speech sample input
+                                            CODEC2  *c2             // Codec 2 states
+					    );
+
+	int initPortAudioDevice(PortAudioWrap *pa, int inDevice, int outDevice, int soundCard);
 
     protected:
         // protected event handlers

@@ -59,6 +59,7 @@ class PortAudioWrap
 
         void                averageData(float mag_dB[]);
 
+        int                 getDeviceCount() { return Pa_GetDeviceCount(); }
         PaDeviceIndex       getDefaultInputDevice();
         PaDeviceIndex       getDefaultOutputDevice();
         PaStreamParameters  *getDeviceInfo(PaDeviceIndex idx);
