@@ -902,8 +902,9 @@ void MainFrame::OnTogBtnLoopTx( wxCommandEvent& event )
 }
 
 //----------------------------------------------------------
-// Audio stream processing loop states (globals).
+// Rx processing loop states (globals).
 //----------------------------------------------------------
+
 int             g_nRxIn = FDMDV_NOM_SAMPLES_PER_FRAME;
 float           g_Ts = 0.0;
 
@@ -940,27 +941,27 @@ int MainFrame::initPortAudioDevice(PortAudioWrap *pa, int inDevice, int outDevic
 
     // init input params
 
-    pa->setInputDevice(m_rxDevIn);
+    pa->setInputDevice(inDevice);
     pa->setInputChannelCount(2);                          // stereo input
     pa->setInputSampleFormat(PA_SAMPLE_TYPE);
-    pa->setInputLatency(m_rxPa->getInputDefaultLowLatency());
+    pa->setInputLatency(pa->getInputDefaultLowLatency());
     pa->setInputHostApiStreamInfo(NULL);
 
     // init output params
 
-    pa->setOutputDevice(m_rxDevOut);
+    pa->setOutputDevice(outDevice);
     pa->setOutputChannelCount(2);                         // stereo input
     pa->setOutputSampleFormat(PA_SAMPLE_TYPE);
-    pa->setOutputLatency(m_rxPa->getOutputDefaultLowLatency());
+    pa->setOutputLatency(pa->getOutputDefaultLowLatency());
     pa->setOutputHostApiStreamInfo(NULL);
 
     // init params that affect input and output
 
     /* 
-       On a good day framesPerBuffer in callback will be PA_FPB.  It
-       was found that you dont always get framesPerBuffer exactly
-       equal PA_PFB, for example when I wanted framesPerBuffer ==
-       PA_PFB == 960 samples.
+       On a good day, framesPerBuffer in callback will be PA_FPB.  It
+       was found that you don't always get framesPerBuffer exactly
+       equal PA_PFB, for example when I set PA_FPB to 960 I got
+       framesPerBuffer = 1024.
     */
     pa->setFramesPerBuffer(PA_FPB);
     pa->setSampleRate(SAMPLE_RATE);
@@ -1060,6 +1061,8 @@ void MainFrame::startRxStream()
 
         m_rxUserdata->infifo1 = fifo_create(2*N48);
 
+	m_rxUserdata->outfifo2 = fifo_create(2*N48);
+
 	/*
 	  During soundcard 1 callback, outfifo1 is read in PA_FPB = 1024 sample blocks.
 
@@ -1072,15 +1075,18 @@ void MainFrame::startRxStream()
 
         m_rxUserdata->outfifo1 = fifo_create(4*N48);
 
-        m_rxUserdata->infifo2 = fifo_create(2*N48);
-        m_rxUserdata->outfifo2 = fifo_create(2*N48);
+	/* 
+	   infifo2 holds buffers from the microphone.  These get read
+	   in 40ms (1920 sample @ 48 kHz) blockss by the sound card 1
+	   callback.  We write to the sound card in 1024 sample
+	   blocks.  So we need at least 1024+1920 samples, lest also allocate
+	   1920*2 samples
+	*/
+
+	m_rxUserdata->infifo2 = fifo_create(4*N48);
 
         m_rxUserdata->rxinfifo = fifo_create(2 * FDMDV_NOM_SAMPLES_PER_FRAME);
         m_rxUserdata->rxoutfifo = fifo_create(2 * codec2_samples_per_frame(g_pCodec2));
-
-	// question: can same callback data be used for both callbacks?
-	// Is there a chance of them both being called at the same time?
-        // we could maybe use a mutex ...
 
 	// Start sound card 1 ----------------------------------------------------------
 
@@ -1095,15 +1101,18 @@ void MainFrame::startRxStream()
             delete m_txPa;
             destroy_fifos();
 	    delete m_rxUserdata;
-            return;
+	    m_RxRunning = false;
+	    return;
         }
         m_rxErr = m_rxPa->streamStart();
         if(m_rxErr != paNoError)
         {
             wxMessageBox(wxT("Sound Card 1 Stream Start Error."), wxT("Error"), wxOK);
             delete m_rxPa;
+	    delete m_txPa;
 	    destroy_fifos();
 	    delete m_rxUserdata;
+	    m_RxRunning = false;
 	    return;
         }
 
@@ -1111,8 +1120,13 @@ void MainFrame::startRxStream()
 
 	if (g_nSoundCards == 2) {
 	    printf("starting sound card 2...\n");
-#ifdef TMP
-	    m_txPa->setUserData(m_rxUserdata);          // note same user-data as first card call back!
+
+	    // question: can we use same callback data
+	    // (m_rxUserdata)or both sound card callbacks?  Is there a
+	    // chance of them both being called at the same time?  We
+	    // could may need a mutex ...
+
+	    m_txPa->setUserData(m_rxUserdata);        
 	    m_txErr = m_txPa->setCallback(txCallback);
 	    m_txErr = m_txPa->streamOpen();
 
@@ -1125,6 +1139,7 @@ void MainFrame::startRxStream()
 		delete m_txPa;
 		destroy_fifos();
 		delete m_rxUserdata;
+		m_RxRunning = false;
 		return;
 	    }
 	    m_txErr = m_txPa->streamStart();
@@ -1137,9 +1152,9 @@ void MainFrame::startRxStream()
 		delete m_txPa;
 		destroy_fifos();
 		delete m_rxUserdata;
+		m_RxRunning = false;
 		return;
 	    }
-#endif
 	}
 
     }
@@ -1154,11 +1169,20 @@ void MainFrame::stopRxStream()
     {
 	printf("  stopRxStream(), m_RxRunning true\n");
         m_RxRunning = false;
+
         m_rxPa->stop();
         m_rxPa->streamClose();
+
+	if (g_nSoundCards == 2) {
+	    m_txPa->stop();
+	    m_txPa->streamClose();
+	    delete m_txPa;
+	}
+
 	delete m_rxPa;
 	destroy_fifos();
         delete m_rxUserdata;
+
         fdmdv_destroy(g_pFDMDV);
         codec2_destroy(g_pCodec2);
     }
@@ -1390,8 +1414,9 @@ int MainFrame::rxCallback(
 
     while (fifo_read(cbData->infifo1, in48k_short, N48) == 0)
     {
-	// note: modifying fdmdv_48_to_8() to use shorts for sample I/O
-        //       would remove all these float to short conversions
+	// note: modifying fdmdv_48_to_8() to have short arrays rather
+        //       than floats would remove all these float to short
+        //       conversions
 
 	short_to_float(&in48k1[FDMDV_OS_TAPS], in48k_short, N48);
         fdmdv_48_to_8(out8k, &in48k1[FDMDV_OS_TAPS], N8);
@@ -1704,6 +1729,14 @@ int MainFrame::txCallback(
     {
         indata[i] = *rptr;
     }
+    //#define SC2_LOOPBACK
+#ifdef SC2_LOOPBACK
+    for(i = 0; i < framesPerBuffer; i++, wptr += 2)
+        {
+            wptr[0] = indata[i];
+            wptr[1] = indata[i];
+        }   
+#else
     fifo_write(cbData->infifo2, indata, framesPerBuffer);
 
     // OK now set up output samples for this callback
@@ -1726,6 +1759,7 @@ int MainFrame::txCallback(
             wptr[1] = 0;
         }
     }
+#endif
 
     return paContinue;
 }
