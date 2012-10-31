@@ -41,8 +41,10 @@ struct FDMDV       *g_pFDMDV;
 struct FDMDV_STATS  g_stats;
 
 int g_nSoundCards = 2;
-int g_soundCard1DeviceNum = 0;
-int g_soundCard2DeviceNum = 1;
+int g_soundCard1InDeviceNum = 0;
+int g_soundCard1OutDeviceNum = 0;
+int g_soundCard2InDeviceNum = 1;
+int g_soundCard2OutDeviceNum = 1;
 
 // initialize the application
 IMPLEMENT_APP(MainApp);
@@ -913,7 +915,6 @@ int             g_State = 0;
 
 float           g_avmag[FDMDV_NSPEC];
 
-
 void MainFrame::destroy_fifos(void)
 {
     fifo_destroy(m_rxUserdata->infifo1);
@@ -984,18 +985,19 @@ void MainFrame::startRxStream()
 
 	// Init Sound card 1 ----------------------------------------------
 
-        if (g_soundCard1DeviceNum != -1) {
+        if ((g_soundCard1InDeviceNum != -1) || (g_soundCard1OutDeviceNum != -1)) {
 
 	    // user has specified the sound card device
 
-	    if (m_rxPa->getDeviceCount() < g_soundCard1DeviceNum) {
+	  if ((m_rxPa->getDeviceCount() < g_soundCard1InDeviceNum) ||
+	      (m_rxPa->getDeviceCount() < g_soundCard1OutDeviceNum)) {
 		wxMessageBox(wxT("Sound Card 1 not present"), wxT("Error"), wxOK);
 		delete m_rxPa;
 		return;
 	    }
 
-	    m_rxDevIn = g_soundCard1DeviceNum;
-	    m_rxDevOut = g_soundCard1DeviceNum;	    
+	    m_rxDevIn = g_soundCard1InDeviceNum;
+	    m_rxDevOut = g_soundCard1OutDeviceNum;	    
 	}
 	else {
 	    // not specified - use default
@@ -1015,18 +1017,19 @@ void MainFrame::startRxStream()
 
 	    m_txPa = new PortAudioWrap();
 
-	    assert(g_soundCard2DeviceNum != -1);
+	    assert((g_soundCard2InDeviceNum != -1) && (g_soundCard2OutDeviceNum != -1) );
 	    printf("m_txPa->getDeviceCount() %d\n", m_txPa->getDeviceCount());
 
-	    if (m_txPa->getDeviceCount() < g_soundCard2DeviceNum) {
+	    if ((m_txPa->getDeviceCount() < g_soundCard2InDeviceNum) ||
+		(m_txPa->getDeviceCount() < g_soundCard2OutDeviceNum)) {
 		wxMessageBox(wxT("Sound Card 2 not present"), wxT("Error"), wxOK);
 		delete m_rxPa;
 		delete m_txPa;
 		return;
 	    }
 	    
-	    m_txDevIn = g_soundCard2DeviceNum;
-	    m_txDevOut = g_soundCard2DeviceNum;
+	    m_txDevIn = g_soundCard2InDeviceNum;
+	    m_txDevOut = g_soundCard2OutDeviceNum;
 
 	    if (initPortAudioDevice(m_txPa, m_txDevIn, m_txDevOut, 2) != 0) {
 		delete m_rxPa;
@@ -1034,8 +1037,6 @@ void MainFrame::startRxStream()
 		m_RxRunning = false;
 		return;	    
 	    }
-
-	    printf("finish init sound card 2...\n");
 	}
 
 	// Init call back data structure ----------------------------------------------
