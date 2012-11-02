@@ -46,6 +46,18 @@ int g_soundCard1OutDeviceNum = 0;
 int g_soundCard2InDeviceNum = 1;
 int g_soundCard2OutDeviceNum = 1;
 
+int cb_cnt;
+int mute_mic = 0;
+int read_file = 0;
+FILE *g_file;
+int write_file = 0;
+FILE *g_write_file;
+int sc1, sc2;
+
+int g_outfifo2_empty;
+
+wxMutex g_mutexProtectingCallbackData;
+
 // initialize the application
 IMPLEMENT_APP(MainApp);
 
@@ -54,6 +66,9 @@ IMPLEMENT_APP(MainApp);
 //-------------------------------------------------------------------------
 bool MainApp::OnInit()
 {
+    g_file = fopen("/home/david/codec2-dev/raw/hts1a.raw","rb");
+    assert(g_file != NULL);
+
     if(!wxApp::OnInit())
     {
         return false;
@@ -433,11 +448,18 @@ void MainFrame::OnTogBtnTxID(wxCommandEvent& event)
     event.Skip();
 }
 
-//-------------------------------------------------------------------------
-// OnTogBtnSplitClick()
-//-------------------------------------------------------------------------
-void MainFrame::OnTogBtnSplitClick(wxCommandEvent& event)
-{
+void MainFrame::OnTogBtnSplitClick(wxCommandEvent& event) {
+    if (write_file == 0) {
+	write_file = 1;
+	g_write_file = fopen("tmp.raw","wb");
+	assert(g_write_file != NULL);
+	printf("recording to tmp.raw ...\n");
+    }
+    else {
+	fclose(g_write_file);
+	printf("recording stopped.\n");
+	write_file = 0;
+    }
     event.Skip();
 }
 
@@ -577,10 +599,6 @@ void MainFrame::OnClose(wxCommandEvent& event)
     {
         stopRxStream();
     }
-    if(m_TxRunning)
-    {
-        stopTxStream();
-    }
     m_togBtnSplit->Disable();
     m_togRxID->Disable();
     m_togTxID->Disable();
@@ -589,20 +607,7 @@ void MainFrame::OnClose(wxCommandEvent& event)
     m_btnTogTX->Disable();
     m_togBtnLoopRx->Disable();
     m_togBtnLoopTx->Disable();
-/*
-    This is an artifact of my early use of the default wxWidgets
-    sound facility. the wxSound interface is simplistic and and
-    unsuitable for this project's purposes.
 
-    if(m_sound != NULL)
-    {
-        if(m_sound->IsOk())
-        {
-            m_sound->Stop();
-            m_sound = NULL;
-        }
-    }
-*/
 }
 
 //-------------------------------------------------------------------------
@@ -613,10 +618,6 @@ void MainFrame::OnExit(wxCommandEvent& event)
     if(m_RxRunning)
     {
         stopRxStream();
-    }
-    if(m_TxRunning)
-    {
-        stopTxStream();
     }
     Close();
 }
@@ -859,7 +860,6 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
         m_plotTimer.Start(_REFRESH_TIMER_PERIOD, wxTIMER_CONTINUOUS);
 #endif // _USE_TIMER
         startRxStream();
-        //startTxStream();
         if (m_RxRunning)
         {
             m_togBtnOnOff->SetLabel(wxT("Stop"));
@@ -867,8 +867,6 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
     }
     else
     {
-        printf("stopping ...\n");
-
         m_togBtnSplit->Disable();
         m_togRxID->Disable();
         m_togTxID->Disable();
@@ -882,7 +880,6 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
         m_plotTimer.Stop();
 #endif // _USE_TIMER
         stopRxStream();
-//        stopTxStream();
         m_togBtnOnOff->SetLabel(wxT("Start"));
     }
 }
@@ -892,7 +889,11 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
 //----------------------------------------------------------
 void MainFrame::OnTogBtnLoopRx( wxCommandEvent& event )
 {
-     wxMessageBox(wxT("Got Click!"), wxT("OnTogBtnLoopRx()"), wxOK);
+    if (mute_mic == 0)
+	mute_mic = 1;
+    else
+	mute_mic = 0;
+	
 }
 
 //----------------------------------------------------------
@@ -900,7 +901,11 @@ void MainFrame::OnTogBtnLoopRx( wxCommandEvent& event )
 //----------------------------------------------------------
 void MainFrame::OnTogBtnLoopTx( wxCommandEvent& event )
 {
-    wxMessageBox(wxT("Got Click!"), wxT("OnTogBtnLoopRx()"), wxOK);
+    if (read_file == 0)
+	read_file = 1;
+    else
+	read_file = 0;
+	
 }
 
 //----------------------------------------------------------
@@ -978,6 +983,9 @@ void MainFrame::startRxStream()
 {
     if(!m_RxRunning)
     {
+	cb_cnt = 0;
+	sc1 = sc2 = 0;
+	g_outfifo2_empty = 0;
 
         m_RxRunning = true;
 
@@ -1062,7 +1070,7 @@ void MainFrame::startRxStream()
 
         m_rxUserdata->infifo1 = fifo_create(2*N48);
 
-	m_rxUserdata->outfifo2 = fifo_create(2*N48);
+	m_rxUserdata->outfifo2 = fifo_create(4*N48);
 
 	/*
 	  During soundcard 1 callback, outfifo1 is read in PA_FPB = 1024 sample blocks.
@@ -1093,6 +1101,7 @@ void MainFrame::startRxStream()
 
 	m_rxPa->setUserData(m_rxUserdata);
         m_rxErr = m_rxPa->setCallback(rxCallback);
+#ifdef SC1
         m_rxErr = m_rxPa->streamOpen();
 
         if(m_rxErr != paNoError)
@@ -1116,7 +1125,7 @@ void MainFrame::startRxStream()
 	    m_RxRunning = false;
 	    return;
         }
-
+#endif
 	// Start sound card 2 ----------------------------------------------------------
 
 	if (g_nSoundCards == 2) {
@@ -1125,7 +1134,7 @@ void MainFrame::startRxStream()
 	    // question: can we use same callback data
 	    // (m_rxUserdata)or both sound card callbacks?  Is there a
 	    // chance of them both being called at the same time?  We
-	    // could may need a mutex ...
+	    // could need a mutex ...
 
 	    m_txPa->setUserData(m_rxUserdata);        
 	    m_txErr = m_txPa->setCallback(txCallback);
@@ -1168,7 +1177,6 @@ void MainFrame::stopRxStream()
 {
     if(m_RxRunning)
     {
-	printf("  stopRxStream(), m_RxRunning true\n");
         m_RxRunning = false;
 
         m_rxPa->stop();
@@ -1190,109 +1198,6 @@ void MainFrame::stopRxStream()
 
 }
 
-//-------------------------------------------------------------------------
-// abortRxStream()
-//-------------------------------------------------------------------------
-void MainFrame::abortRxStream()
-{
-    if(m_RxRunning)
-    {
-        m_RxRunning = false;
-        m_rxPa->abort();
-    }
-}
-
-//-------------------------------------------------------------------------
-// startTxStream()
-//-------------------------------------------------------------------------
-void MainFrame::startTxStream()
-{
-    if(!m_TxRunning)
-    {
-        m_TxRunning = true;
-        m_txPa = new PortAudioWrap();
-
-        m_txDevIn = m_txPa->getDefaultInputDevice();                        // default input device
-        if(m_txDevIn == paNoDevice)
-        {
-            wxMessageBox(wxT("Tx Error: No default input device."), wxT("Error"), wxOK);
-            return;
-        }
-
-        m_txErr = m_txPa->setInputDevice(m_txDevIn);
-        m_txErr = m_txPa->setInputChannelCount(2);                          // stereo input
-        m_txErr = m_txPa->setInputSampleFormat(PA_SAMPLE_TYPE);
-        m_txErr = m_txPa->setInputLatency(m_txPa->getInputDefaultLowLatency());
-        m_txPa->setInputHostApiStreamInfo(NULL);
-
-        m_txDevOut = m_txPa->getDefaultOutputDevice();                      // default output device
-        if (m_txDevOut == paNoDevice)
-        {
-            wxMessageBox(wxT("Tx Error: No default output device."), wxT("Error"), wxOK);
-            return;
-        }
-        m_txErr = m_txPa->setOutputDevice(m_txDevOut);
-        m_txErr = m_txPa->setOutputChannelCount(2);                         // stereo input
-        m_txErr = m_txPa->setOutputSampleFormat(PA_SAMPLE_TYPE);
-
-        m_txErr = m_txPa->setOutputLatency(m_txPa->getOutputDefaultLowLatency());
-        m_txPa->setOutputHostApiStreamInfo(NULL);
-
-        m_txErr = m_txPa->setFramesPerBuffer(FRAMES_PER_BUFFER);
-        m_txErr = m_txPa->setSampleRate(SAMPLE_RATE);
-        m_txErr = m_txPa->setStreamFlags(0);
-        m_txErr = m_txPa->setCallback(txCallback);
-        m_txErr = m_txPa->streamOpen();
-
-        if(m_txErr != paNoError)
-        {
-            wxMessageBox(wxT("Tx Stream Open/Setup error."), wxT("Error"), wxOK);
-            return;
-        }
-        m_txErr = m_txPa->streamStart();
-        if(m_txErr != paNoError)
-        {
-            wxMessageBox(wxT("Tx Stream Start Error."), wxT("Error"), wxOK);
-            return;
-        }
-    }
-}
-
-//-------------------------------------------------------------------------
-// stopTxStream()
-//-------------------------------------------------------------------------
-void MainFrame::stopTxStream()
-{
-    if(m_TxRunning)
-    {
-        m_TxRunning = false;
-        m_txPa->stop();
-        m_txPa->streamClose();
-    }
-/*
-        if(m_txPa->isActive())
-        {
-            m_txPa->stop();
-        }
-        if(m_txPa->isOpen())
-        {
-            m_txPa->streamClose();
-        }
-        m_TxRunning = false;
-*/
-}
-
-//-------------------------------------------------------------------------
-// abortTxStream()
-//-------------------------------------------------------------------------
-void MainFrame::abortTxStream()
-{
-    if(m_TxRunning)
-    {
-        m_TxRunning = false;
-        m_txPa->abort();
-    }
-}
 
 //----------------------------------------------------------------
 // update average of each spectrum point
@@ -1341,6 +1246,8 @@ int MainFrame::rxCallback(
                             void            *userData
                          )
 {
+    wxMutexLocker lock(g_mutexProtectingCallbackData);
+
     paCallBackData  *cbData = (paCallBackData*)userData;
     short           *rptr    = (short*)inputBuffer;
     short           *wptr    = (short*)outputBuffer;
@@ -1369,8 +1276,10 @@ int MainFrame::rxCallback(
     (void) timeInfo;
     (void) statusFlags;
 
-    //if (statusFlags)
-    //	printf("0x%x\n", statusFlags);
+    ++cb_cnt;
+    assert(cb_cnt != 2);
+
+    sc1++;
 
     assert(inputBuffer != NULL);
     assert(outputBuffer != NULL);
@@ -1432,6 +1341,7 @@ int MainFrame::rxCallback(
 	if (g_State == 0)
 	    memcpy(&in8k1[MEM8], out8k, sizeof(float)*N8);
 	else {
+	    memset(in8k_short, 0, sizeof(short)*N8);
 	    fifo_read(cbData->rxoutfifo, in8k_short, N8);	    
 	    short_to_float(&in8k1[MEM8], in8k_short, N8);
 	}
@@ -1440,8 +1350,11 @@ int MainFrame::rxCallback(
 	float_to_short(out48k_short, out48k, N48);
         if (g_nSoundCards == 1)
 	    fifo_write(cbData->outfifo1, out48k_short, N48);
-	else
+	else {
+	    //printf("sc1: fifo write n before = %d", fifo_n(cbData->outfifo2));
 	    fifo_write(cbData->outfifo2, out48k_short, N48);
+	    //printf(" after = %d\n", fifo_n(cbData->outfifo2));
+	}
     }
 
     //
@@ -1476,10 +1389,21 @@ int MainFrame::rxCallback(
 
 	    // Codec 2 @ 1400 bit/s requires 40ms of input speech
 
-	    fifo_read(cbData->infifo2, in48k_short, 2*N48);
+	    if (fifo_read(cbData->infifo2, in48k_short, 2*N48)) {
+		printf("sc1: fifo empty n = %d\n", fifo_n(cbData->infifo2));
+	    }
+	    if (mute_mic)
+		memset(in48k_short, 0, sizeof(short)*2*N48); 
 	    short_to_float(&in48k2[FDMDV_OS_TAPS], in48k_short, 2*N48);
 	    fdmdv_48_to_8(out8k, &in48k2[FDMDV_OS_TAPS], 2*N8);
 	    float_to_short(tx_speech_in, out8k, 2*N8);
+	    if (read_file) {
+		int n = fread( tx_speech_in, sizeof(short),2*N8, g_file);
+		if (n != 2*N8) {
+		    printf("rewind\n");
+		    rewind(g_file);
+		}
+	    }
 	    assert(codec2_samples_per_frame(g_pCodec2) == (2*N8));
 
 	    per_frame_tx_processing(tx_mod_out, tx_speech_in, g_pCodec2);
@@ -1513,6 +1437,7 @@ int MainFrame::rxCallback(
             wptr[1] = 0;
         }
     }
+    --cb_cnt;
     return paContinue;
 }
 
@@ -1566,6 +1491,8 @@ void MainFrame::per_frame_rx_processing(
             rx_fdm[i] = (float)input_buf[i] / FDMDV_SCALE;
         }
         nin_prev = *nin;
+	if (*nin != FDMDV_NOM_SAMPLES_PER_FRAME)
+	    printf("*nin %d\n", *nin);
         fdmdv_demod(g_pFDMDV, rx_bits, &sync_bit, rx_fdm, nin);
 
         // compute rx spectrum & get demod stats, and update GUI plot data
@@ -1603,6 +1530,7 @@ void MainFrame::per_frame_rx_processing(
                 {
                     next_state = 1;
                 }
+		printf("sync state: %d\n", *state);
                 break;
 
             case 1:
@@ -1715,6 +1643,8 @@ int MainFrame::txCallback(
                             void *userData
                         )
 {
+    wxMutexLocker lock(g_mutexProtectingCallbackData);
+
     paCallBackData  *cbData = (paCallBackData*)userData;
     unsigned int    i;
     short           *rptr    = (short*)inputBuffer;
@@ -1722,15 +1652,19 @@ int MainFrame::txCallback(
     short           indata[MAX_FPB];
     short           outdata[MAX_FPB];
 
+    ++cb_cnt;
+    assert(cb_cnt != 2);
     // assemble a mono buffer (just use left channel) and write to FIFO
-
+    sc2++;
     assert(framesPerBuffer < MAX_FPB);
+    if (statusFlags)
+	printf("statusFlags: 0x%x\n", statusFlags);
 
     for(i = 0; i < framesPerBuffer; i++, rptr += 2)
     {
         indata[i] = *rptr;
     }
-    //#define SC2_LOOPBACK
+#define SC2_LOOPBACK
 #ifdef SC2_LOOPBACK
     for(i = 0; i < framesPerBuffer; i++, wptr += 2)
         {
@@ -1738,10 +1672,16 @@ int MainFrame::txCallback(
             wptr[1] = indata[i];
         }   
 #else
-    fifo_write(cbData->infifo2, indata, framesPerBuffer);
+    if (write_file) {
+	//fwrite(tx_speech_in, sizeof(short),framesPerBuffer, g_write_file);
+	fwrite(indata, sizeof(short), framesPerBuffer, g_write_file);
+    }
+    if (fifo_write(cbData->infifo2, indata, framesPerBuffer))
+	printf("sc2: fifo full n = %d \n", fifo_n(cbData->infifo2));	
 
     // OK now set up output samples for this callback
 
+    //printf("sc2: fifo read n = %d g_outfifo2_empty: %d\n", fifo_n(cbData->outfifo2), g_outfifo2_empty);
     if (fifo_read(cbData->outfifo2, outdata, framesPerBuffer) == 0)
     {
         // write signal to both channels */
@@ -1753,6 +1693,8 @@ int MainFrame::txCallback(
     }
     else
     {
+	g_outfifo2_empty++;
+	printf("fifo empty\n");
         // zero output if no data available
         for(i = 0; i < framesPerBuffer; i++, wptr += 2)
         {
@@ -1761,7 +1703,9 @@ int MainFrame::txCallback(
         }
     }
 #endif
+    //printf("infifo2 %d outfifo2 %d\n", fifo_n(cbData->infifo2), fifo_n(cbData->outfifo2));
 
+    --cb_cnt;
     return paContinue;
 }
 
