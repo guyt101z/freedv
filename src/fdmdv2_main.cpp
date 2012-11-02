@@ -1101,7 +1101,7 @@ void MainFrame::startRxStream()
 
 	m_rxPa->setUserData(m_rxUserdata);
         m_rxErr = m_rxPa->setCallback(rxCallback);
-#ifdef SC1
+
         m_rxErr = m_rxPa->streamOpen();
 
         if(m_rxErr != paNoError)
@@ -1125,7 +1125,7 @@ void MainFrame::startRxStream()
 	    m_RxRunning = false;
 	    return;
         }
-#endif
+
 	// Start sound card 2 ----------------------------------------------------------
 
 	if (g_nSoundCards == 2) {
@@ -1400,7 +1400,7 @@ int MainFrame::rxCallback(
 	    if (read_file) {
 		int n = fread( tx_speech_in, sizeof(short),2*N8, g_file);
 		if (n != 2*N8) {
-		    printf("rewind\n");
+		    //printf("rewind\n");
 		    rewind(g_file);
 		}
 	    }
@@ -1664,7 +1664,7 @@ int MainFrame::txCallback(
     {
         indata[i] = *rptr;
     }
-#define SC2_LOOPBACK
+    //#define SC2_LOOPBACK
 #ifdef SC2_LOOPBACK
     for(i = 0; i < framesPerBuffer; i++, wptr += 2)
         {
