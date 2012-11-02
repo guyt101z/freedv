@@ -1246,8 +1246,6 @@ int MainFrame::rxCallback(
                             void            *userData
                          )
 {
-    wxMutexLocker lock(g_mutexProtectingCallbackData);
-
     paCallBackData  *cbData = (paCallBackData*)userData;
     short           *rptr    = (short*)inputBuffer;
     short           *wptr    = (short*)outputBuffer;
@@ -1275,11 +1273,6 @@ int MainFrame::rxCallback(
 
     (void) timeInfo;
     (void) statusFlags;
-
-    ++cb_cnt;
-    assert(cb_cnt != 2);
-
-    sc1++;
 
     assert(inputBuffer != NULL);
     assert(outputBuffer != NULL);
@@ -1348,7 +1341,7 @@ int MainFrame::rxCallback(
 
         fdmdv_8_to_48(out48k, &in8k1[MEM8], N8);
 	float_to_short(out48k_short, out48k, N48);
-        if (g_nSoundCards == 1)
+	if (g_nSoundCards == 1)
 	    fifo_write(cbData->outfifo1, out48k_short, N48);
 	else {
 	    //printf("sc1: fifo write n before = %d", fifo_n(cbData->outfifo2));
@@ -1389,21 +1382,22 @@ int MainFrame::rxCallback(
 
 	    // Codec 2 @ 1400 bit/s requires 40ms of input speech
 
-	    if (fifo_read(cbData->infifo2, in48k_short, 2*N48)) {
-		printf("sc1: fifo empty n = %d\n", fifo_n(cbData->infifo2));
-	    }
+	    fifo_read(cbData->infifo2, in48k_short, 2*N48);
+	    
 	    if (mute_mic)
 		memset(in48k_short, 0, sizeof(short)*2*N48); 
 	    short_to_float(&in48k2[FDMDV_OS_TAPS], in48k_short, 2*N48);
 	    fdmdv_48_to_8(out8k, &in48k2[FDMDV_OS_TAPS], 2*N8);
 	    float_to_short(tx_speech_in, out8k, 2*N8);
+	    /*
 	    if (read_file) {
-		int n = fread( tx_speech_in, sizeof(short),2*N8, g_file);
+		int n = fread( tx_speech_in, sizeof(short), 2*N8, g_file);
 		if (n != 2*N8) {
 		    //printf("rewind\n");
 		    rewind(g_file);
 		}
 	    }
+	    */
 	    assert(codec2_samples_per_frame(g_pCodec2) == (2*N8));
 
 	    per_frame_tx_processing(tx_mod_out, tx_speech_in, g_pCodec2);
@@ -1437,7 +1431,7 @@ int MainFrame::rxCallback(
             wptr[1] = 0;
         }
     }
-    --cb_cnt;
+
     return paContinue;
 }
 
@@ -1491,8 +1485,8 @@ void MainFrame::per_frame_rx_processing(
             rx_fdm[i] = (float)input_buf[i] / FDMDV_SCALE;
         }
         nin_prev = *nin;
-	if (*nin != FDMDV_NOM_SAMPLES_PER_FRAME)
-	    printf("*nin %d\n", *nin);
+	//if (*nin != FDMDV_NOM_SAMPLES_PER_FRAME)
+	//    printf("*nin %d\n", *nin);
         fdmdv_demod(g_pFDMDV, rx_bits, &sync_bit, rx_fdm, nin);
 
         // compute rx spectrum & get demod stats, and update GUI plot data
@@ -1530,7 +1524,7 @@ void MainFrame::per_frame_rx_processing(
                 {
                     next_state = 1;
                 }
-		printf("sync state: %d\n", *state);
+		//printf("sync state: %d\n", *state);
                 break;
 
             case 1:
@@ -1578,8 +1572,27 @@ void MainFrame::per_frame_rx_processing(
 
                     // add decoded speech to end of output buffer
 
-		    assert(codec2_samples_per_frame(c2) <= (2*N8));
+		    assert(codec2_samples_per_frame(c2) == (2*N8));
+		    { 
+			short input_buf[2*N8];
+			if (read_file) {
+			    int n = fread(input_buf , sizeof(short), 2*N8, g_file);
+			    if (n != 2*N8) {
+				//printf("rewind\n");
+				rewind(g_file);
+			    }
+			}
+			codec2_encode(c2, packed_bits, input_buf);
+		    }
 		    codec2_decode(c2, output_buf, packed_bits);
+		    //#define SINE
+#ifdef SINE
+		    {
+			float two_pi = 8.0*atan(1);
+			for(i=0; i<codec2_samples_per_frame(c2); i++)
+			    output_buf[i] = 1000.0 * cos(two_pi*i/16.0);
+		    }
+#endif
 		    fifo_write(output_fifo, output_buf, codec2_samples_per_frame(c2));
 
                 }
@@ -1601,7 +1614,7 @@ void MainFrame::per_frame_tx_processing(
     int            sync_bit;
     int            i, bit, byte;
 
-    codec2_encode(c2, packed_bits, input_buf);
+    //codec2_encode(c2, packed_bits, input_buf);
 
     /* unpack bits, MSB first */
 
@@ -1643,8 +1656,6 @@ int MainFrame::txCallback(
                             void *userData
                         )
 {
-    wxMutexLocker lock(g_mutexProtectingCallbackData);
-
     paCallBackData  *cbData = (paCallBackData*)userData;
     unsigned int    i;
     short           *rptr    = (short*)inputBuffer;
@@ -1652,19 +1663,19 @@ int MainFrame::txCallback(
     short           indata[MAX_FPB];
     short           outdata[MAX_FPB];
 
-    ++cb_cnt;
-    assert(cb_cnt != 2);
     // assemble a mono buffer (just use left channel) and write to FIFO
-    sc2++;
+    
     assert(framesPerBuffer < MAX_FPB);
-    if (statusFlags)
-	printf("statusFlags: 0x%x\n", statusFlags);
+
+    //if (statusFlags)
+    //	printf("statusFlags: 0x%x\n", statusFlags);
 
     for(i = 0; i < framesPerBuffer; i++, rptr += 2)
     {
         indata[i] = *rptr;
     }
-    //#define SC2_LOOPBACK
+
+//#define SC2_LOOPBACK
 #ifdef SC2_LOOPBACK
     for(i = 0; i < framesPerBuffer; i++, wptr += 2)
         {
@@ -1672,18 +1683,15 @@ int MainFrame::txCallback(
             wptr[1] = indata[i];
         }   
 #else
-    if (write_file) {
-	//fwrite(tx_speech_in, sizeof(short),framesPerBuffer, g_write_file);
-	fwrite(indata, sizeof(short), framesPerBuffer, g_write_file);
-    }
-    if (fifo_write(cbData->infifo2, indata, framesPerBuffer))
-	printf("sc2: fifo full n = %d \n", fifo_n(cbData->infifo2));	
+    fifo_write(cbData->infifo2, indata, framesPerBuffer);	
 
     // OK now set up output samples for this callback
 
-    //printf("sc2: fifo read n = %d g_outfifo2_empty: %d\n", fifo_n(cbData->outfifo2), g_outfifo2_empty);
     if (fifo_read(cbData->outfifo2, outdata, framesPerBuffer) == 0)
     {
+	if (write_file) {
+	    fwrite(outdata, sizeof(short), framesPerBuffer, g_write_file);
+	}
         // write signal to both channels */
         for(i = 0; i < framesPerBuffer; i++, wptr += 2)
         {
@@ -1693,8 +1701,6 @@ int MainFrame::txCallback(
     }
     else
     {
-	g_outfifo2_empty++;
-	printf("fifo empty\n");
         // zero output if no data available
         for(i = 0; i < framesPerBuffer; i++, wptr += 2)
         {
@@ -1703,9 +1709,6 @@ int MainFrame::txCallback(
         }
     }
 #endif
-    //printf("infifo2 %d outfifo2 %d\n", fifo_n(cbData->infifo2), fifo_n(cbData->outfifo2));
-
-    --cb_cnt;
     return paContinue;
 }
 
