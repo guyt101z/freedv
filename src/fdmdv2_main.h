@@ -28,6 +28,8 @@
 #include "wx/versioninfo.h"
 #include <wx/sound.h>
 
+#include <samplerate.h>
+
 #include "codec2.h"
 #include "fdmdv.h"
 #include "fifo.h"
@@ -134,9 +136,12 @@ typedef struct
     // 1 & 2 denote which sound card's audio they handle
 
     float           in48k1[FDMDV_OS_TAPS + N48];
-    float           in8k1[MEM8 + N8];
-    float           in48k2[FDMDV_OS_TAPS + 2*N48];
     float           in8k2[MEM8 + 2*N8];
+
+    // libresample states
+
+    SRC_STATE      *insrc2;
+    SRC_STATE      *outsrc2;
 
     // FIFOs attached to first sound card
 
@@ -228,7 +233,7 @@ class MainFrame : public TopFrame
                                             CODEC2  *c2              // Codec 2 states
 					    );
 
-	int initPortAudioDevice(PortAudioWrap *pa, int inDevice, int outDevice, int soundCard);
+	int initPortAudioDevice(PortAudioWrap *pa, int inDevice, int outDevice, int soundCard, int sampleRate);
 
     protected:
         // protected event handlers

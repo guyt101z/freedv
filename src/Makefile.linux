@@ -14,8 +14,8 @@ WX_LIBS = $(shell $(WX_CONFIG) --libs core, base, aui, adv)
 CODEC2_INC=-I$(CODEC2_PATH)/src
 CODEC2_LIB=$(CODEC2_PATH)/src/.libs/libcodec2.a
 
-CPP_FLAGS = $(WX_CPPFLAGS) $(CODEC2_INC) -I../extern/include -g -Wall -O3
-LIBS = $(WX_LIBS) $(CODEC2_LIB) -lm -lportaudiocpp -lpthread -lsndfile
+CPP_FLAGS = $(WX_CPPFLAGS) $(CODEC2_INC) -I. -g -Wall -O3
+LIBS = $(WX_LIBS) $(CODEC2_LIB) -lm -lportaudiocpp -lpthread -lsndfile /usr/lib/libsamplerate.so.0
 
 OBJS = topFrame.o \
 fdmdv2_main.o \

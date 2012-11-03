@@ -41,12 +41,16 @@ struct FDMDV       *g_pFDMDV;
 struct FDMDV_STATS  g_stats;
 
 int g_nSoundCards = 2;
+
 int g_soundCard1InDeviceNum = 0;
 int g_soundCard1OutDeviceNum = 0;
+int g_soundCard1SampleRate = 48000;
+
 int g_soundCard2InDeviceNum = 1;
 int g_soundCard2OutDeviceNum = 1;
+int g_soundCard2SampleRate = 44100;
 
-int cb_cnt;
+int cb_cnt, cb1, cb2;
 int mute_mic = 0;
 int read_file = 0;
 FILE *g_file;
@@ -930,7 +934,7 @@ void MainFrame::destroy_fifos(void)
     fifo_destroy(m_rxUserdata->rxoutfifo);
 }
 
-int MainFrame::initPortAudioDevice(PortAudioWrap *pa, int inDevice, int outDevice, int soundCard)
+int MainFrame::initPortAudioDevice(PortAudioWrap *pa, int inDevice, int outDevice, int soundCard, int sampleRate)
 {
     char s[256];
 
@@ -969,8 +973,9 @@ int MainFrame::initPortAudioDevice(PortAudioWrap *pa, int inDevice, int outDevic
        equal PA_PFB, for example when I set PA_FPB to 960 I got
        framesPerBuffer = 1024.
     */
+    printf("Sound Card %d Sample rate %d\n", soundCard, sampleRate);
     pa->setFramesPerBuffer(PA_FPB);
-    pa->setSampleRate(SAMPLE_RATE);
+    pa->setSampleRate(sampleRate);
     pa->setStreamFlags(0);    
 
     return 0;
@@ -981,6 +986,8 @@ int MainFrame::initPortAudioDevice(PortAudioWrap *pa, int inDevice, int outDevic
 //-------------------------------------------------------------------------
 void MainFrame::startRxStream()
 {
+    int src_error;
+
     if(!m_RxRunning)
     {
 	cb_cnt = 0;
@@ -1013,7 +1020,7 @@ void MainFrame::startRxStream()
 	    m_rxDevOut = m_rxPa->getDefaultOutputDevice();
 	}
 
-	if (initPortAudioDevice(m_rxPa, m_rxDevIn, m_rxDevOut, 1) != 0) {
+	if (initPortAudioDevice(m_rxPa, m_rxDevIn, m_rxDevOut, 1, g_soundCard1SampleRate) != 0) {
             delete m_rxPa;
             m_RxRunning = false;
             return;	    
@@ -1039,7 +1046,7 @@ void MainFrame::startRxStream()
 	    m_txDevIn = g_soundCard2InDeviceNum;
 	    m_txDevOut = g_soundCard2OutDeviceNum;
 
-	    if (initPortAudioDevice(m_txPa, m_txDevIn, m_txDevOut, 2) != 0) {
+	    if (initPortAudioDevice(m_txPa, m_txDevIn, m_txDevOut, 2, g_soundCard2SampleRate) != 0) {
 		delete m_rxPa;
 		delete m_txPa;
 		m_RxRunning = false;
@@ -1057,20 +1064,23 @@ void MainFrame::startRxStream()
 
         for(int i = 0; i < MEM8; i++)
         {
-            m_rxUserdata->in8k1[i] = (float)0.0;
             m_rxUserdata->in8k2[i] = (float)0.0;
         }
         for(int i = 0; i < FDMDV_OS_TAPS; i++)
         {
             m_rxUserdata->in48k1[i] = (float)0.0;
-            m_rxUserdata->in48k2[i] = (float)0.0;
         }
+
+	m_rxUserdata->insrc2 = src_new(SRC_SINC_FASTEST, 1, &src_error);
+	assert(m_rxUserdata->insrc2 != NULL);
+	m_rxUserdata->outsrc2 = src_new(SRC_SINC_FASTEST, 1, &src_error);
+	assert(m_rxUserdata->outsrc2 != NULL);
 
 	// create FIFOs used to interface between different buffer sizes
 
         m_rxUserdata->infifo1 = fifo_create(2*N48);
 
-	m_rxUserdata->outfifo2 = fifo_create(4*N48);
+	m_rxUserdata->outfifo1 = fifo_create(4*N48);
 
 	/*
 	  During soundcard 1 callback, outfifo1 is read in PA_FPB = 1024 sample blocks.
@@ -1082,7 +1092,7 @@ void MainFrame::startRxStream()
 	    + so lets make it 1920*2 in size
 	*/
 
-        m_rxUserdata->outfifo1 = fifo_create(4*N48);
+        m_rxUserdata->outfifo2 = fifo_create(4*N48);
 
 	/* 
 	   infifo2 holds buffers from the microphone.  These get read
@@ -1252,21 +1262,22 @@ int MainFrame::rxCallback(
 
     // 48 to 8 kHz sample rate conversion filter states
 
-    float           *in8k1   = cbData->in8k1;
-    float           *in48k1  = cbData->in48k1;
     float           *in8k2   = cbData->in8k2;
-    float           *in48k2  = cbData->in48k2;
+    float           *in48k1  = cbData->in48k1;
 
     // temp buffers re-used by tx and rx processing
 
     short           in8k_short[N8];
+    float           in8k[N8];
     float           out8k[2*N8];
-    short           out8k_short[N8];
+    short           out8k_short[2*N8];
     float           out48k[2*N48];
     short           out48k_short[2*N48];
     short           in48k_short[2*N48];
+    float           in48k[2*N48];
     short           indata[MAX_FPB];
     short           outdata[MAX_FPB];
+    SRC_DATA        src_data;
 
     int             ret;
     unsigned int    i;
@@ -1274,6 +1285,7 @@ int MainFrame::rxCallback(
     (void) timeInfo;
     (void) statusFlags;
 
+    //printf("%d cb1 .. %d", cb1++, cb1-cb2);
     assert(inputBuffer != NULL);
     assert(outputBuffer != NULL);
     /*
@@ -1332,22 +1344,38 @@ int MainFrame::rxCallback(
 	// headset aid in tuning (ie we hear SSB radio output)
 
 	if (g_State == 0)
-	    memcpy(&in8k1[MEM8], out8k, sizeof(float)*N8);
+	    memcpy(in8k, out8k, sizeof(float)*N8);
 	else {
 	    memset(in8k_short, 0, sizeof(short)*N8);
 	    fifo_read(cbData->rxoutfifo, in8k_short, N8);	    
-	    short_to_float(&in8k1[MEM8], in8k_short, N8);
+	    src_short_to_float_array(in8k_short, in8k, N8);
+	    //short_to_float(&in8k1[MEM8], in8k_short, N8);
 	}
 
-        fdmdv_8_to_48(out48k, &in8k1[MEM8], N8);
-	float_to_short(out48k_short, out48k, N48);
-	if (g_nSoundCards == 1)
-	    fifo_write(cbData->outfifo1, out48k_short, N48);
-	else {
-	    //printf("sc1: fifo write n before = %d", fifo_n(cbData->outfifo2));
-	    fifo_write(cbData->outfifo2, out48k_short, N48);
-	    //printf(" after = %d\n", fifo_n(cbData->outfifo2));
+	//fdmdv_8_to_48(out48k, &in8k1[MEM8], N8);
+	//float_to_short(out48k_short, out48k, N48);
+	src_data.data_in = in8k;
+	src_data.data_out = out48k;
+	src_data.input_frames = N8;
+	src_data.output_frames = N48;
+	src_data.end_of_input = 0;
+
+	if (g_nSoundCards == 1) {
+	    src_data.src_ratio = (float)g_soundCard1SampleRate/FS;
+	    src_process(cbData->outsrc2, &src_data);	
+	    //printf("src_data.output_frames_gen: %d\n", src_data.output_frames_gen);
+	    src_float_to_short_array(out48k, out48k_short, src_data.output_frames_gen);
+	    fifo_write(cbData->outfifo1, out48k_short, src_data.output_frames_gen);
 	}
+	else {
+	    src_data.src_ratio = (float)g_soundCard2SampleRate/FS;
+	    src_process(cbData->outsrc2, &src_data);
+	    src_float_to_short_array(out48k, out48k_short, src_data.output_frames_gen);
+	    fifo_write(cbData->outfifo2, out48k_short, src_data.output_frames_gen);
+	    //printf("after outfifo2 write %d fifo_n: %d\n", src_data.output_frames_gen, fifo_n(cbData->outfifo2));
+	}
+
+	assert(src_data.output_frames_gen <= N48);
     }
 
     //
@@ -1370,26 +1398,45 @@ int MainFrame::rxCallback(
 	    short tx_speech_in[2*N8];
 	    short tx_mod_out[2*N8];
 
+	    // number of microphone samples we need at g_soundcards2SampleRate
+
+	    int   nsam = g_soundCard2SampleRate * (float)codec2_samples_per_frame(g_pCodec2)/FS;
+	    assert(nsam <= 2*N48);
+
 	    // infifo2 is written to by another sound card so it may
 	    // over or underflow, but we don't realy care.  It will
 	    // just result in a short interruption in audio being fed
 	    // to codec2_enc, possibly making a click every now and
 	    // again in the decoded audio at the other end.
 
+ 
 	    // zero speech input just in case infifo2 underflows
 
-	    memset(in48k_short, 0, sizeof(short)*2*N48); 
+	    memset(in48k_short, 0, sizeof(short)*nsam); 
 
-	    // Codec 2 @ 1400 bit/s requires 40ms of input speech
+	    fifo_read(cbData->infifo2, in48k_short, nsam);
 
-	    fifo_read(cbData->infifo2, in48k_short, 2*N48);
-	    
 	    if (mute_mic)
-		memset(in48k_short, 0, sizeof(short)*2*N48); 
-	    short_to_float(&in48k2[FDMDV_OS_TAPS], in48k_short, 2*N48);
-	    fdmdv_48_to_8(out8k, &in48k2[FDMDV_OS_TAPS], 2*N8);
-	    float_to_short(tx_speech_in, out8k, 2*N8);
-	    /*
+		memset(in48k_short, 0, sizeof(short)*nsam); 
+
+	    src_short_to_float_array(in48k_short, in48k, nsam);
+
+	    src_data.data_in = in48k;
+	    src_data.data_out = out8k;
+	    src_data.input_frames = nsam;
+	    src_data.output_frames = codec2_samples_per_frame(g_pCodec2);
+	    src_data.end_of_input = 0;
+	    src_data.src_ratio = (float)FS/g_soundCard2SampleRate;
+
+	    src_process(cbData->insrc2, &src_data);
+	    assert(src_data.output_frames_gen <= codec2_samples_per_frame(g_pCodec2));
+
+	    src_float_to_short_array(out8k, tx_speech_in, src_data.output_frames_gen);
+
+	    if (write_file) {
+		fwrite(tx_speech_in, sizeof(short), 2*N8, g_write_file);
+	    }
+
 	    if (read_file) {
 		int n = fread( tx_speech_in, sizeof(short), 2*N8, g_file);
 		if (n != 2*N8) {
@@ -1397,7 +1444,7 @@ int MainFrame::rxCallback(
 		    rewind(g_file);
 		}
 	    }
-	    */
+	    
 	    assert(codec2_samples_per_frame(g_pCodec2) == (2*N8));
 
 	    per_frame_tx_processing(tx_mod_out, tx_speech_in, g_pCodec2);
@@ -1406,7 +1453,7 @@ int MainFrame::rxCallback(
 
 	    short_to_float(&in8k2[MEM8], tx_mod_out, 2*N8);
 	    fdmdv_8_to_48(out48k, &in8k2[MEM8], 2*N8);
-	    float_to_short(out48k_short, out48k, 2*N48);
+ 	    float_to_short(out48k_short, out48k, 2*N48);	    
 	    fifo_write(cbData->outfifo1, out48k_short, 2*N48);
 	}
     }
@@ -1431,6 +1478,7 @@ int MainFrame::rxCallback(
             wptr[1] = 0;
         }
     }
+    //printf("end cb1\n");
 
     return paContinue;
 }
@@ -1573,26 +1621,7 @@ void MainFrame::per_frame_rx_processing(
                     // add decoded speech to end of output buffer
 
 		    assert(codec2_samples_per_frame(c2) == (2*N8));
-		    { 
-			short input_buf[2*N8];
-			if (read_file) {
-			    int n = fread(input_buf , sizeof(short), 2*N8, g_file);
-			    if (n != 2*N8) {
-				//printf("rewind\n");
-				rewind(g_file);
-			    }
-			}
-			codec2_encode(c2, packed_bits, input_buf);
-		    }
 		    codec2_decode(c2, output_buf, packed_bits);
-		    //#define SINE
-#ifdef SINE
-		    {
-			float two_pi = 8.0*atan(1);
-			for(i=0; i<codec2_samples_per_frame(c2); i++)
-			    output_buf[i] = 1000.0 * cos(two_pi*i/16.0);
-		    }
-#endif
 		    fifo_write(output_fifo, output_buf, codec2_samples_per_frame(c2));
 
                 }
@@ -1614,7 +1643,7 @@ void MainFrame::per_frame_tx_processing(
     int            sync_bit;
     int            i, bit, byte;
 
-    //codec2_encode(c2, packed_bits, input_buf);
+    codec2_encode(c2, packed_bits, input_buf);
 
     /* unpack bits, MSB first */
 
@@ -1663,6 +1692,8 @@ int MainFrame::txCallback(
     short           indata[MAX_FPB];
     short           outdata[MAX_FPB];
 
+    //printf("%d cb2 ... %d", cb2++,cb1-cb2);
+
     // assemble a mono buffer (just use left channel) and write to FIFO
     
     assert(framesPerBuffer < MAX_FPB);
@@ -1675,7 +1706,7 @@ int MainFrame::txCallback(
         indata[i] = *rptr;
     }
 
-//#define SC2_LOOPBACK
+    //#define SC2_LOOPBACK
 #ifdef SC2_LOOPBACK
     for(i = 0; i < framesPerBuffer; i++, wptr += 2)
         {
@@ -1689,9 +1720,6 @@ int MainFrame::txCallback(
 
     if (fifo_read(cbData->outfifo2, outdata, framesPerBuffer) == 0)
     {
-	if (write_file) {
-	    fwrite(outdata, sizeof(short), framesPerBuffer, g_write_file);
-	}
         // write signal to both channels */
         for(i = 0; i < framesPerBuffer; i++, wptr += 2)
         {
@@ -1709,6 +1737,8 @@ int MainFrame::txCallback(
         }
     }
 #endif
+
+    //printf("end cb2\n");
     return paContinue;
 }
 
