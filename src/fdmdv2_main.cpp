@@ -46,8 +46,8 @@ int g_soundCard1InDeviceNum = 0;
 int g_soundCard1OutDeviceNum = 0;
 int g_soundCard1SampleRate = 48000;
 
-int g_soundCard2InDeviceNum = 1;
-int g_soundCard2OutDeviceNum = 1;
+int g_soundCard2InDeviceNum = 2;
+int g_soundCard2OutDeviceNum = 2;
 int g_soundCard2SampleRate = 44100;
 
 int cb_cnt, cb1, cb2;
@@ -934,6 +934,14 @@ void MainFrame::destroy_fifos(void)
     fifo_destroy(m_rxUserdata->rxoutfifo);
 }
 
+void MainFrame::destroy_src(void)
+{
+    src_delete(m_rxUserdata->insrc1);
+    src_delete(m_rxUserdata->outsrc1);
+    src_delete(m_rxUserdata->insrc2);
+    src_delete(m_rxUserdata->outsrc2);
+}
+
 int MainFrame::initPortAudioDevice(PortAudioWrap *pa, int inDevice, int outDevice, int soundCard, int sampleRate)
 {
     char s[256];
@@ -948,6 +956,8 @@ int MainFrame::initPortAudioDevice(PortAudioWrap *pa, int inDevice, int outDevic
 	wxString wxs(s);
 	wxMessageBox(wxs, wxT("Error"), wxOK);
     }
+
+    printf("inDevice = %d outDevice = %d\n", inDevice, outDevice);
 
     // init input params
 
@@ -1124,6 +1134,7 @@ void MainFrame::startRxStream()
             delete m_rxPa;
             delete m_txPa;
             destroy_fifos();
+            destroy_src();
 	    delete m_rxUserdata;
 	    m_RxRunning = false;
 	    return;
@@ -1135,6 +1146,7 @@ void MainFrame::startRxStream()
             delete m_rxPa;
 	    delete m_txPa;
 	    destroy_fifos();
+            destroy_src();
 	    delete m_rxUserdata;
 	    m_RxRunning = false;
 	    return;
@@ -1162,6 +1174,7 @@ void MainFrame::startRxStream()
 		delete m_rxPa;
 		delete m_txPa;
 		destroy_fifos();
+		destroy_src();
 		delete m_rxUserdata;
 		m_RxRunning = false;
 		return;
@@ -1175,6 +1188,7 @@ void MainFrame::startRxStream()
 		delete m_rxPa;
 		delete m_txPa;
 		destroy_fifos();
+		destroy_src();
 		delete m_rxUserdata;
 		m_RxRunning = false;
 		return;
@@ -1204,6 +1218,7 @@ void MainFrame::stopRxStream()
 
 	delete m_rxPa;
 	destroy_fifos();
+	destroy_src();
         delete m_rxUserdata;
 
         fdmdv_destroy(g_pFDMDV);
@@ -1437,8 +1452,8 @@ int MainFrame::rxCallback(
 
 	    fifo_read(cbData->infifo2, in48k_short, nsam);
 
-	    if (mute_mic)
-		memset(in48k_short, 0, sizeof(short)*nsam); 
+	    //if (mute_mic)
+	    //	memset(in48k_short, 0, sizeof(short)*nsam); 
 
 	    src_short_to_float_array(in48k_short, in48k, nsam);
 
@@ -1658,6 +1673,7 @@ void MainFrame::per_frame_rx_processing(
                     // add decoded speech to end of output buffer
 
 		    assert(codec2_samples_per_frame(c2) == (2*N8));
+		    
 		    codec2_decode(c2, output_buf, packed_bits);
 		    fifo_write(output_fifo, output_buf, codec2_samples_per_frame(c2));
 

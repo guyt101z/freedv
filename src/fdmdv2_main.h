@@ -201,6 +201,7 @@ class MainFrame : public TopFrame
 #endif
 
 	void destroy_fifos(void);
+	void destroy_src(void);
 
         static int rxCallback(
                                 const void *inBuffer,
@@ -311,7 +312,7 @@ class MainFrame : public TopFrame
         void OnTimer(wxTimerEvent &evt);
 #endif
 #ifdef _USE_ONIDLE
-        void OnIdle(wxIdleEvent &evt);
+        void OnIdlge(wxIdleEvent &evt);
 #endif
 //        wxString LoadUserImage(wxImage& image);
     private:
