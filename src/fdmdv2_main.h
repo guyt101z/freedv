@@ -140,6 +140,8 @@ typedef struct
 
     // libresample states
 
+    SRC_STATE      *insrc1;
+    SRC_STATE      *outsrc1;
     SRC_STATE      *insrc2;
     SRC_STATE      *outsrc2;
 

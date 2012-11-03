@@ -1071,6 +1071,10 @@ void MainFrame::startRxStream()
             m_rxUserdata->in48k1[i] = (float)0.0;
         }
 
+	m_rxUserdata->insrc1 = src_new(SRC_SINC_FASTEST, 1, &src_error);
+	assert(m_rxUserdata->insrc1 != NULL);
+	m_rxUserdata->outsrc1 = src_new(SRC_SINC_FASTEST, 1, &src_error);
+	assert(m_rxUserdata->outsrc1 != NULL);
 	m_rxUserdata->insrc2 = src_new(SRC_SINC_FASTEST, 1, &src_error);
 	assert(m_rxUserdata->insrc2 != NULL);
 	m_rxUserdata->outsrc2 = src_new(SRC_SINC_FASTEST, 1, &src_error);
@@ -1268,7 +1272,7 @@ int MainFrame::rxCallback(
     // temp buffers re-used by tx and rx processing
 
     short           in8k_short[N8];
-    float           in8k[N8];
+    float           in8k[2*N8];
     float           out8k[2*N8];
     short           out8k_short[2*N8];
     float           out48k[2*N48];
@@ -1333,10 +1337,27 @@ int MainFrame::rxCallback(
         //       than floats would remove all these float to short
         //       conversions
 
+#ifdef OLD
 	short_to_float(&in48k1[FDMDV_OS_TAPS], in48k_short, N48);
         fdmdv_48_to_8(out8k, &in48k1[FDMDV_OS_TAPS], N8);
 	float_to_short(out8k_short, out8k, N8);
-	fifo_write(cbData->rxinfifo, out8k_short, N8);
+#endif
+
+	src_short_to_float_array(in48k_short, in48k, N48);
+
+	src_data.data_in = in48k;
+	src_data.data_out = out8k;
+	src_data.input_frames = N48;
+	src_data.output_frames = N8;
+	src_data.end_of_input = 0;
+	src_data.src_ratio = (float)FS/g_soundCard1SampleRate;
+
+	src_process(cbData->insrc1, &src_data);
+	assert(src_data.output_frames_gen <= N8);
+
+	src_float_to_short_array(out8k, out8k_short, src_data.output_frames_gen);
+
+	fifo_write(cbData->rxinfifo, out8k_short, src_data.output_frames_gen);
 
         per_frame_rx_processing(cbData->rxoutfifo, g_CodecBits, cbData->rxinfifo, &g_nRxIn, &g_State, g_pCodec2);
 
@@ -1450,11 +1471,27 @@ int MainFrame::rxCallback(
 	    per_frame_tx_processing(tx_mod_out, tx_speech_in, g_pCodec2);
 	    
 	    // output 40ms of modem tone
+#ifdef OLD
 
 	    short_to_float(&in8k2[MEM8], tx_mod_out, 2*N8);
 	    fdmdv_8_to_48(out48k, &in8k2[MEM8], 2*N8);
  	    float_to_short(out48k_short, out48k, 2*N48);	    
-	    fifo_write(cbData->outfifo1, out48k_short, 2*N48);
+#endif
+	    src_short_to_float_array(tx_mod_out, in8k, 2*N8);
+
+	    src_data.data_in = in8k;
+	    src_data.data_out = out48k;
+	    src_data.input_frames = 2*N8;
+	    src_data.output_frames = 2*N48;
+	    src_data.end_of_input = 0;
+	    src_data.src_ratio = (float)g_soundCard1SampleRate/FS;
+
+	    src_process(cbData->outsrc1, &src_data);
+	    assert(src_data.output_frames_gen <= 2*N48);
+
+	    src_float_to_short_array(out48k, out48k_short, src_data.output_frames_gen);
+
+	    fifo_write(cbData->outfifo1, out48k_short, src_data.output_frames_gen );
 	}
     }
 
