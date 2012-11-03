@@ -132,13 +132,7 @@ typedef struct
     PlotSpectrum    *pSPPanel;
     PlotWaterfall   *pWFPanel;
 
-    // state variables (filter memories) for sample rate conversion
-    // 1 & 2 denote which sound card's audio they handle
-
-    float           in48k1[FDMDV_OS_TAPS + N48];
-    float           in8k2[MEM8 + 2*N8];
-
-    // libresample states
+    // libresample states for 48 to 8 kHz conversions
 
     SRC_STATE      *insrc1;
     SRC_STATE      *outsrc1;
@@ -238,7 +232,7 @@ class MainFrame : public TopFrame
 
 	int initPortAudioDevice(PortAudioWrap *pa, int inDevice, int outDevice, int soundCard, int sampleRate);
 
-    protected:
+ protected:
         // protected event handlers
         virtual void OnCloseFrame(wxCloseEvent& event);
         virtual void OnExitClick(wxCommandEvent& event);
