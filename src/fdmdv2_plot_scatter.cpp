@@ -43,7 +43,7 @@ END_EVENT_TABLE()
 PlotScatter::PlotScatter(wxFrame* parent) : PlotPanel(parent)
 {
     int i;
-
+    printf("PlotScatter\n");
     for(i=0; i < SCATTER_MEM_SYMS; i++)
     {
         m_mem[i].real = 0.0;
@@ -118,8 +118,6 @@ void PlotScatter::add_new_samples(COMP samples[])
     for(i = 0; i < FDMDV_NSYM; i++)
     {
         m_new_samples[i] = samples[i];
-        //m_new_samples[i].real = 1 - 2*(i%2) + 0.1*(float)rand()/RAND_MAX;
-        //m_new_samples[i].imag = 1 - 2*(i%2) + 0.1*(float)rand()/RAND_MAX;
     }
 }
 

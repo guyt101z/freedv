@@ -35,22 +35,32 @@ class PlotScalar: public PlotPanel
 {
     public:
 
-        //PlotScalar(wxFrame* parent, int x, int y, int w, int h, int x_max_, int y_max_, const char name[]);
-        PlotScalar(wxFrame* parent);
+    PlotScalar(wxFrame* parent,
+	       float t_secs, 
+	       float sample_period_secs,
+	       float a_min,
+	       float a_max,
+	       float graticule_t_step,   
+	       float graticule_a_step,
+	       const char  a_fmt[]
+	       );
         ~PlotScalar();
          void add_new_sample(float sample);
 
     protected:
 
-        int    m_x_max;
-        int    m_y_max;
-        float  *m_mem;              /* array of x_max samples */
-        float  m_new_sample;
-        int    m_index;
-        int    m_step;
+	 float    m_t_secs;
+	 float    m_sample_period_secs;
+	 float    m_a_min;
+	 float    m_a_max;
+	 float    m_graticule_t_step;   
+	 float    m_graticule_a_step;
+	 char     m_a_fmt[15];
+	 int      m_samples;
+	 float   *m_mem;              
 
-        int clip(int y1);
         void draw(wxAutoBufferedPaintDC&  dc);
+	void drawGraticule(wxAutoBufferedPaintDC&  dc);
         void OnPaint(wxPaintEvent& event);
         void OnSize(wxSizeEvent& event);
         void OnShow(wxShowEvent& event);

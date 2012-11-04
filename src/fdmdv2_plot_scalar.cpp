@@ -1,6 +1,6 @@
 //==========================================================================
 // Name:            fdmdv2_plot_scalar.cpp
-// Purpose:         Implements a waterfall plot derivative of fdmdv2_plot.
+// Purpose:         Plots scalar amplitude against time
 // Created:         June 22, 2012
 // Initial author:  David Witten
 // Derived from:    code written by David Rowe
@@ -41,25 +41,36 @@ END_EVENT_TABLE()
 //----------------------------------------------------------------
 // PlotScalar()
 //----------------------------------------------------------------
-//PlotScalar::PlotScalar(wxFrame* parent, int x_max_, int y_max_): PlotPanel(parent)
-PlotScalar::PlotScalar(wxFrame* parent): PlotPanel(parent)
+PlotScalar::PlotScalar(wxFrame* parent, 
+		       float  t_secs,             // time covered by entire x axis in seconds
+		       float  sample_period_secs, // tiem between each sample in seconds
+		       float  a_min,              // min ampltude of samples being plotted
+		       float  a_max,              // max ampltude of samples being plotted
+		       float  graticule_t_step,   // time step of x (time) axis graticule in seconds
+		       float  graticule_a_step,   // step of amplitude axis graticule
+		       const char a_fmt[]         // printf format string for amlitude axis labels
+		       ): PlotPanel(parent)
 {
     int i;
 
-    //align(FL_ALIGN_TOP);
-    //labelsize(10);
+    m_t_secs = t_secs;
+    m_sample_period_secs = sample_period_secs;
+    m_a_min = a_min;
+    m_a_max = a_max;
+    m_graticule_t_step = graticule_t_step;
+    m_graticule_a_step = graticule_a_step;
+    assert(strlen(a_fmt) < 15);
+    strcpy(m_a_fmt, a_fmt);
 
-    m_mem = new float[m_x_max];
+    // work out number of samples we will store and allocate storage
 
-    for(i = 0; i < m_x_max; i++)
+    m_samples = m_t_secs/m_sample_period_secs;
+    m_mem = new float[m_samples];
+
+    for(i = 0; i < m_samples; i++)
     {
         m_mem[i] = 0.0;
     }
-    m_prev_w = 0;
-    m_prev_h = 0;
-    m_prev_x = 0;
-    m_prev_y = 0;
-    m_index = 0;
 }
 
 //----------------------------------------------------------------
@@ -75,23 +86,13 @@ PlotScalar::~PlotScalar()
 //----------------------------------------------------------------
 void PlotScalar::add_new_sample(float sample)
 {
-    m_new_sample = sample;
-}
+    int i;
 
-//----------------------------------------------------------------
-// clip()
-//----------------------------------------------------------------
-int PlotScalar::clip(int y1)
-{
-    if(y1 > (m_rCtrl.GetHeight()/2 - 10))
+    for(i = 0; i < m_samples-1; i++)
     {
-        y1 = m_rCtrl.GetHeight()/2 - 10;
+        m_mem[i] = m_mem[i+1];
     }
-    if(y1 < -(m_rCtrl.GetHeight()/2 - 10))
-    {
-        y1 = -(m_rCtrl.GetHeight()/2 - 10);
-    }
-    return y1;
+    m_mem[m_samples-1] = sample;
 }
 
 //----------------------------------------------------------------
@@ -99,90 +100,113 @@ int PlotScalar::clip(int y1)
 //----------------------------------------------------------------
 void PlotScalar::draw(wxAutoBufferedPaintDC&  dc)
 {
-    float x_scale;
-    float y_scale;
+    float index_to_px;
+    float a_to_py;
     int   i;
-    int   x1;
-    int   y1;
-    int   x2;
-    int   y2;
-    char  label[100];
+    int   x, y;
+    int   prev_x, prev_y;
+    float a;
+
+    m_rCtrl = GetClientRect();
+    m_rGrid = m_rCtrl;
+    m_rGrid = m_rGrid.Deflate(PLOT_BORDER + (XLEFT_OFFSET/2), (PLOT_BORDER + (YBOTTOM_OFFSET/2)));
+
+    // black background
+
+    dc.Clear();
+    m_rPlot = wxRect(PLOT_BORDER + XLEFT_OFFSET, PLOT_BORDER, m_rGrid.GetWidth(), m_rGrid.GetHeight());
+    wxBrush ltGraphBkgBrush = wxBrush(BLACK_COLOR);
+    dc.SetBrush(ltGraphBkgBrush);
+    dc.SetPen(wxPen(BLACK_COLOR, 0));
+    dc.DrawRectangle(m_rPlot);
+
+    index_to_px = (float)m_rGrid.GetWidth()/m_samples;
+    a_to_py = (float)m_rGrid.GetHeight()/(m_a_max - m_a_min);
+
     wxPen pen;
-
-    /* detect resizing of window */
-    if((m_rCtrl.GetHeight() != m_prev_h) || (m_rCtrl.GetWidth() != m_prev_w) || (m_x != m_prev_x) || (m_y != m_prev_y))
-    {
-        dc.SetPen(BLACK_COLOR);
-        dc.DrawRectangle(m_x, m_y, m_rCtrl.GetWidth(), m_rCtrl.GetHeight());
-        m_prev_h = m_rCtrl.GetHeight();
-        m_prev_w = m_rCtrl.GetWidth();
-        m_prev_x = m_x;
-        m_prev_y = m_y;
-    }
-
-    //fl_push_clip(m_x, m_y, m_w, m_h);
-    x_scale = (float)m_x_max;
-    y_scale = (float)m_rCtrl.GetHeight() /(2.0 * m_y_max);
-
-    // erase last sample
-    dc.SetPen(BLACK_COLOR);
-    x1 = x_scale * m_index + m_x;
-    y1 = y_scale * m_mem[m_index];
-    y1 = clip(y1);
-    y1 = m_y + m_rCtrl.GetHeight()/2 - y1;
-    dc.DrawPoint(x1, y1);
-
-    // draw new sample
-    dc.SetPen(GREEN_COLOR);
-    x1 = x_scale * m_index + m_x;
-    y1 = y_scale * m_new_sample;
-    y1 = clip(y1);
-    y1 = m_y + m_rCtrl.GetHeight()/2 - y1;
-    dc.DrawPoint(x1, y1);
-    m_mem[m_index] = m_new_sample;
-    m_index++;
-    if(m_index >=  m_x_max)
-    {
-        m_index = 0;
-    }
-
-    // y axis graticule
-    m_step = 10;
-    while((2.0 * m_y_max/m_step) > 10)
-    {
-        m_step *= 2.0;
-    }
-    while((2.0 * m_y_max/m_step) < 4)
-    {
-        m_step /= 2.0;
-    }
-    pen = dc.GetPen();
     pen.SetColour(DARK_GREEN_COLOR);
-    pen.SetStyle(wxPENSTYLE_DOT);
+    pen.SetWidth(1);
     dc.SetPen(pen);
-    for(i =- m_y_max; i < m_y_max; i += m_step)
+
+    // draw all samples
+
+    prev_x = prev_y = 0; // stop warning
+
+    for(i = 0; i < m_samples; i++)
     {
-        x1 = m_x;
-        y1 = m_y + m_rCtrl.GetHeight()/2 - i * y_scale;
-        x2 = m_x + m_rCtrl.GetWidth();
-        y2 = y1;
-        dc.DrawLine(x1, y1, x2, y2);
+        x = index_to_px * i;
+	a = m_mem[i];
+	if (a < m_a_min) a = m_a_min;
+	if (a > m_a_max) a = m_a_max;
+
+	// invert y axis and offset by minimum
+
+        y = m_rGrid.GetHeight() - a_to_py * a + m_a_min*a_to_py;
+
+	// put inside plot window
+
+	x += PLOT_BORDER + XLEFT_OFFSET;
+	y += PLOT_BORDER;
+
+	if (i)
+	    dc.DrawLine(x, y, prev_x, prev_y);
+	prev_x = x; prev_y = y;
     }
 
-    // y axis graticule labels
-    pen = dc.GetPen();
-    pen.SetColour(GREEN_COLOR);
-    pen.SetStyle(wxPENSTYLE_DOT);
-    dc.SetPen(pen);
-    for(i =- m_y_max; i < m_y_max; i += m_step)
-    {
-        x1 = m_x;
-        y1 = m_y + m_rCtrl.GetHeight()/2 - i * y_scale;
-        sprintf(label, "%d", i);
-        wxSize sz = dc.GetTextExtent(label);
-        dc.DrawLabel(label,  wxRect(x1, y1, sz.GetWidth(), sz.GetHeight()), wxALIGN_LEFT);
+    drawGraticule(dc);
+}
+
+//-------------------------------------------------------------------------
+// drawGraticule()
+//-------------------------------------------------------------------------
+void PlotScalar::drawGraticule(wxAutoBufferedPaintDC&  dc)
+{
+    float    t, a;
+    int      x, y, text_w, text_h;
+    char     buf[15];
+    wxString s;
+    float    sec_to_px;
+    float    a_to_py;
+
+    wxBrush ltGraphBkgBrush;
+    ltGraphBkgBrush.SetStyle(wxBRUSHSTYLE_TRANSPARENT);
+    ltGraphBkgBrush.SetColour(*wxBLACK);
+    dc.SetBrush(ltGraphBkgBrush);
+    dc.SetPen(wxPen(BLACK_COLOR, 1));
+
+    sec_to_px = (float)m_rGrid.GetWidth()/m_t_secs;
+    a_to_py = (float)m_rGrid.GetHeight()/(m_a_max - m_a_min);
+
+    // upper LH coords of plot area are (PLOT_BORDER + XLEFT_OFFSET, PLOT_BORDER)
+    // lower RH coords of plot area are (PLOT_BORDER + XLEFT_OFFSET + m_rGrid.GetWidth(), 
+    //                                   PLOT_BORDER + m_rGrid.GetHeight())
+
+    // Vertical gridlines
+
+    dc.SetPen(m_penShortDash);
+    for(t=0; t<=m_t_secs; t+=m_graticule_t_step) {
+	x = t*sec_to_px;
+	x += PLOT_BORDER + XLEFT_OFFSET;
+        dc.DrawLine(x, m_rGrid.GetHeight() + PLOT_BORDER, x, PLOT_BORDER);
+        sprintf(buf, "%2.1fs", t);
+	GetTextExtent(buf, &text_w, &text_h);
+        dc.DrawText(buf, x - text_w/2, m_rGrid.GetHeight() + PLOT_BORDER + YBOTTOM_TEXT_OFFSET);
     }
-    //fl_pop_clip();
+
+    // Horizontal gridlines
+
+    dc.SetPen(m_penDotDash);
+    for(a=m_a_min; a<m_a_max; a+=m_graticule_a_step) {
+	y = m_rGrid.GetHeight() - a*a_to_py + m_a_min*a_to_py;
+	y += PLOT_BORDER;
+	dc.DrawLine(PLOT_BORDER + XLEFT_OFFSET, y, 
+		    (m_rGrid.GetWidth() + PLOT_BORDER + XLEFT_OFFSET), y);
+        sprintf(buf, m_a_fmt, a);
+	GetTextExtent(buf, &text_w, &text_h);
+        dc.DrawText(buf, PLOT_BORDER + XLEFT_OFFSET - text_w - XLEFT_TEXT_OFFSET, y-text_h/2);
+   }
+
+
 }
 
 //----------------------------------------------------------------

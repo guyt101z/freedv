@@ -175,13 +175,13 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     if(wxGetApp().m_show_timing)
     {
         // Add Timing Offset window
-        m_panelTimeOffset = new PlotScalar((wxFrame*) m_auiNbookCtrl);
+        m_panelTimeOffset = new PlotScalar((wxFrame*) m_auiNbookCtrl, 5.0, DT, -0.5, 0.5, 1, 0.1, "%2.1f");
         m_auiNbookCtrl->AddPage(m_panelTimeOffset, L"Timing \u0394", true, wxNullBitmap);
     }
     if(wxGetApp().m_show_freq)
     {
         // Add Frequency Offset window
-        m_panelFreqOffset = new PlotScalar((wxFrame*) m_auiNbookCtrl);
+        m_panelFreqOffset = new PlotScalar((wxFrame*) m_auiNbookCtrl, 5.0, DT, -200, 200, 1, 50, "%3fHz");
         m_auiNbookCtrl->AddPage(m_panelFreqOffset, L"Frequency \u0394", true, wxNullBitmap);
     }
     wxGetApp().m_strRxInAudio       = pConfig->Read(wxT("/Audio/RxIn"),         wxT("<m_strRxInAudio>"));
@@ -305,8 +305,13 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
     m_panelSpectrum->Refresh();
 
     m_panelScatter->add_new_samples(g_stats.rx_symbols);
-    m_panelScatter->m_newdata = true;
     m_panelScatter->Refresh();
+
+    m_panelTimeOffset->add_new_sample((float)g_stats.rx_timing/FDMDV_NOM_SAMPLES_PER_FRAME);
+    m_panelTimeOffset->Refresh();
+    
+    m_panelFreqOffset->add_new_sample(g_stats.foff);
+    m_panelFreqOffset->Refresh();
 }
 #endif
 
@@ -1109,7 +1114,7 @@ void MainFrame::startRxStream()
 
 	m_rxUserdata->infifo2 = fifo_create(4*N48);
 
-        m_rxUserdata->rxinfifo = fifo_create(2 * FDMDV_NOM_SAMPLES_PER_FRAME);
+        m_rxUserdata->rxinfifo = fifo_create(3 * FDMDV_NOM_SAMPLES_PER_FRAME);
         m_rxUserdata->rxoutfifo = fifo_create(2 * codec2_samples_per_frame(g_pCodec2));
 
 	// Start sound card 1 ----------------------------------------------------------
