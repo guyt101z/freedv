@@ -198,6 +198,7 @@ class MainFrame : public TopFrame
 
 	void destroy_fifos(void);
 	void destroy_src(void);
+	void autoDetectSoundCards(PortAudioWrap *pa);
 
         static int rxCallback(
                                 const void *inBuffer,

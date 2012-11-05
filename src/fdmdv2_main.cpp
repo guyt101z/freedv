@@ -74,7 +74,8 @@ IMPLEMENT_APP(MainApp);
 bool MainApp::OnInit()
 {
     g_file = fopen("/home/david/codec2-dev/raw/hts1a.raw","rb");
-    assert(g_file != NULL);
+    if (g_file === NULL)
+	printf("reading hts1a disabled...\n");
 
     if(!wxApp::OnInit())
     {
@@ -1000,6 +1001,34 @@ void MainFrame::destroy_src(void)
     src_delete(m_rxUserdata->outsrc2);
 }
 
+void MainFrame::autoDetectSoundCards(PortAudioWrap *pa)
+{
+    const   PaDeviceInfo *deviceInfo;
+    int     i;
+
+    // trap zero sound devices
+
+    if (pa->getDeviceCount() == 0) {
+	wxMessageBox(wxT("No sound devices found"), wxT("Error"), wxOK);
+	return;
+    }
+
+    for(i=0; i<pa->getDeviceCount(); i++) {
+        deviceInfo = Pa_GetDeviceInfo( i );
+
+	// supports full duplex and 44800 and 44100
+	// is there something unique so we know it's a hw device?
+	// does this work on Linux & Windows?
+
+	printf( "--------------------------------------- device #%d\n", i );
+        printf( "Name                        = %s\n", deviceInfo->name );
+        printf( "Host API                    = %s\n",  Pa_GetHostApiInfo( deviceInfo->hostApi )->name );
+        printf( "Max inputs = %d", deviceInfo->maxInputChannels  );
+        printf( ", Max outputs = %d\n", deviceInfo->maxOutputChannels  );
+        printf( "Default sample rate         = %8.2f\n", deviceInfo->defaultSampleRate );
+    }
+}
+
 int MainFrame::initPortAudioDevice(PortAudioWrap *pa, int inDevice, int outDevice, int soundCard, int sampleRate)
 {
     char s[256];
@@ -1065,6 +1094,7 @@ void MainFrame::startRxStream()
         m_RxRunning = true;
 
         m_rxPa = new PortAudioWrap();
+	autoDetectSoundCards(m_rxPa);
 
 	// Init Sound card 1 ----------------------------------------------
 
@@ -1507,7 +1537,7 @@ int MainFrame::rxCallback(
 		fwrite( in8k_short, sizeof(short), nout, g_write_file);
 	    }
 
-	    if (read_file) {
+	    if (read_file  && (g_file != NULL)) {
 		int n = fread( in8k_short , sizeof(short), 2*N8, g_file);
 		if (n != 2*N8) {
 		    rewind(g_file);
