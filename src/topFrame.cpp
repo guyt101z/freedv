@@ -1,4 +1,4 @@
-﻿///////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
 // C++ code generated with wxFormBuilder (version Apr 10 2012)
 // http://www.wxformbuilder.org/
 //
@@ -7,8 +7,9 @@
 
 #include "topFrame.h"
 
-///////////////////////////////////////////////////////////////////////////
-
+//=========================================================================
+// Code that lays out the main application window
+//=========================================================================
 TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style) : wxFrame(parent, id, title, pos, size, style)
 {
     this->SetSizeHints(wxDefaultSize, wxDefaultSize);
@@ -17,7 +18,8 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     this->SetSizeHints(wxDefaultSize, wxDefaultSize);
     this->SetForegroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT));
     this->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_3DLIGHT));
-
+    //=====================================================
+    // Menubar Setup
     m_menubarMain = new wxMenuBar(wxMB_DOCKABLE);
     file = new wxMenu();
     wxMenuItem* m_menuItemOpen;
@@ -116,6 +118,9 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     wxBoxSizer* bSizer1;
     bSizer1 = new wxBoxSizer(wxHORIZONTAL);
 
+    //=====================================================
+    // Left side
+    //=====================================================
     wxBoxSizer* leftSizer;
     leftSizer = new wxBoxSizer(wxVERTICAL);
 
@@ -133,32 +138,22 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     m_textSNR = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxPoint(-1,-1), wxSize(35,25), wxTE_READONLY);
     m_textSNR->SetToolTip(_("Show S/N ratio numerically."));
     m_textSNR->SetMinSize(wxSize(35,25));
-
     bSizer29->Add(m_textSNR, 0, wxALIGN_CENTER|wxALL, 1);
-
-
     snrSizer->Add(bSizer29, 0, wxEXPAND, 1);
-
-
     leftSizer->Add(snrSizer, 2, wxALIGN_CENTER|wxALL|wxEXPAND, 1);
-
     wxStaticBoxSizer* levelSizer;
     levelSizer = new wxStaticBoxSizer(new wxStaticBox(this, wxID_ANY, _("Level")), wxVERTICAL);
-
     m_gaugeLevel = new wxGauge(this, wxID_ANY, 100, wxDefaultPosition, wxSize(15,135), wxGA_SMOOTH|wxGA_VERTICAL);
     m_gaugeLevel->SetToolTip(_("Display signal level."));
-
     levelSizer->Add(m_gaugeLevel, 1, wxALIGN_CENTER_HORIZONTAL|wxALL, 10);
-
-
     leftSizer->Add(levelSizer, 2, wxALIGN_CENTER|wxALL|wxEXPAND, 1);
-
-
     bSizer1->Add(leftSizer, 0, wxALL|wxEXPAND, 5);
 
+    //=====================================================
+    // Center Section
+    //=====================================================
     wxBoxSizer* centerSizer;
     centerSizer = new wxBoxSizer(wxVERTICAL);
-
     wxBoxSizer* upperSizer;
     upperSizer = new wxBoxSizer(wxVERTICAL);
 
@@ -166,47 +161,36 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     //long style = wxAUI_NB_TAB_SPLIT | wxAUI_NB_TAB_MOVE | wxAUI_NB_SCROLL_BUTTONS | wxAUI_NB_CLOSE_ON_ACTIVE_TAB | wxAUI_NB_MIDDLE_CLICK_CLOSE;
     long nb_style = wxAUI_NB_BOTTOM | wxAUI_NB_TAB_SPLIT | wxAUI_NB_TAB_MOVE | wxAUI_NB_SCROLL_BUTTONS;
     m_auiNbookCtrl = new wxAuiNotebook(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, nb_style);
-    m_auiNbookCtrl->SetFont(wxFont(6, 70, 90, 90, false, wxEmptyString));
-
-
+    m_auiNbookCtrl->SetFont(wxFont(7, 70, 90, 90, false, wxEmptyString));
     upperSizer->Add(m_auiNbookCtrl, 1, wxALIGN_TOP|wxEXPAND, 1);
-
-
     centerSizer->Add(upperSizer, 1, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALIGN_TOP|wxEXPAND, 0);
-
     wxBoxSizer* lowerSizer;
     lowerSizer = new wxBoxSizer(wxHORIZONTAL);
-
     wxBoxSizer* bSizer15;
     bSizer15 = new wxBoxSizer(wxVERTICAL);
-
     m_txtCtrl = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0);
     bSizer15->Add(m_txtCtrl, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL|wxEXPAND, 5);
-
-
     lowerSizer->Add(bSizer15, 1, wxEXPAND, 5);
-
     wxBoxSizer* bSizer141;
     bSizer141 = new wxBoxSizer(wxHORIZONTAL);
-
     m_togRxID = new wxToggleButton(this, wxID_ANY, _("RxID"), wxDefaultPosition, wxDefaultSize, 0);
     bSizer141->Add(m_togRxID, 0, wxALIGN_CENTER_VERTICAL|wxALIGN_LEFT|wxALL|wxFIXED_MINSIZE, 5);
 
     m_togTxID = new wxToggleButton(this, wxID_ANY, _("TxID"), wxDefaultPosition, wxDefaultSize, 0);
     bSizer141->Add(m_togTxID, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
-
-
     lowerSizer->Add(bSizer141, 0, wxALIGN_RIGHT, 5);
-
-
     centerSizer->Add(lowerSizer, 0, wxALIGN_BOTTOM|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxEXPAND, 2);
-
-
     bSizer1->Add(centerSizer, 4, wxALIGN_CENTER_HORIZONTAL|wxALL|wxEXPAND, 1);
 
+    //=====================================================
+    // Right side
+    //=====================================================
     wxBoxSizer* rightSizer;
     rightSizer = new wxBoxSizer(wxVERTICAL);
 
+    //=====================================================
+    // Squelch Control box
+    //=====================================================
     wxStaticBoxSizer* sbSizer3;
     sbSizer3 = new wxStaticBoxSizer(new wxStaticBox(this, wxID_ANY, _("SQ")), wxVERTICAL);
 
@@ -215,6 +199,9 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
 
     sbSizer3->Add(m_sliderSQ, 2, wxALIGN_CENTER|wxALL, 1);
 
+    //------------------------------
+    // Squelch Toggle Checkbox
+    //------------------------------
     wxBoxSizer* bSizer131;
     bSizer131 = new wxBoxSizer(wxVERTICAL);
 
@@ -222,30 +209,36 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     m_ckboxSQ->SetToolTip(_("Activate/Deactivate Squelch"));
 
     bSizer131->Add(m_ckboxSQ, 0, wxALIGN_CENTER|wxALL, 5);
-
-
     sbSizer3->Add(bSizer131, 0, wxALIGN_CENTER, 5);
-
-
     rightSizer->Add(sbSizer3, 2, wxALIGN_CENTER_HORIZONTAL|wxALL|wxEXPAND, 3);
 
+    //------------------------------
+    // Synch Indicator box
+    //------------------------------
+    wxStaticBoxSizer* sbSizer3_33;
+    sbSizer3_33 = new wxStaticBoxSizer(new wxStaticBox(this, wxID_ANY, _("Sync")), wxVERTICAL);
+
+    m_rbSync = new wxRadioButton( this, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, 0 );
+    m_rbSync->SetForegroundColour( wxColour( 255, 0, 0 ) );
+    sbSizer3_33->Add(m_rbSync, 0, wxALIGN_CENTER|wxALL, 1);
+
+    rightSizer->Add(sbSizer3_33,0, wxALIGN_CENTER_HORIZONTAL|wxALL|wxEXPAND, 3);
+
+    //=====================================================
+    // Control Toggles box
+    //=====================================================
     wxStaticBoxSizer* sbSizer5;
     sbSizer5 = new wxStaticBoxSizer(new wxStaticBox(this, wxID_ANY, _("Control")), wxVERTICAL);
-
-
     wxBoxSizer* bSizer1511;
     bSizer1511 = new wxBoxSizer(wxVERTICAL);
-
     m_togBtnOnOff = new wxToggleButton(this, wxID_ANY, _("Start"), wxDefaultPosition, wxDefaultSize, 0);
     m_togBtnOnOff->SetToolTip(_("Begin/End receiving data."));
-
     bSizer1511->Add(m_togBtnOnOff, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 1);
-
-
     sbSizer5->Add(bSizer1511, 0, wxEXPAND, 1);
 
-//------------------------------
-
+    //------------------------------
+    // Toggle Loopback button for RX
+    //------------------------------
     wxBoxSizer* bSizer15113;
     bSizer15113 = new wxBoxSizer(wxHORIZONTAL);
 
@@ -263,8 +256,9 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     //sbSizer5->Add(bSizer15111, 0, wxEXPAND, 1);
     bSizer15113->Add(bSizer15111, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 0);
 
-//------------------------------
-
+    //------------------------------
+    // Toggle Loopback button for Tx
+    //------------------------------
     wxBoxSizer* bSizer15112;
     bSizer15112 = new wxBoxSizer(wxVERTICAL);
 
@@ -273,14 +267,13 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     m_togBtnLoopTx->SetToolTip(_("Loopback Transmit audio data."));
 
     bSizer15112->Add(m_togBtnLoopTx, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 0);
-
-
     bSizer15113->Add(bSizer15112, 0,  wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 0);
 
     sbSizer5->Add(bSizer15113, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-//------------------------------
-
+    //------------------------------
+    // Split Frequency Mode Toggle
+    //------------------------------
     wxBoxSizer* bSizer151;
     bSizer151 = new wxBoxSizer(wxVERTICAL);
 
@@ -288,55 +281,48 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     m_togBtnSplit->SetToolTip(_("Toggle split frequency mode."));
 
     bSizer151->Add(m_togBtnSplit, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 1);
-
-
     sbSizer5->Add(bSizer151, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL|wxEXPAND, 1);
-
     wxBoxSizer* bSizer13;
     bSizer13 = new wxBoxSizer(wxVERTICAL);
 
+    //------------------------------
+    // Analog Passthrough Toggle
+    //------------------------------
     m_togBtnAnalog = new wxToggleButton(this, wxID_ANY, _("Analog"), wxDefaultPosition, wxDefaultSize, 0);
     m_togBtnAnalog->SetToolTip(_("Toggle analog/digital operation."));
-
     bSizer13->Add(m_togBtnAnalog, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 1);
-
-
     sbSizer5->Add(bSizer13, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
     wxBoxSizer* bSizer14;
     bSizer14 = new wxBoxSizer(wxVERTICAL);
-
     m_togBtnALC = new wxToggleButton(this, wxID_ANY, _("ALC"), wxDefaultPosition, wxDefaultSize, 0);
     m_togBtnALC->SetToolTip(_("Toggle automatic level control mode."));
 
+    //------------------------------
+    // ALC Toggle
+    //------------------------------
     bSizer14->Add(m_togBtnALC, 0, wxALL, 1);
-
-
     sbSizer5->Add(bSizer14, 0, wxALIGN_CENTER|wxALIGN_CENTER_HORIZONTAL|wxALL, 1);
-
     wxBoxSizer* bSizer11;
     bSizer11 = new wxBoxSizer(wxVERTICAL);
 
     m_btnTogTX = new wxToggleButton(this, wxID_ANY, _("TX"), wxDefaultPosition, wxDefaultSize, 0);
     m_btnTogTX->SetToolTip(_("Switch between Receive and Transmit"));
-
     bSizer11->Add(m_btnTogTX, 1, wxALIGN_CENTER|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 1);
-
-
     sbSizer5->Add(bSizer11, 2, wxEXPAND, 1);
-
-
     rightSizer->Add(sbSizer5, 2, wxALIGN_CENTER|wxALL|wxEXPAND, 3);
-
-
     bSizer1->Add(rightSizer, 0, wxALL|wxEXPAND, 3);
-
-
     this->SetSizer(bSizer1);
     this->Layout();
     m_statusBar1 = this->CreateStatusBar(3, wxST_SIZEGRIP, wxID_ANY);
 
+    //=====================================================
+    // End of layout
+    //=====================================================
+
+    //-------------------
     // Connect Events
+    //-------------------
     this->Connect(wxEVT_CLOSE_WINDOW, wxCloseEventHandler(TopFrame::topFrame_OnClose));
     this->Connect(wxEVT_PAINT, wxPaintEventHandler(TopFrame::topFrame_OnPaint));
     this->Connect(wxEVT_SIZE, wxSizeEventHandler(TopFrame::topFrame_OnSize));
@@ -393,7 +379,9 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
 
 TopFrame::~TopFrame()
 {
+    //-------------------
     // Disconnect Events
+    //-------------------
     this->Disconnect(wxEVT_CLOSE_WINDOW, wxCloseEventHandler(TopFrame::topFrame_OnClose));
     this->Disconnect(wxEVT_PAINT, wxPaintEventHandler(TopFrame::topFrame_OnPaint));
     this->Disconnect(wxEVT_SIZE, wxSizeEventHandler(TopFrame::topFrame_OnSize));

@@ -1,4 +1,4 @@
-﻿///////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
 // C++ code generated with wxFormBuilder (version Apr 10 2012)
 // http://www.wxformbuilder.org/
 //
@@ -73,6 +73,7 @@ class TopFrame : public wxFrame
         wxSlider* m_sliderSQ;
         wxCheckBox* m_ckboxSQ;
         wxStatusBar* m_statusBar1;
+        wxRadioButton *m_rbSync;
 
         // Virtual event handlers, overide them in your derived class
         virtual void topFrame_OnClose( wxCloseEvent& event ) { event.Skip(); }

@@ -196,9 +196,9 @@ class MainFrame : public TopFrame
         wxTimer                 m_plotTimer;
 #endif
 
-	void destroy_fifos(void);
-	void destroy_src(void);
-	void autoDetectSoundCards(PortAudioWrap *pa);
+    void destroy_fifos(void);
+    void destroy_src(void);
+    void autoDetectSoundCards(PortAudioWrap *pa);
 
         static int rxCallback(
                                 const void *inBuffer,
@@ -231,9 +231,9 @@ class MainFrame : public TopFrame
                                             short   tx_fdm_scaled[], // ouput modulated samples
                                             short   input_buf[],     // speech sample input
                                             CODEC2  *c2              // Codec 2 states
-					    );
+                        );
 
-	int initPortAudioDevice(PortAudioWrap *pa, int inDevice, int outDevice, int soundCard, int sampleRate);
+    int initPortAudioDevice(PortAudioWrap *pa, int inDevice, int outDevice, int soundCard, int sampleRate);
 
  protected:
         // protected event handlers

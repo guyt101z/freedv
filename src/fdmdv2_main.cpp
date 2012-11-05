@@ -75,7 +75,7 @@ bool MainApp::OnInit()
 {
     g_file = fopen("/home/david/codec2-dev/raw/hts1a.raw","rb");
     if (g_file == NULL)
-	printf("reading hts1a disabled...\n");
+    printf("reading hts1a disabled...\n");
 
     if(!wxApp::OnInit())
     {
@@ -156,9 +156,9 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     wxGetApp().m_show_timing  = pConfig->Read(wxT("/MainFrame/show_timing"),  1);
     wxGetApp().m_show_freq    = pConfig->Read(wxT("/MainFrame/show_freq"),    1);
     wxGetApp().m_show_speech_in = pConfig->Read(wxT("/MainFrame/show_speech_in"),    1);
-    wxGetApp().m_show_speech_out = pConfig->Read(wxT("/MainFrame/show_speech_out"),    1);    
+    wxGetApp().m_show_speech_out = pConfig->Read(wxT("/MainFrame/show_speech_out"),    1);
     wxGetApp().m_show_demod_in = pConfig->Read(wxT("/MainFrame/show_demod_in"),    1);
-    
+
     Move(x, y);
     SetClientSize(w, h);
 
@@ -291,7 +291,7 @@ MainFrame::~MainFrame()
         pConfig->Write(wxT("/MainFrame/show_freq"),     wxGetApp().m_show_freq);
         pConfig->Write(wxT("/MainFrame/show_speech_in"),wxGetApp().m_show_speech_in);
         pConfig->Write(wxT("/MainFrame/show_speech_out"),wxGetApp().m_show_speech_out);
-	pConfig->Write(wxT("/MainFrame/show_demod_in"),wxGetApp().m_show_demod_in);
+    pConfig->Write(wxT("/MainFrame/show_demod_in"),wxGetApp().m_show_demod_in);
 
         pConfig->Write(wxT("/Audio/RxIn"),              wxGetApp().m_strRxInAudio);
         pConfig->Write(wxT("/Audio/RxOut"),             wxGetApp().m_strRxOutAudio);
@@ -527,15 +527,15 @@ void MainFrame::OnTogBtnTxID(wxCommandEvent& event)
 
 void MainFrame::OnTogBtnSplitClick(wxCommandEvent& event) {
     if (write_file == 0) {
-	write_file = 1;
-	g_write_file = fopen("tmp.raw","wb");
-	assert(g_write_file != NULL);
-	printf("recording to tmp.raw ...\n");
+    write_file = 1;
+    g_write_file = fopen("tmp.raw","wb");
+    assert(g_write_file != NULL);
+    printf("recording to tmp.raw ...\n");
     }
     else {
-	fclose(g_write_file);
-	printf("recording stopped.\n");
-	write_file = 0;
+    fclose(g_write_file);
+    printf("recording stopped.\n");
+    write_file = 0;
     }
     event.Skip();
 }
@@ -918,7 +918,7 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
 {
     if((!m_RxRunning))
     {
-	printf("starting ...\n");
+    printf("starting ...\n");
 
         m_togBtnSplit->Enable();
         m_togRxID->Enable();
@@ -967,10 +967,10 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
 void MainFrame::OnTogBtnLoopRx( wxCommandEvent& event )
 {
     if (mute_mic == 0)
-	mute_mic = 1;
+    mute_mic = 1;
     else
-	mute_mic = 0;
-	
+    mute_mic = 0;
+
 }
 
 //----------------------------------------------------------
@@ -979,10 +979,10 @@ void MainFrame::OnTogBtnLoopRx( wxCommandEvent& event )
 void MainFrame::OnTogBtnLoopTx( wxCommandEvent& event )
 {
     if (read_file == 0)
-	read_file = 1;
+    read_file = 1;
     else
-	read_file = 0;
-	
+    read_file = 0;
+
 }
 
 //----------------------------------------------------------
@@ -1023,18 +1023,18 @@ void MainFrame::autoDetectSoundCards(PortAudioWrap *pa)
     // trap zero sound devices
 
     if (pa->getDeviceCount() == 0) {
-	wxMessageBox(wxT("No sound devices found"), wxT("Error"), wxOK);
-	return;
+    wxMessageBox(wxT("No sound devices found"), wxT("Error"), wxOK);
+    return;
     }
 
     for(i=0; i<pa->getDeviceCount(); i++) {
         deviceInfo = Pa_GetDeviceInfo( i );
 
-	// supports full duplex and 44800 and 44100
-	// is there something unique so we know it's a hw device?
-	// does this work on Linux & Windows?
+    // supports full duplex and 44800 and 44100
+    // is there something unique so we know it's a hw device?
+    // does this work on Linux & Windows?
 
-	printf( "--------------------------------------- device #%d\n", i );
+    printf( "--------------------------------------- device #%d\n", i );
         printf( "Name                        = %s\n", deviceInfo->name );
         printf( "Host API                    = %s\n",  Pa_GetHostApiInfo( deviceInfo->hostApi )->name );
         printf( "Max inputs = %d", deviceInfo->maxInputChannels  );
@@ -1048,14 +1048,14 @@ int MainFrame::initPortAudioDevice(PortAudioWrap *pa, int inDevice, int outDevic
     char s[256];
 
     if (inDevice == paNoDevice) {
-	sprintf(s,"No input audio device available for Sound Card %d", soundCard);
-	wxString wxs(s);
-	wxMessageBox(wxs, wxT("Error"), wxOK);
+    sprintf(s,"No input audio device available for Sound Card %d", soundCard);
+    wxString wxs(s);
+    wxMessageBox(wxs, wxT("Error"), wxOK);
     }
     if (outDevice == paNoDevice) {
-	sprintf(s,"No output audio device available for Sound Card %d", soundCard);
-	wxString wxs(s);
-	wxMessageBox(wxs, wxT("Error"), wxOK);
+    sprintf(s,"No output audio device available for Sound Card %d", soundCard);
+    wxString wxs(s);
+    wxMessageBox(wxs, wxT("Error"), wxOK);
     }
 
     printf("inDevice = %d outDevice = %d\n", inDevice, outDevice);
@@ -1078,7 +1078,7 @@ int MainFrame::initPortAudioDevice(PortAudioWrap *pa, int inDevice, int outDevic
 
     // init params that affect input and output
 
-    /* 
+    /*
        On a good day, framesPerBuffer in callback will be PA_FPB.  It
        was found that you don't always get framesPerBuffer exactly
        equal PA_PFB, for example when I set PA_FPB to 960 I got
@@ -1087,7 +1087,7 @@ int MainFrame::initPortAudioDevice(PortAudioWrap *pa, int inDevice, int outDevic
     printf("Sound Card %d Sample rate %d\n", soundCard, sampleRate);
     pa->setFramesPerBuffer(PA_FPB);
     pa->setSampleRate(sampleRate);
-    pa->setStreamFlags(0);    
+    pa->setStreamFlags(0);
 
     return 0;
 }
@@ -1101,122 +1101,122 @@ void MainFrame::startRxStream()
 
     if(!m_RxRunning)
     {
-	cb_cnt = 0;
-	sc1 = sc2 = 0;
-	g_outfifo2_empty = 0;
+    cb_cnt = 0;
+    sc1 = sc2 = 0;
+    g_outfifo2_empty = 0;
 
         m_RxRunning = true;
 
         m_rxPa = new PortAudioWrap();
-	autoDetectSoundCards(m_rxPa);
+    autoDetectSoundCards(m_rxPa);
 
-	// Init Sound card 1 ----------------------------------------------
+    // Init Sound card 1 ----------------------------------------------
 
         if ((g_soundCard1InDeviceNum != -1) || (g_soundCard1OutDeviceNum != -1)) {
 
-	    // user has specified the sound card device
+        // user has specified the sound card device
 
-	  if ((m_rxPa->getDeviceCount() < g_soundCard1InDeviceNum) ||
-	      (m_rxPa->getDeviceCount() < g_soundCard1OutDeviceNum)) {
-		wxMessageBox(wxT("Sound Card 1 not present"), wxT("Error"), wxOK);
-		delete m_rxPa;
-		return;
-	    }
+      if ((m_rxPa->getDeviceCount() < g_soundCard1InDeviceNum) ||
+          (m_rxPa->getDeviceCount() < g_soundCard1OutDeviceNum)) {
+        wxMessageBox(wxT("Sound Card 1 not present"), wxT("Error"), wxOK);
+        delete m_rxPa;
+        return;
+        }
 
-	    m_rxDevIn = g_soundCard1InDeviceNum;
-	    m_rxDevOut = g_soundCard1OutDeviceNum;	    
-	}
-	else {
-	    // not specified - use default
-	    m_rxDevIn = m_rxPa->getDefaultInputDevice();
-	    m_rxDevOut = m_rxPa->getDefaultOutputDevice();
-	}
+        m_rxDevIn = g_soundCard1InDeviceNum;
+        m_rxDevOut = g_soundCard1OutDeviceNum;
+    }
+    else {
+        // not specified - use default
+        m_rxDevIn = m_rxPa->getDefaultInputDevice();
+        m_rxDevOut = m_rxPa->getDefaultOutputDevice();
+    }
 
-	if (initPortAudioDevice(m_rxPa, m_rxDevIn, m_rxDevOut, 1, g_soundCard1SampleRate) != 0) {
+    if (initPortAudioDevice(m_rxPa, m_rxDevIn, m_rxDevOut, 1, g_soundCard1SampleRate) != 0) {
             delete m_rxPa;
             m_RxRunning = false;
-            return;	    
-	}
+            return;
+    }
 
-	// Init Sound Card 2 ------------------------------------------------
+    // Init Sound Card 2 ------------------------------------------------
 
-	if (g_nSoundCards == 2) {
+    if (g_nSoundCards == 2) {
 
-	    m_txPa = new PortAudioWrap();
+        m_txPa = new PortAudioWrap();
 
-	    assert((g_soundCard2InDeviceNum != -1) && (g_soundCard2OutDeviceNum != -1) );
-	    printf("m_txPa->getDeviceCount() %d\n", m_txPa->getDeviceCount());
+        assert((g_soundCard2InDeviceNum != -1) && (g_soundCard2OutDeviceNum != -1) );
+        printf("m_txPa->getDeviceCount() %d\n", m_txPa->getDeviceCount());
 
-	    if ((m_txPa->getDeviceCount() < g_soundCard2InDeviceNum) ||
-		(m_txPa->getDeviceCount() < g_soundCard2OutDeviceNum)) {
-		wxMessageBox(wxT("Sound Card 2 not present"), wxT("Error"), wxOK);
-		delete m_rxPa;
-		delete m_txPa;
-		return;
-	    }
-	    
-	    m_txDevIn = g_soundCard2InDeviceNum;
-	    m_txDevOut = g_soundCard2OutDeviceNum;
+        if ((m_txPa->getDeviceCount() < g_soundCard2InDeviceNum) ||
+        (m_txPa->getDeviceCount() < g_soundCard2OutDeviceNum)) {
+        wxMessageBox(wxT("Sound Card 2 not present"), wxT("Error"), wxOK);
+        delete m_rxPa;
+        delete m_txPa;
+        return;
+        }
 
-	    if (initPortAudioDevice(m_txPa, m_txDevIn, m_txDevOut, 2, g_soundCard2SampleRate) != 0) {
-		delete m_rxPa;
-		delete m_txPa;
-		m_RxRunning = false;
-		return;	    
-	    }
-	}
+        m_txDevIn = g_soundCard2InDeviceNum;
+        m_txDevOut = g_soundCard2OutDeviceNum;
 
-	// Init call back data structure ----------------------------------------------
+        if (initPortAudioDevice(m_txPa, m_txDevIn, m_txDevOut, 2, g_soundCard2SampleRate) != 0) {
+        delete m_rxPa;
+        delete m_txPa;
+        m_RxRunning = false;
+        return;
+        }
+    }
+
+    // Init call back data structure ----------------------------------------------
 
         m_rxUserdata = new paCallBackData;
         m_rxUserdata->pWFPanel = m_panelWaterfall;
         m_rxUserdata->pSPPanel = m_panelSpectrum;
 
-	// init sample rate conversion states
+    // init sample rate conversion states
 
-	m_rxUserdata->insrc1 = src_new(SRC_SINC_FASTEST, 1, &src_error);
-	assert(m_rxUserdata->insrc1 != NULL);
-	m_rxUserdata->outsrc1 = src_new(SRC_SINC_FASTEST, 1, &src_error);
-	assert(m_rxUserdata->outsrc1 != NULL);
-	m_rxUserdata->insrc2 = src_new(SRC_SINC_FASTEST, 1, &src_error);
-	assert(m_rxUserdata->insrc2 != NULL);
-	m_rxUserdata->outsrc2 = src_new(SRC_SINC_FASTEST, 1, &src_error);
-	assert(m_rxUserdata->outsrc2 != NULL);
+    m_rxUserdata->insrc1 = src_new(SRC_SINC_FASTEST, 1, &src_error);
+    assert(m_rxUserdata->insrc1 != NULL);
+    m_rxUserdata->outsrc1 = src_new(SRC_SINC_FASTEST, 1, &src_error);
+    assert(m_rxUserdata->outsrc1 != NULL);
+    m_rxUserdata->insrc2 = src_new(SRC_SINC_FASTEST, 1, &src_error);
+    assert(m_rxUserdata->insrc2 != NULL);
+    m_rxUserdata->outsrc2 = src_new(SRC_SINC_FASTEST, 1, &src_error);
+    assert(m_rxUserdata->outsrc2 != NULL);
 
-	// create FIFOs used to interface between different buffer sizes
+    // create FIFOs used to interface between different buffer sizes
 
         m_rxUserdata->infifo1 = fifo_create(4*N48);
 
-	m_rxUserdata->outfifo1 = fifo_create(4*N48);
+    m_rxUserdata->outfifo1 = fifo_create(4*N48);
 
-	/*
-	  During soundcard 1 callback, outfifo1 is read in PA_FPB = 1024 sample blocks.
+    /*
+      During soundcard 1 callback, outfifo1 is read in PA_FPB = 1024 sample blocks.
 
-	  In tx processing:
-	    + if outfifo1 has less than framesPerBuffer = PA_FPB = 1024 samples
-	    + then tx process generates a 40ms @ 48kHz = 1920 sample blocks
-	    + so we could have 1023 + 1920 samples
-	    + so lets make it 1920*2 in size
-	*/
+      In tx processing:
+        + if outfifo1 has less than framesPerBuffer = PA_FPB = 1024 samples
+        + then tx process generates a 40ms @ 48kHz = 1920 sample blocks
+        + so we could have 1023 + 1920 samples
+        + so lets make it 1920*2 in size
+    */
 
         m_rxUserdata->outfifo2 = fifo_create(4*N48);
 
-	/* 
-	   infifo2 holds buffers from the microphone.  These get read
-	   in 40ms (1920 sample @ 48 kHz) blockss by the sound card 1
-	   callback.  We write to the sound card in 1024 sample
-	   blocks.  So we need at least 1024+1920 samples, lest also allocate
-	   1920*2 samples
-	*/
+    /*
+       infifo2 holds buffers from the microphone.  These get read
+       in 40ms (1920 sample @ 48 kHz) blockss by the sound card 1
+       callback.  We write to the sound card in 1024 sample
+       blocks.  So we need at least 1024+1920 samples, lest also allocate
+       1920*2 samples
+    */
 
-	m_rxUserdata->infifo2 = fifo_create(4*N48);
+    m_rxUserdata->infifo2 = fifo_create(4*N48);
 
         m_rxUserdata->rxinfifo = fifo_create(3 * FDMDV_NOM_SAMPLES_PER_FRAME);
         m_rxUserdata->rxoutfifo = fifo_create(2 * codec2_samples_per_frame(g_pCodec2));
 
-	// Start sound card 1 ----------------------------------------------------------
+    // Start sound card 1 ----------------------------------------------------------
 
-	m_rxPa->setUserData(m_rxUserdata);
+    m_rxPa->setUserData(m_rxUserdata);
         m_rxErr = m_rxPa->setCallback(rxCallback);
 
         m_rxErr = m_rxPa->streamOpen();
@@ -1228,65 +1228,65 @@ void MainFrame::startRxStream()
             delete m_txPa;
             destroy_fifos();
             destroy_src();
-	    delete m_rxUserdata;
-	    m_RxRunning = false;
-	    return;
+        delete m_rxUserdata;
+        m_RxRunning = false;
+        return;
         }
         m_rxErr = m_rxPa->streamStart();
         if(m_rxErr != paNoError)
         {
             wxMessageBox(wxT("Sound Card 1 Stream Start Error."), wxT("Error"), wxOK);
             delete m_rxPa;
-	    delete m_txPa;
-	    destroy_fifos();
+        delete m_txPa;
+        destroy_fifos();
             destroy_src();
-	    delete m_rxUserdata;
-	    m_RxRunning = false;
-	    return;
+        delete m_rxUserdata;
+        m_RxRunning = false;
+        return;
         }
 
-	// Start sound card 2 ----------------------------------------------------------
+    // Start sound card 2 ----------------------------------------------------------
 
-	if (g_nSoundCards == 2) {
-	    printf("starting sound card 2...\n");
+    if (g_nSoundCards == 2) {
+        printf("starting sound card 2...\n");
 
-	    // question: can we use same callback data
-	    // (m_rxUserdata)or both sound card callbacks?  Is there a
-	    // chance of them both being called at the same time?  We
-	    // could need a mutex ...
+        // question: can we use same callback data
+        // (m_rxUserdata)or both sound card callbacks?  Is there a
+        // chance of them both being called at the same time?  We
+        // could need a mutex ...
 
-	    m_txPa->setUserData(m_rxUserdata);        
-	    m_txErr = m_txPa->setCallback(txCallback);
-	    m_txErr = m_txPa->streamOpen();
+        m_txPa->setUserData(m_rxUserdata);
+        m_txErr = m_txPa->setCallback(txCallback);
+        m_txErr = m_txPa->streamOpen();
 
-	    if(m_txErr != paNoError)
-	    {
-		wxMessageBox(wxT("Sound Card 2 Open/Setup error."), wxT("Error"), wxOK);
-		m_rxPa->stop();
-		m_rxPa->streamClose();
-		delete m_rxPa;
-		delete m_txPa;
-		destroy_fifos();
-		destroy_src();
-		delete m_rxUserdata;
-		m_RxRunning = false;
-		return;
-	    }
-	    m_txErr = m_txPa->streamStart();
-	    if(m_txErr != paNoError)
-	    {
-		wxMessageBox(wxT("Sound Card 2 Start Error."), wxT("Error"), wxOK);
-		m_rxPa->stop();
-		m_rxPa->streamClose();
-		delete m_rxPa;
-		delete m_txPa;
-		destroy_fifos();
-		destroy_src();
-		delete m_rxUserdata;
-		m_RxRunning = false;
-		return;
-	    }
-	}
+        if(m_txErr != paNoError)
+        {
+        wxMessageBox(wxT("Sound Card 2 Open/Setup error."), wxT("Error"), wxOK);
+        m_rxPa->stop();
+        m_rxPa->streamClose();
+        delete m_rxPa;
+        delete m_txPa;
+        destroy_fifos();
+        destroy_src();
+        delete m_rxUserdata;
+        m_RxRunning = false;
+        return;
+        }
+        m_txErr = m_txPa->streamStart();
+        if(m_txErr != paNoError)
+        {
+        wxMessageBox(wxT("Sound Card 2 Start Error."), wxT("Error"), wxOK);
+        m_rxPa->stop();
+        m_rxPa->streamClose();
+        delete m_rxPa;
+        delete m_txPa;
+        destroy_fifos();
+        destroy_src();
+        delete m_rxUserdata;
+        m_RxRunning = false;
+        return;
+        }
+    }
 
     }
 }
@@ -1303,15 +1303,15 @@ void MainFrame::stopRxStream()
         m_rxPa->stop();
         m_rxPa->streamClose();
 
-	if (g_nSoundCards == 2) {
-	    m_txPa->stop();
-	    m_txPa->streamClose();
-	    delete m_txPa;
-	}
+    if (g_nSoundCards == 2) {
+        m_txPa->stop();
+        m_txPa->streamClose();
+        delete m_txPa;
+    }
 
-	delete m_rxPa;
-	destroy_fifos();
-	destroy_src();
+    delete m_rxPa;
+    destroy_fifos();
+    destroy_src();
         delete m_rxUserdata;
 
         fdmdv_destroy(g_pFDMDV);
@@ -1337,13 +1337,13 @@ void MainFrame::averageData(float mag_dB[])
 // returns number of output samples generated by resampling
 
 static int resample(SRC_STATE *src,
-			short      output_short[],     
-			short      input_short[],      
-			int        output_sample_rate, 
-			int        input_sample_rate,
-			int        length_output_short, // maximum output array length in samples
-			int        length_input_short
-			)
+            short      output_short[],
+            short      input_short[],
+            int        output_sample_rate,
+            int        input_sample_rate,
+            int        length_output_short, // maximum output array length in samples
+            int        length_input_short
+            )
 {
     SRC_DATA src_data;
     float    input[N48*2];
@@ -1388,15 +1388,15 @@ static void resample_for_plot(struct FIFO *plotFifo, short buf[], int length)
     nSamples = length/decimation;
 
     for(sample=0; sample<nSamples; sample+=2) {
-	st = decimation*sample;
-	en = decimation*(sample+2);
-	max = min = 0;
-	for(i=st; i<en; i++ ) {
-	    if (max < buf[i]) max = buf[i];
-	    if (min > buf[i]) min = buf[i];
-	}
-	dec_samples[sample] = max;
-	dec_samples[sample+1] = min;		
+    st = decimation*sample;
+    en = decimation*(sample+2);
+    max = min = 0;
+    for(i=st; i<en; i++ ) {
+        if (max < buf[i]) max = buf[i];
+        if (min > buf[i]) min = buf[i];
+    }
+    dec_samples[sample] = max;
+    dec_samples[sample+1] = min;
     }
 
     fifo_write(plotFifo, dec_samples, nSamples);
@@ -1406,7 +1406,7 @@ static void resample_for_plot(struct FIFO *plotFifo, short buf[], int length)
 // rxCallback()
 //-------------------------------------------------------------------------
 
-/* 
+/*
    todo:
 
    + add tests to determine if we have real time audio I/O problems,
@@ -1439,7 +1439,7 @@ int MainFrame::rxCallback(
     int             nout;
 
     unsigned int    i;
-    
+
     (void) timeInfo;
     (void) statusFlags;
 
@@ -1460,7 +1460,7 @@ int MainFrame::rxCallback(
        buffer sizes required at each processing step, and to
        communicate between the call backs for the two sound cards.
     */
-    
+
     //
     //  RX side processing --------------------------------------------
     //
@@ -1473,40 +1473,45 @@ int MainFrame::rxCallback(
         indata[i] = *rptr;
     }
     fifo_write(cbData->infifo1, indata, framesPerBuffer);
-    
+
     // while we have enough input samples available ...
 
     while (fifo_read(cbData->infifo1, in48k_short, N48) == 0)
     {
-	int n8k;
-	
-	n8k = resample(cbData->insrc1, in8k_short, in48k_short, FS, g_soundCard1SampleRate, N8, N48);
-	fifo_write(cbData->rxinfifo, in8k_short, n8k);
+    int n8k;
 
- 	resample_for_plot(g_plotDemodInFifo, in8k_short, n8k);
+    n8k = resample(cbData->insrc1, in8k_short, in48k_short, FS, g_soundCard1SampleRate, N8, N48);
+    fifo_write(cbData->rxinfifo, in8k_short, n8k);
 
-	per_frame_rx_processing(cbData->rxoutfifo, g_CodecBits, cbData->rxinfifo, &g_nRxIn, &g_State, g_pCodec2);
+     resample_for_plot(g_plotDemodInFifo, in8k_short, n8k);
+#ifdef OLD
+    short_to_float(&in48k1[FDMDV_OS_TAPS], in48k_short, N48);
+        fdmdv_48_to_8(out8k, &in48k1[FDMDV_OS_TAPS], N8);
+    float_to_short(out8k_short, out8k, N8);
+#endif
 
-	// if demod out of sync just pass thru audio so we can hear
-	// SSB radio ouput as an aid to tuning
+    per_frame_rx_processing(cbData->rxoutfifo, g_CodecBits, cbData->rxinfifo, &g_nRxIn, &g_State, g_pCodec2);
 
-	if (g_State == 0)
-	    memcpy(out8k_short, in8k_short, sizeof(short)*n8k);
-	else {
-	    memset(out8k_short, 0, sizeof(short)*N8);
-	    fifo_read(cbData->rxoutfifo, out8k_short, N8);	    
-	}
+    // if demod out of sync just pass thru audio so we can hear
+    // SSB radio ouput as an aid to tuning
 
-	resample_for_plot(g_plotSpeechOutFifo, out8k_short, N8);
+    if (g_State == 0)
+        memcpy(out8k_short, in8k_short, sizeof(short)*n8k);
+    else {
+        memset(out8k_short, 0, sizeof(short)*N8);
+        fifo_read(cbData->rxoutfifo, out8k_short, N8);
+    }
 
-	if (g_nSoundCards == 1) {
-	    nout = resample(cbData->outsrc2, out48k_short, out8k_short, g_soundCard1SampleRate, FS, N48, N8);
-	    fifo_write(cbData->outfifo1, out48k_short, nout);
-	}
-	else {
-	    nout = resample(cbData->outsrc2, out48k_short, out8k_short, g_soundCard2SampleRate, FS, N48, N8);
-	    fifo_write(cbData->outfifo2, out48k_short, nout);
-	}
+    resample_for_plot(g_plotSpeechOutFifo, out8k_short, N8);
+
+    if (g_nSoundCards == 1) {
+        nout = resample(cbData->outsrc2, out48k_short, out8k_short, g_soundCard1SampleRate, FS, N48, N8);
+        fifo_write(cbData->outfifo1, out48k_short, nout);
+    }
+    else {
+        nout = resample(cbData->outsrc2, out48k_short, out8k_short, g_soundCard2SampleRate, FS, N48, N8);
+        fifo_write(cbData->outfifo2, out48k_short, nout);
+    }
 
     }
 
@@ -1516,57 +1521,55 @@ int MainFrame::rxCallback(
 
     if (g_nSoundCards == 2 ) {
 
-	// Make sure we have at least framesPerBuffer modulator output
-	// samples.  This locks the modulator to the sample
-	// rate of sound card 1.  We want to make sure that modulator
-	// samples are uninterrupted by differences in sample rate
-	// between this sound card and sound card 2.
-	
-	// Typical values are framesPerBuffer=1024, and each iteration
-	// of the tx processing generates 320*FDMDV_OS=1920 samples at
-	// 48kHz, so this loop will run 0 or 1 times.
+    // Make sure we have at least framesPerBuffer modulator output
+    // samples.  This locks the modulator to the sample
+    // rate of sound card 1.  We want to make sure that modulator
+    // samples are uninterrupted by differences in sample rate
+    // between this sound card and sound card 2.
 
-	while((unsigned)fifo_n(cbData->outfifo1) < framesPerBuffer) {
+    while((unsigned)fifo_n(cbData->outfifo1) < framesPerBuffer) {
 
-	    // number of microphone samples we need at g_soundcards2SampleRate
+    while((unsigned)fifo_n(cbData->outfifo1) < framesPerBuffer) {
+        short tx_speech_in[2*N8];
+        short tx_mod_out[2*N8];
 
-	    int nsam = g_soundCard2SampleRate * (float)codec2_samples_per_frame(g_pCodec2)/FS;
-	    assert(nsam <= 2*N48);
+        //int nsam = g_soundCard2SampleRate * (float)codec2_samples_per_frame(g_pCodec2)/FS;
+        //assert(nsam <= 2*N48);
 
-	    // infifo2 is written to by another sound card so it may
-	    // over or underflow, but we don't realy care.  It will
-	    // just result in a short interruption in audio being fed
-	    // to codec2_enc, possibly making a click every now and
-	    // again in the decoded audio at the other end.
- 
-	    // zero speech input just in case infifo2 underflows
+        int   nsam = g_soundCard2SampleRate * (float)codec2_samples_per_frame(g_pCodec2)/FS;
+        assert(nsam <= 2*N48);
+        // infifo2 is written to by another sound card so it may
+        // over or underflow, but we don't realy care.  It will
+        // just result in a short interruption in audio being fed
+        // to codec2_enc, possibly making a click every now and
+        // again in the decoded audio at the other end.
 
-	    memset(in48k_short, 0, sizeof(short)*nsam); 
 
-	    fifo_read(cbData->infifo2, in48k_short, nsam);
+        // zero speech input just in case infifo2 underflows
 
-	    nout = resample(cbData->insrc2, in8k_short, in48k_short, FS, g_soundCard2SampleRate, 2*N8, nsam);
+        nout = resample(cbData->insrc2, in8k_short, in48k_short, FS, g_soundCard2SampleRate, 2*N8, nsam);
 
-	    if (write_file) {
-		fwrite( in8k_short, sizeof(short), nout, g_write_file);
-	    }
+        if (write_file) {
+        fwrite( in8k_short, sizeof(short), nout, g_write_file);
+        }
 
-	    if (read_file  && (g_file != NULL)) {
-		int n = fread( in8k_short , sizeof(short), 2*N8, g_file);
-		if (n != 2*N8) {
-		    rewind(g_file);
-		}
-	    }
-	    
-	    resample_for_plot(g_plotSpeechInFifo, in8k_short, nout);
+        if (read_file  && (g_file != NULL)) {
+        int n = fread( in8k_short , sizeof(short), 2*N8, g_file);
+        if (n != 2*N8) {
+            rewind(g_file);
+        }
+        }
 
-	    per_frame_tx_processing(out8k_short, in8k_short, g_pCodec2);
-	    
-	    // output 40ms of modem tone
+        resample_for_plot(g_plotSpeechInFifo, in8k_short, nout);
 
-	    nout = resample(cbData->outsrc1, out48k_short, out8k_short, g_soundCard1SampleRate, FS, 2*N48, 2*N8);
-	    fifo_write(cbData->outfifo1, out48k_short, nout);
-	}
+        per_frame_tx_processing(out8k_short, in8k_short, g_pCodec2);
+
+        // output 40ms of modem tone
+
+        nout = resample(cbData->outsrc1, out48k_short, out8k_short, g_soundCard1SampleRate, FS, 2*N48, 2*N8);
+        fifo_write(cbData->outfifo1, out48k_short, nout);
+    }
+    }
     }
 
     // OK now set up output samples for this callback
@@ -1618,7 +1621,7 @@ void MainFrame::per_frame_rx_processing(
     int                 bit;
     int                 byte;
     int                 next_state;
-    
+
     //
     //  This while loop will run the demod 0, 1 (nominal) or 2 times:
     //
@@ -1637,7 +1640,7 @@ void MainFrame::per_frame_rx_processing(
     //
 
     //printf("state: %d sync: %d nin %d fifo_n %d\n", *state, sync_bit, *nin, fifo_n(input_fifo));
-    while (fifo_read(input_fifo, input_buf, *nin) == 0)    
+    while (fifo_read(input_fifo, input_buf, *nin) == 0)
     {
         // demod per frame processing
         for(i = 0; i < *nin; i++)
@@ -1645,8 +1648,8 @@ void MainFrame::per_frame_rx_processing(
             rx_fdm[i] = (float)input_buf[i] / FDMDV_SCALE;
         }
         nin_prev = *nin;
-	//if (*nin != FDMDV_NOM_SAMPLES_PER_FRAME)
-	//    printf("*nin %d\n", *nin);
+    //if (*nin != FDMDV_NOM_SAMPLES_PER_FRAME)
+    //    printf("*nin %d\n", *nin);
         fdmdv_demod(g_pFDMDV, rx_bits, &sync_bit, rx_fdm, nin);
 
         // compute rx spectrum & get demod stats, and update GUI plot data
@@ -1658,7 +1661,7 @@ void MainFrame::per_frame_rx_processing(
         {
             g_avmag[i] = (1.0 - BETA) * g_avmag[i] + BETA * rx_spec[i];
         }
-	
+
         //
         //   State machine to:
         //
@@ -1676,15 +1679,15 @@ void MainFrame::per_frame_rx_processing(
             case 0:
                 // mute output audio when out of sync
 
-		for(i = 0; i < N8; i++)
-		    output_buf[i] = 0;
-		fifo_write(output_fifo, output_buf, N8);
+        for(i = 0; i < N8; i++)
+            output_buf[i] = 0;
+        fifo_write(output_fifo, output_buf, N8);
 
                 if((g_stats.fest_coarse_fine == 1) && (g_stats.snr_est > 3.0))
                 {
                     next_state = 1;
                 }
-		//printf("sync state: %d\n", *state);
+        //printf("sync state: %d\n", *state);
                 break;
 
             case 1:
@@ -1732,10 +1735,10 @@ void MainFrame::per_frame_rx_processing(
 
                     // add decoded speech to end of output buffer
 
-		    assert(codec2_samples_per_frame(c2) == (2*N8));
-		    
-		    codec2_decode(c2, output_buf, packed_bits);
-		    fifo_write(output_fifo, output_buf, codec2_samples_per_frame(c2));
+            assert(codec2_samples_per_frame(c2) == (2*N8));
+
+            codec2_decode(c2, output_buf, packed_bits);
+            fifo_write(output_fifo, output_buf, codec2_samples_per_frame(c2));
 
                 }
                 break;
@@ -1762,12 +1765,12 @@ void MainFrame::per_frame_tx_processing(
 
     bit = 7; byte = 0;
     for(i=0; i<BITS_PER_CODEC_FRAME; i++) {
-	bits[i] = (packed_bits[byte] >> bit) & 0x1;
-	bit--;
-	if (bit < 0) {
-	    bit = 7;
-	    byte++;
-	}
+    bits[i] = (packed_bits[byte] >> bit) & 0x1;
+    bit--;
+    if (bit < 0) {
+        bit = 7;
+        byte++;
+    }
     }
     assert(byte == BYTES_PER_CODEC_FRAME);
 
@@ -1782,7 +1785,7 @@ void MainFrame::per_frame_tx_processing(
     /* scale and convert shorts */
 
     for(i=0; i<2*FDMDV_NOM_SAMPLES_PER_FRAME; i++)
-	tx_fdm_scaled[i] = FDMDV_SCALE * tx_fdm[i].real;
+    tx_fdm_scaled[i] = FDMDV_SCALE * tx_fdm[i].real;
 
 }
 
@@ -1808,11 +1811,11 @@ int MainFrame::txCallback(
     //printf("%d cb2 ... %d", cb2++,cb1-cb2);
 
     // assemble a mono buffer (just use left channel) and write to FIFO
-    
+
     assert(framesPerBuffer < MAX_FPB);
 
     //if (statusFlags)
-    //	printf("statusFlags: 0x%x\n", statusFlags);
+    //    printf("statusFlags: 0x%x\n", statusFlags);
 
     for(i = 0; i < framesPerBuffer; i++, rptr += 2)
     {
@@ -1822,12 +1825,12 @@ int MainFrame::txCallback(
     //#define SC2_LOOPBACK
 #ifdef SC2_LOOPBACK
     for(i = 0; i < framesPerBuffer; i++, wptr += 2)
-        {
-            wptr[0] = indata[i];
-            wptr[1] = indata[i];
-        }   
+    {
+        wptr[0] = indata[i];
+        wptr[1] = indata[i];
+    }
 #else
-    fifo_write(cbData->infifo2, indata, framesPerBuffer);	
+    fifo_write(cbData->infifo2, indata, framesPerBuffer);
 
     // OK now set up output samples for this callback
 
@@ -1850,7 +1853,6 @@ int MainFrame::txCallback(
         }
     }
 #endif
-
     //printf("end cb2\n");
     return paContinue;
 }
