@@ -74,7 +74,7 @@ IMPLEMENT_APP(MainApp);
 bool MainApp::OnInit()
 {
     g_file = fopen("/home/david/codec2-dev/raw/hts1a.raw","rb");
-    if (g_file === NULL)
+    if (g_file == NULL)
 	printf("reading hts1a disabled...\n");
 
     if(!wxApp::OnInit())
@@ -338,8 +338,11 @@ MainFrame::~MainFrame()
 //----------------------------------------------------------------
 void MainFrame::OnTimer(wxTimerEvent &evt)
 {
+    // when the timer fires every DT seconds we update the GUI displays
+
     m_panelWaterfall->m_newdata = true;
     m_panelWaterfall->Refresh();
+
     m_panelSpectrum->m_newdata = true;
     m_panelSpectrum->Refresh();
 
@@ -366,6 +369,17 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
     fifo_read(g_plotDemodInFifo, demodInPlotSamples, WAVEFORM_PLOT_BUF);
     m_panelDemodIn->add_new_short_samples(demodInPlotSamples, WAVEFORM_PLOT_BUF, 32767);
     m_panelDemodIn->Refresh();
+
+    char snr[15];
+    sprintf(snr, "%2.1f", g_stats.snr_est);
+    wxString snr_string(snr);
+    m_textSNR->ChangeValue(snr_string);
+
+    m_gaugeSNR->SetRange(20);
+    int snr_limited = g_stats.snr_est;
+    if (snr_limited < 0) snr_limited = 0;
+    if (snr_limited > 20) snr_limited = 20;
+    m_gaugeSNR->SetValue(snr_limited);
 }
 #endif
 
