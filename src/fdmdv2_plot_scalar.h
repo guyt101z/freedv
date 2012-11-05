@@ -46,6 +46,7 @@ class PlotScalar: public PlotPanel
 	       );
         ~PlotScalar();
          void add_new_sample(float sample);
+         void add_new_short_samples(short samples[], int length, float scale_factor);
 
     protected:
 

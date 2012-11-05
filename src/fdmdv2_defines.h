@@ -54,9 +54,9 @@
 
 // Waveform plotting constants
 
-#define WAVEFORM_PLOT_FS    100                            // sample rate (points/s) of waveform plotted to screen
+#define WAVEFORM_PLOT_FS    400                            // sample rate (points/s) of waveform plotted to screen
 #define WAVEFORM_PLOT_TIME  5                              // length or entire waveform on screen
-#define WAVEFORM_PLOT_BUF   ((int)(DT*WAVEFORM_PLOT_FS))   // number of sample we add per update
+#define WAVEFORM_PLOT_BUF   ((int)(DT*WAVEFORM_PLOT_FS))   // number of new samples we plot per DT
 
 // sample rate I/O & conversion constants
 

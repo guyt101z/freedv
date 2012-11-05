@@ -39,9 +39,9 @@ struct CODEC2      *g_pCodec2;
 struct FDMDV       *g_pFDMDV;
 
 struct FDMDV_STATS  g_stats;
-short  g_speechIn[WAVEFORM_PLOT_BUF];
-short  g_speechOut[WAVEFORM_PLOT_BUF];
-short  g_demodIn[WAVEFORM_PLOT_BUF];
+struct FIFO  *g_plotDemodInFifo;
+struct FIFO  *g_plotSpeechOutFifo;
+struct FIFO  *g_plotSpeechInFifo;
 
 int g_nSoundCards = 2;
 
@@ -188,7 +188,7 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     if(wxGetApp().m_show_freq)
     {
         // Add Frequency Offset window
-        m_panelFreqOffset = new PlotScalar((wxFrame*) m_auiNbookCtrl, 5.0, DT, -200, 200, 1, 50, "%3fHz");
+        m_panelFreqOffset = new PlotScalar((wxFrame*) m_auiNbookCtrl, 5.0, DT, -200, 200, 1, 50, "%3.0fHz");
         m_auiNbookCtrl->AddPage(m_panelFreqOffset, L"Frequency \u0394", true, wxNullBitmap);
     }
 
@@ -198,6 +198,7 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
 
        m_panelSpeechIn = new PlotScalar((wxFrame*) m_auiNbookCtrl, WAVEFORM_PLOT_TIME, 1.0/WAVEFORM_PLOT_FS, -1, 1, 1, 0.2, "%2.1f");
        m_auiNbookCtrl->AddPage(m_panelSpeechIn, _("Speech In"), true, wxNullBitmap);
+       g_plotSpeechInFifo = fifo_create(2*WAVEFORM_PLOT_BUF);
     }
 
     if(wxGetApp().m_show_speech_out)
@@ -206,6 +207,7 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
 
        m_panelSpeechOut = new PlotScalar((wxFrame*) m_auiNbookCtrl, WAVEFORM_PLOT_TIME, 1.0/WAVEFORM_PLOT_FS, -1, 1, 1, 0.2, "%2.1f");
        m_auiNbookCtrl->AddPage(m_panelSpeechOut, _("Speech Out"), true, wxNullBitmap);
+       g_plotSpeechOutFifo = fifo_create(2*WAVEFORM_PLOT_BUF);
     }
 
     if(wxGetApp().m_show_demod_in)
@@ -214,6 +216,7 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
 
        m_panelDemodIn = new PlotScalar((wxFrame*) m_auiNbookCtrl, WAVEFORM_PLOT_TIME, 1.0/WAVEFORM_PLOT_FS, -1, 1, 1, 0.2, "%2.1f");
        m_auiNbookCtrl->AddPage(m_panelDemodIn, _("Demod In"), true, wxNullBitmap);
+       g_plotDemodInFifo = fifo_create(2*WAVEFORM_PLOT_BUF);
     }
 
     wxGetApp().m_strRxInAudio       = pConfig->Read(wxT("/Audio/RxIn"),         wxT("<m_strRxInAudio>"));
@@ -348,20 +351,19 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
     m_panelFreqOffset->add_new_sample(g_stats.foff);
     m_panelFreqOffset->Refresh();
 
-    int nsam = DT*WAVEFORM_PLOT_FS;
-    for(int i=0; i<nsam; i++) {
-	m_panelSpeechIn->add_new_sample((float)g_speechIn[i]/32767);
-    }
+    short speechInPlotSamples[WAVEFORM_PLOT_BUF];
+    fifo_read(g_plotSpeechInFifo, speechInPlotSamples, WAVEFORM_PLOT_BUF);
+    m_panelSpeechIn->add_new_short_samples(speechInPlotSamples, WAVEFORM_PLOT_BUF, 32767);
     m_panelSpeechIn->Refresh();
 
-    for(int i=0; i<nsam; i++) {
-	m_panelSpeechOut->add_new_sample((float)g_speechOut[i]/32767);
-    }
+    short speechOutPlotSamples[WAVEFORM_PLOT_BUF];
+    fifo_read(g_plotSpeechOutFifo, speechOutPlotSamples, WAVEFORM_PLOT_BUF);
+    m_panelSpeechOut->add_new_short_samples(speechOutPlotSamples, WAVEFORM_PLOT_BUF, 32767);
     m_panelSpeechOut->Refresh();
 
-    for(int i=0; i<nsam; i++) {
-	m_panelDemodIn->add_new_sample((float)g_demodIn[i]/32767);
-    }
+    short demodInPlotSamples[WAVEFORM_PLOT_BUF];
+    fifo_read(g_plotDemodInFifo, demodInPlotSamples, WAVEFORM_PLOT_BUF);
+    m_panelDemodIn->add_new_short_samples(demodInPlotSamples, WAVEFORM_PLOT_BUF, 32767);
     m_panelDemodIn->Refresh();
 }
 #endif
@@ -1325,6 +1327,37 @@ static int resample(SRC_STATE *src,
 }
 
 
+// Decimates samples using an algorithm that produces nice plots of
+// speech signals at a low sample rate.  We want a low sample rate so
+// we don't hammer the graphics system too hard.  Saves decimated data
+// to a fifo for plotting on screen.
+
+static void resample_for_plot(struct FIFO *plotFifo, short buf[], int length)
+{
+    int decimation = FS/WAVEFORM_PLOT_FS;
+    int nSamples, sample;
+    int i, st, en, max, min;
+    short dec_samples[2*N8];
+
+    assert(length <= 2*N8);
+
+    nSamples = length/decimation;
+
+    for(sample=0; sample<nSamples; sample+=2) {
+	st = decimation*sample;
+	en = decimation*(sample+2);
+	max = min = 0;
+	for(i=st; i<en; i++ ) {
+	    if (max < buf[i]) max = buf[i];
+	    if (min > buf[i]) min = buf[i];
+	}
+	dec_samples[sample] = max;
+	dec_samples[sample+1] = min;		
+    }
+
+    fifo_write(plotFifo, dec_samples, nSamples);
+}
+
 //-------------------------------------------------------------------------
 // rxCallback()
 //-------------------------------------------------------------------------
@@ -1406,8 +1439,7 @@ int MainFrame::rxCallback(
 	n8k = resample(cbData->insrc1, in8k_short, in48k_short, FS, g_soundCard1SampleRate, N8, N48);
 	fifo_write(cbData->rxinfifo, in8k_short, n8k);
 
- 	assert(sizeof(g_demodIn) <= sizeof(in8k_short));
-	memcpy(g_demodIn, in8k_short, sizeof(g_demodIn)); // undersampled buffer for plotting
+ 	resample_for_plot(g_plotDemodInFifo, in8k_short, n8k);
 
 	per_frame_rx_processing(cbData->rxoutfifo, g_CodecBits, cbData->rxinfifo, &g_nRxIn, &g_State, g_pCodec2);
 
@@ -1421,8 +1453,7 @@ int MainFrame::rxCallback(
 	    fifo_read(cbData->rxoutfifo, out8k_short, N8);	    
 	}
 
-	assert(sizeof(g_speechOut) <= sizeof(out8k_short));
-	memcpy(g_speechOut, out8k_short, sizeof(g_speechOut)); // undersampled buffer for plotting
+	resample_for_plot(g_plotSpeechOutFifo, out8k_short, N8);
 
 	if (g_nSoundCards == 1) {
 	    nout = resample(cbData->outsrc2, out48k_short, out8k_short, g_soundCard1SampleRate, FS, N48, N8);
@@ -1472,9 +1503,6 @@ int MainFrame::rxCallback(
 
 	    nout = resample(cbData->insrc2, in8k_short, in48k_short, FS, g_soundCard2SampleRate, 2*N8, nsam);
 
-	    assert(sizeof(g_speechIn) <= sizeof(in8k_short));
-	    memcpy(g_speechIn, in8k_short, sizeof(g_speechIn)); // undersampled buffer for plotting
-
 	    if (write_file) {
 		fwrite( in8k_short, sizeof(short), nout, g_write_file);
 	    }
@@ -1486,6 +1514,8 @@ int MainFrame::rxCallback(
 		}
 	    }
 	    
+	    resample_for_plot(g_plotSpeechInFifo, in8k_short, nout);
+
 	    per_frame_tx_processing(out8k_short, in8k_short, g_pCodec2);
 	    
 	    // output 40ms of modem tone

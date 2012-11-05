@@ -30,11 +30,11 @@
 #define wxUSE_PCX           1
 #define wxUSE_LIBTIFF       1
 
-#define PLOT_BORDER         8
+#define PLOT_BORDER         12
 #define XLEFT_OFFSET        30
-#define XLEFT_TEXT_OFFSET   8
-#define YBOTTOM_OFFSET      25
-#define YBOTTOM_TEXT_OFFSET 8
+#define XLEFT_TEXT_OFFSET   6
+#define YBOTTOM_OFFSET      20
+#define YBOTTOM_TEXT_OFFSET 6
 #define GRID_INCREMENT      50
 
 #define BLACK_COLOR         wxColor(0x00, 0x00, 0x00)

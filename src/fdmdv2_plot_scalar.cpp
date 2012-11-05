@@ -96,6 +96,19 @@ void PlotScalar::add_new_sample(float sample)
 }
 
 //----------------------------------------------------------------
+// add_new_samples()
+//----------------------------------------------------------------
+void  PlotScalar::add_new_short_samples(short samples[], int length, float scale_factor)
+{
+    int i;
+
+    for(i = 0; i < m_samples-length; i++)
+        m_mem[i] = m_mem[i+length];
+    for(; i < m_samples; i++)
+	m_mem[i] = (float)*samples++/scale_factor;
+}
+
+//----------------------------------------------------------------
 // draw()
 //----------------------------------------------------------------
 void PlotScalar::draw(wxAutoBufferedPaintDC&  dc)
