@@ -75,7 +75,7 @@ bool MainApp::OnInit()
 {
     g_file = fopen("/home/david/codec2-dev/raw/hts1a.raw","rb");
     if (g_file == NULL)
-    printf("reading hts1a disabled...\n");
+        printf("reading hts1a disabled...\n");
 
     if(!wxApp::OnInit())
     {
@@ -1527,49 +1527,46 @@ int MainFrame::rxCallback(
     // samples are uninterrupted by differences in sample rate
     // between this sound card and sound card 2.
 
-    while((unsigned)fifo_n(cbData->outfifo1) < framesPerBuffer) {
+        while((unsigned)fifo_n(cbData->outfifo1) < framesPerBuffer) {
+            short tx_speech_in[2*N8];
+            short tx_mod_out[2*N8];
 
-    while((unsigned)fifo_n(cbData->outfifo1) < framesPerBuffer) {
-        short tx_speech_in[2*N8];
-        short tx_mod_out[2*N8];
+            //int nsam = g_soundCard2SampleRate * (float)codec2_samples_per_frame(g_pCodec2)/FS;
+            //assert(nsam <= 2*N48);
 
-        //int nsam = g_soundCard2SampleRate * (float)codec2_samples_per_frame(g_pCodec2)/FS;
-        //assert(nsam <= 2*N48);
-
-        int   nsam = g_soundCard2SampleRate * (float)codec2_samples_per_frame(g_pCodec2)/FS;
-        assert(nsam <= 2*N48);
-        // infifo2 is written to by another sound card so it may
-        // over or underflow, but we don't realy care.  It will
-        // just result in a short interruption in audio being fed
-        // to codec2_enc, possibly making a click every now and
-        // again in the decoded audio at the other end.
+            int   nsam = g_soundCard2SampleRate * (float)codec2_samples_per_frame(g_pCodec2)/FS;
+            assert(nsam <= 2*N48);
+            // infifo2 is written to by another sound card so it may
+            // over or underflow, but we don't realy care.  It will
+            // just result in a short interruption in audio being fed
+            // to codec2_enc, possibly making a click every now and
+            // again in the decoded audio at the other end.
 
 
-        // zero speech input just in case infifo2 underflows
+            // zero speech input just in case infifo2 underflows
 
-        nout = resample(cbData->insrc2, in8k_short, in48k_short, FS, g_soundCard2SampleRate, 2*N8, nsam);
+            nout = resample(cbData->insrc2, in8k_short, in48k_short, FS, g_soundCard2SampleRate, 2*N8, nsam);
 
-        if (write_file) {
-        fwrite( in8k_short, sizeof(short), nout, g_write_file);
+            if (write_file) {
+                fwrite( in8k_short, sizeof(short), nout, g_write_file);
+            }
+
+            if (read_file  && (g_file != NULL)) {
+                int n = fread( in8k_short , sizeof(short), 2*N8, g_file);
+                if (n != 2*N8) {
+                    rewind(g_file);
+                }
+            }
+
+            resample_for_plot(g_plotSpeechInFifo, in8k_short, nout);
+
+            per_frame_tx_processing(out8k_short, in8k_short, g_pCodec2);
+
+            // output 40ms of modem tone
+
+            nout = resample(cbData->outsrc1, out48k_short, out8k_short, g_soundCard1SampleRate, FS, 2*N48, 2*N8);
+            fifo_write(cbData->outfifo1, out48k_short, nout);
         }
-
-        if (read_file  && (g_file != NULL)) {
-        int n = fread( in8k_short , sizeof(short), 2*N8, g_file);
-        if (n != 2*N8) {
-            rewind(g_file);
-        }
-        }
-
-        resample_for_plot(g_plotSpeechInFifo, in8k_short, nout);
-
-        per_frame_tx_processing(out8k_short, in8k_short, g_pCodec2);
-
-        // output 40ms of modem tone
-
-        nout = resample(cbData->outsrc1, out48k_short, out8k_short, g_soundCard1SampleRate, FS, 2*N48, 2*N8);
-        fifo_write(cbData->outfifo1, out48k_short, nout);
-    }
-    }
     }
 
     // OK now set up output samples for this callback
