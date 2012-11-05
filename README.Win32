@@ -23,11 +23,16 @@ Dave Witten used a different approach.  Many variations are possible.
    ./configure --enable-cxx
    make && make install
 
-5. libndfile:
-   download lastest source tar all (not Win32 binaries)
+5. libsndfile:
+   download lastest source tar ball (not Win32 binaries)
    ./configure && make && make install
 
-6. svn co fdmdv2
+6. libsamplerate:
+   download lastest source tar ball:
+       http://www.mega-nerd.com/SRC/libsamplerate-0.1.8.tar.gz(not Win32 binaries)
+   ./configure && make && make install
+
+7. svn co fdmdv2
    cd fdmdv2/src
    Make -f Makefile.Win32
 
