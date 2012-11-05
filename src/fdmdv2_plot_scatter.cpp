@@ -43,7 +43,7 @@ END_EVENT_TABLE()
 PlotScatter::PlotScatter(wxFrame* parent) : PlotPanel(parent)
 {
     int i;
-    printf("PlotScatter\n");
+
     for(i=0; i < SCATTER_MEM_SYMS; i++)
     {
         m_mem[i].real = 0.0;

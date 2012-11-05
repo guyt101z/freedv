@@ -39,6 +39,9 @@ struct CODEC2      *g_pCodec2;
 struct FDMDV       *g_pFDMDV;
 
 struct FDMDV_STATS  g_stats;
+short  g_speechIn[WAVEFORM_PLOT_BUF];
+short  g_speechOut[WAVEFORM_PLOT_BUF];
+short  g_demodIn[WAVEFORM_PLOT_BUF];
 
 int g_nSoundCards = 2;
 
@@ -151,6 +154,10 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     wxGetApp().m_show_scatter = pConfig->Read(wxT("/MainFrame/show_scatter"), 1);
     wxGetApp().m_show_timing  = pConfig->Read(wxT("/MainFrame/show_timing"),  1);
     wxGetApp().m_show_freq    = pConfig->Read(wxT("/MainFrame/show_freq"),    1);
+    wxGetApp().m_show_speech_in = pConfig->Read(wxT("/MainFrame/show_speech_in"),    1);
+    wxGetApp().m_show_speech_out = pConfig->Read(wxT("/MainFrame/show_speech_out"),    1);    
+    wxGetApp().m_show_demod_in = pConfig->Read(wxT("/MainFrame/show_demod_in"),    1);
+    
     Move(x, y);
     SetClientSize(w, h);
 
@@ -184,6 +191,31 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
         m_panelFreqOffset = new PlotScalar((wxFrame*) m_auiNbookCtrl, 5.0, DT, -200, 200, 1, 50, "%3fHz");
         m_auiNbookCtrl->AddPage(m_panelFreqOffset, L"Frequency \u0394", true, wxNullBitmap);
     }
+
+    if(wxGetApp().m_show_speech_in)
+    {
+        // Add Speech Input window
+
+       m_panelSpeechIn = new PlotScalar((wxFrame*) m_auiNbookCtrl, WAVEFORM_PLOT_TIME, 1.0/WAVEFORM_PLOT_FS, -1, 1, 1, 0.2, "%2.1f");
+       m_auiNbookCtrl->AddPage(m_panelSpeechIn, _("Speech In"), true, wxNullBitmap);
+    }
+
+    if(wxGetApp().m_show_speech_out)
+    {
+        // Add Speech Output window
+
+       m_panelSpeechOut = new PlotScalar((wxFrame*) m_auiNbookCtrl, WAVEFORM_PLOT_TIME, 1.0/WAVEFORM_PLOT_FS, -1, 1, 1, 0.2, "%2.1f");
+       m_auiNbookCtrl->AddPage(m_panelSpeechOut, _("Speech Out"), true, wxNullBitmap);
+    }
+
+    if(wxGetApp().m_show_demod_in)
+    {
+        // Add Demod Input window
+
+       m_panelDemodIn = new PlotScalar((wxFrame*) m_auiNbookCtrl, WAVEFORM_PLOT_TIME, 1.0/WAVEFORM_PLOT_FS, -1, 1, 1, 0.2, "%2.1f");
+       m_auiNbookCtrl->AddPage(m_panelDemodIn, _("Demod In"), true, wxNullBitmap);
+    }
+
     wxGetApp().m_strRxInAudio       = pConfig->Read(wxT("/Audio/RxIn"),         wxT("<m_strRxInAudio>"));
     wxGetApp().m_strRxOutAudio      = pConfig->Read(wxT("/Audio/RxOut"),        wxT("<m_strRxOutAudio>"));
     wxGetApp().m_textVoiceInput     = pConfig->Read(wxT("/Audio/TxIn"),         wxT("<m_textVoiceInput>"));
@@ -253,6 +285,9 @@ MainFrame::~MainFrame()
         pConfig->Write(wxT("/MainFrame/show_scatter"),  wxGetApp().m_show_scatter);
         pConfig->Write(wxT("/MainFrame/show_timing"),   wxGetApp().m_show_timing);
         pConfig->Write(wxT("/MainFrame/show_freq"),     wxGetApp().m_show_freq);
+        pConfig->Write(wxT("/MainFrame/show_speech_in"),wxGetApp().m_show_speech_in);
+        pConfig->Write(wxT("/MainFrame/show_speech_out"),wxGetApp().m_show_speech_out);
+	pConfig->Write(wxT("/MainFrame/show_demod_in"),wxGetApp().m_show_demod_in);
 
         pConfig->Write(wxT("/Audio/RxIn"),              wxGetApp().m_strRxInAudio);
         pConfig->Write(wxT("/Audio/RxOut"),             wxGetApp().m_strRxOutAudio);
@@ -309,9 +344,25 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
 
     m_panelTimeOffset->add_new_sample((float)g_stats.rx_timing/FDMDV_NOM_SAMPLES_PER_FRAME);
     m_panelTimeOffset->Refresh();
-    
+
     m_panelFreqOffset->add_new_sample(g_stats.foff);
     m_panelFreqOffset->Refresh();
+
+    int nsam = DT*WAVEFORM_PLOT_FS;
+    for(int i=0; i<nsam; i++) {
+	m_panelSpeechIn->add_new_sample((float)g_speechIn[i]/32767);
+    }
+    m_panelSpeechIn->Refresh();
+
+    for(int i=0; i<nsam; i++) {
+	m_panelSpeechOut->add_new_sample((float)g_speechOut[i]/32767);
+    }
+    m_panelSpeechOut->Refresh();
+
+    for(int i=0; i<nsam; i++) {
+	m_panelDemodIn->add_new_sample((float)g_demodIn[i]/32767);
+    }
+    m_panelDemodIn->Refresh();
 }
 #endif
 
@@ -1355,7 +1406,10 @@ int MainFrame::rxCallback(
 	n8k = resample(cbData->insrc1, in8k_short, in48k_short, FS, g_soundCard1SampleRate, N8, N48);
 	fifo_write(cbData->rxinfifo, in8k_short, n8k);
 
-        per_frame_rx_processing(cbData->rxoutfifo, g_CodecBits, cbData->rxinfifo, &g_nRxIn, &g_State, g_pCodec2);
+ 	assert(sizeof(g_demodIn) <= sizeof(in8k_short));
+	memcpy(g_demodIn, in8k_short, sizeof(g_demodIn)); // undersampled buffer for plotting
+
+	per_frame_rx_processing(cbData->rxoutfifo, g_CodecBits, cbData->rxinfifo, &g_nRxIn, &g_State, g_pCodec2);
 
 	// if demod out of sync just pass thru audio so we can hear
 	// SSB radio ouput as an aid to tuning
@@ -1366,6 +1420,9 @@ int MainFrame::rxCallback(
 	    memset(out8k_short, 0, sizeof(short)*N8);
 	    fifo_read(cbData->rxoutfifo, out8k_short, N8);	    
 	}
+
+	assert(sizeof(g_speechOut) <= sizeof(out8k_short));
+	memcpy(g_speechOut, out8k_short, sizeof(g_speechOut)); // undersampled buffer for plotting
 
 	if (g_nSoundCards == 1) {
 	    nout = resample(cbData->outsrc2, out48k_short, out8k_short, g_soundCard1SampleRate, FS, N48, N8);
@@ -1414,6 +1471,9 @@ int MainFrame::rxCallback(
 	    fifo_read(cbData->infifo2, in48k_short, nsam);
 
 	    nout = resample(cbData->insrc2, in8k_short, in48k_short, FS, g_soundCard2SampleRate, 2*N8, nsam);
+
+	    assert(sizeof(g_speechIn) <= sizeof(in8k_short));
+	    memcpy(g_speechIn, in8k_short, sizeof(g_speechIn)); // undersampled buffer for plotting
 
 	    if (write_file) {
 		fwrite( in8k_short, sizeof(short), nout, g_write_file);

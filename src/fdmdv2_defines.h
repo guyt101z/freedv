@@ -52,7 +52,14 @@
 #define SCATTER_X_MAX       4.0
 #define SCATTER_Y_MAX       4.0
 
+// Waveform plotting constants
+
+#define WAVEFORM_PLOT_FS    100                            // sample rate (points/s) of waveform plotted to screen
+#define WAVEFORM_PLOT_TIME  5                              // length or entire waveform on screen
+#define WAVEFORM_PLOT_BUF   ((int)(DT*WAVEFORM_PLOT_FS))   // number of sample we add per update
+
 // sample rate I/O & conversion constants
+
 #define MAX_FPB             2048                           // maximum value of portAudio framesPerBuffer
 #define PA_FPB              1024                           // nominal value of portAudio framesPerBuffer
 #define SAMPLE_RATE         48000                          // 48 kHz sampling rate rec. as we can trust accuracy of sound card

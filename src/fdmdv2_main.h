@@ -42,11 +42,7 @@
 #include "fdmdv2_plot.h"
 #include "fdmdv2_plot_scalar.h"
 #include "fdmdv2_plot_scatter.h"
-//#ifdef __LINUX__
 #include "fdmdv2_plot_waterfall_linux.h"
-//#else
-//#include "fdmdv2_plot_waterfall.h"
-//#endif
 #include "fdmdv2_plot_spectrum.h"
 #include "fdmdv2_pa_wrapper.h"
 #include "sndfile.h"
@@ -112,6 +108,9 @@ class MainApp : public wxApp
         int                 m_show_scatter;
         int                 m_show_timing;
         int                 m_show_freq;
+        int                 m_show_speech_in;
+        int                 m_show_speech_out;
+        int                 m_show_demod_in;
 
         wxRect              m_rTopWindow;
 
@@ -177,6 +176,9 @@ class MainFrame : public TopFrame
         PlotScatter*            m_panelScatter;
         PlotScalar*             m_panelTimeOffset;
         PlotScalar*             m_panelFreqOffset;
+        PlotScalar*             m_panelSpeechIn;
+        PlotScalar*             m_panelSpeechOut;
+        PlotScalar*             m_panelDemodIn;
         bool                    m_SquelchActive;
         bool                    m_RxRunning;
         bool                    m_TxRunning;
