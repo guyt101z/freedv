@@ -1,8 +1,11 @@
 README.Win32
 David Rowe 27 Oct 2012
 
-Notes on building fdmdv2 for Windows.  This is how David R did it,
-Dave Witten used a different approach.  Many variations are possible.
+Notes on building fdmdv2 for Windows
+------------------------------------
+
+This is how David R did it, Dave Witten used a different approach.
+Many variations are possible.
 
 1. Install MinGW & the mysys shell
    + pwd -W prints true Win32 directory

@@ -1,5 +1,19 @@
-This is a Subversion repository; use the 'svnadmin' tool to examine
-it.  Do not add, delete, or modify files here unless you know how
-to avoid corrupting the repository.
+README.txt for FDMDV2
 
-Visit http://subversion.apache.org/ for more information.
+README.Win32 contains instructions for building on Windows.
+README.linux contains instructions for building on Linux.
+
+Editing
+-------
+
+Please make sure your text editor does not indert tabs, and
+used indents of 4 spaces.  The following .emacs code was used to
+configure emacs:
+
+(setq-default indent-tabs-mode nil)
+
+(add-hook 'c-mode-common-hook
+          (function (lambda ()
+                      (setq c-basic-offset 4)
+                      )))
+
