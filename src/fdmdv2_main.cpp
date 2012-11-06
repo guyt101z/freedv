@@ -790,7 +790,7 @@ void MainFrame::OnToolsAudio(wxCommandEvent& event)
 {
     wxUnusedVar(event);
     int rv = 0;
-    AudioDlg *dlg = new AudioDlg(NULL);
+    AudioOptsDialog *dlg = new AudioOptsDialog(NULL);
     rv = dlg->ShowModal();
     if(rv == wxID_OK)
     {

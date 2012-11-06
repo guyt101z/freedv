@@ -36,7 +36,7 @@
 
 #include "topFrame.h"
 #include "dlg_about.h"
-#include "dlg_audio.h"
+#include "dlg_audiooptions.h"
 #include "dlg_options.h"
 #include "dlg_comports.h"
 #include "fdmdv2_plot.h"
