@@ -16,11 +16,15 @@
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 // Class ComPortsDlg
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
-class ComPortsDlg : public DlgComPorts
+class ComPortsDlg : public wxDialog
 {
     public:
         /** Constructor */
-        ComPortsDlg(wxWindow* parent);
+//        ComPortsDlg(wxWindow* parent);
+//        ~ComPortsDlg();
+        ComPortsDlg( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("Select Com Port"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 399,354 ), long style = wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER );
+        ~ComPortsDlg();
+
         void    ExchangeData(int inout);
         //ArrayOfPorts m_serialports;
 
@@ -33,6 +37,22 @@ class ComPortsDlg : public DlgComPorts
         void    OnInitDialog(wxInitDialogEvent& event);
         void    OnApply(wxCommandEvent& event);
 
+        wxStaticText* m_staticText8;
+        wxListCtrl* m_listCtrlPortSelect;
+        wxStaticText* m_staticText9;
+        wxTextCtrl* m_textRigCtrlPort;
+        wxStaticText* m_staticText91;
+        wxTextCtrl* m_textRigCtrlBaud;
+        wxStaticText* m_staticText911;
+        wxTextCtrl* m_textRigCtrlDatabits;
+        wxStaticText* m_staticText912;
+        wxTextCtrl* m_textRigCtrlStopbits;
+        wxStaticText* m_staticText913;
+        wxTextCtrl* m_textRigCtrlParity;
+        wxStdDialogButtonSizer* m_sdbSizer5;
+        wxButton* m_sdbSizer5OK;
+        wxButton* m_sdbSizer5Apply;
+        wxButton* m_sdbSizer5Cancel;
 };
 
 #endif // __COMPORTS_DIALOG__

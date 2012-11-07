@@ -13,10 +13,101 @@
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 // Class ComPortsDlg
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
-ComPortsDlg::ComPortsDlg(wxWindow* parent) : DlgComPorts(parent)
+ComPortsDlg::ComPortsDlg(wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style) : wxDialog(parent, id, title, pos, size, style)
 {
+    this->SetSizeHints(wxDefaultSize, wxDefaultSize);
+    this->SetSizeHints(wxDefaultSize, wxDefaultSize);
 //    m_serialports = HdwPortList();
 //    m_serialports.setType(PORT_TYPE_SERIAL);
+
+    wxBoxSizer* bSizer30;
+    bSizer30 = new wxBoxSizer(wxVERTICAL);
+
+    wxGridSizer* gSizer3;
+    gSizer3 = new wxGridSizer(6, 2, 0, 0);
+
+    m_staticText8 = new wxStaticText(this, wxID_ANY, _("Available Ports:"), wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT);
+    m_staticText8->Wrap(-1);
+    gSizer3->Add(m_staticText8, 0, wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT|wxALL, 2);
+
+    m_listCtrlPortSelect = new wxListCtrl(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLC_ICON|wxLC_SINGLE_SEL);
+    gSizer3->Add(m_listCtrlPortSelect, 2, wxALL|wxEXPAND, 2);
+
+    m_staticText9 = new wxStaticText(this, wxID_ANY, _("Use Port:"), wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT);
+    m_staticText9->Wrap(-1);
+    gSizer3->Add(m_staticText9, 1, wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT|wxALL, 2);
+
+    m_textRigCtrlPort = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0);
+    gSizer3->Add(m_textRigCtrlPort, 1, wxALIGN_CENTER_VERTICAL|wxALL, 2);
+
+    m_staticText91 = new wxStaticText(this, wxID_ANY, _("Buad Rate:"), wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT);
+    m_staticText91->Wrap(-1);
+    gSizer3->Add(m_staticText91, 1, wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT|wxALL, 2);
+
+    m_textRigCtrlBaud = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0);
+    gSizer3->Add(m_textRigCtrlBaud, 1, wxALIGN_CENTER_VERTICAL|wxALL, 2);
+
+    m_staticText911 = new wxStaticText(this, wxID_ANY, _("Data Bits:"), wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT);
+    m_staticText911->Wrap(-1);
+    gSizer3->Add(m_staticText911, 1, wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT|wxALL, 2);
+
+    m_textRigCtrlDatabits = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0);
+    gSizer3->Add(m_textRigCtrlDatabits, 1, wxALIGN_CENTER_VERTICAL|wxALL, 2);
+
+    m_staticText912 = new wxStaticText(this, wxID_ANY, _("Stop Bits:"), wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT);
+    m_staticText912->Wrap(-1);
+    gSizer3->Add(m_staticText912, 1, wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT|wxALL, 2);
+
+    m_textRigCtrlStopbits = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0);
+    gSizer3->Add(m_textRigCtrlStopbits, 1, wxALIGN_CENTER_VERTICAL|wxALL, 2);
+
+    m_staticText913 = new wxStaticText(this, wxID_ANY, _("Parity:"), wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT);
+    m_staticText913->Wrap(-1);
+    gSizer3->Add(m_staticText913, 1, wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT|wxALL, 2);
+
+    m_textRigCtrlParity = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0);
+    gSizer3->Add(m_textRigCtrlParity, 1, wxALIGN_CENTER_VERTICAL|wxALL, 2);
+
+
+    bSizer30->Add(gSizer3, 1, wxALIGN_CENTER_HORIZONTAL|wxALL|wxEXPAND, 5);
+
+    m_sdbSizer5 = new wxStdDialogButtonSizer();
+    m_sdbSizer5OK = new wxButton(this, wxID_OK);
+    m_sdbSizer5->AddButton(m_sdbSizer5OK);
+    m_sdbSizer5Apply = new wxButton(this, wxID_APPLY);
+    m_sdbSizer5->AddButton(m_sdbSizer5Apply);
+    m_sdbSizer5Cancel = new wxButton(this, wxID_CANCEL);
+    m_sdbSizer5->AddButton(m_sdbSizer5Cancel);
+    m_sdbSizer5->Realize();
+
+    bSizer30->Add(m_sdbSizer5, 0, wxEXPAND, 5);
+
+
+    this->SetSizer(bSizer30);
+    this->Layout();
+
+    this->Centre(wxBOTH);
+    this->Centre(wxBOTH);
+
+    // Connect Events
+    this->Connect(wxEVT_INIT_DIALOG, wxInitDialogEventHandler(ComPortsDlg::OnInitDialog));
+    m_sdbSizer5Apply->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(ComPortsDlg::OnApply), NULL, this);
+    m_sdbSizer5Cancel->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(ComPortsDlg::OnCancel), NULL, this);
+    m_sdbSizer5OK->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(ComPortsDlg::OnOK), NULL, this);
+    m_listCtrlPortSelect->Connect(wxEVT_COMMAND_LIST_ITEM_SELECTED, wxListEventHandler(ComPortsDlg::OnListItemSelected), NULL, this);
+}
+
+//-------------------------------------------------------------------------
+// ~ComPortsDlg()
+//-------------------------------------------------------------------------
+ComPortsDlg::~ComPortsDlg()
+{
+    // Disconnect Events
+    this->Disconnect(wxEVT_INIT_DIALOG, wxInitDialogEventHandler(ComPortsDlg::OnInitDialog));
+    m_listCtrlPortSelect->Disconnect(wxEVT_COMMAND_LIST_ITEM_SELECTED, wxListEventHandler(ComPortsDlg::OnListItemSelected), NULL, this);
+    m_sdbSizer5Apply->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(ComPortsDlg::OnApply), NULL, this);
+    m_sdbSizer5Cancel->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(ComPortsDlg::OnCancel), NULL, this);
+    m_sdbSizer5OK->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(ComPortsDlg::OnOK), NULL, this);
 }
 
 //-------------------------------------------------------------------------
