@@ -22,37 +22,6 @@ AudioOptsDialog::AudioOptsDialog(wxWindow* parent, wxWindowID id, const wxString
 
     m_isPaInitialized = false;
 
-    // Make an image list containing large icons
-    m_imageListNormal = new wxImageList(32, 32, true);
-    m_imageListSmall  = new wxImageList(16, 16, true);
-
-#ifdef __WXMSW__
-    // Give it an icon
-    SetIcon(wxICON("bitmaps/sample.ico"));
-
-    m_imageListSmall->Add(wxIcon(wxT("bitmaps/toolchec.ico"),       wxBITMAP_TYPE_ICO));
-    m_imageListSmall->Add(wxIcon(wxT("bitmaps/transparent.ico"),    wxBITMAP_TYPE_ICO));
-    m_imageListSmall->Add(wxIcon(wxT("bitmaps/toolchar.ico"),       wxBITMAP_TYPE_ICO));
-    m_imageListSmall->Add(wxIcon(wxT("bitmaps/tooldata.ico"),       wxBITMAP_TYPE_ICO));
-    m_imageListSmall->Add(wxIcon(wxT("bitmaps/toolgame.ico"),       wxBITMAP_TYPE_ICO));
-    m_imageListSmall->Add(wxIcon(wxT("bitmaps/toolnote.ico"),       wxBITMAP_TYPE_ICO));
-    m_imageListSmall->Add(wxIcon(wxT("bitmaps/tooltime.ico"),       wxBITMAP_TYPE_ICO));
-    m_imageListSmall->Add(wxIcon(wxT("bitmaps/inArrow16x16.ico"),   wxBITMAP_TYPE_ICO));
-    m_imageListSmall->Add(wxIcon(wxT("bitmaps/outArrow16x16.ico"),  wxBITMAP_TYPE_ICO));
-#else
-    // Give it an icon
-    SetIcon(wxICON("bitmaps/sample.xpm"));
-
-    m_imageListSmall->Add(wxIcon(wxT("bitmaps/toolchec.xpm"),       wxBITMAP_TYPE_XPM, -1, -1));
-    m_imageListSmall->Add(wxIcon(wxT("bitmaps/transparent.xpm"),    wxBITMAP_TYPE_XPM, -1, -1));
-    m_imageListSmall->Add(wxIcon(wxT("bitmaps/toolchar.xpm"),       wxBITMAP_TYPE_XPM, -1, -1));
-    m_imageListSmall->Add(wxIcon(wxT("bitmaps/tooldata.xpm"),       wxBITMAP_TYPE_XPM, -1, -1));
-    m_imageListSmall->Add(wxIcon(wxT("bitmaps/toolgame.xpm"),       wxBITMAP_TYPE_XPM, -1, -1));
-    m_imageListSmall->Add(wxIcon(wxT("bitmaps/toolnote.xpm"),       wxBITMAP_TYPE_XPM, -1, -1));
-    m_imageListSmall->Add(wxIcon(wxT("bitmaps/tooltime.xpm"),       wxBITMAP_TYPE_XPM, -1, -1));
-//    m_imageListSmall->Add(wxIcon(wxT("bitmaps/inArrow16x16.xpm"),     wxBITMAP_TYPE_XPM));
-//    m_imageListSmall->Add(wxIcon(wxT("bitmaps/outArrow16x16.xpm"),    wxBITMAP_TYPE_XPM));
- #endif
     if(!m_isPaInitialized)
     {
         if((pa_err = Pa_Initialize()) == paNoError)
@@ -348,6 +317,7 @@ void AudioOptsDialog::ExchangeData(int inout)
     delete wxConfigBase::Set((wxConfigBase *) NULL);
 }
 
+/*
 //-------------------------------------------------------------------------
 // OnDeviceSelect()
 //-------------------------------------------------------------------------
@@ -358,6 +328,7 @@ void AudioOptsDialog::OnDeviceSelect(wxListEvent& event)
     item = m_listCtrlRxInDevices->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
     wxMessageBox(m_listCtrlRxInDevices->GetItemText(item, 2), wxT("Item"), wxOK);
 }
+*/
 
 //-------------------------------------------------------------------------
 // DisplaySupportedSampleRates()
@@ -456,6 +427,7 @@ void AudioOptsDialog::populateParams(AudioInfoDisplay ai)
     wxListItem  listItem;
     wxString    buf;
     int         devn;
+    int         col = 0;
 
     numDevices = Pa_GetDeviceCount();
 
@@ -463,52 +435,45 @@ void AudioOptsDialog::populateParams(AudioInfoDisplay ai)
     {
         ctrl->ClearAll();
     }
-    //ctrl->SetImageList(m_imageListSmall, wxIMAGE_LIST_SMALL);
-
-    listItem.SetAlign(wxLIST_FORMAT_CENTRE);
-    listItem.SetText(wxT("Sel"));
-    idx = ctrl->InsertColumn(0, listItem);
-    ctrl->SetColumnWidth(0, 37);
-
     listItem.SetAlign(wxLIST_FORMAT_CENTRE);
     listItem.SetText(wxT("Dflt"));
-    idx = ctrl->InsertColumn(1, listItem);
-    ctrl->SetColumnWidth(1, 37);
+    idx = ctrl->InsertColumn(col, listItem);
+    ctrl->SetColumnWidth(col++, 37);
 
     listItem.SetAlign(wxLIST_FORMAT_LEFT);
     listItem.SetText(wxT("Device"));
-    idx = ctrl->InsertColumn(2, listItem);
-    ctrl->SetColumnWidth(2, 190);
+    idx = ctrl->InsertColumn(col, listItem);
+    ctrl->SetColumnWidth(col++, 190);
 
     listItem.SetAlign(wxLIST_FORMAT_LEFT);
     listItem.SetText(wxT("API"));
-    idx = ctrl->InsertColumn(3, listItem);
-    ctrl->SetColumnWidth(3, 190);
+    idx = ctrl->InsertColumn(col, listItem);
+    ctrl->SetColumnWidth(col++, 190);
 
     if(in_out == AUDIO_IN)
     {
         listItem.SetAlign(wxLIST_FORMAT_CENTRE);
         listItem.SetText(wxT("# Inputs"));
-        idx = ctrl->InsertColumn(4, listItem);
-        ctrl->SetColumnWidth(4, 75);
+        idx = ctrl->InsertColumn(col, listItem);
+        ctrl->SetColumnWidth(col++, 75);
     }
     else if(in_out == AUDIO_OUT)
     {
         listItem.SetAlign(wxLIST_FORMAT_CENTRE);
         listItem.SetText(wxT("# Outputs"));
-        idx = ctrl->InsertColumn(4, listItem);
-        ctrl->SetColumnWidth(4, 75);
+        idx = ctrl->InsertColumn(col, listItem);
+        ctrl->SetColumnWidth(col++, 75);
     }
 
     listItem.SetAlign(wxLIST_FORMAT_CENTRE);
     listItem.SetText(wxT("Min Latency"));
-    ctrl->InsertColumn(5, listItem);
-    ctrl->SetColumnWidth(5, 100);
+    ctrl->InsertColumn(col, listItem);
+    ctrl->SetColumnWidth(col++, 100);
 
     listItem.SetAlign(wxLIST_FORMAT_CENTRE);
     listItem.SetText(wxT("Max Latency"));
-    ctrl->InsertColumn(6, listItem);
-    ctrl->SetColumnWidth(6, 100);
+    ctrl->InsertColumn(col, listItem);
+    ctrl->SetColumnWidth(col++, 100);
 
     for(devn = 0; devn < numDevices; devn++)
     {
@@ -518,87 +483,86 @@ void AudioOptsDialog::populateParams(AudioInfoDisplay ai)
         {
             if(deviceInfo->maxInputChannels > 0)
             {
-                idx = ctrl->InsertItem(j, ICON_TRANSPARENT);
+                col = 0;
                 defaultDisplayed = false;
                 if(devn == Pa_GetDefaultInputDevice())
                 {
                     buf.Printf("->>");
-                    ctrl->SetItem(idx, 1, buf);
                     defaultDisplayed = true;
                 }
                 else if(devn == Pa_GetHostApiInfo(deviceInfo->hostApi)->defaultInputDevice)
                 {
                     buf.Printf("-->");
-                    ctrl->SetItem(idx, 1, buf);
                     defaultDisplayed = true;
                 }
                 else
                 {
                     buf.Printf("---");
-                    ctrl->SetItem(idx, 1, buf);
                     defaultDisplayed = false;
                 }
+                idx = ctrl->InsertItem(idx, buf);
+                col++;
                 buf.Printf(wxT("%s"), deviceInfo->name);
-                ctrl->SetItem(idx, 2, buf);
+                ctrl->SetItem(idx, col++, buf);
                 if(defaultDisplayed)
                 {
                     ai.m_textDevice->SetValue(buf);
                 }
 
                 buf.Printf(wxT("%s"), Pa_GetHostApiInfo(deviceInfo->hostApi)->name);
-                ctrl->SetItem(idx, 3, buf);
+                ctrl->SetItem(idx, col++, buf);
 
                 buf.Printf(wxT("%i"), deviceInfo->maxInputChannels);
-                ctrl->SetItem(idx, 4, buf);
+                ctrl->SetItem(idx, col++, buf);
 
                 buf.Printf(wxT("%8.4f"), deviceInfo->defaultLowInputLatency);
-                ctrl->SetItem(idx, 5, buf);
+                ctrl->SetItem(idx, col++, buf);
 
                 buf.Printf(wxT("%8.4f"), deviceInfo->defaultHighInputLatency);
-                ctrl->SetItem(idx, 6, buf);
+                ctrl->SetItem(idx, col++, buf);
             }
         }
         else if(in_out == AUDIO_OUT)
         {
+            col = 0;
             if(deviceInfo->maxOutputChannels > 0)
             {
-                idx = ctrl->InsertItem(j, ICON_TRANSPARENT);
                 defaultDisplayed = false;
                 if(devn == Pa_GetDefaultOutputDevice())
                 {
                     buf.Printf("<<-");
-                    ctrl->SetItem(idx, 1, buf);
                     defaultDisplayed = true;
                 }
                 else if(devn == Pa_GetHostApiInfo(deviceInfo->hostApi)->defaultOutputDevice)
                 {
                     buf.Printf("<--");
-                    ctrl->SetItem(idx, 1, buf);
                     defaultDisplayed = true;
                 }
                 else
                 {
                     buf.Printf("---");
-                    ctrl->SetItem(idx, 1, buf);
+                    defaultDisplayed = false;
                 }
+                idx = ctrl->InsertItem(idx, buf);
+                col++;
                 buf.Printf(wxT("%s"), deviceInfo->name);
-                ctrl->SetItem(idx, 2, buf);
+                ctrl->SetItem(idx, col++, buf);
                 if(defaultDisplayed)
                 {
                     ai.m_textDevice->SetValue(buf);
                 }
 
                 buf.Printf(wxT("%s"), Pa_GetHostApiInfo(deviceInfo->hostApi)->name);
-                ctrl->SetItem(idx, 3, buf);
+                ctrl->SetItem(idx, col++, buf);
 
                 buf.Printf(wxT("%i"), deviceInfo->maxOutputChannels);
-                ctrl->SetItem(idx, 4, buf);
+                ctrl->SetItem(idx, col++, buf);
 
                 buf.Printf(wxT("%8.4f"), deviceInfo->defaultLowOutputLatency);
-                ctrl->SetItem(idx, 5, buf);
+                ctrl->SetItem(idx, col++, buf);
 
                 buf.Printf(wxT("%8.4f"), deviceInfo->defaultHighOutputLatency);
-                ctrl->SetItem(idx, 6, buf);
+                ctrl->SetItem(idx, col++, buf);
             }
         }
         j++;
@@ -614,7 +578,7 @@ void AudioOptsDialog::OnRxInDeviceSelect(wxListEvent& evt)
     wxString str;
     int index = evt.GetIndex();
 
-    str = m_listCtrlRxInDevices->GetItemText(index, 2);
+    str = m_listCtrlRxInDevices->GetItemText(index, 1);
     m_textCtrlRxIn->SetValue(str);
 }
 
@@ -626,7 +590,7 @@ void AudioOptsDialog::OnRxOutDeviceSelect(wxListEvent& evt)
     wxString str;
     int index = evt.GetIndex();
 
-    str = m_listCtrlRxOutDevices->GetItemText(index, 2);
+    str = m_listCtrlRxOutDevices->GetItemText(index, 1);
     m_textCtrlRxOut->SetValue(str);
 }
 
@@ -638,7 +602,7 @@ void AudioOptsDialog::OnTxInDeviceSelect(wxListEvent& evt)
     wxString str;
     int index = evt.GetIndex();
 
-    str = m_listCtrlTxInDevices->GetItemText(index, 2);
+    str = m_listCtrlTxInDevices->GetItemText(index, 1);
     m_textCtrlTxIn->SetValue(str);
 }
 
@@ -650,7 +614,7 @@ void AudioOptsDialog::OnTxOutDeviceSelect(wxListEvent& evt)
     wxString str;
     int index = evt.GetIndex();
 
-    str = m_listCtrlTxOutDevices->GetItemText(index, 2);
+    str = m_listCtrlTxOutDevices->GetItemText(index, 1);
     m_textCtrlTxOut->SetValue(str);
 }
 
