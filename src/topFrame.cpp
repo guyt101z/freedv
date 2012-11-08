@@ -157,7 +157,7 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     //------------------------------
     // Box for S/N ratio (Numeric)
     //------------------------------
-    m_textSNR = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxPoint(-1,-1), wxSize(35,25), wxTE_READONLY);
+    m_textSNR = new wxStaticText(this, wxID_ANY, wxEmptyString, wxPoint(-1,-1), wxSize(35,25), wxTE_READONLY);
     m_textSNR->SetToolTip(_("Show S/N ratio numerically."));
     m_textSNR->SetMinSize(wxSize(35,25));
     bSizer29->Add(m_textSNR, 0, wxALIGN_CENTER|wxALL, 1);

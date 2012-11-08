@@ -42,24 +42,32 @@ struct CODEC2      *g_pCodec2;
 struct FDMDV       *g_pFDMDV;
 struct FDMDV_STATS  g_stats;
 
+// time averaged magnitude spectrum used for waterfall and spectrum display
+float               g_avmag[FDMDV_NSPEC];
+
+// rx processing states
+int                 g_nRxIn = FDMDV_NOM_SAMPLES_PER_FRAME;
+int                 g_CodecBits[2 * FDMDV_BITS_PER_FRAME];
+int                 g_State = 0;
+
 // FIFOs used for plotting waveforms
-struct FIFO  *g_plotDemodInFifo;
-struct FIFO  *g_plotSpeechOutFifo;
-struct FIFO  *g_plotSpeechInFifo;
+struct FIFO        *g_plotDemodInFifo;
+struct FIFO        *g_plotSpeechOutFifo;
+struct FIFO        *g_plotSpeechInFifo;
 
 // Soundcard config
-int g_nSoundCards = 2;
-int g_soundCard1InDeviceNum = 0;
-int g_soundCard1OutDeviceNum = 0;
-int g_soundCard1SampleRate = 48000;
-int g_soundCard2InDeviceNum = 1;
-int g_soundCard2OutDeviceNum = 1;
-int g_soundCard2SampleRate = 44100;
+int                 g_nSoundCards = 1;
+int                 g_soundCard1InDeviceNum = 0;
+int                 g_soundCard1OutDeviceNum = 0;
+int                 g_soundCard1SampleRate = 48000;
+int                 g_soundCard2InDeviceNum = 1;
+int                 g_soundCard2OutDeviceNum = 1;
+int                 g_soundCard2SampleRate = 44100;
 
 // Click to tune rx frequency offset states
-float g_RxFreqOffsetHz;
-COMP  g_RxFreqOffsetPhaseRect;
-COMP  g_RxFreqOffsetFreqRect;
+float               g_RxFreqOffsetHz;
+COMP                g_RxFreqOffsetPhaseRect;
+COMP                g_RxFreqOffsetFreqRect;
 
 // DRs debug variables, will be cleaned up eventually
 int cb_cnt, cb1, cb2;
@@ -71,9 +79,10 @@ FILE *g_write_file;
 int sc1, sc2;
 int g_outfifo2_empty;
 
+// experimental mutex to make sound card callbacks mutually exclusive
 wxMutex g_mutexProtectingCallbackData;
 
-// initialize the application
+// WxWidgets - initialize the application
 IMPLEMENT_APP(MainApp);
 
 //-------------------------------------------------------------------------
@@ -344,9 +353,13 @@ MainFrame::~MainFrame()
 //----------------------------------------------------------------
 // OnTimer()
 //----------------------------------------------------------------
+
+// when the timer fires every DT seconds we update the GUI displays
+// On the tabbed display that is visible actually gets updated, this
+// keeps CPU load reasonable
+
 void MainFrame::OnTimer(wxTimerEvent &evt)
 {
-    // when the timer fires every DT seconds we update the GUI displays
 
     m_panelWaterfall->m_newdata = true;
     m_panelWaterfall->Refresh();
@@ -363,6 +376,8 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
     m_panelFreqOffset->add_new_sample(g_stats.foff);
     m_panelFreqOffset->Refresh();
 
+    // Oscilliscope type speech plots -------------------------------------------------------
+
     short speechInPlotSamples[WAVEFORM_PLOT_BUF];
     fifo_read(g_plotSpeechInFifo, speechInPlotSamples, WAVEFORM_PLOT_BUF);
     m_panelSpeechIn->add_new_short_samples(speechInPlotSamples, WAVEFORM_PLOT_BUF, 32767);
@@ -378,16 +393,27 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
     m_panelDemodIn->add_new_short_samples(demodInPlotSamples, WAVEFORM_PLOT_BUF, 32767);
     m_panelDemodIn->Refresh();
 
+    // SNR text box and guage ------------------------------------------------------------
+
     char snr[15];
     sprintf(snr, "%2.1f", g_stats.snr_est);
     wxString snr_string(snr);
-    m_textSNR->ChangeValue(snr_string);
+    //m_textSNR->ChangeValue(snr_string);
+    m_textSNR->SetLabel(snr_string);
 
-    m_gaugeSNR->SetRange(20);
+    m_gaugeSNR->SetRange(20); // 0 to 20dB seems sensible
     int snr_limited = g_stats.snr_est;
     if (snr_limited < 0) snr_limited = 0;
     if (snr_limited > 20) snr_limited = 20;
     m_gaugeSNR->SetValue(snr_limited);
+
+    // sync LED
+
+    if (g_State)
+        m_rbSync->SetForegroundColour( wxColour( 0, 255, 0 ) );
+    else
+        m_rbSync->SetForegroundColour( wxColour( 255, 0, 0 ) );
+
 }
 #endif
 
@@ -1004,17 +1030,6 @@ void MainFrame::OnTogBtnLoopTx( wxCommandEvent& event )
 
 }
 
-//----------------------------------------------------------
-// Rx processing loop states (globals).
-//----------------------------------------------------------
-
-int             g_nRxIn = FDMDV_NOM_SAMPLES_PER_FRAME;
-float           g_Ts = 0.0;
-
-int             g_CodecBits[2 * FDMDV_BITS_PER_FRAME];
-int             g_State = 0;
-
-float           g_avmag[FDMDV_NSPEC];
 
 void MainFrame::destroy_fifos(void)
 {

@@ -67,7 +67,7 @@ class TopFrame : public wxFrame
         wxMenu* tools;
         wxMenu* help;
         wxGauge* m_gaugeSNR;
-        wxTextCtrl* m_textSNR;
+        wxStaticText* m_textSNR;
         wxGauge* m_gaugeLevel;
         wxTextCtrl* m_txtCtrl;
         wxSlider* m_sliderSQ;
