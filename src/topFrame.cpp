@@ -149,7 +149,7 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     // S/N ratio Guage (vert. bargraph)
     //------------------------------
     m_gaugeSNR = new wxGauge(this, wxID_ANY, 20, wxDefaultPosition, wxSize(15,135), wxGA_SMOOTH|wxGA_VERTICAL);
-    m_gaugeSNR->SetToolTip(_("Display signal to noise ratio."));
+    m_gaugeSNR->SetToolTip(_("Displays signal to noise ratio in dB."));
     snrSizer->Add(m_gaugeSNR, 1, wxALIGN_CENTER_HORIZONTAL|wxALL, 10);
     wxBoxSizer* bSizer29;
     bSizer29 = new wxBoxSizer(wxVERTICAL);
@@ -158,7 +158,7 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     // Box for S/N ratio (Numeric)
     //------------------------------
     m_textSNR = new wxStaticText(this, wxID_ANY, wxEmptyString, wxPoint(-1,-1), wxSize(35,25), wxTE_READONLY);
-    m_textSNR->SetToolTip(_("Show S/N ratio numerically."));
+    m_textSNR->SetToolTip(_("Show SNR ratio numerically."));
     m_textSNR->SetMinSize(wxSize(35,25));
     bSizer29->Add(m_textSNR, 0, wxALIGN_CENTER|wxALL, 1);
     snrSizer->Add(bSizer29, 0, wxEXPAND, 1);
@@ -184,7 +184,7 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     upperSizer = new wxBoxSizer(wxVERTICAL);
 
     //=====================================================
-    // Tabbed Notebppk control containing dispalay graphs
+    // Tabbed Notebppk control containing display graphs
     //=====================================================
     //m_auiNbookCtrl = new wxAuiNotebook(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxAUI_NB_BOTTOM|wxAUI_NB_DEFAULT_STYLE);
     //long style = wxAUI_NB_TAB_SPLIT | wxAUI_NB_TAB_MOVE | wxAUI_NB_SCROLL_BUTTONS | wxAUI_NB_CLOSE_ON_ACTIVE_TAB | wxAUI_NB_MIDDLE_CLICK_CLOSE;
@@ -235,22 +235,40 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     wxStaticBoxSizer* sbSizer3;
     sbSizer3 = new wxStaticBoxSizer(new wxStaticBox(this, wxID_ANY, _("SQ")), wxVERTICAL);
 
-    m_sliderSQ = new wxSlider(this, wxID_ANY, 50, 0, 100, wxDefaultPosition, wxSize(-1,100), wxSL_AUTOTICKS|wxSL_INVERSE|wxSL_VERTICAL);
-    m_sliderSQ->SetToolTip(_("Set Squelch level."));
+    m_sliderSQ = new wxSlider(this, wxID_ANY, SQ_DEFAULT_SNR, 0, 20, wxDefaultPosition, wxSize(-1,80), wxSL_AUTOTICKS|wxSL_INVERSE|wxSL_VERTICAL);
+    m_sliderSQ->SetToolTip(_("Set Squelch level in dB."));
 
     sbSizer3->Add(m_sliderSQ, 2, wxALIGN_CENTER|wxALL, 1);
 
     //------------------------------
     // Squelch Toggle Checkbox
     //------------------------------
-    wxBoxSizer* bSizer131;
-    bSizer131 = new wxBoxSizer(wxVERTICAL);
+    wxBoxSizer* bSizer131A;
+    bSizer131A = new wxBoxSizer(wxVERTICAL);
 
     m_ckboxSQ = new wxCheckBox(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxCHK_2STATE);
     m_ckboxSQ->SetToolTip(_("Activate/Deactivate Squelch"));
 
-    bSizer131->Add(m_ckboxSQ, 0, wxALIGN_CENTER|wxALL, 5);
-    sbSizer3->Add(bSizer131, 0, wxALIGN_CENTER, 5);
+    bSizer131A->Add(m_ckboxSQ, 0, wxALIGN_CENTER|wxALL, 0);
+    //sbSizer3->Add(bSizer131A, 2, wxALIGN_CENTER|wxALL, 1);
+
+    //------------------------------
+    // Squelch Level text box
+    //------------------------------
+
+    wxBoxSizer* bSizer131B;
+    bSizer131B = new wxBoxSizer(wxVERTICAL);
+
+    // TODO: make this a config parameter?
+    char sqsnr[15];
+    sprintf(sqsnr, "%2.0f", SQ_DEFAULT_SNR);
+    wxString sqsnr_string(sqsnr);
+    m_textSQ = new wxStaticText(this, wxID_ANY, sqsnr_string, wxPoint(-1,-1), wxSize(35,25));
+    m_textSQ->SetMinSize(wxSize(35,25));
+
+    bSizer131B->Add(m_textSQ, 0, wxALL, 0);
+    sbSizer3->Add(bSizer131B, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 1);
+
     rightSizer->Add(sbSizer3, 2, wxALIGN_CENTER_HORIZONTAL|wxALL|wxEXPAND, 3);
 
     //------------------------------

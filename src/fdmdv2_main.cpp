@@ -56,7 +56,7 @@ struct FIFO        *g_plotSpeechOutFifo;
 struct FIFO        *g_plotSpeechInFifo;
 
 // Soundcard config
-int                 g_nSoundCards = 1;
+int                 g_nSoundCards = 2;
 int                 g_soundCard1InDeviceNum = 0;
 int                 g_soundCard1OutDeviceNum = 0;
 int                 g_soundCard1SampleRate = 48000;
@@ -376,20 +376,23 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
     m_panelFreqOffset->add_new_sample(g_stats.foff);
     m_panelFreqOffset->Refresh();
 
-    // Oscilliscope type speech plots -------------------------------------------------------
+    // Osciliscope type speech plots -------------------------------------------------------
 
     short speechInPlotSamples[WAVEFORM_PLOT_BUF];
-    fifo_read(g_plotSpeechInFifo, speechInPlotSamples, WAVEFORM_PLOT_BUF);
+    if (fifo_read(g_plotSpeechInFifo, speechInPlotSamples, WAVEFORM_PLOT_BUF))
+        memset(speechInPlotSamples, 0, WAVEFORM_PLOT_BUF*sizeof(short));
     m_panelSpeechIn->add_new_short_samples(speechInPlotSamples, WAVEFORM_PLOT_BUF, 32767);
     m_panelSpeechIn->Refresh();
 
     short speechOutPlotSamples[WAVEFORM_PLOT_BUF];
-    fifo_read(g_plotSpeechOutFifo, speechOutPlotSamples, WAVEFORM_PLOT_BUF);
+    if (fifo_read(g_plotSpeechOutFifo, speechOutPlotSamples, WAVEFORM_PLOT_BUF))
+        memset(speechOutPlotSamples, 0, WAVEFORM_PLOT_BUF*sizeof(short));
     m_panelSpeechOut->add_new_short_samples(speechOutPlotSamples, WAVEFORM_PLOT_BUF, 32767);
     m_panelSpeechOut->Refresh();
 
     short demodInPlotSamples[WAVEFORM_PLOT_BUF];
-    fifo_read(g_plotDemodInFifo, demodInPlotSamples, WAVEFORM_PLOT_BUF);
+    if (fifo_read(g_plotDemodInFifo, demodInPlotSamples, WAVEFORM_PLOT_BUF))
+        memset(demodInPlotSamples, 0, WAVEFORM_PLOT_BUF*sizeof(short));    
     m_panelDemodIn->add_new_short_samples(demodInPlotSamples, WAVEFORM_PLOT_BUF, 32767);
     m_panelDemodIn->Refresh();
 
@@ -491,6 +494,11 @@ void MainFrame::OnPaint(wxPaintEvent& WXUNUSED(event))
 //-------------------------------------------------------------------------
 void MainFrame::OnCmdSliderScroll(wxScrollEvent& event)
 {
+    char sqsnr[15];
+    sprintf(sqsnr, "%d", m_sliderSQ->GetValue());
+    wxString sqsnr_string(sqsnr);
+    m_textSQ->SetLabel(sqsnr_string);
+
     event.Skip();
 }
 
