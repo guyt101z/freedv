@@ -33,7 +33,7 @@
 #define wxUSE_LIBTIFF   1
 
 //-------------------------------------------------------------------
-// Bunch of nasty globals used for communication with sound card call
+// Bunch of globals used for communication with sound card call
 // back functions
 // ------------------------------------------------------------------
 
@@ -46,9 +46,10 @@ struct FDMDV_STATS  g_stats;
 float               g_avmag[FDMDV_NSPEC];
 
 // rx processing states
+int                 g_analog = 0;
 int                 g_nRxIn = FDMDV_NOM_SAMPLES_PER_FRAME;
 int                 g_CodecBits[2 * FDMDV_BITS_PER_FRAME];
-int                 g_State = 0;
+int                 g_State;
 
 // FIFOs used for plotting waveforms
 struct FIFO        *g_plotDemodInFifo;
@@ -595,6 +596,11 @@ void MainFrame::OnTogBtnSplitClick(wxCommandEvent& event) {
 //-------------------------------------------------------------------------
 void MainFrame::OnTogBtnAnalogClick (wxCommandEvent& event)
 {
+    if (g_analog == 0)
+        g_analog = 1;
+    else
+        g_analog = 0;
+       
     event.Skip();
 }
 
@@ -984,6 +990,7 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
         // init modem and codec states
         g_pFDMDV  = fdmdv_create();
         g_pCodec2 = codec2_create(CODEC2_MODE_1400);
+        g_State = 0;
 
         // init click-tune states
         g_RxFreqOffsetHz = 50.0;
@@ -1527,40 +1534,35 @@ int MainFrame::rxCallback(
 
     while (fifo_read(cbData->infifo1, in48k_short, N48) == 0)
     {
-    int n8k;
+        int n8k;
 
-    n8k = resample(cbData->insrc1, in8k_short, in48k_short, FS, g_soundCard1SampleRate, N8, N48);
-    fifo_write(cbData->rxinfifo, in8k_short, n8k);
+        n8k = resample(cbData->insrc1, in8k_short, in48k_short, FS, g_soundCard1SampleRate, N8, N48);
+        fifo_write(cbData->rxinfifo, in8k_short, n8k);
 
-     resample_for_plot(g_plotDemodInFifo, in8k_short, n8k);
-#ifdef OLD
-    short_to_float(&in48k1[FDMDV_OS_TAPS], in48k_short, N48);
-        fdmdv_48_to_8(out8k, &in48k1[FDMDV_OS_TAPS], N8);
-    float_to_short(out8k_short, out8k, N8);
-#endif
+        resample_for_plot(g_plotDemodInFifo, in8k_short, n8k);
 
-    per_frame_rx_processing(cbData->rxoutfifo, g_CodecBits, cbData->rxinfifo, &g_nRxIn, &g_State, g_pCodec2);
+        per_frame_rx_processing(cbData->rxoutfifo, g_CodecBits, cbData->rxinfifo, &g_nRxIn, &g_State, g_pCodec2);
 
-    // if demod out of sync just pass thru audio so we can hear
-    // SSB radio ouput as an aid to tuning
+        // if demod out of sync or we are in analog mode just pass thru
+        // audio so we can hear SSB radio ouput as an aid to tuning
 
-    if (g_State == 0)
-        memcpy(out8k_short, in8k_short, sizeof(short)*n8k);
-    else {
-        memset(out8k_short, 0, sizeof(short)*N8);
-        fifo_read(cbData->rxoutfifo, out8k_short, N8);
-    }
+        if ((g_State == 0) || g_analog)
+            memcpy(out8k_short, in8k_short, sizeof(short)*n8k);
+        else {
+            memset(out8k_short, 0, sizeof(short)*N8);
+            fifo_read(cbData->rxoutfifo, out8k_short, N8);
+        }
 
-    resample_for_plot(g_plotSpeechOutFifo, out8k_short, N8);
+        resample_for_plot(g_plotSpeechOutFifo, out8k_short, N8);
 
-    if (g_nSoundCards == 1) {
-        nout = resample(cbData->outsrc2, out48k_short, out8k_short, g_soundCard1SampleRate, FS, N48, N8);
-        fifo_write(cbData->outfifo1, out48k_short, nout);
-    }
-    else {
-        nout = resample(cbData->outsrc2, out48k_short, out8k_short, g_soundCard2SampleRate, FS, N48, N8);
-        fifo_write(cbData->outfifo2, out48k_short, nout);
-    }
+        if (g_nSoundCards == 1) {
+            nout = resample(cbData->outsrc2, out48k_short, out8k_short, g_soundCard1SampleRate, FS, N48, N8);
+            fifo_write(cbData->outfifo1, out48k_short, nout);
+        }
+        else {
+            nout = resample(cbData->outsrc2, out48k_short, out8k_short, g_soundCard2SampleRate, FS, N48, N8);
+            fifo_write(cbData->outfifo2, out48k_short, nout);
+        }
 
     }
 
@@ -1607,8 +1609,11 @@ int MainFrame::rxCallback(
 
             resample_for_plot(g_plotSpeechInFifo, in8k_short, nout);
 
-            per_frame_tx_processing(out8k_short, in8k_short, g_pCodec2);
-
+            if (g_analog)
+                memcpy(out8k_short, in8k_short,  2*N8*sizeof(short));
+            else
+                per_frame_tx_processing(out8k_short, in8k_short, g_pCodec2);
+ 
             // output 40ms of modem tone
 
             nout = resample(cbData->outsrc1, out48k_short, out8k_short, g_soundCard1SampleRate, FS, 2*N48, 2*N8);
