@@ -31,7 +31,7 @@
 #define wxUSE_LIBTIFF       1
 
 #define PLOT_BORDER         12
-#define XLEFT_OFFSET        30
+#define XLEFT_OFFSET        40
 #define XLEFT_TEXT_OFFSET   6
 #define YBOTTOM_OFFSET      20
 #define YBOTTOM_TEXT_OFFSET 6

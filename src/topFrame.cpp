@@ -76,7 +76,7 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     tools->AppendSeparator();
 
     wxMenuItem* m_menuItemCaptRxInStream;
-    m_menuItemCaptRxInStream = new wxMenuItem(tools, wxID_ANY, wxString(_("Capture Rx Input Stream")) + wxT('\t') + wxT("Capture receive input stream to file."), wxEmptyString, wxITEM_NORMAL);
+    m_menuItemCaptRxInStream = new wxMenuItem(tools, wxID_ANY, wxString(_("Capture Rx Input Stream")), wxEmptyString, wxITEM_NORMAL);
 #ifdef __WXMSW__
     m_menuItemCaptRxInStream->SetBitmaps(wxNullBitmap);
 #elif defined(__WXGTK__)
@@ -85,7 +85,7 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     tools->Append(m_menuItemCaptRxInStream);
 
     wxMenuItem* m_menuItemCaptTxInStream;
-    m_menuItemCaptTxInStream = new wxMenuItem(tools, wxID_ANY, wxString(_("Capture Tx Input Stream")) + wxT('\t') + wxT("Capture transmit input stream to file."), wxEmptyString, wxITEM_NORMAL);
+    m_menuItemCaptTxInStream = new wxMenuItem(tools, wxID_ANY, wxString(_("Capture Tx Input Stream")), wxEmptyString, wxITEM_NORMAL);
 #ifdef __WXMSW__
     m_menuItemCaptTxInStream->SetBitmaps(wxNullBitmap);
 #elif defined(__WXGTK__)
@@ -94,7 +94,7 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     tools->Append(m_menuItemCaptTxInStream);
 
     wxMenuItem* m_menuItemCaptRxOutStream;
-    m_menuItemCaptRxOutStream = new wxMenuItem(tools, wxID_ANY, wxString(_("Capture Rx Output Stream")) + wxT('\t') + wxT("Capture receive output stream to file."), wxEmptyString, wxITEM_NORMAL);
+    m_menuItemCaptRxOutStream = new wxMenuItem(tools, wxID_ANY, wxString(_("Capture Rx Output Stream")), wxEmptyString, wxITEM_NORMAL);
 #ifdef __WXMSW__
     m_menuItemCaptRxOutStream->SetBitmaps(wxNullBitmap);
 #elif defined(__WXGTK__)
@@ -103,7 +103,7 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     tools->Append(m_menuItemCaptRxOutStream);
 
     wxMenuItem* m_menuItemCaptTxOutStream;
-    m_menuItemCaptTxOutStream = new wxMenuItem(tools, wxID_ANY, wxString(_("Capture Tx Output Stream")) + wxT('\t') + wxT("Capture transmit output stream to file."), wxEmptyString, wxITEM_NORMAL);
+    m_menuItemCaptTxOutStream = new wxMenuItem(tools, wxID_ANY, wxString(_("Capture Tx Output Stream")), wxEmptyString, wxITEM_NORMAL);
 #ifdef __WXMSW__
     m_menuItemCaptTxOutStream->SetBitmaps(wxNullBitmap);
 #elif defined(__WXGTK__)
