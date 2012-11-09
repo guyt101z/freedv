@@ -234,7 +234,7 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     // Squelch Slider Control
     //=====================================================
     wxStaticBoxSizer* sbSizer3;
-    sbSizer3 = new wxStaticBoxSizer(new wxStaticBox(this, wxID_ANY, _("SQ")), wxVERTICAL);
+    sbSizer3 = new wxStaticBoxSizer(new wxStaticBox(this, wxID_ANY, _("Squelch")), wxVERTICAL);
 
     m_sliderSQ = new wxSlider(this, wxID_ANY, 0, 0, 40, wxDefaultPosition, wxSize(-1,80), wxSL_AUTOTICKS|wxSL_INVERSE|wxSL_VERTICAL);
     m_sliderSQ->SetToolTip(_("Set Squelch level in dB."));
@@ -245,7 +245,7 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     // Squelch Level static text box
     //------------------------------
 
-    m_textSQ = new wxStaticText(this, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE);
+    m_textSQ = new wxStaticText(this, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE);
 
     sbSizer3->Add(m_textSQ, 0, wxALIGN_CENTER_HORIZONTAL, 0);
 
@@ -253,7 +253,7 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     // Squelch Toggle Checkbox
     //------------------------------
 
-    m_ckboxSQ = new wxCheckBox(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxCHK_2STATE);
+    m_ckboxSQ = new wxCheckBox(this, wxID_ANY, _(""), wxDefaultPosition, wxDefaultSize, wxCHK_2STATE);
     m_ckboxSQ->SetToolTip(_("Activate/Deactivate Squelch"));
 
     sbSizer3->Add(m_ckboxSQ, 0, wxALIGN_CENTER_HORIZONTAL, 0);
@@ -282,7 +282,7 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     bSizer1511 = new wxBoxSizer(wxVERTICAL);
 
     //-------------------------------
-    // Begin/End receiving data
+    // Stop/Stop signal processing (rx and tx)
     //-------------------------------
     m_togBtnOnOff = new wxToggleButton(this, wxID_ANY, _("Start"), wxDefaultPosition, wxDefaultSize, 0);
     m_togBtnOnOff->SetToolTip(_("Begin/End receiving data."));
@@ -342,6 +342,8 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     bSizer13->Add(m_togBtnAnalog, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 1);
     sbSizer5->Add(bSizer13, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
+    // not implemented on fdmdv2
+#ifdef ALC
     //------------------------------
     // Toggle for ALC
     //------------------------------
@@ -350,17 +352,15 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     m_togBtnALC = new wxToggleButton(this, wxID_ANY, _("ALC"), wxDefaultPosition, wxDefaultSize, 0);
     m_togBtnALC->SetToolTip(_("Toggle automatic level control mode."));
 
-    //------------------------------
-    // ALC Toggle
-    //------------------------------
     bSizer14->Add(m_togBtnALC, 0, wxALL, 1);
     sbSizer5->Add(bSizer14, 0, wxALIGN_CENTER|wxALIGN_CENTER_HORIZONTAL|wxALL, 1);
-    wxBoxSizer* bSizer11;
-    bSizer11 = new wxBoxSizer(wxVERTICAL);
+#endif
 
     //------------------------------
     // Toggle Transmit/Receive relays
     //------------------------------
+    wxBoxSizer* bSizer11;
+    bSizer11 = new wxBoxSizer(wxVERTICAL);
     m_btnTogTX = new wxToggleButton(this, wxID_ANY, _("TX"), wxDefaultPosition, wxDefaultSize, 0);
     m_btnTogTX->SetToolTip(_("Switch between Receive and Transmit"));
     bSizer11->Add(m_btnTogTX, 1, wxALIGN_CENTER|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 1);
@@ -428,7 +428,9 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     m_togBtnLoopTx->Connect(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler(TopFrame::OnTogBtnLoopTx), NULL, this);
     m_togBtnSplit->Connect(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler(TopFrame::OnTogBtnSplitClick), NULL, this);
     m_togBtnAnalog->Connect(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler(TopFrame::OnTogBtnAnalogClick), NULL, this);
+#ifdef ALC
     m_togBtnALC->Connect(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler(TopFrame::OnTogBtnALCClick), NULL, this);
+#endif
     m_btnTogTX->Connect(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler(TopFrame::OnTogBtnTXClick), NULL, this);
 }
 
@@ -487,7 +489,9 @@ TopFrame::~TopFrame()
     m_togBtnLoopTx->Disconnect(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler(TopFrame::OnTogBtnLoopTx), NULL, this);
     m_togBtnSplit->Disconnect(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler(TopFrame::OnTogBtnSplitClick), NULL, this);
     m_togBtnAnalog->Disconnect(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler(TopFrame::OnTogBtnAnalogClick), NULL, this);
+#ifdef ALC
     m_togBtnALC->Disconnect(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler(TopFrame::OnTogBtnALCClick), NULL, this);
+#endif
     m_btnTogTX->Disconnect(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler(TopFrame::OnTogBtnTXClick), NULL, this);
 
 }

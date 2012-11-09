@@ -197,17 +197,13 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
         m_panelScatter = new PlotScatter((wxFrame*) m_auiNbookCtrl);
         m_auiNbookCtrl->AddPage(m_panelScatter, _("Scatter"), true, wxNullBitmap);
     }
-    if(wxGetApp().m_show_timing)
+    if(wxGetApp().m_show_demod_in)
     {
-        // Add Timing Offset window
-        m_panelTimeOffset = new PlotScalar((wxFrame*) m_auiNbookCtrl, 5.0, DT, -0.5, 0.5, 1, 0.1, "%2.1f");
-        m_auiNbookCtrl->AddPage(m_panelTimeOffset, L"Timing \u0394", true, wxNullBitmap);
-    }
-    if(wxGetApp().m_show_freq)
-    {
-        // Add Frequency Offset window
-        m_panelFreqOffset = new PlotScalar((wxFrame*) m_auiNbookCtrl, 5.0, DT, -200, 200, 1, 50, "%3.0fHz");
-        m_auiNbookCtrl->AddPage(m_panelFreqOffset, L"Frequency \u0394", true, wxNullBitmap);
+        // Add Demod Input window
+
+       m_panelDemodIn = new PlotScalar((wxFrame*) m_auiNbookCtrl, WAVEFORM_PLOT_TIME, 1.0/WAVEFORM_PLOT_FS, -1, 1, 1, 0.2, "%2.1f");
+       m_auiNbookCtrl->AddPage(m_panelDemodIn, _("Demod In"), true, wxNullBitmap);
+       g_plotDemodInFifo = fifo_create(2*WAVEFORM_PLOT_BUF);
     }
 
     if(wxGetApp().m_show_speech_in)
@@ -228,13 +224,17 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
        g_plotSpeechOutFifo = fifo_create(2*WAVEFORM_PLOT_BUF);
     }
 
-    if(wxGetApp().m_show_demod_in)
+    if(wxGetApp().m_show_timing)
     {
-        // Add Demod Input window
-
-       m_panelDemodIn = new PlotScalar((wxFrame*) m_auiNbookCtrl, WAVEFORM_PLOT_TIME, 1.0/WAVEFORM_PLOT_FS, -1, 1, 1, 0.2, "%2.1f");
-       m_auiNbookCtrl->AddPage(m_panelDemodIn, _("Demod In"), true, wxNullBitmap);
-       g_plotDemodInFifo = fifo_create(2*WAVEFORM_PLOT_BUF);
+        // Add Timing Offset window
+        m_panelTimeOffset = new PlotScalar((wxFrame*) m_auiNbookCtrl, 5.0, DT, -0.5, 0.5, 1, 0.1, "%2.1f");
+        m_auiNbookCtrl->AddPage(m_panelTimeOffset, L"Timing \u0394", true, wxNullBitmap);
+    }
+    if(wxGetApp().m_show_freq)
+    {
+        // Add Frequency Offset window
+        m_panelFreqOffset = new PlotScalar((wxFrame*) m_auiNbookCtrl, 5.0, DT, -200, 200, 1, 50, "%3.0fHz");
+        m_auiNbookCtrl->AddPage(m_panelFreqOffset, L"Frequency \u0394", true, wxNullBitmap);
     }
 
     wxGetApp().m_strRxInAudio       = pConfig->Read(wxT("/Audio/RxIn"),         wxT("<m_strRxInAudio>"));
@@ -257,14 +257,14 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     m_togBtnOnOff->Connect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnOnOffUI), NULL, this);
     m_togBtnSplit->Connect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnSplitClickUI), NULL, this);
     m_togBtnAnalog->Connect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnAnalogClickUI), NULL, this);
-    m_togBtnALC->Connect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnALCClickUI), NULL, this);
+    //m_togBtnALC->Connect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnALCClickUI), NULL, this);
     m_btnTogTX->Connect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnTXClickUI), NULL, this);
 
     m_togBtnSplit->Disable();
     m_togRxID->Disable();
     m_togTxID->Disable();
     m_togBtnAnalog->Disable();
-    m_togBtnALC->Disable();
+    //m_togBtnALC->Disable();
     m_btnTogTX->Disable();
     m_togBtnLoopRx->Disable();
     m_togBtnLoopTx->Disable();
@@ -335,7 +335,7 @@ MainFrame::~MainFrame()
     m_togBtnOnOff->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnOnOffUI), NULL, this);
     m_togBtnSplit->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnSplitClickUI), NULL, this);
     m_togBtnAnalog->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnAnalogClickUI), NULL, this);
-    m_togBtnALC->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnALCClickUI), NULL, this);
+    //m_togBtnALC->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnALCClickUI), NULL, this);
     m_btnTogTX->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnTXClickUI), NULL, this);
     if(m_sfFile != NULL)
     {
@@ -598,6 +598,7 @@ void MainFrame::OnTogBtnAnalogClick (wxCommandEvent& event)
     event.Skip();
 }
 
+#ifdef ALC
 //-------------------------------------------------------------------------
 // OnTogBtnALCClick()
 //-------------------------------------------------------------------------
@@ -607,6 +608,7 @@ void MainFrame::OnTogBtnALCClick(wxCommandEvent& event)
 
     event.Skip();
 }
+#endif
 
 //-------------------------------------------------------------------------
 // OnOpen()
@@ -730,7 +732,7 @@ void MainFrame::OnClose(wxCommandEvent& event)
     m_togRxID->Disable();
     m_togTxID->Disable();
     m_togBtnAnalog->Disable();
-    m_togBtnALC->Disable();
+    //m_togBtnALC->Disable();
     m_btnTogTX->Disable();
     m_togBtnLoopRx->Disable();
     m_togBtnLoopTx->Disable();
@@ -974,7 +976,7 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
         m_togRxID->Enable();
         m_togTxID->Enable();
         m_togBtnAnalog->Enable();
-        m_togBtnALC->Enable();
+        //m_togBtnALC->Enable();
         m_btnTogTX->Enable();
         m_togBtnLoopRx->Enable();
         m_togBtnLoopTx->Enable();
@@ -1009,7 +1011,7 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
         m_togRxID->Disable();
         m_togTxID->Disable();
         m_togBtnAnalog->Disable();
-        m_togBtnALC->Disable();
+        //m_togBtnALC->Disable();
         m_btnTogTX->Disable();
         m_togBtnLoopRx->Disable();
         m_togBtnLoopTx->Disable();

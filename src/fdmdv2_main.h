@@ -283,7 +283,7 @@ class MainFrame : public TopFrame
         // Toggle Buttons
         void OnTogBtnSplitClick(wxCommandEvent& event);
         void OnTogBtnAnalogClick(wxCommandEvent& event);
-        void OnTogBtnALCClick(wxCommandEvent& event);
+        //void OnTogBtnALCClick(wxCommandEvent& event);
         void OnTogBtnRxID( wxCommandEvent& event );
         void OnTogBtnTxID( wxCommandEvent& event );
         void OnTogBtnTXClick( wxCommandEvent& event );
