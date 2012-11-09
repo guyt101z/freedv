@@ -179,7 +179,6 @@ class MainFrame : public TopFrame
         PlotScalar*             m_panelSpeechIn;
         PlotScalar*             m_panelSpeechOut;
         PlotScalar*             m_panelDemodIn;
-        bool                    m_SquelchActive;
         bool                    m_RxRunning;
         bool                    m_TxRunning;
         PortAudioWrap           *m_rxPa;

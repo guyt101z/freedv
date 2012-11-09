@@ -45,8 +45,12 @@ struct FDMDV_STATS  g_stats;
 // time averaged magnitude spectrum used for waterfall and spectrum display
 float               g_avmag[FDMDV_NSPEC];
 
+// GUI controls that affect rx and tx processes
+int   g_SquelchActive;
+float g_SquelchLevel;
+int   g_analog;
+
 // rx processing states
-int                 g_analog = 0;
 int                 g_nRxIn = FDMDV_NOM_SAMPLES_PER_FRAME;
 int                 g_CodecBits[2 * FDMDV_BITS_PER_FRAME];
 int                 g_State;
@@ -147,7 +151,6 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
 //    m_sound             = NULL;
     m_sfFile            = NULL;
     m_zoom              = 1.;
-    m_SquelchActive     = false;
 
     if(Pa_Initialize())
     {
@@ -176,6 +179,10 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     wxGetApp().m_show_speech_in = pConfig->Read(wxT("/MainFrame/show_speech_in"),    1);
     wxGetApp().m_show_speech_out = pConfig->Read(wxT("/MainFrame/show_speech_out"),    1);
     wxGetApp().m_show_demod_in = pConfig->Read(wxT("/MainFrame/show_demod_in"),    1);
+    
+    g_SquelchActive = pConfig->Read(wxT("/Audio/SquelchActive"), 1);
+    g_SquelchLevel = pConfig->Read(wxT("/Audio/SquelchLevel"), (int)(SQ_DEFAULT_SNR*2));
+    g_SquelchLevel /= 2.0;
 
     Move(x, y);
     SetClientSize(w, h);
@@ -272,14 +279,15 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
 
 //    m_menuItemPlayAudioFile->Enable(false);
 
-    // default squelch position
+    // squelch settings
 
     char sqsnr[15];
-    sprintf(sqsnr, "%4.1f", SQ_DEFAULT_SNR);
+    m_sliderSQ->SetValue((int)(g_SquelchLevel*2.0));
+    sprintf(sqsnr, "%4.1f", g_SquelchLevel);
     wxString sqsnr_string(sqsnr);
-    m_sliderSQ->SetValue(SQ_DEFAULT_SNR*2);
     m_textSQ->SetLabel(sqsnr_string);
-   
+    m_ckboxSQ->SetValue(g_SquelchActive);
+
 #ifdef _USE_TIMER
     Bind(wxEVT_TIMER, &MainFrame::OnTimer, this);       // ID_MY_WINDOW);
     m_plotTimer.SetOwner(this, ID_TIMER_WATERFALL);
@@ -317,7 +325,10 @@ MainFrame::~MainFrame()
         pConfig->Write(wxT("/MainFrame/show_freq"),     wxGetApp().m_show_freq);
         pConfig->Write(wxT("/MainFrame/show_speech_in"),wxGetApp().m_show_speech_in);
         pConfig->Write(wxT("/MainFrame/show_speech_out"),wxGetApp().m_show_speech_out);
-    pConfig->Write(wxT("/MainFrame/show_demod_in"),wxGetApp().m_show_demod_in);
+        pConfig->Write(wxT("/MainFrame/show_demod_in"),wxGetApp().m_show_demod_in);
+
+        pConfig->Write(wxT("/Audio/SquelchActive"),     g_SquelchActive);
+        pConfig->Write(wxT("/Audio/SquelchLevel"),     (int)(g_SquelchLevel*2.0));
 
         pConfig->Write(wxT("/Audio/RxIn"),              wxGetApp().m_strRxInAudio);
         pConfig->Write(wxT("/Audio/RxOut"),             wxGetApp().m_strRxOutAudio);
@@ -504,7 +515,8 @@ void MainFrame::OnPaint(wxPaintEvent& WXUNUSED(event))
 void MainFrame::OnCmdSliderScroll(wxScrollEvent& event)
 {
     char sqsnr[15];
-    sprintf(sqsnr, "%4.1f", (float)m_sliderSQ->GetValue()/2.0); // 0.5 dB steps
+    g_SquelchLevel = (float)m_sliderSQ->GetValue()/2.0;
+    sprintf(sqsnr, "%4.1f", g_SquelchLevel); // 0.5 dB steps
     wxString sqsnr_string(sqsnr);
     m_textSQ->SetLabel(sqsnr_string);
 
@@ -540,13 +552,13 @@ void MainFrame::OnSliderScrollBottom(wxScrollEvent& event)
 //-------------------------------------------------------------------------
 void MainFrame::OnCheckSQClick(wxCommandEvent& event)
 {
-    if(!m_SquelchActive)
+    if(!g_SquelchActive)
     {
-        m_SquelchActive = true;
+        g_SquelchActive = true;
     }
     else
     {
-        m_SquelchActive = false;
+        g_SquelchActive = false;
     }
 }
 
