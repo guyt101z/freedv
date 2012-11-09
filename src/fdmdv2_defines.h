@@ -71,6 +71,9 @@
 #define BITS_PER_CODEC_FRAME  (2 * FDMDV_BITS_PER_FRAME)
 #define BYTES_PER_CODEC_FRAME (BITS_PER_CODEC_FRAME / 8)
 
+// Squelch
+#define SQ_DEFAULT_SNR      4.0
+
 enum
 {
     ID_ROTATE_LEFT = wxID_HIGHEST + 1,

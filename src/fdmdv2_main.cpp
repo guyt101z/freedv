@@ -271,6 +271,14 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
 
 //    m_menuItemPlayAudioFile->Enable(false);
 
+    // default squelch position
+
+    char sqsnr[15];
+    sprintf(sqsnr, "%4.1f", SQ_DEFAULT_SNR);
+    wxString sqsnr_string(sqsnr);
+    m_sliderSQ->SetValue(SQ_DEFAULT_SNR*2);
+    m_textSQ->SetLabel(sqsnr_string);
+   
 #ifdef _USE_TIMER
     Bind(wxEVT_TIMER, &MainFrame::OnTimer, this);       // ID_MY_WINDOW);
     m_plotTimer.SetOwner(this, ID_TIMER_WATERFALL);
@@ -398,17 +406,17 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
 
     // SNR text box and guage ------------------------------------------------------------
 
+    float snr_limited = g_stats.snr_est;
+
+    if (snr_limited < -9.0) snr_limited = -9.0; // stop text box overflow
     char snr[15];
-    sprintf(snr, "%2.1f", g_stats.snr_est);
+    sprintf(snr, "%4.1f", snr_limited);
     wxString snr_string(snr);
-    //m_textSNR->ChangeValue(snr_string);
     m_textSNR->SetLabel(snr_string);
 
-    m_gaugeSNR->SetRange(20); // 0 to 20dB seems sensible
-    int snr_limited = g_stats.snr_est;
-    if (snr_limited < 0) snr_limited = 0;
-    if (snr_limited > 20) snr_limited = 20;
-    m_gaugeSNR->SetValue(snr_limited);
+    if (snr_limited < 0.0) snr_limited = 0;
+    if (snr_limited > 20.0) snr_limited = 20.0;
+    m_gaugeSNR->SetValue((int)(snr_limited+0.5));
 
     // sync LED
 
@@ -495,7 +503,7 @@ void MainFrame::OnPaint(wxPaintEvent& WXUNUSED(event))
 void MainFrame::OnCmdSliderScroll(wxScrollEvent& event)
 {
     char sqsnr[15];
-    sprintf(sqsnr, "%d", m_sliderSQ->GetValue());
+    sprintf(sqsnr, "%4.1f", (float)m_sliderSQ->GetValue()/2.0); // 0.5 dB steps
     wxString sqsnr_string(sqsnr);
     m_textSQ->SetLabel(sqsnr_string);
 

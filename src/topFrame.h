@@ -41,6 +41,7 @@
 #include <wx/notebook.h>
 #include <wx/listctrl.h>
 
+
 ///////////////////////////////////////////////////////////////////////////
 
 #define ID_OPEN 1000
@@ -72,6 +73,7 @@ class TopFrame : public wxFrame
         wxTextCtrl* m_txtCtrl;
         wxSlider* m_sliderSQ;
         wxCheckBox* m_ckboxSQ;
+        wxStaticText* m_textSQ;
         wxStatusBar* m_statusBar1;
         wxRadioButton *m_rbSync;
 

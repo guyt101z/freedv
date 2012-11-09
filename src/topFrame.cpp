@@ -157,7 +157,8 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     //------------------------------
     // Box for S/N ratio (Numeric)
     //------------------------------
-    m_textSNR = new wxStaticText(this, wxID_ANY, wxEmptyString, wxPoint(-1,-1), wxSize(35,25), wxTE_READONLY);
+    m_textSNR = new wxStaticText(this, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE);
+    //m_textSNR = new wxStaticText(this, wxID_ANY, wxEmptyString, wxPoint(-1,-1), wxSize(35,25), wxTE_READONLY);
     m_textSNR->SetToolTip(_("Show SNR ratio numerically."));
     m_textSNR->SetMinSize(wxSize(35,25));
     bSizer29->Add(m_textSNR, 0, wxALIGN_CENTER|wxALL, 1);
@@ -230,46 +231,35 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     rightSizer = new wxBoxSizer(wxVERTICAL);
 
     //=====================================================
-    // Squelch Control box
+    // Squelch Slider Control
     //=====================================================
     wxStaticBoxSizer* sbSizer3;
     sbSizer3 = new wxStaticBoxSizer(new wxStaticBox(this, wxID_ANY, _("SQ")), wxVERTICAL);
 
-    m_sliderSQ = new wxSlider(this, wxID_ANY, SQ_DEFAULT_SNR, 0, 20, wxDefaultPosition, wxSize(-1,80), wxSL_AUTOTICKS|wxSL_INVERSE|wxSL_VERTICAL);
+    m_sliderSQ = new wxSlider(this, wxID_ANY, 0, 0, 40, wxDefaultPosition, wxSize(-1,80), wxSL_AUTOTICKS|wxSL_INVERSE|wxSL_VERTICAL);
     m_sliderSQ->SetToolTip(_("Set Squelch level in dB."));
 
-    sbSizer3->Add(m_sliderSQ, 2, wxALIGN_CENTER|wxALL, 1);
+    sbSizer3->Add(m_sliderSQ, 1, wxALIGN_CENTER_HORIZONTAL, 0);
+
+    //------------------------------
+    // Squelch Level static text box
+    //------------------------------
+
+    m_textSQ = new wxStaticText(this, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE);
+
+    sbSizer3->Add(m_textSQ, 0, wxALIGN_CENTER_HORIZONTAL, 0);
 
     //------------------------------
     // Squelch Toggle Checkbox
     //------------------------------
-    wxBoxSizer* bSizer131A;
-    bSizer131A = new wxBoxSizer(wxVERTICAL);
 
     m_ckboxSQ = new wxCheckBox(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxCHK_2STATE);
     m_ckboxSQ->SetToolTip(_("Activate/Deactivate Squelch"));
 
-    bSizer131A->Add(m_ckboxSQ, 0, wxALIGN_CENTER|wxALL, 0);
-    //sbSizer3->Add(bSizer131A, 2, wxALIGN_CENTER|wxALL, 1);
+    sbSizer3->Add(m_ckboxSQ, 0, wxALIGN_CENTER_HORIZONTAL, 0);
 
-    //------------------------------
-    // Squelch Level text box
-    //------------------------------
 
-    wxBoxSizer* bSizer131B;
-    bSizer131B = new wxBoxSizer(wxVERTICAL);
-
-    // TODO: make this a config parameter?
-    char sqsnr[15];
-    sprintf(sqsnr, "%2.0f", SQ_DEFAULT_SNR);
-    wxString sqsnr_string(sqsnr);
-    m_textSQ = new wxStaticText(this, wxID_ANY, sqsnr_string, wxPoint(-1,-1), wxSize(35,25));
-    m_textSQ->SetMinSize(wxSize(35,25));
-
-    bSizer131B->Add(m_textSQ, 0, wxALL, 0);
-    sbSizer3->Add(bSizer131B, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 1);
-
-    rightSizer->Add(sbSizer3, 2, wxALIGN_CENTER_HORIZONTAL|wxALL|wxEXPAND, 3);
+    rightSizer->Add(sbSizer3, 2, wxALIGN_CENTER_HORIZONTAL|wxEXPAND, 0);
 
     //------------------------------
     // Synch Indicator box
