@@ -871,7 +871,7 @@ void MainFrame::OnToolsAudio(wxCommandEvent& event)
 //-------------------------------------------------------------------------
 void MainFrame::OnToolsAudioUI(wxUpdateUIEvent& event)
 {
-    wxUnusedVar(event);
+    event.Enable(!m_RxRunning);
 }
 
 //-------------------------------------------------------------------------
@@ -895,7 +895,7 @@ void MainFrame::OnToolsComCfg(wxCommandEvent& event)
 //-------------------------------------------------------------------------
 void MainFrame::OnToolsComCfgUI(wxUpdateUIEvent& event)
 {
-    event.Enable((!m_TxRunning) && (!m_RxRunning));
+    event.Enable(!m_RxRunning);
 }
 
 //-------------------------------------------------------------------------
@@ -921,6 +921,8 @@ void MainFrame::OnToolsOptionsUI(wxUpdateUIEvent& event)
 {
 //    wxUnusedVar(event);
     event.Enable(false);
+    //    wxMessageBox("Got Click!", "OnToolsOptionsUI", wxOK);
+    //event.Skip();
 }
 
 //-------------------------------------------------------------------------
