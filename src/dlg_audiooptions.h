@@ -49,10 +49,17 @@ class AudioOptsDialog : public wxDialog
         PaError         pa_err;
         bool            m_isPaInitialized;
 
-        //void DisplaySupportedSampleRates(const PaStreamParameters *inputParameters, const PaStreamParameters *outputParameters);
+        int             rxInAudioDeviceNum;
+        int             rxOutAudioDeviceNum;
+        int             txInAudioDeviceNum;
+        int             txOutAudioDeviceNum;
+
+       //void DisplaySupportedSampleRates(const PaStreamParameters *inputParameters, const PaStreamParameters *outputParameters);
         void DisplaySupportedSampleRates(AudioInfoDisplay ai);
         void populateParams(AudioInfoDisplay);
         void showAPIInfo();
+        int setTextCtrlIfDevNumValid(wxTextCtrl *textCtrl, wxListCtrl *listCtrl, int devNum);
+        void Pa_Init(void);
 
         AudioInfoDisplay m_RxInDevices;
         AudioInfoDisplay m_RxOutDevices;
@@ -118,6 +125,6 @@ class AudioOptsDialog : public wxDialog
 
         AudioOptsDialog( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("Audio Options"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 300,300 ), long style = wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER );
         ~AudioOptsDialog();
-        void ExchangeData(int inout);
+        int ExchangeData(int inout);
 };
 #endif //__AudioOptsDialog__

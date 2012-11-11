@@ -61,13 +61,13 @@ struct FIFO        *g_plotSpeechOutFifo;
 struct FIFO        *g_plotSpeechInFifo;
 
 // Soundcard config
-int                 g_nSoundCards = 2;
-int                 g_soundCard1InDeviceNum = 0;
-int                 g_soundCard1OutDeviceNum = 0;
-int                 g_soundCard1SampleRate = 48000;
-int                 g_soundCard2InDeviceNum = 1;
-int                 g_soundCard2OutDeviceNum = 1;
-int                 g_soundCard2SampleRate = 44100;
+int                 g_nSoundCards;
+int                 g_soundCard1InDeviceNum;
+int                 g_soundCard1OutDeviceNum;
+int                 g_soundCard1SampleRate;
+int                 g_soundCard2InDeviceNum;
+int                 g_soundCard2OutDeviceNum;
+int                 g_soundCard2SampleRate;
 
 // Click to tune rx frequency offset states
 float               g_RxFreqOffsetHz;
@@ -140,22 +140,8 @@ int MainApp::OnExit()
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
 {
-    /*
-    // @class  $(Name)
-    // @author $(User)
-    // @date   $(Date)
-    // @file   $(CurrentFileName).$(CurrentFileExt)
-    // @brief
-    */
-//    m_radioRunning      = false;
-//    m_sound             = NULL;
     m_sfFile            = NULL;
     m_zoom              = 1.;
-
-    if(Pa_Initialize())
-    {
-        wxMessageBox(wxT("Port Audio failed to initialize"), wxT("Pa_Initialize"), wxOK);
-    }
 
     tools->AppendSeparator();
     wxMenuItem* m_menuItemToolsConfigDelete;
@@ -245,11 +231,20 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
         m_auiNbookCtrl->AddPage(m_panelFreqOffset, L"Frequency \u0394", true, wxNullBitmap);
     }
 
-    wxGetApp().m_strRxInAudio       = pConfig->Read(wxT("/Audio/RxIn"),         wxT("<m_strRxInAudio>"));
-    wxGetApp().m_strRxOutAudio      = pConfig->Read(wxT("/Audio/RxOut"),        wxT("<m_strRxOutAudio>"));
-    wxGetApp().m_textVoiceInput     = pConfig->Read(wxT("/Audio/TxIn"),         wxT("<m_textVoiceInput>"));
-    wxGetApp().m_textVoiceOutput    = pConfig->Read(wxT("/Audio/TxOut"),        wxT("<m_textVoiceOutput>"));
-    wxGetApp().m_strSampleRate      = pConfig->Read(wxT("/Audio/SampleRate"),   wxT("48000"));
+    g_soundCard1InDeviceNum  = pConfig->Read(wxT("/Audio/soundCard1InDeviceNum"),         -1);
+    g_soundCard1OutDeviceNum = pConfig->Read(wxT("/Audio/soundCard1OutDeviceNum"),        -1);
+    g_soundCard1SampleRate   = pConfig->Read(wxT("/Audio/soundCard1SampleRate"),          -1);
+
+    g_soundCard2InDeviceNum  = pConfig->Read(wxT("/Audio/soundCard2InDeviceNum"),         -1);
+    g_soundCard2OutDeviceNum = pConfig->Read(wxT("/Audio/soundCard2OutDeviceNum"),        -1);
+    g_soundCard2SampleRate   = pConfig->Read(wxT("/Audio/soundCard2SampleRate"),          -1);
+
+    g_nSoundCards = 0;
+    if ((g_soundCard1InDeviceNum > -1) && (g_soundCard1OutDeviceNum > -1)) {
+        g_nSoundCards = 1;
+        if ((g_soundCard2InDeviceNum > -1) && (g_soundCard2OutDeviceNum > -1))
+            g_nSoundCards = 2;
+    }
 
     wxGetApp().m_strRigCtrlPort     = pConfig->Read("/Rig/Port",                wxT("\\\\.\\com1"));
     wxGetApp().m_strRigCtrlBaud     = pConfig->Read("/Rig/Baud",                wxT("9600"));
@@ -330,11 +325,13 @@ MainFrame::~MainFrame()
         pConfig->Write(wxT("/Audio/SquelchActive"),     g_SquelchActive);
         pConfig->Write(wxT("/Audio/SquelchLevel"),     (int)(g_SquelchLevel*2.0));
 
-        pConfig->Write(wxT("/Audio/RxIn"),              wxGetApp().m_strRxInAudio);
-        pConfig->Write(wxT("/Audio/RxOut"),             wxGetApp().m_strRxOutAudio);
-        pConfig->Write(wxT("/Audio/TxIn"),              wxGetApp().m_textVoiceInput);
-        pConfig->Write(wxT("/Audio/TxOut"),             wxGetApp().m_textVoiceOutput);
-        pConfig->Write(wxT("/Audio/SampleRate"),        wxGetApp().m_strSampleRate);
+        pConfig->Write(wxT("/Audio/soundCard1InDeviceNum"),       g_soundCard1InDeviceNum);
+        pConfig->Write(wxT("/Audio/soundCard1OutDeviceNum"),      g_soundCard1OutDeviceNum);
+        pConfig->Write(wxT("/Audio/soundCard1SampleRate"),        g_soundCard1SampleRate );
+
+        pConfig->Write(wxT("/Audio/soundCard2InDeviceNum"),       g_soundCard2InDeviceNum);
+        pConfig->Write(wxT("/Audio/soundCard2OutDeviceNum"),      g_soundCard2OutDeviceNum);
+        pConfig->Write(wxT("/Audio/soundCard2SampleRate"),        g_soundCard2SampleRate );
 
         pConfig->Write(wxT("/Rig/Port"),                wxGetApp().m_strRigCtrlPort);
         pConfig->Write(wxT("/Rig/Baud"),                wxGetApp().m_strRigCtrlBaud);
@@ -986,60 +983,93 @@ wxString MainFrame::LoadUserImage(wxImage& image)
 //-------------------------------------------------------------------------
 void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
 {
-    if((!m_RxRunning))
-    {
-        printf("starting ...\n");
-        
+    wxString startStop = m_togBtnOnOff->GetLabel();
+
+    // we are attempting to start
+
+    if (startStop.IsSameAs("Start")) {
+
         m_togBtnSplit->Enable();
         m_togRxID->Enable();
         m_togTxID->Enable();
         m_togBtnAnalog->Enable();
-        //m_togBtnALC->Enable();
         m_btnTogTX->Enable();
         m_togBtnLoopRx->Enable();
         m_togBtnLoopTx->Enable();
+        m_togBtnOnOff->SetLabel(wxT("Stop"));
 
         // init modem and codec states
+
         g_pFDMDV  = fdmdv_create();
         g_pCodec2 = codec2_create(CODEC2_MODE_1400);
         g_State = 0;
 
         // init click-tune states
+
         g_RxFreqOffsetHz = 50.0;
         g_RxFreqOffsetFreqRect.real = cos(g_RxFreqOffsetHz);
         g_RxFreqOffsetFreqRect.imag = sin(g_RxFreqOffsetHz);
         g_RxFreqOffsetPhaseRect.real = cos(0.0);
         g_RxFreqOffsetPhaseRect.imag = sin(0.0);
         
-#ifdef _USE_TIMER
-        //DMW Reenable for the nonce... // DR: disable this puppy for now as it's causing a lot of error messages
-        m_plotTimer.Start(_REFRESH_TIMER_PERIOD, wxTIMER_CONTINUOUS);
-#endif // _USE_TIMER
+        // attempt to start sound cards and tx/rx processing
 
-        // start sound cards
         startRxStream();
 
-        if (m_RxRunning)
-        {
-            m_togBtnOnOff->SetLabel(wxT("Stop"));
+        if (m_RxRunning) {
+
+            #ifdef _USE_TIMER
+            m_plotTimer.Start(_REFRESH_TIMER_PERIOD, wxTIMER_CONTINUOUS);
+            #endif // _USE_TIMER
         }
     }
-    else
-    {
+   
+    // Stop was pressed or start up failed 
+
+    if (startStop.IsSameAs("Stop") || !m_RxRunning ) {
+
+        #ifdef _USE_TIMER
+        m_plotTimer.Stop();
+        #endif // _USE_TIMER
+
+        stopRxStream();
+
+        fdmdv_destroy(g_pFDMDV);
+        codec2_destroy(g_pCodec2);
+
         m_togBtnSplit->Disable();
         m_togRxID->Disable();
         m_togTxID->Disable();
         m_togBtnAnalog->Disable();
-        //m_togBtnALC->Disable();
         m_btnTogTX->Disable();
         m_togBtnLoopRx->Disable();
         m_togBtnLoopTx->Disable();
-#ifdef _USE_TIMER
-        //DMW Reenable for the nonce...
-        m_plotTimer.Stop();
-#endif // _USE_TIMER
-        stopRxStream();
         m_togBtnOnOff->SetLabel(wxT("Start"));
+    }
+}
+
+//-------------------------------------------------------------------------
+// stopRxStream()
+//-------------------------------------------------------------------------
+void MainFrame::stopRxStream()
+{
+    if(m_RxRunning)
+    {
+        m_RxRunning = false;
+
+        m_rxPa->stop();
+        m_rxPa->streamClose();
+
+        if (g_nSoundCards == 2) {
+            m_txPa->stop();
+            m_txPa->streamClose();
+            delete m_txPa;
+        }
+
+        delete m_rxPa;
+        destroy_fifos();
+        destroy_src();
+        delete m_rxUserdata;
     }
 }
 
@@ -1067,7 +1097,6 @@ void MainFrame::OnTogBtnLoopTx( wxCommandEvent& event )
 
 }
 
-
 void MainFrame::destroy_fifos(void)
 {
     fifo_destroy(m_rxUserdata->infifo1);
@@ -1094,8 +1123,8 @@ void MainFrame::autoDetectSoundCards(PortAudioWrap *pa)
     // trap zero sound devices
 
     if (pa->getDeviceCount() == 0) {
-    wxMessageBox(wxT("No sound devices found"), wxT("Error"), wxOK);
-    return;
+        wxMessageBox(wxT("No sound devices found"), wxT("Error"), wxOK);
+        return;
     }
 
     for(i=0; i<pa->getDeviceCount(); i++) {
@@ -1119,17 +1148,15 @@ int MainFrame::initPortAudioDevice(PortAudioWrap *pa, int inDevice, int outDevic
     char s[256];
 
     if (inDevice == paNoDevice) {
-    sprintf(s,"No input audio device available for Sound Card %d", soundCard);
-    wxString wxs(s);
-    wxMessageBox(wxs, wxT("Error"), wxOK);
+        sprintf(s,"No input audio device available for Sound Card %d", soundCard);
+        wxString wxs(s);
+        wxMessageBox(wxs, wxT("Error"), wxOK);
     }
     if (outDevice == paNoDevice) {
-    sprintf(s,"No output audio device available for Sound Card %d", soundCard);
-    wxString wxs(s);
-    wxMessageBox(wxs, wxT("Error"), wxOK);
+        sprintf(s,"No output audio device available for Sound Card %d", soundCard);
+        wxString wxs(s);
+        wxMessageBox(wxs, wxT("Error"), wxOK);
     }
-
-    printf("inDevice = %d outDevice = %d\n", inDevice, outDevice);
 
     // init input params
 
@@ -1155,7 +1182,7 @@ int MainFrame::initPortAudioDevice(PortAudioWrap *pa, int inDevice, int outDevic
        equal PA_PFB, for example when I set PA_FPB to 960 I got
        framesPerBuffer = 1024.
     */
-    printf("Sound Card %d Sample rate %d\n", soundCard, sampleRate);
+
     pa->setFramesPerBuffer(PA_FPB);
     pa->setSampleRate(sampleRate);
     pa->setStreamFlags(0);
@@ -1177,32 +1204,42 @@ void MainFrame::startRxStream()
 
         m_RxRunning = true;
 
-        m_rxPa = new PortAudioWrap();
-        autoDetectSoundCards(m_rxPa);
+        if(Pa_Initialize())
+        {
+            wxMessageBox(wxT("Port Audio failed to initialize"), wxT("Pa_Initialize"), wxOK);
+        }
 
+        m_rxPa = new PortAudioWrap();
+        //autoDetectSoundCards(m_rxPa);
+
+        if (g_nSoundCards == 0) {
+            wxMessageBox(wxT("No Sound Cards configured, use Tools - Audio Config to configure"), wxT("Error"), wxOK);
+            delete m_rxPa;
+            m_RxRunning = false;
+            return;
+        }
+                
         // Init Sound card 1 ----------------------------------------------
 
-        if ((g_soundCard1InDeviceNum != -1) || (g_soundCard1OutDeviceNum != -1)) {
+        assert((g_soundCard1InDeviceNum != -1) && (g_soundCard1OutDeviceNum != -1));
 
-            // user has specified the sound card device
+        // sanity check on sound card device numbers
 
-            if ((m_rxPa->getDeviceCount() < g_soundCard1InDeviceNum) ||
-                (m_rxPa->getDeviceCount() < g_soundCard1OutDeviceNum)) {
-                wxMessageBox(wxT("Sound Card 1 not present"), wxT("Error"), wxOK);
-                delete m_rxPa;
-                return;
-            }
+        printf("m_rxPa->getDeviceCount() %d\n", m_rxPa->getDeviceCount());
 
-            m_rxDevIn = g_soundCard1InDeviceNum;
-            m_rxDevOut = g_soundCard1OutDeviceNum;
+        if ((m_rxPa->getDeviceCount() < g_soundCard1InDeviceNum) ||
+            (m_rxPa->getDeviceCount() < g_soundCard1OutDeviceNum)) {
+            wxMessageBox(wxT("Sound Card 1 not present"), wxT("Error"), wxOK);
+            delete m_rxPa;
+            m_RxRunning = false;
+            return;
         }
-        else {
-            // not specified - use default
-            m_rxDevIn = m_rxPa->getDefaultInputDevice();
-            m_rxDevOut = m_rxPa->getDefaultOutputDevice();
-        }
+
+        m_rxDevIn = g_soundCard1InDeviceNum;
+        m_rxDevOut = g_soundCard1OutDeviceNum;
 
         if (initPortAudioDevice(m_rxPa, m_rxDevIn, m_rxDevOut, 1, g_soundCard1SampleRate) != 0) {
+            wxMessageBox(wxT("Can't start Sound Card 1"), wxT("Error"), wxOK);
             delete m_rxPa;
             m_RxRunning = false;
             return;
@@ -1215,13 +1252,15 @@ void MainFrame::startRxStream()
             m_txPa = new PortAudioWrap();
 
             assert((g_soundCard2InDeviceNum != -1) && (g_soundCard2OutDeviceNum != -1) );
-            printf("m_txPa->getDeviceCount() %d\n", m_txPa->getDeviceCount());
+
+            // sanity check on sound card device numbers
 
             if ((m_txPa->getDeviceCount() < g_soundCard2InDeviceNum) ||
                 (m_txPa->getDeviceCount() < g_soundCard2OutDeviceNum)) {
                 wxMessageBox(wxT("Sound Card 2 not present"), wxT("Error"), wxOK);
                 delete m_rxPa;
                 delete m_txPa;
+                m_RxRunning = false;
                 return;
             }
 
@@ -1229,6 +1268,7 @@ void MainFrame::startRxStream()
             m_txDevOut = g_soundCard2OutDeviceNum;
 
             if (initPortAudioDevice(m_txPa, m_txDevIn, m_txDevOut, 2, g_soundCard2SampleRate) != 0) {
+                wxMessageBox(wxT("Can't start Sound Card 2"), wxT("Error"), wxOK);
                 delete m_rxPa;
                 delete m_txPa;
                 m_RxRunning = false;
@@ -1357,35 +1397,6 @@ void MainFrame::startRxStream()
         
    }
  
-}
-
-//-------------------------------------------------------------------------
-// stopRxStream()
-//-------------------------------------------------------------------------
-void MainFrame::stopRxStream()
-{
-    if(m_RxRunning)
-    {
-        m_RxRunning = false;
-
-        m_rxPa->stop();
-        m_rxPa->streamClose();
-
-    if (g_nSoundCards == 2) {
-        m_txPa->stop();
-        m_txPa->streamClose();
-        delete m_txPa;
-    }
-
-    delete m_rxPa;
-    destroy_fifos();
-    destroy_src();
-        delete m_rxUserdata;
-
-        fdmdv_destroy(g_pFDMDV);
-        codec2_destroy(g_pCodec2);
-    }
-
 }
 
 
