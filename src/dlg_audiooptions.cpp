@@ -297,7 +297,12 @@ void AudioOptsDialog::OnInitDialog( wxInitDialogEvent& event )
 
 int AudioOptsDialog::setTextCtrlIfDevNumValid(wxTextCtrl *textCtrl, wxListCtrl *listCtrl, int devNum)
 {
-    if (devNum > listCtrl->GetItemCount()) {
+    // listCtrl->GetItemCount() will be one more than the number of
+    // sound devices as "none" is at the end of the list.  This test
+    // traps if a sound device devNum no longer exists.
+    
+    int maxDevNum = listCtrl->GetItemCount() - 2;
+    if (devNum > maxDevNum) {
         textCtrl->SetValue("none");
         return -1;
     }

@@ -192,11 +192,6 @@ class MainFrame : public TopFrame
         PortAudioWrap           *m_rxPa;
         PortAudioWrap           *m_txPa;
         paCallBackData          *m_rxUserdata;
-        paCallBackData          *m_txUserdata;
-        PaDeviceIndex           m_rxDevIn;
-        PaDeviceIndex           m_rxDevOut;
-        PaDeviceIndex           m_txDevIn;
-        PaDeviceIndex           m_txDevOut;
         PaError                 m_rxErr;
         PaError                 m_txErr;
 #ifdef _USE_TIMER
@@ -240,7 +235,7 @@ class MainFrame : public TopFrame
                                             CODEC2  *c2              // Codec 2 states
                         );
 
-    int initPortAudioDevice(PortAudioWrap *pa, int inDevice, int outDevice, int soundCard, int sampleRate);
+    void initPortAudioDevice(PortAudioWrap *pa, int inDevice, int outDevice, int soundCard, int sampleRate);
 
  protected:
         // protected event handlers

@@ -1145,20 +1145,13 @@ void MainFrame::autoDetectSoundCards(PortAudioWrap *pa)
     }
 }
 
-int MainFrame::initPortAudioDevice(PortAudioWrap *pa, int inDevice, int outDevice, int soundCard, int sampleRate)
+void  MainFrame::initPortAudioDevice(PortAudioWrap *pa, int inDevice, int outDevice, int soundCard, int sampleRate)
 {
-    char s[256];
+    char    s[256];
 
-    if (inDevice == paNoDevice) {
-        sprintf(s,"No input audio device available for Sound Card %d", soundCard);
-        wxString wxs(s);
-        wxMessageBox(wxs, wxT("Error"), wxOK);
-    }
-    if (outDevice == paNoDevice) {
-        sprintf(s,"No output audio device available for Sound Card %d", soundCard);
-        wxString wxs(s);
-        wxMessageBox(wxs, wxT("Error"), wxOK);
-    }
+    // Note all of the wrapper functions below just set values in a
+    // portaudio struct so can't return any errors. So no need to trap
+    // any errors in this function.
 
     // init input params
 
@@ -1188,8 +1181,6 @@ int MainFrame::initPortAudioDevice(PortAudioWrap *pa, int inDevice, int outDevic
     pa->setFramesPerBuffer(PA_FPB);
     pa->setSampleRate(sampleRate);
     pa->setStreamFlags(0);
-
-    return 0;
 }
 
 //-------------------------------------------------------------------------
@@ -1212,8 +1203,7 @@ void MainFrame::startRxStream()
         }
 
         m_rxPa = new PortAudioWrap();
-        //autoDetectSoundCards(m_rxPa);
-
+ 
         if (g_nSoundCards == 0) {
             wxMessageBox(wxT("No Sound Cards configured, use Tools - Audio Config to configure"), wxT("Error"), wxOK);
             delete m_rxPa;
@@ -1223,29 +1213,17 @@ void MainFrame::startRxStream()
                 
         // Init Sound card 1 ----------------------------------------------
 
-        assert((g_soundCard1InDeviceNum != -1) && (g_soundCard1OutDeviceNum != -1));
-
         // sanity check on sound card device numbers
 
-        printf("m_rxPa->getDeviceCount() %d\n", m_rxPa->getDeviceCount());
-
-        if ((m_rxPa->getDeviceCount() < g_soundCard1InDeviceNum) ||
-            (m_rxPa->getDeviceCount() < g_soundCard1OutDeviceNum)) {
+        if ((m_rxPa->getDeviceCount() <= g_soundCard1InDeviceNum) ||
+            (m_rxPa->getDeviceCount() <= g_soundCard1OutDeviceNum)) {
             wxMessageBox(wxT("Sound Card 1 not present"), wxT("Error"), wxOK);
             delete m_rxPa;
             m_RxRunning = false;
             return;
         }
 
-        m_rxDevIn = g_soundCard1InDeviceNum;
-        m_rxDevOut = g_soundCard1OutDeviceNum;
-
-        if (initPortAudioDevice(m_rxPa, m_rxDevIn, m_rxDevOut, 1, g_soundCard1SampleRate) != 0) {
-            wxMessageBox(wxT("Can't start Sound Card 1"), wxT("Error"), wxOK);
-            delete m_rxPa;
-            m_RxRunning = false;
-            return;
-        }
+        initPortAudioDevice(m_rxPa, g_soundCard1InDeviceNum, g_soundCard1OutDeviceNum, 1, g_soundCard1SampleRate);
 
         // Init Sound Card 2 ------------------------------------------------
 
@@ -1253,12 +1231,14 @@ void MainFrame::startRxStream()
 
             m_txPa = new PortAudioWrap();
 
-            assert((g_soundCard2InDeviceNum != -1) && (g_soundCard2OutDeviceNum != -1) );
-
             // sanity check on sound card device numbers
 
-            if ((m_txPa->getDeviceCount() < g_soundCard2InDeviceNum) ||
-                (m_txPa->getDeviceCount() < g_soundCard2OutDeviceNum)) {
+            //printf("m_txPa->getDeviceCount(): %d\n", m_txPa->getDeviceCount());
+            //printf("g_soundCard2InDeviceNum: %d\n", g_soundCard2InDeviceNum);
+            //printf("g_soundCard2OutDeviceNum: %d\n", g_soundCard2OutDeviceNum);
+
+            if ((m_txPa->getDeviceCount() <= g_soundCard2InDeviceNum) ||
+                (m_txPa->getDeviceCount() <= g_soundCard2OutDeviceNum)) {
                 wxMessageBox(wxT("Sound Card 2 not present"), wxT("Error"), wxOK);
                 delete m_rxPa;
                 delete m_txPa;
@@ -1266,16 +1246,8 @@ void MainFrame::startRxStream()
                 return;
             }
 
-            m_txDevIn = g_soundCard2InDeviceNum;
-            m_txDevOut = g_soundCard2OutDeviceNum;
 
-            if (initPortAudioDevice(m_txPa, m_txDevIn, m_txDevOut, 2, g_soundCard2SampleRate) != 0) {
-                wxMessageBox(wxT("Can't start Sound Card 2"), wxT("Error"), wxOK);
-                delete m_rxPa;
-                delete m_txPa;
-                m_RxRunning = false;
-                return;
-            }
+            initPortAudioDevice(m_txPa, g_soundCard2InDeviceNum, g_soundCard2OutDeviceNum, 2, g_soundCard2SampleRate);
         }
 
         // Init call back data structure ----------------------------------------------
@@ -1359,8 +1331,7 @@ void MainFrame::startRxStream()
         // Start sound card 2 ----------------------------------------------------------
 
         if (g_nSoundCards == 2) {
-            printf("starting sound card 2...\n");
-
+ 
             // question: can we use same callback data
             // (m_rxUserdata)or both sound card callbacks?  Is there a
             // chance of them both being called at the same time?  We
