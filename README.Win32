@@ -5,18 +5,18 @@ Debugging Under Windows
 -----------------------
 
 printfs don't appear until after the program finishes.  wxLogDebug()
-works but you need to run DbgView available from
+works but you need to run DebugView available from
 http://www.sysinternals.com to capture the messages.
 
-Notes on building fdmdv2 for Windows
-------------------------------------
+Building fdmdv2 for Windows
+---------------------------
 
 This is how David R did it, Dave Witten used a different approach.
 Many variations are possible.
 
 1. Install MinGW & the mysys shell
    + pwd -W prints true Win32 directory
-   + I also installed emacs and a svn binary
+   + I also installed emacs, "tortise svn", and DebugView
 
 2. "make install" for various packages below put DLLs in /usr/local/lib
    "cd /usr/local/lib; pwd -W" to find the Win32 directory
@@ -44,5 +44,5 @@ Many variations are possible.
 
 7. svn co fdmdv2
    cd fdmdv2/src
-   Make -f Makefile.Win32
+   make -f Makefile.Win32
 

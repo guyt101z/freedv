@@ -151,26 +151,26 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     m_gaugeSNR = new wxGauge(this, wxID_ANY, 20, wxDefaultPosition, wxSize(15,135), wxGA_SMOOTH|wxGA_VERTICAL);
     m_gaugeSNR->SetToolTip(_("Displays signal to noise ratio in dB."));
     snrSizer->Add(m_gaugeSNR, 1, wxALIGN_CENTER_HORIZONTAL|wxALL, 10);
-    wxBoxSizer* bSizer29;
-    bSizer29 = new wxBoxSizer(wxVERTICAL);
 
     //------------------------------
     // Box for S/N ratio (Numeric)
     //------------------------------
-    m_textSNR = new wxStaticText(this, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE);
+    //wxBoxSizer* bSizer29;
+    //bSizer29 = new wxBoxSizer(wxVERTICAL);
+    m_textSNR = new wxStaticText(this, wxID_ANY, wxT(" 0.0"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE);
     //m_textSNR = new wxStaticText(this, wxID_ANY, wxEmptyString, wxPoint(-1,-1), wxSize(35,25), wxTE_READONLY);
-    m_textSNR->SetToolTip(_("Show SNR ratio numerically."));
-    m_textSNR->SetMinSize(wxSize(35,25));
-    bSizer29->Add(m_textSNR, 0, wxALIGN_CENTER|wxALL, 1);
-    snrSizer->Add(bSizer29, 0, wxEXPAND, 1);
-    leftSizer->Add(snrSizer, 2, wxALIGN_CENTER|wxALL|wxEXPAND, 1);
-
-    wxStaticBoxSizer* levelSizer;
-    levelSizer = new wxStaticBoxSizer(new wxStaticBox(this, wxID_ANY, _("Level")), wxVERTICAL);
+    //m_textSNR->SetToolTip(_("Show SNR ratio numerically."));
+    //m_textSNR->SetMinSize(wxSize(35,25));
+    //bSizer29->Add(m_textSNR, 0, wxALIGN_CENTER|wxALL, 1);
+    //snrSizer->Add(bSizer29, 0, wxEXPAND, 1);
+    snrSizer->Add(m_textSNR, 0, wxALIGN_CENTER_HORIZONTAL, 1);
+    leftSizer->Add(snrSizer, 2, wxALIGN_CENTER_HORIZONTAL|wxEXPAND|wxALL, 1);
 
     //------------------------------
     // Signal Level(vert. bargraph)
     //------------------------------
+    wxStaticBoxSizer* levelSizer;
+    levelSizer = new wxStaticBoxSizer(new wxStaticBox(this, wxID_ANY, _("Level")), wxVERTICAL);
     m_gaugeLevel = new wxGauge(this, wxID_ANY, 100, wxDefaultPosition, wxSize(15,135), wxGA_SMOOTH|wxGA_VERTICAL);
     m_gaugeLevel->SetToolTip(_("Display signal level."));
     levelSizer->Add(m_gaugeLevel, 1, wxALIGN_CENTER_HORIZONTAL|wxALL, 10);
@@ -186,7 +186,7 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     upperSizer = new wxBoxSizer(wxVERTICAL);
 
     //=====================================================
-    // Tabbed Notebook control containing display graphs
+    // Tabbed Notebppk control containing display graphs
     //=====================================================
     //m_auiNbookCtrl = new wxAuiNotebook(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxAUI_NB_BOTTOM|wxAUI_NB_DEFAULT_STYLE);
     //long style = wxAUI_NB_TAB_SPLIT | wxAUI_NB_TAB_MOVE | wxAUI_NB_SCROLL_BUTTONS | wxAUI_NB_CLOSE_ON_ACTIVE_TAB | wxAUI_NB_MIDDLE_CLICK_CLOSE;

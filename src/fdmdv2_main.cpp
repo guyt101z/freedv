@@ -95,7 +95,7 @@ IMPLEMENT_APP(MainApp);
 //-------------------------------------------------------------------------
 bool MainApp::OnInit()
 {
-    g_file = fopen("/home/david/codec2-dev/raw/hts1a.raw","rb");
+    g_file = fopen("../../codec2-dev/raw/hts1a.raw","rb");
     if (g_file == NULL)
         printf("reading hts1a disabled...\n");
 
@@ -423,7 +423,7 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
 
     if (snr_limited < -9.0) snr_limited = -9.0; // stop text box overflow
     char snr[15];
-    sprintf(snr, "%4.1f", snr_limited);
+    sprintf(snr, "%3.1f", snr_limited);
     wxString snr_string(snr);
     m_textSNR->SetLabel(snr_string);
 
