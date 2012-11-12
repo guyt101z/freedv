@@ -1479,6 +1479,8 @@ int MainFrame::rxCallback(
     short           *wptr    = (short*)outputBuffer;
 
     // temp buffers re-used by tx and rx processing
+    // signals in in48k/out48k are at a maximum sample rate of 48k, could be 44.1kHz
+    // depending on sound hardware.
 
     short           in8k_short[2*N8];
     short           in48k_short[2*N48];
@@ -1526,11 +1528,13 @@ int MainFrame::rxCallback(
 
     // while we have enough input samples available ...
 
-    while (fifo_read(cbData->infifo1, in48k_short, N48) == 0)
+    int nsam = g_soundCard1SampleRate * (float)N8/FS;
+    assert(nsam <= N48);
+    while (fifo_read(cbData->infifo1, in48k_short, nsam) == 0)
     {
         int n8k;
 
-        n8k = resample(cbData->insrc1, in8k_short, in48k_short, FS, g_soundCard1SampleRate, N8, N48);
+        n8k = resample(cbData->insrc1, in8k_short, in48k_short, FS, g_soundCard1SampleRate, N8, nsam);
         fifo_write(cbData->rxinfifo, in8k_short, n8k);
 
         resample_for_plot(g_plotDemodInFifo, in8k_short, n8k);
