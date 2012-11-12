@@ -95,7 +95,7 @@ TODO
 
 [ ] Stopping Waterfall
     + When Stop pressed lower 25% of Waterfall isn't erased
-[ ] Axis labels on Waterfall incorrect
+[X] Axis labels on Waterfall incorrect
 [ ] CPU load very high for waterfall, proportional to screen size
 [X] resizing Waterfall
     + bit map is used for memory of waterfall, so resizing will cause some
@@ -105,19 +105,63 @@ TODO
     pressed together
 [ ] tell take lights for over/underflow realtime type issues
 [ ] lights for clipping of audio input/ouput
+    + level gauge?
+
+[ ] release clean up
+    [ ] remove anything that doesn't work (menus, buttons) from GUI
+    [ ] help about with URL (hyperlink?) to web site
+    [ ] if you press start and headphones unplugged (ie one sound card missing), it
+        shouldn't crash
+    [ ] do we keep/put effort into getting working ./configure && Makefile?
 
 IDEAS
 =====
 
-1. Tabbed page option that draws block diagram of system and draws line
-between sound devices and modem blocks.  Lines move depending if we
-are in sync, audio pass thru etc
+1. Tabbed page option that draws block diagram of system and draws
+   line between sound devices and modem blocks.  Lines move depending
+   if we are in sync, audio pass thru etc
 
-2. On sound device for each "port" make a file one of the options, so we can 
+2. Way to I/O to/from files on each "port", for example:
+   + monitor input speech or feed input speech
 
-3. (Thomas Kocourek n4fwd) Context sesnitive help.
+3. (Thomas Kocourek n4fwd) Context senditive help.
 
 4. Look at how people hook up and use program, stop common mistakes or assumptions
 
 5. speech Waveform I/O.  Look for clipping
 
+6. Should SNR (i) respond more quickly (ii) be smoother with less
+   variation for a continuous signal?
+
+7. Look at performance with channels with impulsive noise or fading.
+   Does it lose sync too easily?  Should it track thru a few frames of
+   fading?  For example if sync sequcne lost we could mute but not do
+   coarse freq for a few frames.
+
+8. Simulate channel errors including QRM of an adjacent SSB signal.
+   How can we detect partial obscuring of tones and what do we do?
+
+9. Squelch implementation.  Effect of SNR bouncing around might be to
+   have audio cut in and out.  We might need a better way of
+   triggering mute, such as amplitude of pilots, or smoother SNR.  Or
+   hysteresis in Squelch.
+
+Test Plan
+---------
+
+1. Remove ~/.FDMDV and do a fresh install
+
+User Manual Notes
+-----------------
+
+Count 5 seconds when removing/installing USB sound devices before
+pressing refesh.
+
+Describe what a valid one card and two card configuration looks like.
+Draw a block diagram, image of set up dialog.
+
+What a good scatter diagram/spectrum looks like
+
+Setting up in audio loopback
+
+Explain one and two soundcard modes
