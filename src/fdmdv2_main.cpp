@@ -423,7 +423,7 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
 
     if (snr_limited < -9.0) snr_limited = -9.0; // stop text box overflow
     char snr[15];
-    sprintf(snr, "%3.1f", snr_limited);
+    sprintf(snr, "%4.1f", snr_limited);
     wxString snr_string(snr);
     m_textSNR->SetLabel(snr_string);
 
@@ -433,10 +433,14 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
 
     // sync LED
 
-    if (g_State)
+    if (g_State) {
         m_rbSync->SetForegroundColour( wxColour( 0, 255, 0 ) );
-    else
+        m_rbSync->SetValue(true);
+    }
+    else {
         m_rbSync->SetForegroundColour( wxColour( 255, 0, 0 ) );
+        m_rbSync->SetValue(false);
+    }
 
 }
 #endif
