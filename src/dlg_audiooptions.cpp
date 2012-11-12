@@ -596,9 +596,9 @@ int AudioOptsDialog:: buildListOfSupportedSampleRates(wxComboBox *cbSampleRate, 
             err = Pa_IsFormatSupported(NULL, &outputParameters, standardSampleRates[i]);
 
         if( err == paFormatIsSupported ) {
-            str.Printf("%6.0f", standardSampleRates[i]);
+            str.Printf("%i", (int)standardSampleRates[i]);
             cbSampleRate->AppendString(str);
-            printf("%6.0f  ", standardSampleRates[i]);
+            printf("%i ", (int)standardSampleRates[i]);
             numSampleRates++;
         }
     }
@@ -713,7 +713,7 @@ void AudioOptsDialog::populateParams(AudioInfoDisplay ai)
             buf.Printf(wxT("%s"), Pa_GetHostApiInfo(deviceInfo->hostApi)->name);
             ctrl->SetItem(idx, col++, buf);
 
-            buf.Printf(wxT("%6.0f"), deviceInfo->defaultSampleRate);
+            buf.Printf(wxT("%i"), (int)deviceInfo->defaultSampleRate);
             ctrl->SetItem(idx, col++, buf);
 
             if (in_out == AUDIO_IN)
