@@ -164,6 +164,7 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     bSizer29->Add(m_textSNR, 0, wxALIGN_CENTER|wxALL, 1);
     snrSizer->Add(bSizer29, 0, wxEXPAND, 1);
     leftSizer->Add(snrSizer, 2, wxALIGN_CENTER|wxALL|wxEXPAND, 1);
+
     wxStaticBoxSizer* levelSizer;
     levelSizer = new wxStaticBoxSizer(new wxStaticBox(this, wxID_ANY, _("Level")), wxVERTICAL);
 
@@ -185,7 +186,7 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     upperSizer = new wxBoxSizer(wxVERTICAL);
 
     //=====================================================
-    // Tabbed Notebppk control containing display graphs
+    // Tabbed Notebook control containing display graphs
     //=====================================================
     //m_auiNbookCtrl = new wxAuiNotebook(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxAUI_NB_BOTTOM|wxAUI_NB_DEFAULT_STYLE);
     //long style = wxAUI_NB_TAB_SPLIT | wxAUI_NB_TAB_MOVE | wxAUI_NB_SCROLL_BUTTONS | wxAUI_NB_CLOSE_ON_ACTIVE_TAB | wxAUI_NB_MIDDLE_CLICK_CLOSE;
