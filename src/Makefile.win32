@@ -9,7 +9,7 @@ CODEC2_PATH=$(HOME)/codec2-dev
 INCLUDE_PATH=/usr/local/include
 
 WX_CONFIG=wx-config
-WX_CPPFLAGS = $(shell $(WX_CONFIG) --cxxflags)
+WX_CPPFLAGS = $(shell $(WX_CONFIG) --cxxflags) -D__WXDEBUG__
 WX_LIBS = $(shell $(WX_CONFIG) --libs core, base, aui, adv)
 CODEC2_INC=$(CODEC2_PATH)/src 
 CODEC2_LIB=$(CODEC2_PATH)/src/.libs/libcodec2.a

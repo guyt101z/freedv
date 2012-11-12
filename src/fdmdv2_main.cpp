@@ -157,6 +157,10 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     int y = pConfig->Read(wxT("/MainFrame/left"),      50);
     int w = pConfig->Read(wxT("/MainFrame/width"),     650);
     int h = pConfig->Read(wxT("/MainFrame/height"),    400);
+
+    // note: run DbgView program to see this message under windows
+    wxLogDebug("x = %d y = %d w = %d h = %d\n", x,y,w,h);
+
     wxGetApp().m_show_wf      = pConfig->Read(wxT("/MainFrame/show_wf"),      1);
     wxGetApp().m_show_spect   = pConfig->Read(wxT("/MainFrame/show_spect"),   1);
     wxGetApp().m_show_scatter = pConfig->Read(wxT("/MainFrame/show_scatter"), 1);

@@ -311,7 +311,7 @@ int AudioOptsDialog::setTextCtrlIfDevNumValid(wxTextCtrl *textCtrl, wxListCtrl *
         printf("aDevNum: %d devNum: %d\n", aDevNum, devNum);
         if (aDevNum == devNum) {
             found_devNum = 1;
-            textCtrl->SetValue(listCtrl->GetItemText(i, 0));
+            textCtrl->SetValue(listCtrl->GetItemText(i, 0) + " (" + wxString::Format(wxT("%i"),devNum) + ")");
         }
     }
 
@@ -752,11 +752,14 @@ void AudioOptsDialog::OnDeviceSelect(wxComboBox *cbSampleRate,
 {
 
     wxString devName = listCtrlDevices->GetItemText(index, 0);
-    textCtrl->SetValue(devName);
-    if (devName.IsSameAs("none"))
+     if (devName.IsSameAs("none")) {
         *devNum = -1;
+        textCtrl->SetValue("none");
+    }
     else {
         *devNum = wxAtoi(listCtrlDevices->GetItemText(index, 1));
+        textCtrl->SetValue(devName + " (" + wxString::Format(wxT("%i"),*devNum) + ")");
+
         int numSampleRates = buildListOfSupportedSampleRates(cbSampleRate, *devNum, in_out);
         if (numSampleRates) {
             wxString defSampleRate = listCtrlDevices->GetItemText(index, 3);        

@@ -1,6 +1,13 @@
 README.Win32
 David Rowe 27 Oct 2012
 
+Debugging Under Windows
+-----------------------
+
+printfs don't appear until after the program finishes.  wxLogDebug()
+works but you need to run DbgView available from
+http://www.sysinternals.com to capture the messages.
+
 Notes on building fdmdv2 for Windows
 ------------------------------------
 
