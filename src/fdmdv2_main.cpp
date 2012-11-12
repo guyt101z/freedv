@@ -1147,8 +1147,6 @@ void MainFrame::autoDetectSoundCards(PortAudioWrap *pa)
 
 void  MainFrame::initPortAudioDevice(PortAudioWrap *pa, int inDevice, int outDevice, int soundCard, int sampleRate)
 {
-    char    s[256];
-
     // Note all of the wrapper functions below just set values in a
     // portaudio struct so can't return any errors. So no need to trap
     // any errors in this function.

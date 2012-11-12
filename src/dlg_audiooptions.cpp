@@ -34,7 +34,7 @@ void AudioOptsDialog::Pa_Init(void)
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 AudioOptsDialog::AudioOptsDialog(wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style) : wxDialog(parent, id, title, pos, size, style)
 {
-    this->SetSizeHints(wxSize(800, 400), wxDefaultSize);
+    this->SetSizeHints(wxSize(850, 600), wxDefaultSize);
 
     Pa_Init();
 
@@ -64,9 +64,10 @@ AudioOptsDialog::AudioOptsDialog(wxWindow* parent, wxWindowID id, const wxString
     m_staticText6->Wrap(-1);
     bSizer811->Add(m_staticText6, 0, wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT|wxALL, 5);
     m_cbSampleRateRxIn = new wxComboBox(m_panelRx, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0, NULL, wxCB_DROPDOWN);
-    bSizer811->Add(m_cbSampleRateRxIn, 0, wxALL, 1);
+    bSizer811->Add(m_cbSampleRateRxIn, 0, wxALL, 2);
     sbSizer2->Add(bSizer811, 0, wxEXPAND, 5);
     gSizer4->Add(sbSizer2, 1, wxEXPAND, 5);
+
     wxStaticBoxSizer* sbSizer3;
     sbSizer3 = new wxStaticBoxSizer(new wxStaticBox(m_panelRx, wxID_ANY, _("To Speaker/Headphones")), wxVERTICAL);
     m_listCtrlRxOutDevices = new wxListCtrl(m_panelRx, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLC_HRULES|wxLC_REPORT|wxLC_VRULES);
@@ -89,6 +90,7 @@ AudioOptsDialog::AudioOptsDialog(wxWindow* parent, wxWindowID id, const wxString
     m_panelRx->SetSizer(bSizer20);
     m_panelRx->Layout();
     bSizer20->Fit(m_panelRx);
+
     m_notebook1->AddPage(m_panelRx, _("Receive"), true);
     m_panelTx = new wxPanel(m_notebook1, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
     wxBoxSizer* bSizer18;
@@ -113,6 +115,7 @@ AudioOptsDialog::AudioOptsDialog(wxWindow* parent, wxWindowID id, const wxString
     bSizer83->Add(m_cbSampleRateTxIn, 0, wxALL, 1);
     sbSizer22->Add(bSizer83, 0, wxEXPAND, 2);
     gSizer2->Add(sbSizer22, 1, wxEXPAND, 5);
+
     wxStaticBoxSizer* sbSizer21;
     sbSizer21 = new wxStaticBoxSizer(new wxStaticBox(m_panelTx, wxID_ANY, _("To Radio")), wxVERTICAL);
     m_listCtrlTxOutDevices = new wxListCtrl(m_panelTx, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLC_HRULES|wxLC_REPORT|wxLC_VRULES);
@@ -136,6 +139,7 @@ AudioOptsDialog::AudioOptsDialog(wxWindow* parent, wxWindowID id, const wxString
     m_panelTx->Layout();
     bSizer18->Fit(m_panelTx);
     m_notebook1->AddPage(m_panelTx, _("Transmit"), false);
+
     m_panelAPI = new wxPanel(m_notebook1, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
     wxBoxSizer* bSizer12;
     bSizer12 = new wxBoxSizer(wxHORIZONTAL);
@@ -297,17 +301,26 @@ void AudioOptsDialog::OnInitDialog( wxInitDialogEvent& event )
 
 int AudioOptsDialog::setTextCtrlIfDevNumValid(wxTextCtrl *textCtrl, wxListCtrl *listCtrl, int devNum)
 {
-    // listCtrl->GetItemCount() will be one more than the number of
-    // sound devices as "none" is at the end of the list.  This test
-    // traps if a sound device devNum no longer exists.
-    
-    int maxDevNum = listCtrl->GetItemCount() - 2;
-    if (devNum > maxDevNum) {
+    int i, aDevNum, found_devNum;
+
+    // ignore last list entry as it is the "none" entry
+
+    found_devNum = 0;
+    for(i=0; i<listCtrl->GetItemCount()-1; i++) {
+        aDevNum = wxAtoi(listCtrl->GetItemText(i, 1));
+        printf("aDevNum: %d devNum: %d\n", aDevNum, devNum);
+        if (aDevNum == devNum) {
+            found_devNum = 1;
+            textCtrl->SetValue(listCtrl->GetItemText(i, 0));
+        }
+    }
+
+    if (found_devNum) 
+        return devNum;
+    else {
         textCtrl->SetValue("none");
         return -1;
     }
-    textCtrl->SetValue(listCtrl->GetItemText(devNum, 0));
-    return devNum;
 }
 
 
@@ -536,8 +549,11 @@ void AudioOptsDialog::OnDeviceSelect(wxListEvent& event)
 //-------------------------------------------------------------------------
 // DisplaySupportedSampleRates()
 //-------------------------------------------------------------------------
-void AudioOptsDialog::DisplaySupportedSampleRates(AudioInfoDisplay ai)
+int AudioOptsDialog:: buildListOfSupportedSampleRates(wxComboBox *cbSampleRate, int devNum, int in_out)
 {
+    // every sound device has a different list of supported sample rates, so
+    // we work out which ones are supported and populate the list ctrl
+
     static double standardSampleRates[] =
     {
         8000.0,     9600.0,
@@ -548,17 +564,47 @@ void AudioOptsDialog::DisplaySupportedSampleRates(AudioInfoDisplay ai)
         88200.0,    96000.0,
         192000.0,   -1          // negative terminated  list
     };
-    int i;
-    wxString str;
 
-    //printCount = 0;
+    const PaDeviceInfo  *deviceInfo;
+    PaStreamParameters   inputParameters, outputParameters;
+    PaError              err;
+    wxString             str;
+    int                  i, numSampleRates;
+
+    deviceInfo = Pa_GetDeviceInfo(devNum);
+
+    inputParameters.device = devNum;
+    inputParameters.channelCount = deviceInfo->maxInputChannels;
+    inputParameters.sampleFormat = paInt16;
+    inputParameters.suggestedLatency = 0;
+    inputParameters.hostApiSpecificStreamInfo = NULL;
+        
+    outputParameters.device = devNum;
+    outputParameters.channelCount = deviceInfo->maxOutputChannels;
+    outputParameters.sampleFormat = paInt16;
+    outputParameters.suggestedLatency = 0;
+    outputParameters.hostApiSpecificStreamInfo = NULL;
+    
+    cbSampleRate->Clear();
+    printf("devNum %d supports: ", devNum);
+    numSampleRates = 0;
     for(i = 0; standardSampleRates[i] > 0; i++)
-    {
-        str.Printf("%6.0f", standardSampleRates[i]);
-        ai.m_cbSampleRate->AppendString(str);
+    {      
+        if (in_out == AUDIO_IN)
+            err = Pa_IsFormatSupported(&inputParameters, NULL, standardSampleRates[i]);
+        else
+            err = Pa_IsFormatSupported(NULL, &outputParameters, standardSampleRates[i]);
 
+        if( err == paFormatIsSupported ) {
+            str.Printf("%6.0f", standardSampleRates[i]);
+            cbSampleRate->AppendString(str);
+            printf("%6.0f  ", standardSampleRates[i]);
+            numSampleRates++;
+        }
     }
-    ai.m_cbSampleRate->SetSelection(9);
+    printf("\n");
+
+    return numSampleRates;
 }
 
 //-------------------------------------------------------------------------
@@ -593,11 +639,9 @@ void AudioOptsDialog::showAPIInfo()
 void AudioOptsDialog::populateParams(AudioInfoDisplay ai)
 {
     const       PaDeviceInfo *deviceInfo = NULL;
-    int         j       = 0;
     wxListCtrl* ctrl    = ai.m_listDevices;
     int         in_out  = ai.direction;
     long        idx;
-    bool        defaultDisplayed = false;
     int         numDevices;
     wxListItem  listItem;
     wxString    buf;
@@ -605,29 +649,26 @@ void AudioOptsDialog::populateParams(AudioInfoDisplay ai)
     int         col = 0;
 
     numDevices = Pa_GetDeviceCount();
-    printf("numDevices: %d\n", numDevices);
 
     if(ctrl->GetColumnCount() > 0)
     {
         ctrl->ClearAll();
     }
 
-    #ifdef DFT_COL
-    listItem.SetAlign(wxLIST_FORMAT_CENTRE);
-    listItem.SetText(wxT("Dflt"));
-    idx = ctrl->InsertColumn(col, listItem);
-    ctrl->SetColumnWidth(col++, 37);
-    #endif
-
     listItem.SetAlign(wxLIST_FORMAT_LEFT);
     listItem.SetText(wxT("Device"));
     idx = ctrl->InsertColumn(col, listItem);
-    ctrl->SetColumnWidth(col++, 190);
+    ctrl->SetColumnWidth(col++, 300);
+
+    listItem.SetAlign(wxLIST_FORMAT_CENTRE);
+    listItem.SetText(wxT("ID"));
+    idx = ctrl->InsertColumn(col, listItem);
+    ctrl->SetColumnWidth(col++, 45);
 
     listItem.SetAlign(wxLIST_FORMAT_LEFT);
     listItem.SetText(wxT("API"));
     idx = ctrl->InsertColumn(col, listItem);
-    ctrl->SetColumnWidth(col++, 190);
+    ctrl->SetColumnWidth(col++, 100);
 
     if(in_out == AUDIO_IN)
     {
@@ -658,109 +699,73 @@ void AudioOptsDialog::populateParams(AudioInfoDisplay ai)
     {
         buf.Printf(wxT(""));
         deviceInfo = Pa_GetDeviceInfo(devn);
-        if(in_out == AUDIO_IN)
-        {
-            if(deviceInfo->maxInputChannels > 0)
-            {
-                col = 0;
-
-                #ifdef DFT_COL
-                defaultDisplayed = false;
-                if(devn == Pa_GetDefaultInputDevice())
-                {
-                    buf.Printf("->>");
-                    defaultDisplayed = true;
-                }
-                else if(devn == Pa_GetHostApiInfo(deviceInfo->hostApi)->defaultInputDevice)
-                {
-                    buf.Printf("-->");
-                    defaultDisplayed = true;
-                }
-                else
-                {
-                    buf.Printf("---");
-                    defaultDisplayed = false;
-                }
-                idx = ctrl->InsertItem(idx, buf);
-                col++;
-                #endif
-
-                buf.Printf(wxT("%s"), deviceInfo->name);
-                idx = ctrl->InsertItem(ctrl->GetItemCount(), buf);
-                col++;
-                if(defaultDisplayed)
-                {
-                    ai.m_textDevice->SetValue(buf);
-                }
-
-                buf.Printf(wxT("%s"), Pa_GetHostApiInfo(deviceInfo->hostApi)->name);
-                ctrl->SetItem(idx, col++, buf);
-
-                buf.Printf(wxT("%6.0f"), deviceInfo->defaultSampleRate);
-                ctrl->SetItem(idx, col++, buf);
-
-                buf.Printf(wxT("%8.4f"), deviceInfo->defaultLowInputLatency);
-                ctrl->SetItem(idx, col++, buf);
-
-                buf.Printf(wxT("%8.4f"), deviceInfo->defaultHighInputLatency);
-                ctrl->SetItem(idx, col++, buf);
-            }
-        }
-        else if(in_out == AUDIO_OUT)
+        if( ((in_out == AUDIO_IN) && (deviceInfo->maxInputChannels > 0)) ||
+            ((in_out == AUDIO_OUT) && (deviceInfo->maxOutputChannels > 0)))
         {
             col = 0;
-            if(deviceInfo->maxOutputChannels > 0)
-            {
-                #ifdef DFT_COL
-                defaultDisplayed = false;
-                if(devn == Pa_GetDefaultOutputDevice())
-                {
-                    buf.Printf("<<-");
-                    defaultDisplayed = true;
-                }
-                else if(devn == Pa_GetHostApiInfo(deviceInfo->hostApi)->defaultOutputDevice)
-                {
-                    buf.Printf("<--");
-                    defaultDisplayed = true;
-                }
-                else
-                {
-                    buf.Printf("---");
-                    defaultDisplayed = false;
-                }
-                #endif
+            buf.Printf(wxT("%s"), deviceInfo->name);
+            idx = ctrl->InsertItem(ctrl->GetItemCount(), buf);
+            col++;
+                
+            buf.Printf(wxT("%d"), devn);
+            ctrl->SetItem(idx, col++, buf);
 
-                buf.Printf(wxT("%s"), deviceInfo->name);
-                idx = ctrl->InsertItem(ctrl->GetItemCount(), buf);
-                col++;
-                if(defaultDisplayed)
-                {
-                    ai.m_textDevice->SetValue(buf);
-                }
+            buf.Printf(wxT("%s"), Pa_GetHostApiInfo(deviceInfo->hostApi)->name);
+            ctrl->SetItem(idx, col++, buf);
 
-                buf.Printf(wxT("%s"), Pa_GetHostApiInfo(deviceInfo->hostApi)->name);
-                ctrl->SetItem(idx, col++, buf);
+            buf.Printf(wxT("%6.0f"), deviceInfo->defaultSampleRate);
+            ctrl->SetItem(idx, col++, buf);
 
-                buf.Printf(wxT("%6.0f"), deviceInfo->defaultSampleRate);
-                ctrl->SetItem(idx, col++, buf);
+            if (in_out == AUDIO_IN)
+                buf.Printf(wxT("%8.4f"), deviceInfo->defaultLowInputLatency);
+            else
+                buf.Printf(wxT("%8.4f"), deviceInfo->defaultLowOutputLatency);               
+            ctrl->SetItem(idx, col++, buf);
 
-                buf.Printf(wxT("%8.4f"), deviceInfo->defaultLowOutputLatency);
-                ctrl->SetItem(idx, col++, buf);
-
-                buf.Printf(wxT("%8.4f"), deviceInfo->defaultHighOutputLatency);
-                ctrl->SetItem(idx, col++, buf);
-            }
-        }
-        j++;
-
+            if (in_out == AUDIO_IN)
+                buf.Printf(wxT("%8.4f"), deviceInfo->defaultHighInputLatency);
+            else
+                 buf.Printf(wxT("%8.4f"), deviceInfo->defaultHighOutputLatency);             
+            ctrl->SetItem(idx, col++, buf);
+        }        
     }
 
     // add "none" option at end
 
     buf.Printf(wxT("%s"), "none");
     idx = ctrl->InsertItem(ctrl->GetItemCount(), buf);
-        
-    DisplaySupportedSampleRates(ai);
+}
+
+//-------------------------------------------------------------------------
+// OnDeviceSelect()
+//-------------------------------------------------------------------------
+
+// helper function to set up "Device:" and "Sample Rate:" fields when
+// we click on a line in the list of devices box
+
+void AudioOptsDialog::OnDeviceSelect(wxComboBox *cbSampleRate, 
+                                     wxTextCtrl *textCtrl, 
+                                     int        *devNum, 
+                                     wxListCtrl *listCtrlDevices, 
+                                     int         index,
+                                     int         in_out)
+{
+
+    wxString devName = listCtrlDevices->GetItemText(index, 0);
+    textCtrl->SetValue(devName);
+    if (devName.IsSameAs("none"))
+        *devNum = -1;
+    else {
+        *devNum = wxAtoi(listCtrlDevices->GetItemText(index, 1));
+        int numSampleRates = buildListOfSupportedSampleRates(cbSampleRate, *devNum, in_out);
+        if (numSampleRates) {
+            wxString defSampleRate = listCtrlDevices->GetItemText(index, 3);        
+            cbSampleRate->SetValue(defSampleRate);
+        }
+        else {
+             cbSampleRate->SetValue("None");           
+        }
+    }
 }
 
 //-------------------------------------------------------------------------
@@ -768,18 +773,12 @@ void AudioOptsDialog::populateParams(AudioInfoDisplay ai)
 //-------------------------------------------------------------------------
 void AudioOptsDialog::OnRxInDeviceSelect(wxListEvent& evt)
 {
-    wxString dev, sampleRate;
-    int index = evt.GetIndex();
-
-    dev = m_listCtrlRxInDevices->GetItemText(index, 0);
-    m_textCtrlRxIn->SetValue(dev);
-    if (dev.IsSameAs("none"))
-        rxInAudioDeviceNum = -1;
-    else {
-        rxInAudioDeviceNum = index;
-        sampleRate = m_listCtrlRxInDevices->GetItemText(index, 2);
-        m_cbSampleRateRxIn->SetValue(sampleRate);
-    }
+    OnDeviceSelect(m_cbSampleRateRxIn, 
+                   m_textCtrlRxIn, 
+                   &rxInAudioDeviceNum, 
+                   m_listCtrlRxInDevices, 
+                   evt.GetIndex(),
+                   AUDIO_IN);
 }
 
 //-------------------------------------------------------------------------
@@ -787,18 +786,12 @@ void AudioOptsDialog::OnRxInDeviceSelect(wxListEvent& evt)
 //-------------------------------------------------------------------------
 void AudioOptsDialog::OnRxOutDeviceSelect(wxListEvent& evt)
 {
-    wxString dev, sampleRate;
-    int index = evt.GetIndex();
-
-    dev = m_listCtrlRxOutDevices->GetItemText(index, 0);
-    m_textCtrlRxOut->SetValue(dev);
-    if (dev.IsSameAs("none"))
-        rxOutAudioDeviceNum = -1;
-    else {
-        rxOutAudioDeviceNum = index;
-        sampleRate = m_listCtrlRxOutDevices->GetItemText(index, 2);
-        m_cbSampleRateRxOut->SetValue(sampleRate);
-    }
+    OnDeviceSelect(m_cbSampleRateRxOut, 
+                   m_textCtrlRxOut, 
+                   &rxOutAudioDeviceNum, 
+                   m_listCtrlRxOutDevices, 
+                   evt.GetIndex(),
+                   AUDIO_OUT);
 }
 
 //-------------------------------------------------------------------------
@@ -806,18 +799,12 @@ void AudioOptsDialog::OnRxOutDeviceSelect(wxListEvent& evt)
 //-------------------------------------------------------------------------
 void AudioOptsDialog::OnTxInDeviceSelect(wxListEvent& evt)
 {
-    wxString dev, sampleRate;
-    int index = evt.GetIndex();
-
-    dev = m_listCtrlTxInDevices->GetItemText(index, 0);
-    m_textCtrlTxIn->SetValue(dev);
-    if (dev.IsSameAs("none"))
-        txInAudioDeviceNum = -1;
-    else {
-        txInAudioDeviceNum = index;
-        sampleRate = m_listCtrlTxInDevices->GetItemText(index, 2);
-        m_cbSampleRateTxIn->SetValue(sampleRate);
-    }
+    OnDeviceSelect(m_cbSampleRateTxIn, 
+                   m_textCtrlTxIn, 
+                   &txInAudioDeviceNum, 
+                   m_listCtrlTxInDevices, 
+                   evt.GetIndex(),
+                   AUDIO_IN);
 }
 
 //-------------------------------------------------------------------------
@@ -825,18 +812,12 @@ void AudioOptsDialog::OnTxInDeviceSelect(wxListEvent& evt)
 //-------------------------------------------------------------------------
 void AudioOptsDialog::OnTxOutDeviceSelect(wxListEvent& evt)
 {
-    wxString dev, sampleRate;
-    int index = evt.GetIndex();
-
-    dev = m_listCtrlTxOutDevices->GetItemText(index, 0);
-    m_textCtrlTxOut->SetValue(dev);
-    if (dev.IsSameAs("none"))
-        txOutAudioDeviceNum = -1;
-    else {
-        txOutAudioDeviceNum = index;
-        sampleRate = m_listCtrlTxOutDevices->GetItemText(index, 2);
-        m_cbSampleRateTxOut->SetValue(sampleRate);
-    }
+    OnDeviceSelect(m_cbSampleRateTxOut, 
+                   m_textCtrlTxOut, 
+                   &txOutAudioDeviceNum, 
+                   m_listCtrlTxOutDevices, 
+                   evt.GetIndex(),
+                   AUDIO_OUT);
 }
 
 //-------------------------------------------------------------------------

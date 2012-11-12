@@ -54,12 +54,17 @@ class AudioOptsDialog : public wxDialog
         int             txInAudioDeviceNum;
         int             txOutAudioDeviceNum;
 
-       //void DisplaySupportedSampleRates(const PaStreamParameters *inputParameters, const PaStreamParameters *outputParameters);
-        void DisplaySupportedSampleRates(AudioInfoDisplay ai);
+        int buildListOfSupportedSampleRates(wxComboBox *cbSampleRate, int devNum, int in_out);
         void populateParams(AudioInfoDisplay);
         void showAPIInfo();
         int setTextCtrlIfDevNumValid(wxTextCtrl *textCtrl, wxListCtrl *listCtrl, int devNum);
         void Pa_Init(void);
+        void OnDeviceSelect(wxComboBox *cbSampleRate, 
+                            wxTextCtrl *textCtrl, 
+                            int        *devNum, 
+                            wxListCtrl *listCtrlDevices, 
+                            int         index,
+                            int         in_out);
 
         AudioInfoDisplay m_RxInDevices;
         AudioInfoDisplay m_RxOutDevices;
