@@ -71,6 +71,9 @@ AudioOptsDialog::AudioOptsDialog(wxWindow* parent, wxWindowID id, const wxString
     bSizer20 = new wxBoxSizer(wxVERTICAL);
     wxGridSizer* gSizer4;
     gSizer4 = new wxGridSizer(2, 1, 0, 0);
+
+    // Rx In -----------------------------------------------------------------------
+
     wxStaticBoxSizer* sbSizer2;
     sbSizer2 = new wxStaticBoxSizer(new wxStaticBox(m_panelRx, wxID_ANY, _("From Radio")), wxVERTICAL);
     m_listCtrlRxInDevices = new wxListCtrl(m_panelRx, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLC_HRULES|wxLC_REPORT|wxLC_VRULES);
@@ -89,17 +92,11 @@ AudioOptsDialog::AudioOptsDialog(wxWindow* parent, wxWindowID id, const wxString
     bSizer811->Add(m_cbSampleRateRxIn, 0, wxALIGN_CENTER_VERTICAL|wxALL, 2);
 
     buildTestControls(&m_plotScalarRxIn, &m_btnRxInTest, m_panelRx, bSizer811);
-    /*
-    m_btnRxInTest = new wxButton(m_panelRx, wxID_ANY, _("Test"), wxDefaultPosition, wxDefaultSize);
-    bSizer811->Add(m_btnRxInTest, 0, wxALIGN_CENTER_VERTICAL|wxALL, 2);
-    m_panelRxInTest = new wxPanel(m_panelRx, wxID_ANY, wxDefaultPosition, wxSize(TEST_WAVEFORM_X, TEST_WAVEFORM_Y), 0);
-    m_plotScalarRxIn = new PlotScalar((wxFrame*) m_panelRxInTest, TEST_WAVEFORM_PLOT_TIME, 1.0/TEST_WAVEFORM_PLOT_FS, -1, 1, 1, 0.2, "", 1);
-    m_plotScalarRxIn->SetClientSize(wxSize(TEST_WAVEFORM_X,TEST_WAVEFORM_Y));
-    bSizer811->Add(m_panelRxInTest, 0);
-    */
 
     sbSizer2->Add(bSizer811, 0, wxEXPAND, 5);
     gSizer4->Add(sbSizer2, 1, wxEXPAND, 5);
+
+    // Rx Out -----------------------------------------------------------------------
 
     wxStaticBoxSizer* sbSizer3;
     sbSizer3 = new wxStaticBoxSizer(new wxStaticBox(m_panelRx, wxID_ANY, _("To Speaker/Headphones")), wxVERTICAL);
@@ -118,18 +115,26 @@ AudioOptsDialog::AudioOptsDialog(wxWindow* parent, wxWindowID id, const wxString
     m_cbSampleRateRxOut = new wxComboBox(m_panelRx, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0, NULL, wxCB_DROPDOWN);
     bSizer81->Add(m_cbSampleRateRxOut, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
     sbSizer3->Add(bSizer81, 0, wxEXPAND, 2);
+ 
+    buildTestControls(&m_plotScalarRxOut, &m_btnRxOutTest, m_panelRx, bSizer81);
+
     gSizer4->Add(sbSizer3, 1, wxEXPAND, 2);
     bSizer20->Add(gSizer4, 1, wxEXPAND, 1);
     m_panelRx->SetSizer(bSizer20);
     m_panelRx->Layout();
     bSizer20->Fit(m_panelRx);
-
     m_notebook1->AddPage(m_panelRx, _("Receive"), true);
+
+    // Tx Tab -------------------------------------------------------------------------------
+
     m_panelTx = new wxPanel(m_notebook1, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
     wxBoxSizer* bSizer18;
     bSizer18 = new wxBoxSizer(wxVERTICAL);
     wxGridSizer* gSizer2;
     gSizer2 = new wxGridSizer(2, 1, 0, 0);
+
+    // Tx In ----------------------------------------------------------------------------------
+
     wxStaticBoxSizer* sbSizer22;
     sbSizer22 = new wxStaticBoxSizer(new wxStaticBox(m_panelTx, wxID_ANY, _("From Microphone")), wxVERTICAL);
     m_listCtrlTxInDevices = new wxListCtrl(m_panelTx, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLC_HRULES|wxLC_REPORT|wxLC_VRULES);
@@ -146,8 +151,13 @@ AudioOptsDialog::AudioOptsDialog(wxWindow* parent, wxWindowID id, const wxString
     bSizer83->Add(m_staticText11, 0, wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT|wxALL, 5);
     m_cbSampleRateTxIn = new wxComboBox(m_panelTx, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0, NULL, wxCB_DROPDOWN);
     bSizer83->Add(m_cbSampleRateTxIn, 0, wxALL, 1);
+
+    buildTestControls(&m_plotScalarTxIn, &m_btnTxInTest, m_panelTx, bSizer83);
+
     sbSizer22->Add(bSizer83, 0, wxEXPAND, 2);
     gSizer2->Add(sbSizer22, 1, wxEXPAND, 5);
+
+    // Tx Out ----------------------------------------------------------------------------------
 
     wxStaticBoxSizer* sbSizer21;
     sbSizer21 = new wxStaticBoxSizer(new wxStaticBox(m_panelTx, wxID_ANY, _("To Radio")), wxVERTICAL);
@@ -165,6 +175,9 @@ AudioOptsDialog::AudioOptsDialog(wxWindow* parent, wxWindowID id, const wxString
     bSizer82->Add(m_staticText71, 0, wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT|wxALL, 5);
     m_cbSampleRateTxOut = new wxComboBox(m_panelTx, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0, NULL, wxCB_DROPDOWN);
     bSizer82->Add(m_cbSampleRateTxOut, 0, wxALL, 1);
+
+    buildTestControls(&m_plotScalarTxOut, &m_btnTxOutTest, m_panelTx, bSizer82);
+
     sbSizer21->Add(bSizer82, 0, wxEXPAND, 2);
     gSizer2->Add(sbSizer21, 1, wxEXPAND, 5);
     bSizer18->Add(gSizer2, 1, wxEXPAND, 1);
@@ -172,6 +185,8 @@ AudioOptsDialog::AudioOptsDialog(wxWindow* parent, wxWindowID id, const wxString
     m_panelTx->Layout();
     bSizer18->Fit(m_panelTx);
     m_notebook1->AddPage(m_panelTx, _("Transmit"), false);
+
+    // API Tab -------------------------------------------------------------------
 
     m_panelAPI = new wxPanel(m_notebook1, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
     wxBoxSizer* bSizer12;
@@ -283,7 +298,11 @@ AudioOptsDialog::AudioOptsDialog(wxWindow* parent, wxWindowID id, const wxString
     m_listCtrlTxInDevices->Connect( wxEVT_COMMAND_LIST_ITEM_SELECTED, wxListEventHandler( AudioOptsDialog::OnTxInDeviceSelect ), NULL, this );
     m_listCtrlTxOutDevices->Connect( wxEVT_COMMAND_LIST_ITEM_SELECTED, wxListEventHandler( AudioOptsDialog::OnTxOutDeviceSelect ), NULL, this );
 
+    // wire up test buttons
     m_btnRxInTest->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( AudioOptsDialog::OnRxInTest ), NULL, this );
+    m_btnRxOutTest->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( AudioOptsDialog::OnRxOutTest ), NULL, this );
+    m_btnTxInTest->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( AudioOptsDialog::OnTxInTest ), NULL, this );
+    m_btnTxOutTest->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( AudioOptsDialog::OnTxOutTest ), NULL, this );
 
     m_btnRefresh->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( AudioOptsDialog::OnRefreshClick ), NULL, this );
     m_sdbSizer1Apply->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( AudioOptsDialog::OnApplyAudioParameters ), NULL, this );
@@ -319,6 +338,9 @@ AudioOptsDialog::~AudioOptsDialog()
     m_listCtrlTxOutDevices->Disconnect(wxEVT_COMMAND_LIST_ITEM_SELECTED, wxListEventHandler(AudioOptsDialog::OnTxOutDeviceSelect), NULL, this);
 
     m_btnRxInTest->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( AudioOptsDialog::OnRxInTest ), NULL, this );
+    m_btnRxOutTest->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( AudioOptsDialog::OnRxOutTest ), NULL, this );
+    m_btnTxInTest->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( AudioOptsDialog::OnTxInTest ), NULL, this );
+    m_btnTxOutTest->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( AudioOptsDialog::OnTxOutTest ), NULL, this );
 
     m_btnRefresh->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(AudioOptsDialog::OnRefreshClick), NULL, this);
     m_sdbSizer1Apply->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(AudioOptsDialog::OnApplyAudioParameters), NULL, this);
@@ -930,6 +952,97 @@ void AudioOptsDialog::plotDeviceInputForAFewSecs(int devNum, PlotScalar *plotSca
         int n8k = resample(src, in8k_short, in48k_short, 8000, TEST_FS, TEST_BUF_SIZE, TEST_BUF_SIZE);
         resample_for_plot(fifo, in8k_short, n8k);
 
+        // every TEST_DT seconds update plot, unfortunately plot
+        // doesnt get updated to end as we are blocking events in this
+        // function
+
+        if (t > TEST_DT) {
+            t -= TEST_DT;
+            short plotSamples[TEST_WAVEFORM_PLOT_BUF];
+            if (fifo_read(fifo, plotSamples, TEST_WAVEFORM_PLOT_BUF))
+                memset(plotSamples, 0, TEST_WAVEFORM_PLOT_BUF*sizeof(short));
+            plotScalar->add_new_short_samples(plotSamples, TEST_WAVEFORM_PLOT_BUF, 32767);
+            plotScalar->Refresh();
+       }
+    }
+   
+    err = Pa_StopStream(stream);
+    if (err != paNoError) {
+        wxMessageBox(wxT("Couldn't stop sound device."), wxT("Error"), wxOK);       
+        return;
+    }
+    Pa_CloseStream(stream);
+
+    fifo_destroy(fifo);
+    src_delete(src);
+}
+
+// opens a play device and plays a tone for a few seconds.  This is "modal" using
+// synchronous portaudio functions, so the GUI will not respond until after test sample has been
+// taken.  Also plots a pretty picture like the record versions
+
+void AudioOptsDialog::plotDeviceOutputForAFewSecs(int devNum, PlotScalar *plotScalar) {
+    PaStreamParameters  outputParameters;
+    PaStream           *stream = NULL;
+    PaError             err;
+    short               out48k_stereo_short[2*TEST_BUF_SIZE];
+    short               out48k_short[TEST_BUF_SIZE];
+    short               out8k_short[TEST_BUF_SIZE];
+    int                 numDevices, nBufs, i, j, src_error, n;
+    float               t;
+    SRC_STATE          *src;
+    FIFO               *fifo;
+
+    // a basic sanity check
+    numDevices = Pa_GetDeviceCount();
+    if (devNum >= numDevices)
+        return;
+    if (devNum < 0)
+        return;
+
+    fifo = fifo_create((int)(DT*TEST_WAVEFORM_PLOT_FS*2)); assert(fifo != NULL);
+    src = src_new(SRC_SINC_FASTEST, 1, &src_error); assert(src != NULL);
+
+    outputParameters.device = devNum;
+    outputParameters.channelCount = 2;
+    outputParameters.sampleFormat = paInt16;
+    outputParameters.suggestedLatency = Pa_GetDeviceInfo( outputParameters.device )->defaultHighOutputLatency;
+    outputParameters.hostApiSpecificStreamInfo = NULL;
+
+    nBufs = TEST_WAVEFORM_PLOT_TIME*TEST_FS/TEST_BUF_SIZE;
+
+    err = Pa_OpenStream(
+              &stream,
+              NULL,
+              &outputParameters,
+              TEST_FS,
+              TEST_BUF_SIZE,
+              paClipOff,    
+              NULL,       // no callback, use blocking API
+              NULL ); 
+    if (err != paNoError) {
+        wxMessageBox(wxT("Couldn't initialise sound device."), wxT("Error"), wxOK);       
+        return;
+    }
+
+    err = Pa_StartStream(stream);
+    if (err != paNoError) {
+        wxMessageBox(wxT("Couldn't start sound device."), wxT("Error"), wxOK);       
+        return;
+    }
+
+    for(i=0, t=0.0, n=0; i<nBufs; i++, t+=(float)TEST_BUF_SIZE/TEST_FS) {
+        for(j=0; j<TEST_BUF_SIZE; j++,n++) {
+            out48k_short[j] = 2000.0*cos(6.2832*(n++)*400.0/TEST_FS);
+            out48k_stereo_short[2*j] = out48k_short[j];   // left channel
+            out48k_stereo_short[2*j+1] = out48k_short[j]; // right channel
+        }
+        Pa_WriteStream(stream, out48k_stereo_short, TEST_BUF_SIZE);
+
+        // convert back to 8kHz just for plotting
+        int n8k = resample(src, out8k_short, out48k_short, 8000, TEST_FS, TEST_BUF_SIZE, TEST_BUF_SIZE);
+        resample_for_plot(fifo, out8k_short, n8k);
+
         // every TEST_DT seconds update plot
 
         if (t > TEST_DT) {
@@ -959,6 +1072,30 @@ void AudioOptsDialog::plotDeviceInputForAFewSecs(int devNum, PlotScalar *plotSca
 void AudioOptsDialog::OnRxInTest(wxCommandEvent& event)
 {
     plotDeviceInputForAFewSecs(rxInAudioDeviceNum, m_plotScalarRxIn);
+}
+
+//-------------------------------------------------------------------------
+// OnRxOutTest()
+//-------------------------------------------------------------------------
+void AudioOptsDialog::OnRxOutTest(wxCommandEvent& event)
+{
+    plotDeviceOutputForAFewSecs(rxOutAudioDeviceNum, m_plotScalarRxOut);
+}
+
+//-------------------------------------------------------------------------
+// OnTxInTest()
+//-------------------------------------------------------------------------
+void AudioOptsDialog::OnTxInTest(wxCommandEvent& event)
+{
+    plotDeviceInputForAFewSecs(txInAudioDeviceNum, m_plotScalarTxIn);
+}
+
+//-------------------------------------------------------------------------
+// OnTxOutTest()
+//-------------------------------------------------------------------------
+void AudioOptsDialog::OnTxOutTest(wxCommandEvent& event)
+{
+    plotDeviceOutputForAFewSecs(txOutAudioDeviceNum, m_plotScalarTxOut);
 }
 
 //-------------------------------------------------------------------------

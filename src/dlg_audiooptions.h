@@ -57,6 +57,7 @@ class AudioOptsDialog : public wxDialog
 
         void buildTestControls(PlotScalar **plotScalar, wxButton **btnTest, wxPanel *parentPanel, wxBoxSizer *bSizer);
         void plotDeviceInputForAFewSecs(int devNum, PlotScalar *plotScalar);
+        void plotDeviceOutputForAFewSecs(int devNum, PlotScalar *plotScalar);
 
         int buildListOfSupportedSampleRates(wxComboBox *cbSampleRate, int devNum, int in_out);
         void populateParams(AudioInfoDisplay);
@@ -78,6 +79,7 @@ class AudioOptsDialog : public wxDialog
         wxNotebook* m_notebook1;
 
         wxPanel* m_panelRx;
+
         wxListCtrl* m_listCtrlRxInDevices;
         wxStaticText* m_staticText51;
         wxTextCtrl* m_textCtrlRxIn;
@@ -85,7 +87,6 @@ class AudioOptsDialog : public wxDialog
         wxComboBox* m_cbSampleRateRxIn;
 
         wxButton* m_btnRxInTest;
-        wxPanel* m_panelRxInTest;
         PlotScalar* m_plotScalarRxIn;
 
         wxListCtrl* m_listCtrlRxOutDevices;
@@ -93,18 +94,32 @@ class AudioOptsDialog : public wxDialog
         wxTextCtrl* m_textCtrlRxOut;
         wxStaticText* m_staticText10;
         wxComboBox* m_cbSampleRateRxOut;
+
+        wxButton* m_btnRxOutTest;
+        PlotScalar* m_plotScalarRxOut;
+
         wxPanel* m_panelTx;
+
         wxListCtrl* m_listCtrlTxInDevices;
         wxStaticText* m_staticText12;
         wxTextCtrl* m_textCtrlTxIn;
         wxStaticText* m_staticText11;
         wxComboBox* m_cbSampleRateTxIn;
+
+        wxButton* m_btnTxInTest;
+        PlotScalar* m_plotScalarTxIn;
+
         wxListCtrl* m_listCtrlTxOutDevices;
         wxStaticText* m_staticText81;
         wxTextCtrl* m_textCtrlTxOut;
         wxStaticText* m_staticText71;
         wxComboBox* m_cbSampleRateTxOut;
+
+        wxButton* m_btnTxOutTest;
+        PlotScalar* m_plotScalarTxOut;
+
         wxPanel* m_panelAPI;
+
         wxStaticText* m_staticText7;
         wxTextCtrl* m_textStringVer;
         wxStaticText* m_staticText8;
@@ -122,8 +137,14 @@ class AudioOptsDialog : public wxDialog
         // Virtual event handlers, overide them in your derived class
         //virtual void OnActivateApp( wxActivateEvent& event ) { event.Skip(); }
 //        virtual void OnCloseFrame( wxCloseEvent& event ) { event.Skip(); }
+
         void OnRxInDeviceSelect( wxListEvent& event );
+
         void OnRxInTest( wxCommandEvent& event );
+        void OnRxOutTest( wxCommandEvent& event );
+        void OnTxInTest( wxCommandEvent& event );
+        void OnTxOutTest( wxCommandEvent& event );
+
         void OnRxOutDeviceSelect( wxListEvent& event );
         void OnTxInDeviceSelect( wxListEvent& event );
         void OnTxOutDeviceSelect( wxListEvent& event );
