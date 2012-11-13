@@ -25,6 +25,7 @@
 #include "pa_asio.h"
 #endif
 #endif
+#include "fifo.h"
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 // AudioInfoDisplay
@@ -54,6 +55,9 @@ class AudioOptsDialog : public wxDialog
         int             txInAudioDeviceNum;
         int             txOutAudioDeviceNum;
 
+        void buildTestControls(PlotScalar **plotScalar, wxButton **btnTest, wxPanel *parentPanel, wxBoxSizer *bSizer);
+        void plotDeviceInputForAFewSecs(int devNum, PlotScalar *plotScalar);
+
         int buildListOfSupportedSampleRates(wxComboBox *cbSampleRate, int devNum, int in_out);
         void populateParams(AudioInfoDisplay);
         void showAPIInfo();
@@ -72,12 +76,18 @@ class AudioOptsDialog : public wxDialog
         AudioInfoDisplay m_TxOutDevices;
         wxPanel* m_panel1;
         wxNotebook* m_notebook1;
+
         wxPanel* m_panelRx;
         wxListCtrl* m_listCtrlRxInDevices;
         wxStaticText* m_staticText51;
         wxTextCtrl* m_textCtrlRxIn;
         wxStaticText* m_staticText6;
         wxComboBox* m_cbSampleRateRxIn;
+
+        wxButton* m_btnRxInTest;
+        wxPanel* m_panelRxInTest;
+        PlotScalar* m_plotScalarRxIn;
+
         wxListCtrl* m_listCtrlRxOutDevices;
         wxStaticText* m_staticText9;
         wxTextCtrl* m_textCtrlRxOut;
@@ -113,6 +123,7 @@ class AudioOptsDialog : public wxDialog
         //virtual void OnActivateApp( wxActivateEvent& event ) { event.Skip(); }
 //        virtual void OnCloseFrame( wxCloseEvent& event ) { event.Skip(); }
         void OnRxInDeviceSelect( wxListEvent& event );
+        void OnRxInTest( wxCommandEvent& event );
         void OnRxOutDeviceSelect( wxListEvent& event );
         void OnTxInDeviceSelect( wxListEvent& event );
         void OnTxOutDeviceSelect( wxListEvent& event );

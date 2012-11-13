@@ -43,15 +43,18 @@ END_EVENT_TABLE()
 //----------------------------------------------------------------
 PlotScalar::PlotScalar(wxFrame* parent, 
 		       float  t_secs,             // time covered by entire x axis in seconds
-		       float  sample_period_secs, // tiem between each sample in seconds
+		       float  sample_period_secs, // time between each sample in seconds
 		       float  a_min,              // min ampltude of samples being plotted
 		       float  a_max,              // max ampltude of samples being plotted
 		       float  graticule_t_step,   // time step of x (time) axis graticule in seconds
 		       float  graticule_a_step,   // step of amplitude axis graticule
-		       const char a_fmt[]         // printf format string for amlitude axis labels
+		       const char a_fmt[],        // printf format string for amlitude axis labels
+                       int    mini                // true for mini-plot - don't draw graticule
 		       ): PlotPanel(parent)
 {
     int i;
+
+    m_rCtrl = GetClientRect();
 
     m_t_secs = t_secs;
     m_sample_period_secs = sample_period_secs;
@@ -61,6 +64,7 @@ PlotScalar::PlotScalar(wxFrame* parent,
     m_graticule_a_step = graticule_a_step;
     assert(strlen(a_fmt) < 15);
     strcpy(m_a_fmt, a_fmt);
+    m_mini = mini;
 
     // work out number of samples we will store and allocate storage
 
@@ -122,12 +126,20 @@ void PlotScalar::draw(wxAutoBufferedPaintDC&  dc)
 
     m_rCtrl = GetClientRect();
     m_rGrid = m_rCtrl;
-    m_rGrid = m_rGrid.Deflate(PLOT_BORDER + (XLEFT_OFFSET/2), (PLOT_BORDER + (YBOTTOM_OFFSET/2)));
+    if (!m_mini)
+        m_rGrid = m_rGrid.Deflate(PLOT_BORDER + (XLEFT_OFFSET/2), (PLOT_BORDER + (YBOTTOM_OFFSET/2)));
+
+    //printf("h %d w %d\n", m_rCtrl.GetWidth(), m_rCtrl.GetHeight());
+    //printf("h %d w %d\n", m_rGrid.GetWidth(), m_rGrid.GetHeight());
 
     // black background
 
     dc.Clear();
-    m_rPlot = wxRect(PLOT_BORDER + XLEFT_OFFSET, PLOT_BORDER, m_rGrid.GetWidth(), m_rGrid.GetHeight());
+    if (m_mini)
+        m_rPlot = wxRect(0, 0, m_rGrid.GetWidth(), m_rGrid.GetHeight());        
+    else
+        m_rPlot = wxRect(PLOT_BORDER + XLEFT_OFFSET, PLOT_BORDER, m_rGrid.GetWidth(), m_rGrid.GetHeight());
+   
     wxBrush ltGraphBkgBrush = wxBrush(BLACK_COLOR);
     dc.SetBrush(ltGraphBkgBrush);
     dc.SetPen(wxPen(BLACK_COLOR, 0));
@@ -158,8 +170,10 @@ void PlotScalar::draw(wxAutoBufferedPaintDC&  dc)
 
 	// put inside plot window
 
-	x += PLOT_BORDER + XLEFT_OFFSET;
-	y += PLOT_BORDER;
+	if (!m_mini) {
+            x += PLOT_BORDER + XLEFT_OFFSET;
+            y += PLOT_BORDER;
+        }
 
 	if (i)
 	    dc.DrawLine(x, y, prev_x, prev_y);
@@ -199,11 +213,18 @@ void PlotScalar::drawGraticule(wxAutoBufferedPaintDC&  dc)
     dc.SetPen(m_penShortDash);
     for(t=0; t<=m_t_secs; t+=m_graticule_t_step) {
 	x = t*sec_to_px;
-	x += PLOT_BORDER + XLEFT_OFFSET;
-        dc.DrawLine(x, m_rGrid.GetHeight() + PLOT_BORDER, x, PLOT_BORDER);
-        sprintf(buf, "%2.1fs", t);
-	GetTextExtent(buf, &text_w, &text_h);
-        dc.DrawText(buf, x - text_w/2, m_rGrid.GetHeight() + PLOT_BORDER + YBOTTOM_TEXT_OFFSET);
+	if (m_mini) {
+            dc.DrawLine(x, m_rGrid.GetHeight(), x, 0);
+        }
+        else {
+            x += PLOT_BORDER + XLEFT_OFFSET;
+            dc.DrawLine(x, m_rGrid.GetHeight() + PLOT_BORDER, x, PLOT_BORDER);
+        }
+        if (!m_mini) {
+            sprintf(buf, "%2.1fs", t);
+            GetTextExtent(buf, &text_w, &text_h);
+            dc.DrawText(buf, x - text_w/2, m_rGrid.GetHeight() + PLOT_BORDER + YBOTTOM_TEXT_OFFSET);
+        }
     }
 
     // Horizontal gridlines
@@ -211,12 +232,19 @@ void PlotScalar::drawGraticule(wxAutoBufferedPaintDC&  dc)
     dc.SetPen(m_penDotDash);
     for(a=m_a_min; a<m_a_max; a+=m_graticule_a_step) {
 	y = m_rGrid.GetHeight() - a*a_to_py + m_a_min*a_to_py;
-	y += PLOT_BORDER;
-	dc.DrawLine(PLOT_BORDER + XLEFT_OFFSET, y, 
-		    (m_rGrid.GetWidth() + PLOT_BORDER + XLEFT_OFFSET), y);
-        sprintf(buf, m_a_fmt, a);
-	GetTextExtent(buf, &text_w, &text_h);
-        dc.DrawText(buf, PLOT_BORDER + XLEFT_OFFSET - text_w - XLEFT_TEXT_OFFSET, y-text_h/2);
+	if (m_mini) {
+            dc.DrawLine(0, y, m_rGrid.GetWidth(), y);
+        }
+        else {
+            y += PLOT_BORDER;
+            dc.DrawLine(PLOT_BORDER + XLEFT_OFFSET, y, 
+                        (m_rGrid.GetWidth() + PLOT_BORDER + XLEFT_OFFSET), y);
+        }
+        if (!m_mini) {
+            sprintf(buf, m_a_fmt, a);
+            GetTextExtent(buf, &text_w, &text_h);
+            dc.DrawText(buf, PLOT_BORDER + XLEFT_OFFSET - text_w - XLEFT_TEXT_OFFSET, y-text_h/2);
+        }
    }
 
 

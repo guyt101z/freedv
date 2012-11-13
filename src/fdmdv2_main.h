@@ -36,7 +36,6 @@
 
 #include "topFrame.h"
 #include "dlg_about.h"
-#include "dlg_audiooptions.h"
 #include "dlg_options.h"
 #include "dlg_comports.h"
 #include "fdmdv2_plot.h"
@@ -47,6 +46,7 @@
 #include "fdmdv2_pa_wrapper.h"
 #include "sndfile.h"
 #include "portaudio.h"
+#include "dlg_audiooptions.h"
 
 #define _USE_TIMER              1
 //#define _USE_ONIDLE             1
@@ -326,5 +326,15 @@ class MainFrame : public TopFrame
         wxTextCtrl* m_tc;
         int         m_zoom;
 };
+
+void resample_for_plot(struct FIFO *plotFifo, short buf[], int length);
+int resample(SRC_STATE *src,
+             short      output_short[],
+             short      input_short[],
+             int        output_sample_rate,
+             int        input_sample_rate,
+             int        length_output_short, // maximum output array length in samples
+             int        length_input_short
+             );
 
 #endif //__FDMDV2_MAIN__

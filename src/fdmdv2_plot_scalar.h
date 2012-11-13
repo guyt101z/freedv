@@ -42,7 +42,8 @@ class PlotScalar: public PlotPanel
 	       float a_max,
 	       float graticule_t_step,   
 	       float graticule_a_step,
-	       const char  a_fmt[]
+	       const char  a_fmt[],
+               int   mini
 	       );
         ~PlotScalar();
          void add_new_sample(float sample);
@@ -57,6 +58,7 @@ class PlotScalar: public PlotPanel
 	 float    m_graticule_t_step;   
 	 float    m_graticule_a_step;
 	 char     m_a_fmt[15];
+         int      m_mini;
 	 int      m_samples;
 	 float   *m_mem;              
 
