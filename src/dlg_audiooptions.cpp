@@ -15,8 +15,8 @@
 
 // constants for test waveform plots
 
-#define TEST_WAVEFORM_X          100
-#define TEST_WAVEFORM_Y          100
+#define TEST_WAVEFORM_X          180
+#define TEST_WAVEFORM_Y          180
 #define TEST_WAVEFORM_PLOT_TIME  2.0
 #define TEST_WAVEFORM_PLOT_FS    400
 #define TEST_BUF_SIZE           1024
@@ -42,13 +42,17 @@ void AudioOptsDialog::Pa_Init(void)
 
 void AudioOptsDialog::buildTestControls(PlotScalar **plotScalar, wxButton **btnTest, wxPanel *parentPanel, wxBoxSizer *bSizer)
 {
-    *btnTest = new wxButton(parentPanel, wxID_ANY, _("Test"), wxDefaultPosition, wxDefaultSize);
-    bSizer->Add(*btnTest, 0, wxALIGN_CENTER_VERTICAL|wxALL, 2);
+    wxBoxSizer* bSizer1 = new wxBoxSizer(wxVERTICAL);
 
-    wxPanel *panel = new wxPanel(parentPanel, wxID_ANY, wxDefaultPosition, wxSize(TEST_WAVEFORM_X, TEST_WAVEFORM_Y), 0);
+    wxPanel *panel = new wxPanel(parentPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0);
     *plotScalar = new PlotScalar((wxFrame*) panel, TEST_WAVEFORM_PLOT_TIME, 1.0/TEST_WAVEFORM_PLOT_FS, -1, 1, 1, 0.2, "", 1);
     (*plotScalar)->SetClientSize(wxSize(TEST_WAVEFORM_X,TEST_WAVEFORM_Y));
-    bSizer->Add(panel, 0);
+    bSizer1->Add(panel, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 8);
+
+    *btnTest = new wxButton(parentPanel, wxID_ANY, _("Test"), wxDefaultPosition, wxDefaultSize);
+    bSizer1->Add(*btnTest, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 0);
+
+    bSizer->Add(bSizer1, 0, wxALIGN_CENTER_HORIZONTAL |wxALIGN_CENTER_VERTICAL );
 }
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
@@ -75,9 +79,13 @@ AudioOptsDialog::AudioOptsDialog(wxWindow* parent, wxWindowID id, const wxString
     // Rx In -----------------------------------------------------------------------
 
     wxStaticBoxSizer* sbSizer2;
-    sbSizer2 = new wxStaticBoxSizer(new wxStaticBox(m_panelRx, wxID_ANY, _("From Radio")), wxVERTICAL);
+    sbSizer2 = new wxStaticBoxSizer(new wxStaticBox(m_panelRx, wxID_ANY, _("From Radio")), wxHORIZONTAL);
+
+    wxBoxSizer* bSizer811a = new wxBoxSizer(wxVERTICAL);
+
     m_listCtrlRxInDevices = new wxListCtrl(m_panelRx, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLC_HRULES|wxLC_REPORT|wxLC_VRULES);
-    sbSizer2->Add(m_listCtrlRxInDevices, 1, wxALL|wxEXPAND, 1);
+    bSizer811a->Add(m_listCtrlRxInDevices, 1, wxALL|wxEXPAND, 1);
+
     wxBoxSizer* bSizer811;
     bSizer811 = new wxBoxSizer(wxHORIZONTAL);
     m_staticText51 = new wxStaticText(m_panelRx, wxID_ANY, _("Device:"), wxDefaultPosition, wxDefaultSize, 0);
@@ -89,19 +97,25 @@ AudioOptsDialog::AudioOptsDialog(wxWindow* parent, wxWindowID id, const wxString
     m_staticText6->Wrap(-1);
     bSizer811->Add(m_staticText6, 0, wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT|wxALL, 5);
     m_cbSampleRateRxIn = new wxComboBox(m_panelRx, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0, NULL, wxCB_DROPDOWN);
-    bSizer811->Add(m_cbSampleRateRxIn, 0, wxALIGN_CENTER_VERTICAL|wxALL, 2);
+    bSizer811->Add(m_cbSampleRateRxIn, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-    buildTestControls(&m_plotScalarRxIn, &m_btnRxInTest, m_panelRx, bSizer811);
+    bSizer811a->Add(bSizer811, 0, wxEXPAND, 5);
 
-    sbSizer2->Add(bSizer811, 0, wxEXPAND, 5);
+    sbSizer2->Add(bSizer811a, 1, wxEXPAND, 2);
+    buildTestControls(&m_plotScalarRxIn, &m_btnRxInTest, m_panelRx, sbSizer2);
+
     gSizer4->Add(sbSizer2, 1, wxEXPAND, 5);
 
     // Rx Out -----------------------------------------------------------------------
 
     wxStaticBoxSizer* sbSizer3;
-    sbSizer3 = new wxStaticBoxSizer(new wxStaticBox(m_panelRx, wxID_ANY, _("To Speaker/Headphones")), wxVERTICAL);
+    sbSizer3 = new wxStaticBoxSizer(new wxStaticBox(m_panelRx, wxID_ANY, _("To Speaker/Headphones")), wxHORIZONTAL);
+
+    wxBoxSizer* bSizer81a = new wxBoxSizer(wxVERTICAL);
+
     m_listCtrlRxOutDevices = new wxListCtrl(m_panelRx, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLC_HRULES|wxLC_REPORT|wxLC_VRULES);
-    sbSizer3->Add(m_listCtrlRxOutDevices, 1, wxALL|wxEXPAND, 1);
+    bSizer81a->Add(m_listCtrlRxOutDevices, 1, wxALL|wxEXPAND, 1);
+
     wxBoxSizer* bSizer81;
     bSizer81 = new wxBoxSizer(wxHORIZONTAL);
     m_staticText9 = new wxStaticText(m_panelRx, wxID_ANY, _("Device:"), wxDefaultPosition, wxDefaultSize, 0);
@@ -114,10 +128,12 @@ AudioOptsDialog::AudioOptsDialog(wxWindow* parent, wxWindowID id, const wxString
     bSizer81->Add(m_staticText10, 0, wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT|wxALL, 5);
     m_cbSampleRateRxOut = new wxComboBox(m_panelRx, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0, NULL, wxCB_DROPDOWN);
     bSizer81->Add(m_cbSampleRateRxOut, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
-    sbSizer3->Add(bSizer81, 0, wxEXPAND, 2);
- 
-    buildTestControls(&m_plotScalarRxOut, &m_btnRxOutTest, m_panelRx, bSizer81);
 
+    bSizer81a->Add(bSizer81, 0, wxEXPAND, 5);
+
+    sbSizer3->Add(bSizer81a, 1, wxEXPAND, 2);
+    buildTestControls(&m_plotScalarRxOut, &m_btnRxOutTest, m_panelRx, sbSizer3);
+ 
     gSizer4->Add(sbSizer3, 1, wxEXPAND, 2);
     bSizer20->Add(gSizer4, 1, wxEXPAND, 1);
     m_panelRx->SetSizer(bSizer20);
@@ -136,9 +152,12 @@ AudioOptsDialog::AudioOptsDialog(wxWindow* parent, wxWindowID id, const wxString
     // Tx In ----------------------------------------------------------------------------------
 
     wxStaticBoxSizer* sbSizer22;
-    sbSizer22 = new wxStaticBoxSizer(new wxStaticBox(m_panelTx, wxID_ANY, _("From Microphone")), wxVERTICAL);
+    sbSizer22 = new wxStaticBoxSizer(new wxStaticBox(m_panelTx, wxID_ANY, _("From Microphone")), wxHORIZONTAL);
+
+    wxBoxSizer* bSizer83a = new wxBoxSizer(wxVERTICAL);
+
     m_listCtrlTxInDevices = new wxListCtrl(m_panelTx, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLC_HRULES|wxLC_REPORT|wxLC_VRULES);
-    sbSizer22->Add(m_listCtrlTxInDevices, 1, wxALL|wxEXPAND, 1);
+    bSizer83a->Add(m_listCtrlTxInDevices, 1, wxALL|wxEXPAND, 1);
     wxBoxSizer* bSizer83;
     bSizer83 = new wxBoxSizer(wxHORIZONTAL);
     m_staticText12 = new wxStaticText(m_panelTx, wxID_ANY, _("Device:"), wxDefaultPosition, wxDefaultSize, 0);
@@ -152,17 +171,22 @@ AudioOptsDialog::AudioOptsDialog(wxWindow* parent, wxWindowID id, const wxString
     m_cbSampleRateTxIn = new wxComboBox(m_panelTx, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0, NULL, wxCB_DROPDOWN);
     bSizer83->Add(m_cbSampleRateTxIn, 0, wxALL, 1);
 
-    buildTestControls(&m_plotScalarTxIn, &m_btnTxInTest, m_panelTx, bSizer83);
+    bSizer83a->Add(bSizer83, 0, wxEXPAND, 5);
 
-    sbSizer22->Add(bSizer83, 0, wxEXPAND, 2);
+    sbSizer22->Add(bSizer83a, 1, wxEXPAND, 2);
+    buildTestControls(&m_plotScalarTxIn, &m_btnTxInTest, m_panelTx, sbSizer22);
+
     gSizer2->Add(sbSizer22, 1, wxEXPAND, 5);
 
     // Tx Out ----------------------------------------------------------------------------------
 
     wxStaticBoxSizer* sbSizer21;
-    sbSizer21 = new wxStaticBoxSizer(new wxStaticBox(m_panelTx, wxID_ANY, _("To Radio")), wxVERTICAL);
+    sbSizer21 = new wxStaticBoxSizer(new wxStaticBox(m_panelTx, wxID_ANY, _("To Radio")), wxHORIZONTAL);
+
+    wxBoxSizer* bSizer82a = new wxBoxSizer(wxVERTICAL);
+
     m_listCtrlTxOutDevices = new wxListCtrl(m_panelTx, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLC_HRULES|wxLC_REPORT|wxLC_VRULES);
-    sbSizer21->Add(m_listCtrlTxOutDevices, 1, wxALL|wxEXPAND, 2);
+    bSizer82a->Add(m_listCtrlTxOutDevices, 1, wxALL|wxEXPAND, 2);
     wxBoxSizer* bSizer82;
     bSizer82 = new wxBoxSizer(wxHORIZONTAL);
     m_staticText81 = new wxStaticText(m_panelTx, wxID_ANY, _("Device:"), wxDefaultPosition, wxDefaultSize, 0);
@@ -176,9 +200,11 @@ AudioOptsDialog::AudioOptsDialog(wxWindow* parent, wxWindowID id, const wxString
     m_cbSampleRateTxOut = new wxComboBox(m_panelTx, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0, NULL, wxCB_DROPDOWN);
     bSizer82->Add(m_cbSampleRateTxOut, 0, wxALL, 1);
 
-    buildTestControls(&m_plotScalarTxOut, &m_btnTxOutTest, m_panelTx, bSizer82);
+    bSizer82a->Add(bSizer82, 0, wxEXPAND, 5);
 
-    sbSizer21->Add(bSizer82, 0, wxEXPAND, 2);
+    sbSizer21->Add(bSizer82a, 1, wxEXPAND, 2);
+    buildTestControls(&m_plotScalarTxOut, &m_btnTxOutTest, m_panelTx, sbSizer21);
+
     gSizer2->Add(sbSizer21, 1, wxEXPAND, 5);
     bSizer18->Add(gSizer2, 1, wxEXPAND, 1);
     m_panelTx->SetSizer(bSizer18);
@@ -751,6 +777,7 @@ void AudioOptsDialog::populateParams(AudioInfoDisplay ai)
         ctrl->SetColumnWidth(col++, 160);
     }
 
+    #ifdef LATENCY
     listItem.SetAlign(wxLIST_FORMAT_CENTRE);
     listItem.SetText(wxT("Min Latency"));
     ctrl->InsertColumn(col, listItem);
@@ -760,6 +787,7 @@ void AudioOptsDialog::populateParams(AudioInfoDisplay ai)
     listItem.SetText(wxT("Max Latency"));
     ctrl->InsertColumn(col, listItem);
     ctrl->SetColumnWidth(col++, 100);
+    #endif
 
     for(devn = 0; devn < numDevices; devn++)
     {
@@ -782,6 +810,7 @@ void AudioOptsDialog::populateParams(AudioInfoDisplay ai)
             buf.Printf(wxT("%i"), (int)deviceInfo->defaultSampleRate);
             ctrl->SetItem(idx, col++, buf);
 
+            #ifdef LATENCY
             if (in_out == AUDIO_IN)
                 buf.Printf(wxT("%8.4f"), deviceInfo->defaultLowInputLatency);
             else
@@ -793,6 +822,7 @@ void AudioOptsDialog::populateParams(AudioInfoDisplay ai)
             else
                  buf.Printf(wxT("%8.4f"), deviceInfo->defaultHighOutputLatency);             
             ctrl->SetItem(idx, col++, buf);
+            #endif
         }        
     }
 
