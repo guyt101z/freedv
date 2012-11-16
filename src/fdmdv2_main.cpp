@@ -1153,7 +1153,8 @@ void MainFrame::autoDetectSoundCards(PortAudioWrap *pa)
     }
 }
 
-void  MainFrame::initPortAudioDevice(PortAudioWrap *pa, int inDevice, int outDevice, int soundCard, int sampleRate)
+void  MainFrame::initPortAudioDevice(PortAudioWrap *pa, int inDevice, int outDevice, 
+                                     int soundCard, int sampleRate, int inputChannels)
 {
     // Note all of the wrapper functions below just set values in a
     // portaudio struct so can't return any errors. So no need to trap
@@ -1162,7 +1163,8 @@ void  MainFrame::initPortAudioDevice(PortAudioWrap *pa, int inDevice, int outDev
     // init input params
 
     pa->setInputDevice(inDevice);
-    pa->setInputChannelCount(2);                          // stereo input
+    pa->setInputChannelCount(inputChannels);           // stereo input
+    printf("maxInputChannels: %d\n", inputChannels);
     pa->setInputSampleFormat(PA_SAMPLE_TYPE);
     pa->setInputLatency(pa->getInputDefaultLowLatency());
     pa->setInputHostApiStreamInfo(NULL);
@@ -1194,7 +1196,9 @@ void  MainFrame::initPortAudioDevice(PortAudioWrap *pa, int inDevice, int outDev
 //-------------------------------------------------------------------------
 void MainFrame::startRxStream()
 {
-    int src_error;
+    int   src_error;
+    const PaDeviceInfo *deviceInfo1 = NULL, *deviceInfo2 = NULL;
+    int   inputChannels1, inputChannels2;
 
     if(!m_RxRunning) {
         cb_cnt = 0;
@@ -1229,7 +1233,22 @@ void MainFrame::startRxStream()
             return;
         }
 
-        initPortAudioDevice(m_rxPa, g_soundCard1InDeviceNum, g_soundCard1OutDeviceNum, 1, g_soundCard1SampleRate);
+        // work out how many input channels this device supports.
+
+        deviceInfo1 = Pa_GetDeviceInfo(g_soundCard1InDeviceNum);
+        if (deviceInfo1 == NULL) {
+            wxMessageBox(wxT("Couldn't get device info from Port Audio for Sound Card 1"), wxT("Error"), wxOK);
+            delete m_rxPa;
+            m_RxRunning = false;
+            return;
+        }
+        if (deviceInfo1->maxInputChannels == 1)
+            inputChannels1 = 1;
+        else
+            inputChannels1 = 2;
+
+        initPortAudioDevice(m_rxPa, g_soundCard1InDeviceNum, g_soundCard1OutDeviceNum, 1, 
+                            g_soundCard1SampleRate, inputChannels1);
 
         // Init Sound Card 2 ------------------------------------------------
 
@@ -1252,15 +1271,28 @@ void MainFrame::startRxStream()
                 return;
             }
 
-
-            initPortAudioDevice(m_txPa, g_soundCard2InDeviceNum, g_soundCard2OutDeviceNum, 2, g_soundCard2SampleRate);
+            deviceInfo2 = Pa_GetDeviceInfo(g_soundCard2InDeviceNum);
+            if (deviceInfo2 == NULL) {
+                wxMessageBox(wxT("Couldn't get device info from Port Audio for Sound Card 1"), wxT("Error"), wxOK);
+                delete m_rxPa;
+                m_RxRunning = false;
+                return;
+            }
+            if (deviceInfo2->maxInputChannels == 1)
+                inputChannels2 = 1;
+            else
+                inputChannels2 = 2;
+         
+            initPortAudioDevice(m_txPa, g_soundCard2InDeviceNum, g_soundCard2OutDeviceNum, 2, 
+                                g_soundCard2SampleRate, inputChannels2);
         }
 
         // Init call back data structure ----------------------------------------------
 
         m_rxUserdata = new paCallBackData;
-        m_rxUserdata->pWFPanel = m_panelWaterfall;
-        m_rxUserdata->pSPPanel = m_panelSpectrum;
+        m_rxUserdata->inputChannels1 = inputChannels1;
+        if (deviceInfo2 != NULL)
+            m_rxUserdata->inputChannels2 = inputChannels2;
 
         // init sample rate conversion states
 
@@ -1528,7 +1560,8 @@ int MainFrame::rxCallback(
     // assemble a mono buffer (just use left channel) and write to FIFO
 
     assert(framesPerBuffer < MAX_FPB);
-    for(i = 0; i < framesPerBuffer; i++, rptr += 2)
+
+    for(i = 0; i < framesPerBuffer; i++, rptr += cbData->inputChannels1)
     {
         indata[i] = *rptr;
     }
@@ -1874,7 +1907,7 @@ int MainFrame::txCallback(
     //if (statusFlags)
     //    printf("statusFlags: 0x%x\n", statusFlags);
 
-    for(i = 0; i < framesPerBuffer; i++, rptr += 2)
+    for(i = 0; i < framesPerBuffer; i++, rptr += cbData->inputChannels2)
     {
         indata[i] = *rptr;
     }

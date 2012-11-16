@@ -136,9 +136,6 @@ DECLARE_APP(MainApp)
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 typedef struct
 {
-    PlotSpectrum    *pSPPanel;
-    PlotWaterfall   *pWFPanel;
-
     // libresample states for 48 to 8 kHz conversions
 
     SRC_STATE      *insrc1;
@@ -161,6 +158,7 @@ typedef struct
     struct FIFO    *rxinfifo;
     struct FIFO    *rxoutfifo;
 
+    int             inputChannels1, inputChannels2;
 } paCallBackData;
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
@@ -235,7 +233,8 @@ class MainFrame : public TopFrame
                                             CODEC2  *c2              // Codec 2 states
                         );
 
-    void initPortAudioDevice(PortAudioWrap *pa, int inDevice, int outDevice, int soundCard, int sampleRate);
+    void initPortAudioDevice(PortAudioWrap *pa, int inDevice, int outDevice, 
+                             int soundCard, int sampleRate, int inputChannels);
 
  protected:
         // protected event handlers

@@ -678,7 +678,7 @@ int AudioOptsDialog:: buildListOfSupportedSampleRates(wxComboBox *cbSampleRate, 
     outputParameters.hostApiSpecificStreamInfo = NULL;
     
     cbSampleRate->Clear();
-    printf("devNum %d supports: ", devNum);
+    //printf("devNum %d supports: ", devNum);
     numSampleRates = 0;
     for(i = 0; standardSampleRates[i] > 0; i++)
     {      
