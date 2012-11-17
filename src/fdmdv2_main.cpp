@@ -55,6 +55,9 @@ int                 g_nRxIn = FDMDV_NOM_SAMPLES_PER_FRAME;
 int                 g_CodecBits[2 * FDMDV_BITS_PER_FRAME];
 int                 g_State;
 
+paCallBackData     *g_rxUserdata;
+
+
 // FIFOs used for plotting waveforms
 struct FIFO        *g_plotDemodInFifo;
 struct FIFO        *g_plotSpeechOutFifo;
@@ -89,6 +92,33 @@ wxMutex g_mutexProtectingCallbackData;
 
 // WxWidgets - initialize the application
 IMPLEMENT_APP(MainApp);
+
+// ----------------------------------------------------------------------------
+// experimental tx/rx processing thread
+// ----------------------------------------------------------------------------
+
+class txRxThread : public wxThread
+{
+public:
+    txRxThread(void) : wxThread(wxTHREAD_JOINABLE) { m_run = 1; }
+
+    // thread execution starts here
+    void *Entry() {
+        while (m_run) {
+            txRxProcessing();        
+            wxThread::Sleep(20);
+        }
+
+        return NULL;
+    }
+
+    // called when the thread exits - whether it terminates normally or is
+    // stopped with Delete() (but not when it is Kill()ed!)
+    void OnExit() { }
+
+public:
+    bool  m_run;
+};
 
 //-------------------------------------------------------------------------
 // OnInit()
@@ -158,7 +188,7 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     int w = pConfig->Read(wxT("/MainFrame/width"),     650);
     int h = pConfig->Read(wxT("/MainFrame/height"),    400);
 
-    // note: run DbgView program to see this message under windows
+    // note: run DebugView program to see this message under windows
     wxLogDebug("x = %d y = %d w = %d h = %d\n", x,y,w,h);
 
     wxGetApp().m_show_wf      = pConfig->Read(wxT("/MainFrame/show_wf"),      1);
@@ -295,6 +325,8 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     //m_panelWaterfall->Refresh();
 #endif
 
+    m_RxRunning = false;
+
 #ifdef _USE_ONIDLE
     Connect(wxEVT_IDLE, wxIdleEventHandler(MainFrame::OnIdle), NULL, this);
 #endif //_USE_TIMER
@@ -315,6 +347,7 @@ MainFrame::~MainFrame()
     {
         GetClientSize(&w, &h);
         GetPosition(&x, &y);
+        wxLogDebug("x = %d y = %d w = %d h = %d\n", x,y,w,h);
         pConfig->Write(wxT("/MainFrame/top"),           (long) x);
         pConfig->Write(wxT("/MainFrame/left"),          (long) y);
         pConfig->Write(wxT("/MainFrame/width"),         (long) w);
@@ -453,10 +486,12 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
 //----------------------------------------------------------------
 void MainFrame::OnIdle(wxIdleEvent& event)
 {
+    /*
     if (m_RxRunning) {
-        //printf("OnIdle\n");
+        //wxLogDebug("OnIdle\n");
         txRxProcessing();
     }
+    */
 }
 #endif // _USE_TIMER
 
@@ -1065,6 +1100,11 @@ void MainFrame::stopRxStream()
     {
         m_RxRunning = false;
 
+        wxLogDebug("waiting for thread to stop");
+        m_txRxThread->m_run = 0;
+        m_txRxThread->Wait();
+        wxLogDebug("thread stopped");
+
         m_rxPa->stop();
         m_rxPa->streamClose();
 
@@ -1077,7 +1117,7 @@ void MainFrame::stopRxStream()
         delete m_rxPa;
         destroy_fifos();
         destroy_src();
-        delete m_rxUserdata;
+        delete g_rxUserdata;
     }
 }
 
@@ -1107,20 +1147,20 @@ void MainFrame::OnTogBtnLoopTx( wxCommandEvent& event )
 
 void MainFrame::destroy_fifos(void)
 {
-    fifo_destroy(m_rxUserdata->infifo1);
-    fifo_destroy(m_rxUserdata->outfifo1);
-    fifo_destroy(m_rxUserdata->infifo2);
-    fifo_destroy(m_rxUserdata->outfifo2);
-    fifo_destroy(m_rxUserdata->rxinfifo);
-    fifo_destroy(m_rxUserdata->rxoutfifo);
+    fifo_destroy(g_rxUserdata->infifo1);
+    fifo_destroy(g_rxUserdata->outfifo1);
+    fifo_destroy(g_rxUserdata->infifo2);
+    fifo_destroy(g_rxUserdata->outfifo2);
+    fifo_destroy(g_rxUserdata->rxinfifo);
+    fifo_destroy(g_rxUserdata->rxoutfifo);
 }
 
 void MainFrame::destroy_src(void)
 {
-    src_delete(m_rxUserdata->insrc1);
-    src_delete(m_rxUserdata->outsrc1);
-    src_delete(m_rxUserdata->insrc2);
-    src_delete(m_rxUserdata->outsrc2);
+    src_delete(g_rxUserdata->insrc1);
+    src_delete(g_rxUserdata->outsrc1);
+    src_delete(g_rxUserdata->insrc2);
+    src_delete(g_rxUserdata->outsrc2);
 }
 
 void MainFrame::autoDetectSoundCards(PortAudioWrap *pa)
@@ -1289,35 +1329,35 @@ void MainFrame::startRxStream()
 
         // Init call back data structure ----------------------------------------------
 
-        m_rxUserdata = new paCallBackData;
-        m_rxUserdata->inputChannels1 = inputChannels1;
+        g_rxUserdata = new paCallBackData;
+        g_rxUserdata->inputChannels1 = inputChannels1;
         if (deviceInfo2 != NULL)
-            m_rxUserdata->inputChannels2 = inputChannels2;
+            g_rxUserdata->inputChannels2 = inputChannels2;
 
         // init sample rate conversion states
 
-        m_rxUserdata->insrc1 = src_new(SRC_SINC_FASTEST, 1, &src_error);
-        assert(m_rxUserdata->insrc1 != NULL);
-        m_rxUserdata->outsrc1 = src_new(SRC_SINC_FASTEST, 1, &src_error);
-        assert(m_rxUserdata->outsrc1 != NULL);
-        m_rxUserdata->insrc2 = src_new(SRC_SINC_FASTEST, 1, &src_error);
-        assert(m_rxUserdata->insrc2 != NULL);
-        m_rxUserdata->outsrc2 = src_new(SRC_SINC_FASTEST, 1, &src_error);
-        assert(m_rxUserdata->outsrc2 != NULL);
+        g_rxUserdata->insrc1 = src_new(SRC_SINC_FASTEST, 1, &src_error);
+        assert(g_rxUserdata->insrc1 != NULL);
+        g_rxUserdata->outsrc1 = src_new(SRC_SINC_FASTEST, 1, &src_error);
+        assert(g_rxUserdata->outsrc1 != NULL);
+        g_rxUserdata->insrc2 = src_new(SRC_SINC_FASTEST, 1, &src_error);
+        assert(g_rxUserdata->insrc2 != NULL);
+        g_rxUserdata->outsrc2 = src_new(SRC_SINC_FASTEST, 1, &src_error);
+        assert(g_rxUserdata->outsrc2 != NULL);
 
         // create FIFOs used to interface between different buffer sizes
 
-        m_rxUserdata->infifo1 = fifo_create(8*N48);
-        m_rxUserdata->outfifo1 = fifo_create(8*N48);
-        m_rxUserdata->outfifo2 = fifo_create(8*N48);
-        m_rxUserdata->infifo2 = fifo_create(8*N48);
+        g_rxUserdata->infifo1 = fifo_create(8*N48);
+        g_rxUserdata->outfifo1 = fifo_create(8*N48);
+        g_rxUserdata->outfifo2 = fifo_create(8*N48);
+        g_rxUserdata->infifo2 = fifo_create(8*N48);
 
-        m_rxUserdata->rxinfifo = fifo_create(3 * FDMDV_NOM_SAMPLES_PER_FRAME);
-        m_rxUserdata->rxoutfifo = fifo_create(2 * codec2_samples_per_frame(g_pCodec2));
+        g_rxUserdata->rxinfifo = fifo_create(3 * FDMDV_NOM_SAMPLES_PER_FRAME);
+        g_rxUserdata->rxoutfifo = fifo_create(2 * codec2_samples_per_frame(g_pCodec2));
         
         // Start sound card 1 ----------------------------------------------------------
 
-        m_rxPa->setUserData(m_rxUserdata);
+        m_rxPa->setUserData(g_rxUserdata);
         m_rxErr = m_rxPa->setCallback(rxCallback);
 
         m_rxErr = m_rxPa->streamOpen();
@@ -1328,7 +1368,7 @@ void MainFrame::startRxStream()
             delete m_txPa;
             destroy_fifos();
             destroy_src();
-            delete m_rxUserdata;
+            delete g_rxUserdata;
             m_RxRunning = false;
             return;
         }
@@ -1340,7 +1380,7 @@ void MainFrame::startRxStream()
             delete m_txPa;
             destroy_fifos();
             destroy_src();
-            delete m_rxUserdata;
+            delete g_rxUserdata;
             m_RxRunning = false;
             return;
         }
@@ -1350,11 +1390,11 @@ void MainFrame::startRxStream()
         if (g_nSoundCards == 2) {
  
             // question: can we use same callback data
-            // (m_rxUserdata)or both sound card callbacks?  Is there a
+            // (g_rxUserdata)or both sound card callbacks?  Is there a
             // chance of them both being called at the same time?  We
             // could need a mutex ...
 
-            m_txPa->setUserData(m_rxUserdata);
+            m_txPa->setUserData(g_rxUserdata);
             m_txErr = m_txPa->setCallback(txCallback);
             m_txErr = m_txPa->streamOpen();
 
@@ -1366,7 +1406,7 @@ void MainFrame::startRxStream()
                 delete m_txPa;
                 destroy_fifos();
                 destroy_src();
-                delete m_rxUserdata;
+                delete g_rxUserdata;
                 m_RxRunning = false;
                 return;
             }
@@ -1379,12 +1419,27 @@ void MainFrame::startRxStream()
                 delete m_txPa;
                 destroy_fifos();
                 destroy_src();
-                delete m_rxUserdata;
+                delete g_rxUserdata;
                 m_RxRunning = false;
                 return;
             }
         }
         
+        // start tx/rx processing thread
+
+        m_txRxThread = new txRxThread;
+
+        if ( m_txRxThread->Create() != wxTHREAD_NO_ERROR )
+        {
+            wxLogError(wxT("Can't create thread!"));
+        }
+
+        m_txRxThread->SetPriority(WXTHREAD_MAX_PRIORITY);
+
+        if ( m_txRxThread->Run() != wxTHREAD_NO_ERROR )
+        {
+            wxLogError(wxT("Can't start thread!"));
+        }
    }
  
 }
@@ -1471,9 +1526,9 @@ void resample_for_plot(struct FIFO *plotFifo, short buf[], int length)
     fifo_write(plotFifo, dec_samples, nSamples);
 }
 
-void MainFrame::txRxProcessing()
+void txRxProcessing()
 {
-    paCallBackData  *cbData = m_rxUserdata;
+    paCallBackData  *cbData = g_rxUserdata;
 
     // Buffers re-used by tx and rx processing
     // signals in in48k/out48k are at a maximum sample rate of 48k, could be 44.1kHz
@@ -1485,7 +1540,7 @@ void MainFrame::txRxProcessing()
     short           out48k_short[2*N48];
     int             nout;
 
-    //printf("start infifo1: %5d outfifo1: %5d\n", fifo_n(cbData->infifo1), fifo_n(cbData->outfifo1));
+    //wxLogDebug("start infifo1: %5d outfifo1: %5d\n", fifo_n(cbData->infifo1), fifo_n(cbData->outfifo1));
 
     //
     //  RX side processing --------------------------------------------
@@ -1584,7 +1639,7 @@ void MainFrame::txRxProcessing()
         }
     }
 
-    //printf("  end infifo1: %5d outfifo1: %5d\n", fifo_n(cbData->infifo1), fifo_n(cbData->outfifo1));
+    //wxLogDebug("  end infifo1: %5d outfifo1: %5d\n", fifo_n(cbData->infifo1), fifo_n(cbData->outfifo1));
 
 }
 
@@ -1632,7 +1687,7 @@ int MainFrame::rxCallback(
         indata[i] = *rptr;
     }
     if (fifo_write(cbData->infifo1, indata, framesPerBuffer)) {
-        //printf("infifo1 full\n");
+        wxLogDebug("infifo1 full\n");
     }
 
     // OK now set up output samples for this callback
@@ -1648,8 +1703,8 @@ int MainFrame::rxCallback(
     }
     else
     {
-        //printf("outfifo1 empty\n");
-       // zero output if no data available
+        wxLogDebug("outfifo1 empty\n");
+        // zero output if no data available
         for(i = 0; i < framesPerBuffer; i++, wptr += 2)
         {
             wptr[0] = 0;
@@ -1663,7 +1718,7 @@ int MainFrame::rxCallback(
 //----------------------------------------------------------------
 // per_frame_rx_processing()
 //----------------------------------------------------------------
-void MainFrame::per_frame_rx_processing(
+void per_frame_rx_processing(
                                             FIFO    *output_fifo,   // decoded speech samples
                                             int      codec_bits[],  // current frame of bits for decoder
                                             FIFO    *input_fifo,    // modem samples input to demod
@@ -1812,7 +1867,7 @@ void MainFrame::per_frame_rx_processing(
     }
 }
 
-void MainFrame::per_frame_tx_processing(
+void per_frame_tx_processing(
                                             short   tx_fdm_scaled[],// ouput modulated samples
                                             short   input_buf[],    // speech sample input
                                             CODEC2  *c2             // Codec 2 states
