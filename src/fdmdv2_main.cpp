@@ -235,6 +235,8 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
         m_auiNbookCtrl->AddPage(m_panelFreqOffset, L"Frequency \u0394", true, wxNullBitmap);
     }
 
+    wxGetApp().m_framesPerBuffer = pConfig->Read(wxT("/Audio/framesPerBuffer"), PA_FPB);
+
     g_soundCard1InDeviceNum  = pConfig->Read(wxT("/Audio/soundCard1InDeviceNum"),         -1);
     g_soundCard1OutDeviceNum = pConfig->Read(wxT("/Audio/soundCard1OutDeviceNum"),        -1);
     g_soundCard1SampleRate   = pConfig->Read(wxT("/Audio/soundCard1SampleRate"),          -1);
@@ -329,6 +331,8 @@ MainFrame::~MainFrame()
         pConfig->Write(wxT("/Audio/SquelchActive"),     g_SquelchActive);
         pConfig->Write(wxT("/Audio/SquelchLevel"),     (int)(g_SquelchLevel*2.0));
 
+        pConfig->Write(wxT("/Audio/framesPerBuffer"),        wxGetApp().m_framesPerBuffer);
+
         pConfig->Write(wxT("/Audio/soundCard1InDeviceNum"),       g_soundCard1InDeviceNum);
         pConfig->Write(wxT("/Audio/soundCard1OutDeviceNum"),      g_soundCard1OutDeviceNum);
         pConfig->Write(wxT("/Audio/soundCard1SampleRate"),        g_soundCard1SampleRate );
@@ -381,7 +385,6 @@ MainFrame::~MainFrame()
 
 void MainFrame::OnTimer(wxTimerEvent &evt)
 {
-
     m_panelWaterfall->m_newdata = true;
     m_panelWaterfall->Refresh();
 
@@ -429,7 +432,7 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
 
     if (snr_limited < 0.0) snr_limited = 0;
     if (snr_limited > 20.0) snr_limited = 20.0;
-    m_gaugeSNR->SetValue((int)(snr_limited+0.5));
+    m_gaugeSNR->SetValue((int)(snr_limited));
 
     // sync LED
 
@@ -441,7 +444,6 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
         m_rbSync->SetForegroundColour( wxColour( 255, 0, 0 ) );
         m_rbSync->SetValue(false);
     }
-
 }
 #endif
 
@@ -451,14 +453,9 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
 //----------------------------------------------------------------
 void MainFrame::OnIdle(wxIdleEvent& event)
 {
-    printf("OnIdle\n");
-    if(m_panelWaterfall->m_newdata)
-    {
-        m_panelWaterfall->Refresh();
-    }
-    if(m_panelSpectrum->m_newdata)
-    {
-        m_panelSpectrum->Refresh();
+    if (m_RxRunning) {
+        //printf("OnIdle\n");
+        txRxProcessing();
     }
 }
 #endif // _USE_TIMER
@@ -1013,6 +1010,7 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
         g_pFDMDV  = fdmdv_create();
         g_pCodec2 = codec2_create(CODEC2_MODE_1400);
         g_State = 0;
+        printf("g_stats.snr: %f\n", g_stats.snr_est);
 
         // init click-tune states
 
@@ -1160,6 +1158,7 @@ void  MainFrame::initPortAudioDevice(PortAudioWrap *pa, int inDevice, int outDev
     // portaudio struct so can't return any errors. So no need to trap
     // any errors in this function.
 
+    printf("indDevice: %d outDevice: %d\n", inDevice, outDevice);
     // init input params
 
     pa->setInputDevice(inDevice);
@@ -1172,7 +1171,7 @@ void  MainFrame::initPortAudioDevice(PortAudioWrap *pa, int inDevice, int outDev
     // init output params
 
     pa->setOutputDevice(outDevice);
-    pa->setOutputChannelCount(2);                         // stereo input
+    pa->setOutputChannelCount(2);                      // stereo output
     pa->setOutputSampleFormat(PA_SAMPLE_TYPE);
     pa->setOutputLatency(pa->getOutputDefaultLowLatency());
     pa->setOutputHostApiStreamInfo(NULL);
@@ -1186,9 +1185,10 @@ void  MainFrame::initPortAudioDevice(PortAudioWrap *pa, int inDevice, int outDev
        framesPerBuffer = 1024.
     */
 
-    pa->setFramesPerBuffer(PA_FPB);
+    pa->setFramesPerBuffer(wxGetApp().m_framesPerBuffer);
+    printf("framesPerBuffer: %d\n", wxGetApp().m_framesPerBuffer);
     pa->setSampleRate(sampleRate);
-    pa->setStreamFlags(0);
+    pa->setStreamFlags(paClipOff);
 }
 
 //-------------------------------------------------------------------------
@@ -1307,31 +1307,10 @@ void MainFrame::startRxStream()
 
         // create FIFOs used to interface between different buffer sizes
 
-        m_rxUserdata->infifo1 = fifo_create(4*N48);
-
-        m_rxUserdata->outfifo1 = fifo_create(4*N48);
-
-        /*
-          During soundcard 1 callback, outfifo1 is read in PA_FPB = 1024 sample blocks.
-
-          In tx processing:
-          + if outfifo1 has less than framesPerBuffer = PA_FPB = 1024 samples
-          + then tx process generates a 40ms @ 48kHz = 1920 sample blocks
-          + so we could have 1023 + 1920 samples
-          + so lets make it 1920*2 in size
-        */
-
-        m_rxUserdata->outfifo2 = fifo_create(4*N48);
-
-        /*
-          infifo2 holds buffers from the microphone.  These get read
-          in 40ms (1920 sample @ 48 kHz) blocks by the sound card 1
-          callback.  We write to the sound card in 1024 sample
-          blocks.  So we need at least 1024+1920 samples, lest also allocate
-          1920*2 samples
-        */
-
-        m_rxUserdata->infifo2 = fifo_create(4*N48);
+        m_rxUserdata->infifo1 = fifo_create(8*N48);
+        m_rxUserdata->outfifo1 = fifo_create(8*N48);
+        m_rxUserdata->outfifo2 = fifo_create(8*N48);
+        m_rxUserdata->infifo2 = fifo_create(8*N48);
 
         m_rxUserdata->rxinfifo = fifo_create(3 * FDMDV_NOM_SAMPLES_PER_FRAME);
         m_rxUserdata->rxoutfifo = fifo_create(2 * codec2_samples_per_frame(g_pCodec2));
@@ -1492,33 +1471,11 @@ void resample_for_plot(struct FIFO *plotFifo, short buf[], int length)
     fifo_write(plotFifo, dec_samples, nSamples);
 }
 
-//-------------------------------------------------------------------------
-// rxCallback()
-//-------------------------------------------------------------------------
-
-/*
-   todo:
-
-   + add tests to determine if we have real time audio I/O problems,
-     for example lost samples, buffer overflow, too slow processing
-   + should flag the user so they can tune the system
-   + maybe compute time spent doing demod compared to time between calls
-*/
-
-int MainFrame::rxCallback(
-                            const void      *inputBuffer,
-                            void            *outputBuffer,
-                            unsigned long   framesPerBuffer,
-                            const PaStreamCallbackTimeInfo* timeInfo,
-                            PaStreamCallbackFlags statusFlags,
-                            void            *userData
-                         )
+void MainFrame::txRxProcessing()
 {
-    paCallBackData  *cbData = (paCallBackData*)userData;
-    short           *rptr    = (short*)inputBuffer;
-    short           *wptr    = (short*)outputBuffer;
+    paCallBackData  *cbData = m_rxUserdata;
 
-    // temp buffers re-used by tx and rx processing
+    // Buffers re-used by tx and rx processing
     // signals in in48k/out48k are at a maximum sample rate of 48k, could be 44.1kHz
     // depending on sound hardware.
 
@@ -1526,46 +1483,13 @@ int MainFrame::rxCallback(
     short           in48k_short[2*N48];
     short           out8k_short[2*N8];
     short           out48k_short[2*N48];
-    short           indata[MAX_FPB];
-    short           outdata[MAX_FPB];
     int             nout;
 
-    unsigned int    i;
-
-    (void) timeInfo;
-    (void) statusFlags;
-
-    //printf("%d cb1 .. %d", cb1++, cb1-cb2);
-    assert(inputBuffer != NULL);
-    assert(outputBuffer != NULL);
-
-    /*
-       framesPerBuffer is portaudio-speak for number of samples we
-       actually get from the record side and need to provide to the
-       play side. On Linux (at least) it was found that
-       framesPerBuffer may not always be what we ask for in the
-       framesPerBuffer field of Pa_OpenStream.  For example a request
-       for 960 sample buffers may lead to framesPerBuffer = 1024 in
-       this call back.
-
-       So we use a bunch of FIFOs to interface between different
-       buffer sizes required at each processing step, and to
-       communicate between the call backs for the two sound cards.
-    */
+    //printf("start infifo1: %5d outfifo1: %5d\n", fifo_n(cbData->infifo1), fifo_n(cbData->outfifo1));
 
     //
     //  RX side processing --------------------------------------------
     //
-
-    // assemble a mono buffer (just use left channel) and write to FIFO
-
-    assert(framesPerBuffer < MAX_FPB);
-
-    for(i = 0; i < framesPerBuffer; i++, rptr += cbData->inputChannels1)
-    {
-        indata[i] = *rptr;
-    }
-    fifo_write(cbData->infifo1, indata, framesPerBuffer);
 
     // while we have enough input samples available ...
 
@@ -1611,13 +1535,13 @@ int MainFrame::rxCallback(
 
     if (g_nSoundCards == 2 ) {
 
-    // Make sure we have at least framesPerBuffer modulator output
-    // samples.  This locks the modulator to the sample
-    // rate of sound card 1.  We want to make sure that modulator
-    // samples are uninterrupted by differences in sample rate
-    // between this sound card and sound card 2.
+        // Make sure we have at least 2 frames of modulator output
+        // samples.  This locks the modulator to the sample
+        // rate of sound card 1.  We want to make sure that modulator
+        // samples are uninterrupted by differences in sample rate
+        // between this sound card and sound card 2.
 
-        while((unsigned)fifo_n(cbData->outfifo1) < framesPerBuffer) {
+        while((unsigned)fifo_n(cbData->outfifo1) < 6*N48) {
 
             int   nsam = g_soundCard2SampleRate * (float)codec2_samples_per_frame(g_pCodec2)/FS;
             assert(nsam <= 2*N48);
@@ -1660,6 +1584,57 @@ int MainFrame::rxCallback(
         }
     }
 
+    //printf("  end infifo1: %5d outfifo1: %5d\n", fifo_n(cbData->infifo1), fifo_n(cbData->outfifo1));
+
+}
+
+//-------------------------------------------------------------------------
+// rxCallback()
+//-------------------------------------------------------------------------
+
+int MainFrame::rxCallback(
+                            const void      *inputBuffer,
+                            void            *outputBuffer,
+                            unsigned long   framesPerBuffer,
+                            const PaStreamCallbackTimeInfo* timeInfo,
+                            PaStreamCallbackFlags statusFlags,
+                            void            *userData
+                         )
+{
+    paCallBackData  *cbData = (paCallBackData*)userData;
+    short           *rptr    = (short*)inputBuffer;
+    short           *wptr    = (short*)outputBuffer;
+
+    short           indata[MAX_FPB];
+    short           outdata[MAX_FPB];
+
+    unsigned int    i;
+
+    (void) timeInfo;
+    (void) statusFlags;
+
+    assert(inputBuffer != NULL);
+    assert(outputBuffer != NULL);
+
+    if (statusFlags)
+        printf("cb1 statusFlags: 0x%x\n", (int)statusFlags);
+
+    //
+    //  RX side processing --------------------------------------------
+    //
+
+    // assemble a mono buffer (just use left channel if stereo) and write to FIFO
+
+    assert(framesPerBuffer < MAX_FPB);
+
+    for(i = 0; i < framesPerBuffer; i++, rptr += cbData->inputChannels1)
+    {
+        indata[i] = *rptr;
+    }
+    if (fifo_write(cbData->infifo1, indata, framesPerBuffer)) {
+        //printf("infifo1 full\n");
+    }
+
     // OK now set up output samples for this callback
 
     if (fifo_read(cbData->outfifo1, outdata, framesPerBuffer) == 0)
@@ -1673,6 +1648,7 @@ int MainFrame::rxCallback(
     }
     else
     {
+        //printf("outfifo1 empty\n");
        // zero output if no data available
         for(i = 0; i < framesPerBuffer; i++, wptr += 2)
         {
@@ -1680,7 +1656,6 @@ int MainFrame::rxCallback(
             wptr[1] = 0;
         }
     }
-    //printf("end cb1\n");
 
     return paContinue;
 }
@@ -1745,7 +1720,7 @@ void MainFrame::per_frame_rx_processing(
         // compute rx spectrum & get demod stats, and update GUI plot data
         fdmdv_get_rx_spectrum(g_pFDMDV, rx_spec, rx_fdm, nin_prev);
         fdmdv_get_demod_stats(g_pFDMDV, &g_stats);
-
+       
         // Average rx spectrum data using a simple IIR low pass filter
         for(i = 0; i < FDMDV_NSPEC; i++)
         {
@@ -1769,9 +1744,9 @@ void MainFrame::per_frame_rx_processing(
             case 0:
                 // mute output audio when out of sync
 
-        for(i = 0; i < N8; i++)
-            output_buf[i] = 0;
-        fifo_write(output_fifo, output_buf, N8);
+                for(i = 0; i < N8; i++)
+                    output_buf[i] = 0;
+                fifo_write(output_fifo, output_buf, N8);
 
                 if((g_stats.fest_coarse_fine == 1) && (g_stats.snr_est > 3.0))
                 {
@@ -1898,14 +1873,12 @@ int MainFrame::txCallback(
     short           indata[MAX_FPB];
     short           outdata[MAX_FPB];
 
-    //printf("%d cb2 ... %d", cb2++,cb1-cb2);
+    if (statusFlags)
+        printf("cb2 statusFlags: 0x%x\n", (int)statusFlags);
 
     // assemble a mono buffer (just use left channel) and write to FIFO
 
     assert(framesPerBuffer < MAX_FPB);
-
-    //if (statusFlags)
-    //    printf("statusFlags: 0x%x\n", statusFlags);
 
     for(i = 0; i < framesPerBuffer; i++, rptr += cbData->inputChannels2)
     {
@@ -1914,11 +1887,13 @@ int MainFrame::txCallback(
 
     //#define SC2_LOOPBACK
 #ifdef SC2_LOOPBACK
+    
     for(i = 0; i < framesPerBuffer; i++, wptr += 2)
     {
         wptr[0] = indata[i];
         wptr[1] = indata[i];
     }
+    
 #else
     fifo_write(cbData->infifo2, indata, framesPerBuffer);
 

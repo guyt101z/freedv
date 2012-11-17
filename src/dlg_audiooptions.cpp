@@ -395,10 +395,12 @@ int AudioOptsDialog::setTextCtrlIfDevNumValid(wxTextCtrl *textCtrl, wxListCtrl *
     found_devNum = 0;
     for(i=0; i<listCtrl->GetItemCount()-1; i++) {
         aDevNum = wxAtoi(listCtrl->GetItemText(i, 1));
-        printf("aDevNum: %d devNum: %d\n", aDevNum, devNum);
+        //printf("aDevNum: %d devNum: %d\n", aDevNum, devNum);
         if (aDevNum == devNum) {
             found_devNum = 1;
             textCtrl->SetValue(listCtrl->GetItemText(i, 0) + " (" + wxString::Format(wxT("%i"),devNum) + ")");
+            printf("setting focus of %d\n", i);
+            listCtrl->SetItemState(i, wxLIST_STATE_FOCUSED, wxLIST_STATE_FOCUSED);
         }
     }
 

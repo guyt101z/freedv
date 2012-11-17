@@ -49,7 +49,7 @@
 #include "dlg_audiooptions.h"
 
 #define _USE_TIMER              1
-//#define _USE_ONIDLE             1
+#define _USE_ONIDLE             1
 #define _DUMMY_DATA             1
 //#define _AUDIO_PASSTHROUGH    1
 #define _REFRESH_TIMER_PERIOD   (DT*1000)
@@ -93,9 +93,6 @@ class MainApp : public wxApp
         wxString            m_strVendName;
         wxString            m_StrAppName;
 
-//        wxRadioButton       m_radioBtnPortAudio;
-//        wxRadioButton       m_radioBtnFileOnly;
-
         wxString            m_textNumChOut;
         wxString            m_textNumChIn;
 
@@ -111,6 +108,7 @@ class MainApp : public wxApp
         wxString            m_strRigCtrlDatabits;
         wxString            m_strRigCtrlStopbits;
         wxString            m_strRigCtrlParity;
+
         int                 m_show_wf;
         int                 m_show_spect;
         int                 m_show_scatter;
@@ -121,6 +119,8 @@ class MainApp : public wxApp
         int                 m_show_demod_in;
 
         wxRect              m_rTopWindow;
+
+        int                 m_framesPerBuffer;
 
         bool                loadConfig();
         bool                saveConfig();
@@ -185,13 +185,18 @@ class MainFrame : public TopFrame
         PlotScalar*             m_panelSpeechIn;
         PlotScalar*             m_panelSpeechOut;
         PlotScalar*             m_panelDemodIn;
+
         bool                    m_RxRunning;
-        bool                    m_TxRunning;
+
+        // PortAudio variables
         PortAudioWrap           *m_rxPa;
         PortAudioWrap           *m_txPa;
+
         paCallBackData          *m_rxUserdata;
+
         PaError                 m_rxErr;
         PaError                 m_txErr;
+
 #ifdef _USE_TIMER
         wxTimer                 m_plotTimer;
 #endif
@@ -217,6 +222,8 @@ class MainFrame : public TopFrame
                                 PaStreamCallbackFlags statusFlags,
                                 void *userData
                              );
+
+        void txRxProcessing();
 
         static void per_frame_rx_processing(
                                         FIFO    *output_fifo,   // decoded speech samples
@@ -310,7 +317,7 @@ class MainFrame : public TopFrame
         void OnTimer(wxTimerEvent &evt);
 #endif
 #ifdef _USE_ONIDLE
-        void OnIdlge(wxIdleEvent &evt);
+        void OnIdle(wxIdleEvent &evt);
 #endif
 //        wxString LoadUserImage(wxImage& image);
     private:
