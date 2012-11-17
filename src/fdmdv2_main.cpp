@@ -1540,7 +1540,7 @@ void txRxProcessing()
     short           out48k_short[2*N48];
     int             nout;
 
-    //wxLogDebug("start infifo1: %5d outfifo1: %5d\n", fifo_n(cbData->infifo1), fifo_n(cbData->outfifo1));
+   //wxLogDebug("start infifo1: %5d outfifo1: %5d\n", fifo_n(cbData->infifo1), fifo_n(cbData->outfifo1));
 
     //
     //  RX side processing --------------------------------------------
@@ -1550,8 +1550,10 @@ void txRxProcessing()
 
     int nsam = g_soundCard1SampleRate * (float)N8/FS;
     assert(nsam <= N48);
+    g_mutexProtectingCallbackData.Lock();
     while (fifo_read(cbData->infifo1, in48k_short, nsam) == 0)
     {
+        g_mutexProtectingCallbackData.Unlock();
         int n8k;
 
         n8k = resample(cbData->insrc1, in8k_short, in48k_short, FS, g_soundCard1SampleRate, N8, nsam);
@@ -1573,6 +1575,7 @@ void txRxProcessing()
 
         resample_for_plot(g_plotSpeechOutFifo, out8k_short, N8);
 
+        g_mutexProtectingCallbackData.Lock();
         if (g_nSoundCards == 1) {
             nout = resample(cbData->outsrc2, out48k_short, out8k_short, g_soundCard1SampleRate, FS, N48, N8);
             fifo_write(cbData->outfifo1, out48k_short, nout);
@@ -1581,8 +1584,8 @@ void txRxProcessing()
             nout = resample(cbData->outsrc2, out48k_short, out8k_short, g_soundCard2SampleRate, FS, N48, N8);
             fifo_write(cbData->outfifo2, out48k_short, nout);
         }
-
     }
+    g_mutexProtectingCallbackData.Unlock();
 
     //
     //  TX side processing --------------------------------------------
@@ -1596,7 +1599,9 @@ void txRxProcessing()
         // samples are uninterrupted by differences in sample rate
         // between this sound card and sound card 2.
 
+        g_mutexProtectingCallbackData.Lock();
         while((unsigned)fifo_n(cbData->outfifo1) < 6*N48) {
+            g_mutexProtectingCallbackData.Unlock();
 
             int   nsam = g_soundCard2SampleRate * (float)codec2_samples_per_frame(g_pCodec2)/FS;
             assert(nsam <= 2*N48);
@@ -1635,8 +1640,10 @@ void txRxProcessing()
             // output 40ms of modem tone
 
             nout = resample(cbData->outsrc1, out48k_short, out8k_short, g_soundCard1SampleRate, FS, 2*N48, 2*N8);
+            g_mutexProtectingCallbackData.Lock();
             fifo_write(cbData->outfifo1, out48k_short, nout);
         }
+        g_mutexProtectingCallbackData.Unlock();
     }
 
     //wxLogDebug("  end infifo1: %5d outfifo1: %5d\n", fifo_n(cbData->infifo1), fifo_n(cbData->outfifo1));
@@ -1671,6 +1678,11 @@ int MainFrame::rxCallback(
     assert(inputBuffer != NULL);
     assert(outputBuffer != NULL);
 
+    wxMutexLocker lock(g_mutexProtectingCallbackData);
+
+    if (cb_cnt)
+        printf("cb1: already in a callback\n");
+    cb_cnt++;
     if (statusFlags)
         printf("cb1 statusFlags: 0x%x\n", (int)statusFlags);
 
@@ -1711,6 +1723,7 @@ int MainFrame::rxCallback(
             wptr[1] = 0;
         }
     }
+    cb_cnt--;
 
     return paContinue;
 }
@@ -1928,6 +1941,11 @@ int MainFrame::txCallback(
     short           indata[MAX_FPB];
     short           outdata[MAX_FPB];
 
+    wxMutexLocker lock(g_mutexProtectingCallbackData);
+
+    if (cb_cnt)
+        printf("cb2: already in a callback\n");
+    cb_cnt++;
     if (statusFlags)
         printf("cb2 statusFlags: 0x%x\n", (int)statusFlags);
 
@@ -1974,6 +1992,7 @@ int MainFrame::txCallback(
     }
 #endif
     //printf("end cb2\n");
+    cb_cnt--;
     return paContinue;
 }
 
