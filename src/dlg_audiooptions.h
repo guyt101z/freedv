@@ -121,13 +121,13 @@ class AudioOptsDialog : public wxDialog
         wxPanel* m_panelAPI;
 
         wxStaticText* m_staticText7;
-        wxTextCtrl* m_textStringVer;
+        wxStaticText* m_textStringVer;
         wxStaticText* m_staticText8;
-        wxTextCtrl* m_textIntVer;
+        wxStaticText* m_textIntVer;
         wxStaticText* m_staticText5;
-        wxTextCtrl* m_textCDevCount;
+        wxStaticText* m_textCDevCount;
         wxStaticText* m_staticText4;
-        wxTextCtrl* m_textAPICount;
+        wxStaticText* m_textAPICount;
         wxButton* m_btnRefresh;
         wxStdDialogButtonSizer* m_sdbSizer1;
         wxButton* m_sdbSizer1OK;

@@ -221,42 +221,35 @@ AudioOptsDialog::AudioOptsDialog(wxWindow* parent, wxWindowID id, const wxString
     gSizer31 = new wxGridSizer(2, 1, 0, 0);
     wxStaticBoxSizer* sbSizer1;
     sbSizer1 = new wxStaticBoxSizer(new wxStaticBox(m_panelAPI, wxID_ANY, _("PortAudio")), wxVERTICAL);
+
     wxGridSizer* gSizer3;
     gSizer3 = new wxGridSizer(4, 2, 0, 0);
+
     m_staticText7 = new wxStaticText(m_panelAPI, wxID_ANY, _("PortAudio Version String:"), wxDefaultPosition, wxDefaultSize, 0);
     m_staticText7->Wrap(-1);
-    gSizer3->Add(m_staticText7, 0, wxALIGN_RIGHT|wxALL|wxALIGN_CENTER_VERTICAL, 1);
-    wxBoxSizer* bSizer151;
-    bSizer151 = new wxBoxSizer(wxVERTICAL);
-    m_textStringVer = new wxTextCtrl(m_panelAPI, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_READONLY);
-    bSizer151->Add(m_textStringVer, 0, wxALL|wxEXPAND, 1);
-    gSizer3->Add(bSizer151, 1, wxEXPAND, 2);
+    gSizer3->Add(m_staticText7, 1, wxALIGN_RIGHT|wxALL|wxALIGN_CENTER_VERTICAL, 10);
+    m_textStringVer = new wxStaticText(m_panelAPI, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0);
+    gSizer3->Add(m_textStringVer, 1, wxALIGN_LEFT|wxALL|wxALIGN_CENTER_VERTICAL, 10);
+
     m_staticText8 = new wxStaticText(m_panelAPI, wxID_ANY, _("PortAudio Int Version:"), wxDefaultPosition, wxDefaultSize, 0);
     m_staticText8->Wrap(-1);
-    gSizer3->Add(m_staticText8, 0, wxALIGN_RIGHT|wxALL|wxALIGN_CENTER_VERTICAL, 1);
-    wxBoxSizer* bSizer13;
-    bSizer13 = new wxBoxSizer(wxVERTICAL);
-    m_textIntVer = new wxTextCtrl(m_panelAPI, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_READONLY);
-    bSizer13->Add(m_textIntVer, 0, wxALL|wxALIGN_CENTER_VERTICAL, 1);
-    gSizer3->Add(bSizer13, 1, wxEXPAND, 5);
+    gSizer3->Add(m_staticText8, 1, wxALIGN_RIGHT|wxALL|wxALIGN_CENTER_VERTICAL, 10);
+    m_textIntVer = new wxStaticText(m_panelAPI, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(45,-1), 0);
+    gSizer3->Add(m_textIntVer, 1, wxALIGN_LEFT|wxALL|wxALIGN_CENTER_VERTICAL, 10);
+
     m_staticText5 = new wxStaticText(m_panelAPI, wxID_ANY, _("Device Count:"), wxDefaultPosition, wxDefaultSize, 0);
     m_staticText5->Wrap(-1);
-    gSizer3->Add(m_staticText5, 0, wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT|wxALL, 1);
-    wxBoxSizer* bSizer14;
-    bSizer14 = new wxBoxSizer(wxVERTICAL);
-    m_textCDevCount = new wxTextCtrl(m_panelAPI, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(45,-1), wxTE_READONLY);
-    m_textCDevCount->SetMaxSize(wxSize(45,-1));
-    bSizer14->Add(m_textCDevCount, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
-    gSizer3->Add(bSizer14, 1, wxEXPAND, 5);
+    gSizer3->Add(m_staticText5, 1, wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT|wxALL, 10);
+    m_textCDevCount = new wxStaticText(m_panelAPI, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(45,-1), 0);
+    gSizer3->Add(m_textCDevCount, 1, wxALIGN_LEFT|wxALL|wxALIGN_CENTER_VERTICAL, 10);
+
     m_staticText4 = new wxStaticText(m_panelAPI, wxID_ANY, _("API Count:"), wxDefaultPosition, wxDefaultSize, 0);
     m_staticText4->Wrap(-1);
-    gSizer3->Add(m_staticText4, 0, wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT|wxALL, 1);
-    wxBoxSizer* bSizer15;
-    bSizer15 = new wxBoxSizer(wxVERTICAL);
-    m_textAPICount = new wxTextCtrl(m_panelAPI, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(45,-1), wxTE_READONLY);
+    gSizer3->Add(m_staticText4, 1, wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT|wxALL, 10);
+    m_textAPICount = new wxStaticText(m_panelAPI, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(45,-1), 0);
     m_textAPICount->SetMaxSize(wxSize(45,-1));
-    bSizer15->Add(m_textAPICount, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
-    gSizer3->Add(bSizer15, 1, wxEXPAND, 5);
+    gSizer3->Add(m_textAPICount, 1, wxALIGN_LEFT|wxALL|wxALIGN_CENTER_VERTICAL, 10);
+
     sbSizer1->Add(gSizer3, 1, wxEXPAND, 2);
     gSizer31->Add(sbSizer1, 1, wxEXPAND, 2);
     wxStaticBoxSizer* sbSizer6;
@@ -712,19 +705,19 @@ void AudioOptsDialog::showAPIInfo()
     int         numDevices      = 0;
 
     strval = Pa_GetVersionText();
-    m_textStringVer->SetValue(strval);
+    m_textStringVer->SetLabel(strval);
 
     apiVersion = Pa_GetVersion();
     strval.Printf(wxT("%d"), apiVersion);
-    m_textIntVer->SetValue(strval);
+    m_textIntVer->SetLabel(strval);
 
     apiCount = Pa_GetHostApiCount();
     strval.Printf(wxT("%d"), apiCount);
-    m_textAPICount->SetValue(strval);
+    m_textAPICount->SetLabel(strval);
 
     numDevices = Pa_GetDeviceCount();
     strval.Printf(wxT("%d"), numDevices);
-    m_textCDevCount->SetValue(strval);
+    m_textCDevCount->SetLabel(strval);
 }
 
 //-------------------------------------------------------------------------
