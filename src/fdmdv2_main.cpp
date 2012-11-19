@@ -172,7 +172,7 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
 
     tools->AppendSeparator();
     wxMenuItem* m_menuItemToolsConfigDelete;
-    m_menuItemToolsConfigDelete = new wxMenuItem(tools, wxID_ANY, wxString(_("&Delete stored config")) , wxT("Delete config file/keys"), wxITEM_NORMAL);
+    m_menuItemToolsConfigDelete = new wxMenuItem(tools, wxID_ANY, wxString(_("&Restore defaults")) , wxT("Delete config file/keys and restore defaults"), wxITEM_NORMAL);
     this->Connect(m_menuItemToolsConfigDelete->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MainFrame::OnDeleteConfig));
 
     tools->Append(m_menuItemToolsConfigDelete);
@@ -669,12 +669,11 @@ MyExtraPlayFilePanel::MyExtraPlayFilePanel(wxWindow *parent): wxPanel(parent)
     m_cb = new wxCheckBox(this, -1, wxT("Loop"));
     m_cb->SetToolTip(_("When checked file will repeat forever"));
     m_cb->SetValue(g_loopPlayFileToMicIn);
-    wxBoxSizer *sizerTop = new wxBoxSizer(wxHORIZONTAL);
-    sizerTop->Add(m_cb, 11, wxALIGN_CENTER_HORIZONTAL);
-    SetSizerAndFit(sizerTop);
-    wxLogDebug("MyExtraPlayFilePanel");
-    this->SetSizer(sizerTop);
 
+    // bug: I can't this to align right.....
+    wxBoxSizer *sizerTop = new wxBoxSizer(wxHORIZONTAL);
+    sizerTop->Add(m_cb, 0, wxALIGN_RIGHT, 0);
+    SetSizerAndFit(sizerTop);
 }
 
 static wxWindow* createMyExtraPlayFilePanel(wxWindow *parent)
@@ -704,8 +703,7 @@ void MainFrame::OnPlayFileToMicIn(wxCommandEvent& event)
                                     wxT("Play File to Mic In"),
                                     wxGetApp().m_playFileToMicInPath,
                                     wxEmptyString,
-                                    wxT("RAW files (*.raw)|*.raw|")
-                                    wxT("WAV files (*.wav)|*.wav|")
+                                    wxT("WAV and RAW files (*.wav;*.raw)|*.wav;*.raw|")
                                     wxT("All files (*.*)|*.*"),
                                     wxFD_OPEN | wxFD_FILE_MUST_EXIST
                                     );
