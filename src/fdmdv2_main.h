@@ -53,7 +53,6 @@
 #define _DUMMY_DATA             1
 //#define _AUDIO_PASSTHROUGH    1
 #define _REFRESH_TIMER_PERIOD   (DT*1000)
-#define _READ_WITH_SNDFILE      1
 
 enum {
         ID_START = wxID_HIGHEST,
@@ -109,6 +108,8 @@ class MainApp : public wxApp
         wxString            m_strRigCtrlStopbits;
         wxString            m_strRigCtrlParity;
 
+        wxString            m_playFileToMicInPath;
+
         int                 m_show_wf;
         int                 m_show_spect;
         int                 m_show_scatter;
@@ -160,6 +161,17 @@ typedef struct
 
     int             inputChannels1, inputChannels2;
 } paCallBackData;
+
+// panel with custom control for play file dialog
+class MyExtraPlayFilePanel : public wxPanel
+{
+public:
+    MyExtraPlayFilePanel(wxWindow *parent);
+    void setLoopPlayFileToMicIn(bool checked) { m_cb->SetValue(checked); }
+    bool getLoopPlayFileToMicIn(void) { return m_cb->GetValue(); }
+private:
+    wxCheckBox *m_cb;
+};
 
 class txRxThread;
 
@@ -264,7 +276,7 @@ class MainFrame : public TopFrame
         void OnToolsOptionsUI( wxUpdateUIEvent& event );
         //void OnCaptureRxStream( wxCommandEvent& event );
        // void OnCaptureTxStream( wxCommandEvent& event );
-        void OnPlayAudioFile( wxCommandEvent& event );
+        void OnPlayFileToMicIn( wxCommandEvent& event );
         void OnHelpCheckUpdates( wxCommandEvent& event );
         void OnHelpCheckUpdatesUI( wxUpdateUIEvent& event );
         void OnHelpAbout( wxCommandEvent& event );
@@ -307,10 +319,6 @@ class MainFrame : public TopFrame
 #endif
 //        wxString LoadUserImage(wxImage& image);
     private:
-        bool CreateSound(wxSound& snd) const;
-        wxString    m_soundFile;
-        SF_INFO     m_sfInfo;
-        SNDFILE     *m_sfFile;
 #ifdef __WXMSW__
 //        wxString    m_soundRes;
 #endif // __WXMSW__

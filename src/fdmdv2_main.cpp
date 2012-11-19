@@ -50,13 +50,11 @@ int   g_SquelchActive;
 float g_SquelchLevel;
 int   g_analog;
 
-// rx processing states
+// tx/rx processing states
 int                 g_nRxIn = FDMDV_NOM_SAMPLES_PER_FRAME;
 int                 g_CodecBits[2 * FDMDV_BITS_PER_FRAME];
 int                 g_State;
-
 paCallBackData     *g_rxUserdata;
-
 
 // FIFOs used for plotting waveforms
 struct FIFO        *g_plotDemodInFifo;
@@ -72,6 +70,11 @@ int                 g_soundCard2InDeviceNum;
 int                 g_soundCard2OutDeviceNum;
 int                 g_soundCard2SampleRate;
 
+// playing and recording from sound files
+SNDFILE            *g_sfFile;
+bool                g_playFileToMicIn;
+bool                g_loopPlayFileToMicIn;
+
 // Click to tune rx frequency offset states
 float               g_RxFreqOffsetHz;
 COMP                g_RxFreqOffsetPhaseRect;
@@ -80,8 +83,6 @@ COMP                g_RxFreqOffsetFreqRect;
 // DRs debug variables, will be cleaned up eventually
 int cb_cnt, cb1, cb2;
 int mute_mic = 0;
-int read_file = 0;
-FILE *g_file;
 int write_file = 0;
 FILE *g_write_file;
 int sc1, sc2;
@@ -125,9 +126,6 @@ public:
 //-------------------------------------------------------------------------
 bool MainApp::OnInit()
 {
-    g_file = fopen("../../codec2-dev/raw/hts1a.raw","rb");
-    if (g_file == NULL)
-        printf("reading hts1a disabled...\n");
 
     if(!wxApp::OnInit())
     {
@@ -170,7 +168,6 @@ int MainApp::OnExit()
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
 {
-    m_sfFile            = NULL;
     m_zoom              = 1.;
 
     tools->AppendSeparator();
@@ -288,6 +285,8 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     wxGetApp().m_strRigCtrlStopbits = pConfig->Read("/Rig/StopBits",            wxT("1"));
     wxGetApp().m_strRigCtrlParity   = pConfig->Read("/Rig/Parity",              wxT("n"));
 
+    wxGetApp().m_playFileToMicInPath = pConfig->Read("/File/playFileToMicInPath", wxT(""));
+
     pConfig->SetPath(wxT("/"));
 
 //    this->Connect(m_menuItemHelpUpdates->GetId(), wxEVT_UPDATE_UI, wxUpdateUIEventHandler(TopFrame::OnHelpCheckUpdatesUI));
@@ -330,6 +329,10 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
 #ifdef _USE_ONIDLE
     Connect(wxEVT_IDLE, wxIdleEventHandler(MainFrame::OnIdle), NULL, this);
 #endif //_USE_TIMER
+
+    g_sfFile = NULL;
+    g_playFileToMicIn = false;
+    g_loopPlayFileToMicIn = false;
 }
 
 //-------------------------------------------------------------------------
@@ -379,7 +382,10 @@ MainFrame::~MainFrame()
         pConfig->Write(wxT("/Rig/DataBits"),            wxGetApp().m_strRigCtrlDatabits);
         pConfig->Write(wxT("/Rig/StopBits"),            wxGetApp().m_strRigCtrlStopbits);
         pConfig->Write(wxT("/Rig/Parity"),              wxGetApp().m_strRigCtrlParity);
+
+        pConfig->Write(wxT("/File/playFileToMicInPath"), wxGetApp().m_playFileToMicInPath);
     }
+
     m_togRxID->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnRxIDUI), NULL, this);
     m_togTxID->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnTxIDUI), NULL, this);
     m_togBtnOnOff->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnOnOffUI), NULL, this);
@@ -387,10 +393,14 @@ MainFrame::~MainFrame()
     m_togBtnAnalog->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnAnalogClickUI), NULL, this);
     //m_togBtnALC->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnALCClickUI), NULL, this);
     m_btnTogTX->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnTXClickUI), NULL, this);
-    if(m_sfFile != NULL)
+
+    if (m_RxRunning)
+        stopRxStream();
+
+    if(g_sfFile != NULL)
     {
-        sf_close(m_sfFile);
-        m_sfFile = NULL;
+        sf_close(g_sfFile);
+        g_sfFile = NULL;
     }
 #ifdef _USE_TIMER
     if(m_plotTimer.IsRunning())
@@ -626,17 +636,6 @@ void MainFrame::OnTogBtnTxID(wxCommandEvent& event)
 }
 
 void MainFrame::OnTogBtnSplitClick(wxCommandEvent& event) {
-    if (write_file == 0) {
-    write_file = 1;
-    g_write_file = fopen("tmp.raw","wb");
-    assert(g_write_file != NULL);
-    printf("recording to tmp.raw ...\n");
-    }
-    else {
-    fclose(g_write_file);
-    printf("recording stopped.\n");
-    write_file = 0;
-    }
     event.Skip();
 }
 
@@ -665,69 +664,93 @@ void MainFrame::OnTogBtnALCClick(wxCommandEvent& event)
 }
 #endif
 
-//-------------------------------------------------------------------------
-// OnOpen()
-//-------------------------------------------------------------------------
-void MainFrame::OnOpen(wxCommandEvent& event)
+MyExtraPlayFilePanel::MyExtraPlayFilePanel(wxWindow *parent): wxPanel(parent)
 {
-    wxUnusedVar(event);
-    wxFileDialog openFileDialog(
-                                    this,
-                                    wxT("Open Sound File"),
-                                    wxEmptyString,
-                                    wxEmptyString,
-//                                    (const wxChar *)NULL,
-                                    wxT("RAW files (*.raw)|*.raw|")
-                                    wxT("WAV files (*.wav)|*.wav|")
-                                    wxT("Octave 2.0 files (*.mat4)|*.mat4|")
-                                    wxT("Octave 2.1 files (*.mat5)|*.mat5|")
-                                    wxT("FLAC files (*.flc)|*.flc|")
-                                    wxT("All files (*.*)|*.*"),
-                                    wxFD_OPEN | wxFD_FILE_MUST_EXIST
-                                );
-    if(openFileDialog.ShowModal() == wxID_CANCEL)
-    {
-        return;     // the user changed their mind...
-    }
-    wxString extension;
-    m_soundFile = openFileDialog.GetPath();
-    wxFileName::SplitPath(m_soundFile, NULL, NULL, &extension);
-    //wxLogError("Cannot open file '%s'.", openFileDialog.GetPath());
-#ifdef _READ_WITH_SNDFILE
-    m_sfInfo.format = 0;
-    if(!extension.IsEmpty())
-    {
-        extension.LowerCase();
-        if(extension == wxT("raw"))
-        {
-            m_sfInfo.format     = SF_FORMAT_RAW | SF_FORMAT_PCM_U8;
-            m_sfInfo.channels   = 2;
-            m_sfInfo.samplerate = 8000;
-        }
-    }
-    m_sfFile    = sf_open(m_soundFile, SFM_READ, &m_sfInfo);
-    if(m_sfFile == NULL)
-    {
-        wxString strErr = sf_strerror(NULL);
-        wxMessageBox(strErr, wxT("File Error"), wxOK);
-        return;
-    }
-#endif // _READ_WITH_SNDFILE
-    SetStatusText(wxT("File: ") + m_soundFile, 0);
-//    bool saved = false;
+    m_cb = new wxCheckBox(this, -1, wxT("Loop"));
+    m_cb->SetToolTip(_("When checked file will repeat forever"));
+    m_cb->SetValue(g_loopPlayFileToMicIn);
+    wxBoxSizer *sizerTop = new wxBoxSizer(wxHORIZONTAL);
+    sizerTop->Add(m_cb, 11, wxALIGN_CENTER_HORIZONTAL);
+    SetSizerAndFit(sizerTop);
+    wxLogDebug("MyExtraPlayFilePanel");
+    this->SetSizer(sizerTop);
+
+}
+
+static wxWindow* createMyExtraPlayFilePanel(wxWindow *parent)
+{
+    return new MyExtraPlayFilePanel(parent);
 }
 
 //-------------------------------------------------------------------------
-// OnPlayAudioFile()
+// OnOpen()
 //-------------------------------------------------------------------------
-void MainFrame::OnPlayAudioFile(wxCommandEvent& event)
+void MainFrame::OnPlayFileToMicIn(wxCommandEvent& event)
 {
-    wxUnusedVar(event);
-/*
-    // proceed loading the file chosen by the user;
-    m_sound->Play(openFileDialog.GetPath());
-*/
+    if (g_playFileToMicIn) {
+        g_mutexProtectingCallbackData.Lock();
+        g_playFileToMicIn = false;
+        sf_close(g_sfFile);
+        g_mutexProtectingCallbackData.Unlock();
+    }
+    else {
+
+        wxString    soundFile;
+        SF_INFO     sfInfo;
+
+        wxUnusedVar(event);
+        wxFileDialog openFileDialog(
+                                    this,
+                                    wxT("Play File to Mic In"),
+                                    wxGetApp().m_playFileToMicInPath,
+                                    wxEmptyString,
+                                    wxT("RAW files (*.raw)|*.raw|")
+                                    wxT("WAV files (*.wav)|*.wav|")
+                                    wxT("All files (*.*)|*.*"),
+                                    wxFD_OPEN | wxFD_FILE_MUST_EXIST
+                                    );
+
+        // add the loop check box
+        openFileDialog.SetExtraControlCreator(&createMyExtraPlayFilePanel);
+ 
+        if(openFileDialog.ShowModal() == wxID_CANCEL)
+        {
+            return;     // the user changed their mind...
+        }
+
+        wxString fileName, extension;
+        soundFile = openFileDialog.GetPath();
+        wxFileName::SplitPath(soundFile, &wxGetApp().m_playFileToMicInPath, &fileName, &extension);
+        wxLogDebug("m_playFileToMicInPath: %s", wxGetApp().m_playFileToMicInPath);
+        sfInfo.format = 0;
+
+        if(!extension.IsEmpty())
+        {
+            extension.LowerCase();
+            if(extension == wxT("raw"))
+            {
+                sfInfo.format     = SF_FORMAT_RAW | SF_FORMAT_PCM_16;
+                sfInfo.channels   = 1;
+                sfInfo.samplerate = FS;
+            }
+        }
+        g_sfFile = sf_open(soundFile, SFM_READ, &sfInfo);
+        if(g_sfFile == NULL)
+        {
+            wxString strErr = sf_strerror(NULL);
+            wxMessageBox(strErr, wxT("Couldn't open sound file"), wxOK);
+            return;
+        }
+        
+        wxWindow * const ctrl = openFileDialog.GetExtraControl();
+        // Huh?! I just copied wxWidgets-2.9.4/samples/dialogs ....
+        g_loopPlayFileToMicIn = static_cast<MyExtraPlayFilePanel*>(ctrl)->getLoopPlayFileToMicIn();
+        printf(" g_loopPlayFileToMicIn: %d\n", (int) g_loopPlayFileToMicIn);
+        SetStatusText(wxT("Playing File: ") + fileName + wxT(" to Mic Input") , 0);
+        g_playFileToMicIn = true;
+    }
 }
+
 
 //-------------------------------------------------------------------------
 // OnSave()
@@ -771,13 +794,12 @@ void MainFrame::OnClose(wxCommandEvent& event)
     wxUnusedVar(event);
 
 #ifdef _USE_TIMER
-    //DMW Reenable for the nonce...
     m_plotTimer.Stop();
 #endif // _USE_TIMER
-    if(m_sfFile != NULL)
+    if(g_sfFile != NULL)
     {
-        sf_close(m_sfFile);
-        m_sfFile = NULL;
+        sf_close(g_sfFile);
+        g_sfFile = NULL;
     }
     if(m_RxRunning)
     {
@@ -1137,10 +1159,6 @@ void MainFrame::OnTogBtnLoopRx( wxCommandEvent& event )
 //----------------------------------------------------------
 void MainFrame::OnTogBtnLoopTx( wxCommandEvent& event )
 {
-    if (read_file == 0)
-        read_file = 1;
-    else
-        read_file = 0;
 }
 
 void MainFrame::destroy_fifos(void)
@@ -1562,7 +1580,7 @@ void txRxProcessing()
         per_frame_rx_processing(cbData->rxoutfifo, g_CodecBits, cbData->rxinfifo, &g_nRxIn, &g_State, g_pCodec2);
 
         // if demod out of sync or we are in analog mode just pass thru
-        // audio so we can hear SSB radio ouput as an aid to tuning
+        // audio so we can hear SSB radio output as an aid to tuning
 
         if ((g_State == 0) || g_analog)
             memcpy(out8k_short, in8k_short, sizeof(short)*n8k);
@@ -1621,12 +1639,19 @@ void txRxProcessing()
                 fwrite( in8k_short, sizeof(short), nout, g_write_file);
             }
 
-            if (read_file  && (g_file != NULL)) {
-                int n = fread( in8k_short , sizeof(short), 2*N8, g_file);
+            g_mutexProtectingCallbackData.Lock();
+            if (g_playFileToMicIn && (g_sfFile != NULL)) {
+                int n = sf_read_short(g_sfFile, in8k_short, 2*N8);
                 if (n != 2*N8) {
-                    rewind(g_file);
+                    if (g_loopPlayFileToMicIn)
+                        sf_seek(g_sfFile, 0, SEEK_SET);
+                    else {
+                        sf_close(g_sfFile); g_sfFile = NULL;
+                        g_playFileToMicIn = false;
+                    }
                 }
             }
+            g_mutexProtectingCallbackData.Unlock();
 
             resample_for_plot(g_plotSpeechInFifo, in8k_short, nout);
 

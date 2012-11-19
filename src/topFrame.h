@@ -82,28 +82,35 @@ class TopFrame : public wxFrame
         virtual void topFrame_OnPaint( wxPaintEvent& event ) { event.Skip(); }
         virtual void topFrame_OnSize( wxSizeEvent& event ) { event.Skip(); }
         virtual void topFrame_OnUpdateUI( wxUpdateUIEvent& event ) { event.Skip(); }
+
+#ifdef UNIMPLEMENTED
         virtual void OnOpen( wxCommandEvent& event ) { event.Skip(); }
         virtual void OnOpenUpdateUI( wxUpdateUIEvent& event ) { event.Skip(); }
         virtual void OnSave( wxCommandEvent& event ) { event.Skip(); }
         virtual void OnSaveUpdateUI( wxUpdateUIEvent& event ) { event.Skip(); }
         virtual void OnClose( wxCommandEvent& event ) { event.Skip(); }
         virtual void OnCloseUpdateUI( wxUpdateUIEvent& event ) { event.Skip(); }
+#endif
         virtual void OnExit( wxCommandEvent& event ) { event.Skip(); }
+#ifdef UNIMPLEMENTED
         virtual void OnCopy( wxCommandEvent& event ) { event.Skip(); }
         virtual void OnCopyUpdateUI( wxUpdateUIEvent& event ) { event.Skip(); }
         virtual void OnCut( wxCommandEvent& event ) { event.Skip(); }
         virtual void OnCutUpdateUI( wxUpdateUIEvent& event ) { event.Skip(); }
         virtual void OnPaste( wxCommandEvent& event ) { event.Skip(); }
         virtual void OnPasteUpdateUI( wxUpdateUIEvent& event ) { event.Skip(); }
+#endif
         virtual void OnToolsAudio( wxCommandEvent& event ) { event.Skip(); }
         virtual void OnToolsAudioUI( wxUpdateUIEvent& event ) { event.Skip(); }
         virtual void OnToolsComCfg( wxCommandEvent& event ) { event.Skip(); }
         virtual void OnToolsComCfgUI( wxUpdateUIEvent& event ) { event.Skip(); }
         virtual void OnToolsOptions( wxCommandEvent& event ) { event.Skip(); }
         virtual void OnToolsOptionsUI( wxUpdateUIEvent& event ) { event.Skip(); }
+#ifdef UNIMPLEMENTED
         //virtual void OnCaptureRxStream( wxCommandEvent& event ) { event.Skip(); }
         //virtual void OnCaptureTxStream( wxCommandEvent& event ) { event.Skip(); }
-        virtual void OnPlayAudioFile( wxCommandEvent& event ) { event.Skip(); }
+#endif
+        virtual void OnPlayFileToMicIn( wxCommandEvent& event ) { event.Skip(); }
         virtual void OnHelpCheckUpdates( wxCommandEvent& event ) { event.Skip(); }
         virtual void OnHelpCheckUpdatesUI( wxUpdateUIEvent& event ) { event.Skip(); }
         virtual void OnHelpAbout( wxCommandEvent& event ) { event.Skip(); }

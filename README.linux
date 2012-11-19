@@ -113,6 +113,20 @@ TODO
     [ ] if you press start and headphones unplugged (ie one sound card missing), it
         shouldn't crash
     [ ] do we keep/put effort into getting working ./configure && Makefile?
+    [ ] debug printfs
+    [ ] about
+    [ ] src file credits
+    [ ] hook up squelch
+    [ ] test with simulated AWGN/burst error channels
+        + see if sync needs tuning to not fall over too quickly
+        + nasty noises
+    [ ] version number
+    [ ] buffer sizes, maybe make a config number
+    [ ] read comments and make sure still valid
+    [ ] rig control
+    [ ] click tune and split
+    [ ] tool tip help for audio config dialog
+    [ ] rm loopback buttons
 
 IDEAS
 =====
