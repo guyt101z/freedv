@@ -55,7 +55,8 @@ class AudioOptsDialog : public wxDialog
         int             txInAudioDeviceNum;
         int             txOutAudioDeviceNum;
 
-        void buildTestControls(PlotScalar **plotScalar, wxButton **btnTest, wxPanel *parentPanel, wxBoxSizer *bSizer);
+        void buildTestControls(PlotScalar **plotScalar, wxButton **btnTest, 
+                               wxPanel *parentPanel, wxBoxSizer *bSizer,char buttonLabel[]);
         void plotDeviceInputForAFewSecs(int devNum, PlotScalar *plotScalar);
         void plotDeviceOutputForAFewSecs(int devNum, PlotScalar *plotScalar);
 

@@ -1127,10 +1127,9 @@ void MainFrame::stopRxStream()
 void MainFrame::OnTogBtnLoopRx( wxCommandEvent& event )
 {
     if (mute_mic == 0)
-    mute_mic = 1;
+        mute_mic = 1;
     else
-    mute_mic = 0;
-
+        mute_mic = 0;
 }
 
 //----------------------------------------------------------
@@ -1139,10 +1138,9 @@ void MainFrame::OnTogBtnLoopRx( wxCommandEvent& event )
 void MainFrame::OnTogBtnLoopTx( wxCommandEvent& event )
 {
     if (read_file == 0)
-    read_file = 1;
+        read_file = 1;
     else
-    read_file = 0;
-
+        read_file = 0;
 }
 
 void MainFrame::destroy_fifos(void)
@@ -1600,7 +1598,7 @@ void txRxProcessing()
         // between this sound card and sound card 2.
 
         g_mutexProtectingCallbackData.Lock();
-        while((unsigned)fifo_n(cbData->outfifo1) < 6*N48) {
+        while((unsigned)fifo_used(cbData->outfifo1) < 6*N48) {
             g_mutexProtectingCallbackData.Unlock();
 
             int   nsam = g_soundCard2SampleRate * (float)codec2_samples_per_frame(g_pCodec2)/FS;
