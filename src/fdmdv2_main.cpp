@@ -1109,9 +1109,9 @@ void MainFrame::OnHelpCheckUpdatesUI(wxUpdateUIEvent& event)
 void MainFrame::OnHelpAbout(wxCommandEvent& event)
 {
     wxString msg;
-    msg.Printf( wxT("FreeDV Narrow Band Digital Voice over Radio Application.\n")
-                wxT("GNU Public License V2.1")
-                wxT("Copyright (c) David Witten KD0EAG and David Rowe VK5DGR")
+    msg.Printf( wxT("FreeDV: Narrow Band Digital Voice over Radio Application.\n\n")
+                wxT("GNU Public License V2.1\n")
+                wxT("Copyright (c) David Witten KD0EAG and David Rowe VK5DGR\n\n")
                 wxT("svn revision %s"), SVN_REV);
 
     wxMessageBox(msg, wxT("About"), wxOK | wxICON_INFORMATION, this);
