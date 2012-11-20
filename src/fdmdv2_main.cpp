@@ -1109,8 +1109,10 @@ void MainFrame::OnHelpCheckUpdatesUI(wxUpdateUIEvent& event)
 void MainFrame::OnHelpAbout(wxCommandEvent& event)
 {
     wxString msg;
-    msg.Printf( wxT("This is the About dialog of the sound sample.\n")
-                wxT("Welcome to %s"), wxVERSION_STRING);
+    msg.Printf( wxT("FreeDV Narrow Band Digital Voice over Radio Application.\n")
+                wxT("svn revision %d")
+                wxT("By David Witten and David Rowe")
+                , SVN_REV);
 
     wxMessageBox(msg, wxT("About"), wxOK | wxICON_INFORMATION, this);
 }
