@@ -2,12 +2,9 @@
 // Name:            fdmdv2_pa_wrapper.h
 // Purpose:         Defines a wrapper class around PortAudio
 // Created:         August 12, 2012
-// Initial author:  David Witten
+// Authors:         David Rowe, David Witten
+// 
 // License:
-//
-//  Copyright (C) 2012 David Witten
-//
-//  All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU Lesser General Public License version 2.1,

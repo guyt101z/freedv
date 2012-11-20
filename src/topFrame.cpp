@@ -1,10 +1,24 @@
-///////////////////////////////////////////////////////////////////////////
-// C++ code generated with wxFormBuilder (version Apr 10 2012)
-// http://www.wxformbuilder.org/
+//==========================================================================
+// Name:            topFrame.cpp
 //
-// PLEASE DO "NOT" EDIT THIS FILE!
-///////////////////////////////////////////////////////////////////////////
-
+// Purpose:         Implements simple wxWidgets application with GUI.
+// Created:         Apr. 9, 2012
+// Authors:         David Rowe, David Witten
+// 
+// License:
+//
+//  This program is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU Lesser General Public License version 2.1,
+//  as published by the Free Software Foundation.  This program is
+//  distributed in the hope that it will be useful, but WITHOUT ANY
+//  WARRANTY; without even the implied warranty of MERCHANTABILITY or
+//  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+//  License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public License
+//  along with this program; if not, see <http://www.gnu.org/licenses/>.
+//
+//==========================================================================
 #include "topFrame.h"
 
 extern int g_playFileToMicInEventId;

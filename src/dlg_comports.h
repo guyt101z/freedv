@@ -3,9 +3,21 @@
 // Purpose:         Subclasses dialog GUI for general program options.
 //                  (DlgOptions from topFrame.h)
 // Created:         May. 11, 2012
-// Initial author:  David Witten
-// License:         BSD License (other licenses may apply to other
-//                  components of this project)
+// Authors:         David Rowe, David Witten
+// 
+// License:
+//
+//  This program is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU Lesser General Public License version 2.1,
+//  as published by the Free Software Foundation.  This program is
+//  distributed in the hope that it will be useful, but WITHOUT ANY
+//  WARRANTY; without even the implied warranty of MERCHANTABILITY or
+//  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+//  License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public License
+//  along with this program; if not, see <http://www.gnu.org/licenses/>.
+//
 //==========================================================================
 #ifndef __COMPORTS_DIALOG__
 #define __COMPORTS_DIALOG__
