@@ -39,6 +39,8 @@
 #include "wx/stopwatch.h"
 #include "wx/versioninfo.h"
 #include <wx/sound.h>
+#include <wx/url.h>
+#include <wx/sstream.h>
 
 #include <samplerate.h>
 

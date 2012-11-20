@@ -1108,11 +1108,42 @@ void MainFrame::OnHelpCheckUpdatesUI(wxUpdateUIEvent& event)
 //-------------------------------------------------------------------------
 void MainFrame::OnHelpAbout(wxCommandEvent& event)
 {
+    wxString svnLatestRev("Can't determine latest SVN revision.");
+
+    // Try to determine current SVN revision from the Internet
+
+    wxURL url(wxT("http://freetel.svn.sourceforge.net/svnroot/freetel/fdmdv2/"));
+    
+    if(url.GetError() == wxURL_NOERR)
+    {
+        printf("URL OK\n");
+        wxString htmldata;
+        wxInputStream *in = url.GetInputStream();
+ 
+        if(in && in->IsOk())
+        {
+            printf("In OK\n");
+            wxStringOutputStream html_stream(&htmldata);
+            in->Read(html_stream);
+            wxLogDebug(htmldata);
+ 
+            wxString s("<h2>freetel - Revision ");
+            int startIndex = htmldata.find(s) + s.Length();
+            int endIndex = htmldata.find(wxT(": /fdmdv2</h2>"));
+            svnLatestRev = wxT("Latest svn revision: ") + htmldata.SubString(startIndex, endIndex-1);
+            printf("startIndex: %d endIndex: %d\n", startIndex, endIndex);
+       }
+
+        delete in;
+    }
+    else
+        printf("failed to parse URL\n");
+
     wxString msg;
     msg.Printf( wxT("FreeDV: Narrow Band Digital Voice over Radio Application.\n\n")
                 wxT("GNU Public License V2.1\n")
                 wxT("Copyright (c) David Witten KD0EAG and David Rowe VK5DGR\n\n")
-                wxT("svn revision %s"), SVN_REV);
+                wxT("svn revision: %s\n") + svnLatestRev, SVN_REV);
 
     wxMessageBox(msg, wxT("About"), wxOK | wxICON_INFORMATION, this);
 }
