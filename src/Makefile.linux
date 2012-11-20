@@ -11,10 +11,11 @@ CODEC2_PATH=/home/david/codec2-dev
 WX_CONFIG=$(WX_GTK_PATH)/wx-config
 WX_CPPFLAGS = $(shell $(WX_CONFIG) --cxxflags)
 WX_LIBS = $(shell $(WX_CONFIG) --libs core, base, aui, adv)
+SVN_REVISION = $(shell svnversion)
 CODEC2_INC=-I$(CODEC2_PATH)/src
 CODEC2_LIB=$(CODEC2_PATH)/src/.libs/libcodec2.a
 
-CPP_FLAGS = $(WX_CPPFLAGS) $(CODEC2_INC) -I. -g -Wall -O3
+CPP_FLAGS = $(WX_CPPFLAGS) $(CODEC2_INC) -I. -g -Wall -O3 -DSVN_REV=$(SVN_REVISION)
 LIBS = $(WX_LIBS) $(CODEC2_LIB) -lm -lportaudiocpp -lpthread -lsndfile /usr/lib/libsamplerate.so.0
 
 OBJS = topFrame.o \

@@ -1108,15 +1108,11 @@ void MainFrame::OnHelpCheckUpdatesUI(wxUpdateUIEvent& event)
 //-------------------------------------------------------------------------
 void MainFrame::OnHelpAbout(wxCommandEvent& event)
 {
-    wxUnusedVar(event);
-//    int rv = 0;
-//    AboutDlg *dlg = new AboutDlg(NULL);
-//    rv = dlg->ShowModal();
-//    if(rv == wxID_OK)
-//    {
-//        dlg->ExchangeData(EXCHANGE_DATA_OUT);
-//    }
-//    delete dlg;
+    wxString msg;
+    msg.Printf( wxT("This is the About dialog of the sound sample.\n")
+                wxT("Welcome to %s"), wxVERSION_STRING);
+
+    wxMessageBox(msg, wxT("About"), wxOK | wxICON_INFORMATION, this);
 }
 
 /*
