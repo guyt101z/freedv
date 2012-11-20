@@ -109,6 +109,8 @@ class MainApp : public wxApp
         wxString            m_strRigCtrlParity;
 
         wxString            m_playFileToMicInPath;
+        wxString            m_recFileFromRadioPath;
+        unsigned int        m_recFileFromRadioSecs;
 
         int                 m_show_wf;
         int                 m_show_spect;
@@ -162,7 +164,7 @@ typedef struct
     int             inputChannels1, inputChannels2;
 } paCallBackData;
 
-// panel with custom control for play file dialog
+// panel with custom loop checkbox for play file dialog
 class MyExtraPlayFilePanel : public wxPanel
 {
 public:
@@ -171,6 +173,17 @@ public:
     bool getLoopPlayFileToMicIn(void) { return m_cb->GetValue(); }
 private:
     wxCheckBox *m_cb;
+};
+
+// panel with custom Seconds-to-record control for record file dialog
+class MyExtraRecFilePanel : public wxPanel
+{
+public:
+    MyExtraRecFilePanel(wxWindow *parent);
+    void setSecondsToRecord(wxString value) { m_secondsToRecord->SetValue(value); }
+    wxString getSecondsToRecord(void) { return m_secondsToRecord->GetValue(); }
+private:
+    wxTextCtrl *m_secondsToRecord;
 };
 
 class txRxThread;
@@ -276,7 +289,10 @@ class MainFrame : public TopFrame
         void OnToolsOptionsUI( wxUpdateUIEvent& event );
         //void OnCaptureRxStream( wxCommandEvent& event );
        // void OnCaptureTxStream( wxCommandEvent& event );
+
         void OnPlayFileToMicIn( wxCommandEvent& event );
+        void OnRecFileFromRadio( wxCommandEvent& event );
+
         void OnHelpCheckUpdates( wxCommandEvent& event );
         void OnHelpCheckUpdatesUI( wxUpdateUIEvent& event );
         void OnHelpAbout( wxCommandEvent& event );

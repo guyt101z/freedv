@@ -71,9 +71,15 @@ int                 g_soundCard2OutDeviceNum;
 int                 g_soundCard2SampleRate;
 
 // playing and recording from sound files
-SNDFILE            *g_sfFile;
+SNDFILE            *g_sfPlayFile;
 bool                g_playFileToMicIn;
 bool                g_loopPlayFileToMicIn;
+int                 g_playFileToMicInEventId;
+SNDFILE            *g_sfRecFile;
+bool                g_recFileFromRadio;
+unsigned int        g_recFromRadioSamples;
+int                 g_recFileFromRadioEventId;
+wxWindow           *g_parent;
 
 // Click to tune rx frequency offset states
 float               g_RxFreqOffsetHz;
@@ -83,8 +89,6 @@ COMP                g_RxFreqOffsetFreqRect;
 // DRs debug variables, will be cleaned up eventually
 int cb_cnt, cb1, cb2;
 int mute_mic = 0;
-int write_file = 0;
-FILE *g_write_file;
 int sc1, sc2;
 int g_outfifo2_empty;
 
@@ -152,6 +156,7 @@ bool MainApp::OnInit()
     frame->m_auiNbookCtrl->ChangeSelection(0);
     frame->Layout();
     frame->Show();
+    g_parent =frame;
     return true;
 }
 
@@ -286,6 +291,8 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     wxGetApp().m_strRigCtrlParity   = pConfig->Read("/Rig/Parity",              wxT("n"));
 
     wxGetApp().m_playFileToMicInPath = pConfig->Read("/File/playFileToMicInPath", wxT(""));
+    wxGetApp().m_recFileFromRadioPath = pConfig->Read("/File/recFileFromRadioPath", wxT(""));
+    wxGetApp().m_recFileFromRadioSecs = pConfig->Read("/File/recFileFromRadioSecs", 30);
 
     pConfig->SetPath(wxT("/"));
 
@@ -330,9 +337,12 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     Connect(wxEVT_IDLE, wxIdleEventHandler(MainFrame::OnIdle), NULL, this);
 #endif //_USE_TIMER
 
-    g_sfFile = NULL;
+    g_sfPlayFile = NULL;
     g_playFileToMicIn = false;
     g_loopPlayFileToMicIn = false;
+    g_sfRecFile = NULL;
+    g_recFileFromRadio = false;
+    //g_parent = parent;
 }
 
 //-------------------------------------------------------------------------
@@ -384,6 +394,8 @@ MainFrame::~MainFrame()
         pConfig->Write(wxT("/Rig/Parity"),              wxGetApp().m_strRigCtrlParity);
 
         pConfig->Write(wxT("/File/playFileToMicInPath"), wxGetApp().m_playFileToMicInPath);
+        pConfig->Write(wxT("/File/recFileFromRadioPath"), wxGetApp().m_recFileFromRadioPath);
+        pConfig->Write(wxT("/File/recFileFromRadioSecs"), wxGetApp().m_recFileFromRadioSecs);
     }
 
     m_togRxID->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnRxIDUI), NULL, this);
@@ -397,10 +409,15 @@ MainFrame::~MainFrame()
     if (m_RxRunning)
         stopRxStream();
 
-    if(g_sfFile != NULL)
+    if (g_sfPlayFile != NULL)
     {
-        sf_close(g_sfFile);
-        g_sfFile = NULL;
+        sf_close(g_sfPlayFile);
+        g_sfPlayFile = NULL;
+    }
+    if (g_sfRecFile != NULL)
+    {
+        sf_close(g_sfRecFile);
+        g_sfRecFile = NULL;
     }
 #ifdef _USE_TIMER
     if(m_plotTimer.IsRunning())
@@ -496,12 +513,7 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
 //----------------------------------------------------------------
 void MainFrame::OnIdle(wxIdleEvent& event)
 {
-    /*
-    if (m_RxRunning) {
-        //wxLogDebug("OnIdle\n");
-        txRxProcessing();
-    }
-    */
+
 }
 #endif // _USE_TIMER
 
@@ -664,6 +676,7 @@ void MainFrame::OnTogBtnALCClick(wxCommandEvent& event)
 }
 #endif
 
+// extra panel added to file open dialog to add loop checkbox
 MyExtraPlayFilePanel::MyExtraPlayFilePanel(wxWindow *parent): wxPanel(parent)
 {
     m_cb = new wxCheckBox(this, -1, wxT("Loop"));
@@ -682,14 +695,17 @@ static wxWindow* createMyExtraPlayFilePanel(wxWindow *parent)
 }
 
 //-------------------------------------------------------------------------
-// OnOpen()
+// OnPlayFileToMicIn()
 //-------------------------------------------------------------------------
 void MainFrame::OnPlayFileToMicIn(wxCommandEvent& event)
 {
+    wxUnusedVar(event);
+
     if (g_playFileToMicIn) {
         g_mutexProtectingCallbackData.Lock();
         g_playFileToMicIn = false;
-        sf_close(g_sfFile);
+        sf_close(g_sfPlayFile);
+        SetStatusText(wxT(""));
         g_mutexProtectingCallbackData.Unlock();
     }
     else {
@@ -697,7 +713,6 @@ void MainFrame::OnPlayFileToMicIn(wxCommandEvent& event)
         wxString    soundFile;
         SF_INFO     sfInfo;
 
-        wxUnusedVar(event);
         wxFileDialog openFileDialog(
                                     this,
                                     wxT("Play File to Mic In"),
@@ -719,7 +734,7 @@ void MainFrame::OnPlayFileToMicIn(wxCommandEvent& event)
         wxString fileName, extension;
         soundFile = openFileDialog.GetPath();
         wxFileName::SplitPath(soundFile, &wxGetApp().m_playFileToMicInPath, &fileName, &extension);
-        wxLogDebug("m_playFileToMicInPath: %s", wxGetApp().m_playFileToMicInPath);
+        //wxLogDebug("m_playFileToMicInPath: %s", wxGetApp().m_playFileToMicInPath);
         sfInfo.format = 0;
 
         if(!extension.IsEmpty())
@@ -732,8 +747,8 @@ void MainFrame::OnPlayFileToMicIn(wxCommandEvent& event)
                 sfInfo.samplerate = FS;
             }
         }
-        g_sfFile = sf_open(soundFile, SFM_READ, &sfInfo);
-        if(g_sfFile == NULL)
+        g_sfPlayFile = sf_open(soundFile, SFM_READ, &sfInfo);
+        if(g_sfPlayFile == NULL)
         {
             wxString strErr = sf_strerror(NULL);
             wxMessageBox(strErr, wxT("Couldn't open sound file"), wxOK);
@@ -741,47 +756,132 @@ void MainFrame::OnPlayFileToMicIn(wxCommandEvent& event)
         }
         
         wxWindow * const ctrl = openFileDialog.GetExtraControl();
+
         // Huh?! I just copied wxWidgets-2.9.4/samples/dialogs ....
         g_loopPlayFileToMicIn = static_cast<MyExtraPlayFilePanel*>(ctrl)->getLoopPlayFileToMicIn();
-        printf(" g_loopPlayFileToMicIn: %d\n", (int) g_loopPlayFileToMicIn);
+
         SetStatusText(wxT("Playing File: ") + fileName + wxT(" to Mic Input") , 0);
         g_playFileToMicIn = true;
     }
 }
 
+// extra panel added to file save dialog to set number of seconds to record for
+MyExtraRecFilePanel::MyExtraRecFilePanel(wxWindow *parent): wxPanel(parent)
+{
+    wxBoxSizer *sizerTop = new wxBoxSizer(wxHORIZONTAL);
+
+    wxStaticText* staticText = new wxStaticText(this, wxID_ANY, _("Seconds:"), wxDefaultPosition, wxDefaultSize, 0);
+    sizerTop->Add(staticText, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    m_secondsToRecord = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0);
+    m_secondsToRecord->SetToolTip(_("Number of seconds to record for"));
+    m_secondsToRecord->SetValue(wxString::Format(wxT("%i"), wxGetApp().m_recFileFromRadioSecs));
+    sizerTop->Add(m_secondsToRecord, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    SetSizerAndFit(sizerTop);
+}
+
+static wxWindow* createMyExtraRecFilePanel(wxWindow *parent)
+{
+    return new MyExtraRecFilePanel(parent);
+}
 
 //-------------------------------------------------------------------------
-// OnSave()
+// OnRecFileFromRadio()
 //-------------------------------------------------------------------------
-void MainFrame::OnSave(wxCommandEvent& WXUNUSED(event))
+void MainFrame::OnRecFileFromRadio(wxCommandEvent& event)
 {
-/*
-    wxString savefilename = wxFileSelector(
-                                            wxT("Save Sound File"),
-                                            wxEmptyString,
-                                            wxEmptyString,
-                                            (const wxChar *)NULL,
-                                            wxT("WAV files (*.wav)|*.wav|")
-                                            wxT("RAW files (*.raw)|*.raw|")
-                                            wxT("SPEEX files (*.spx)|*.spx|")
-                                            wxT("FLAC files (*.flc)|*.flc|"),
-                                            wxFD_SAVE,
-                                            this
-                                          );
-    if(savefilename.empty())
-    {
-        return;
+    wxUnusedVar(event);
+
+    if (g_recFileFromRadio) {
+        printf("Stopping Record....\n");
+        g_mutexProtectingCallbackData.Lock();
+        g_recFileFromRadio = false;
+        sf_close(g_sfRecFile);
+        SetStatusText(wxT(""));
+        g_mutexProtectingCallbackData.Unlock();
     }
-    wxString extension;
-    wxFileName::SplitPath(savefilename, NULL, NULL, &extension);
-    bool saved = false;
-    if(!saved)
-    {
-        // This one guesses image format from filename extension
-        // (it may fail if the extension is not recognized):
-        //image.SaveFile(savefilename);
+    else {
+
+        wxString    soundFile;
+        SF_INFO     sfInfo;
+
+         wxFileDialog openFileDialog(
+                                    this,
+                                    wxT("Record File From Radio"),
+                                    wxGetApp().m_recFileFromRadioPath,
+                                    wxEmptyString,
+                                    wxT("WAV and RAW files (*.wav;*.raw)|*.wav;*.raw|")
+                                    wxT("All files (*.*)|*.*"),
+                                    wxFD_SAVE
+                                    );
+
+        // add the loop check box
+        openFileDialog.SetExtraControlCreator(&createMyExtraRecFilePanel);
+ 
+        if(openFileDialog.ShowModal() == wxID_CANCEL)
+        {
+            return;     // the user changed their mind...
+        }
+
+        wxString fileName, extension;
+        soundFile = openFileDialog.GetPath();
+        wxFileName::SplitPath(soundFile, &wxGetApp().m_recFileFromRadioPath, &fileName, &extension);
+        //wxLogDebug("m_recFileFromRadioPath: %s", wxGetApp().m_recFileFromRadioPath);
+        //wxLogDebug("sounfFile: %s", soundFile);
+        sfInfo.format = 0;
+
+        if(!extension.IsEmpty())
+        {
+            extension.LowerCase();
+            if(extension == wxT("raw"))
+            {
+                sfInfo.format     = SF_FORMAT_RAW | SF_FORMAT_PCM_16;
+                sfInfo.channels   = 1;
+                sfInfo.samplerate = FS;
+            }
+            else if(extension == wxT("wav"))
+            {
+                sfInfo.format     = SF_FORMAT_WAV | SF_FORMAT_PCM_16;
+                sfInfo.channels   = 1;
+                sfInfo.samplerate = FS;
+            } else {
+                wxMessageBox(wxT("Invalid file format"), wxT("Record File From Radio"), wxOK);
+                return;         
+            }
+        }
+        else {
+            wxMessageBox(wxT("Invalid file format"), wxT("Record File From Radio"), wxOK);
+            return;         
+        }
+
+
+        // work out number of samples to record
+
+        wxWindow * const ctrl = openFileDialog.GetExtraControl();
+        wxString secsString = static_cast<MyExtraRecFilePanel*>(ctrl)->getSecondsToRecord();
+        long secs;
+        if (secsString.ToLong(&secs)) {
+            wxGetApp().m_recFileFromRadioSecs = (unsigned int)secs;
+            //printf(" secondsToRecord: %d\n",  (unsigned int)secs);
+            g_recFromRadioSamples = FS*(unsigned int)secs;
+            //printf("g_recFromRadioSamples: %d\n", g_recFromRadioSamples);
+        }
+        else {
+            wxMessageBox(wxT("Invalid number of Seconds"), wxT("Record File From Radio"), wxOK);
+            return;
+        }
+
+        g_sfRecFile = sf_open(soundFile, SFM_WRITE, &sfInfo);
+        if(g_sfRecFile == NULL)
+        {
+            wxString strErr = sf_strerror(NULL);
+            wxMessageBox(strErr, wxT("Couldn't open sound file"), wxOK);
+            return;
+        }
+        
+        SetStatusText(wxT("Recording File: ") + fileName + wxT(" From Radio") , 0);
+        g_recFileFromRadio = true;           
     }
-*/
+
 }
 
 //-------------------------------------------------------------------------
@@ -794,10 +894,15 @@ void MainFrame::OnClose(wxCommandEvent& event)
 #ifdef _USE_TIMER
     m_plotTimer.Stop();
 #endif // _USE_TIMER
-    if(g_sfFile != NULL)
+    if(g_sfPlayFile != NULL)
     {
-        sf_close(g_sfFile);
-        g_sfFile = NULL;
+        sf_close(g_sfPlayFile);
+        g_sfPlayFile = NULL;
+    }
+    if(g_sfRecFile != NULL)
+    {
+        sf_close(g_sfRecFile);
+        g_sfRecFile = NULL;
     }
     if(m_RxRunning)
     {
@@ -1568,10 +1673,32 @@ void txRxProcessing()
     while (fifo_read(cbData->infifo1, in48k_short, nsam) == 0)
     {
         g_mutexProtectingCallbackData.Unlock();
-        int n8k;
+        unsigned int n8k;
 
         n8k = resample(cbData->insrc1, in8k_short, in48k_short, FS, g_soundCard1SampleRate, N8, nsam);
         fifo_write(cbData->rxinfifo, in8k_short, n8k);
+
+        // optionally save signal from radio (demod input to file).
+        // Really useful for testing and development as it allows to
+        // develop using off air signals
+
+        g_mutexProtectingCallbackData.Lock();
+        if (g_recFileFromRadio && (g_sfRecFile != NULL)) {
+            //printf("g_recFromRadioSamples: %d  n8k: %d \n", g_recFromRadioSamples);
+            if (g_recFromRadioSamples < n8k) {
+                sf_write_short(g_sfRecFile, in8k_short, g_recFromRadioSamples);
+                wxCommandEvent event( wxEVT_COMMAND_MENU_SELECTED, g_recFileFromRadioEventId );
+                // call stop/start record menu item, should be thread safe
+                g_parent->GetEventHandler()->AddPendingEvent( event );
+                g_recFromRadioSamples = 0;
+                //printf("finished recording g_recFromRadioSamples: %d n8k: %d!\n", g_recFileFromRadio, n8k);
+            }
+            else {
+                sf_write_short(g_sfRecFile, in8k_short, n8k);
+                g_recFromRadioSamples -= n8k;
+            }
+        }
+        g_mutexProtectingCallbackData.Unlock();
 
         resample_for_plot(g_plotDemodInFifo, in8k_short, n8k);
 
@@ -1633,19 +1760,17 @@ void txRxProcessing()
            
             nout = resample(cbData->insrc2, in8k_short, in48k_short, FS, g_soundCard2SampleRate, 2*N8, nsam);
 
-            if (write_file) {
-                fwrite( in8k_short, sizeof(short), nout, g_write_file);
-            }
-
+            // optionally use file for mic input signal
             g_mutexProtectingCallbackData.Lock();
-            if (g_playFileToMicIn && (g_sfFile != NULL)) {
-                int n = sf_read_short(g_sfFile, in8k_short, 2*N8);
+            if (g_playFileToMicIn && (g_sfPlayFile != NULL)) {
+                int n = sf_read_short(g_sfPlayFile, in8k_short, 2*N8);
                 if (n != 2*N8) {
                     if (g_loopPlayFileToMicIn)
-                        sf_seek(g_sfFile, 0, SEEK_SET);
+                        sf_seek(g_sfPlayFile, 0, SEEK_SET);
                     else {
-                        sf_close(g_sfFile); g_sfFile = NULL;
-                        g_playFileToMicIn = false;
+                        wxCommandEvent event( wxEVT_COMMAND_MENU_SELECTED, g_playFileToMicInEventId );
+                        // call stop/start play menu item, should be thread safe
+                        g_parent->GetEventHandler()->AddPendingEvent( event );
                     }
                 }
             }
