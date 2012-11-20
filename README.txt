@@ -6,7 +6,7 @@ README.linux contains instructions for building on Linux.
 Editing
 -------
 
-Please make sure your text editor does not indert tabs, and
+Please make sure your text editor does not insert tabs, and
 used indents of 4 spaces.  The following .emacs code was used to
 configure emacs:
 

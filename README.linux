@@ -127,6 +127,9 @@ TODO
     [ ] click tune and split
     [ ] tool tip help for audio config dialog
     [ ] rm loopback buttons
+    [ ] something sensible with disabling rx when tx button is pressed?        
+    [ ] wire up level guage
+        + I think it has relevance for analog speech, demod can handle wide input ranges
 
 IDEAS
 =====
