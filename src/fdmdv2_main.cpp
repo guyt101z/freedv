@@ -311,8 +311,8 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     m_togBtnAnalog->Disable();
     //m_togBtnALC->Disable();
     m_btnTogTX->Disable();
-    m_togBtnLoopRx->Disable();
-    m_togBtnLoopTx->Disable();
+    //m_togBtnLoopRx->Disable();
+    //m_togBtnLoopTx->Disable();
 
 //    m_menuItemPlayAudioFile->Enable(false);
 
@@ -914,8 +914,8 @@ void MainFrame::OnClose(wxCommandEvent& event)
     m_togBtnAnalog->Disable();
     //m_togBtnALC->Disable();
     m_btnTogTX->Disable();
-    m_togBtnLoopRx->Disable();
-    m_togBtnLoopTx->Disable();
+    //m_togBtnLoopRx->Disable();
+    //m_togBtnLoopTx->Disable();
 
 }
 
@@ -1161,8 +1161,8 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
         m_togTxID->Enable();
         m_togBtnAnalog->Enable();
         m_btnTogTX->Enable();
-        m_togBtnLoopRx->Enable();
-        m_togBtnLoopTx->Enable();
+        //m_togBtnLoopRx->Enable();
+        //m_togBtnLoopTx->Enable();
         m_togBtnOnOff->SetLabel(wxT("Stop"));
 
         // init modem and codec states
@@ -1210,8 +1210,8 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
         m_togTxID->Disable();
         m_togBtnAnalog->Disable();
         m_btnTogTX->Disable();
-        m_togBtnLoopRx->Disable();
-        m_togBtnLoopTx->Disable();
+        //m_togBtnLoopRx->Disable();
+        //m_togBtnLoopTx->Disable();
         m_togBtnOnOff->SetLabel(wxT("Start"));
     }
 }
