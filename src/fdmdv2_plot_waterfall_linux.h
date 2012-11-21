@@ -39,9 +39,7 @@ class PlotWaterfall : public PlotPanel
     public:
         PlotWaterfall(wxFrame* parent);
         ~PlotWaterfall();
-        void        setClickFreq(float clickFreq) { m_clickFreq = clickFreq; }
-        float       getClickFreq(void) { return m_clickFreq; }
-
+ 
     protected:
         unsigned    m_heatmap_lut[256];
 
@@ -56,9 +54,10 @@ class PlotWaterfall : public PlotPanel
         void        OnMouseDown(wxMouseEvent& event);
 
     private:
-        float       m_clickFreq;
 
         DECLARE_EVENT_TABLE()
 };
+
+extern float g_RxFreqOffsetHz;
 
 #endif //__FDMDV2_PLOT_WATERFALL__

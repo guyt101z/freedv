@@ -33,9 +33,6 @@ class PlotSpectrum : public PlotPanel
         PlotSpectrum(wxFrame* parent);
         ~PlotSpectrum();
 
-        void        setClickFreq(float clickFreq) { m_clickFreq = clickFreq; }
-        float       getClickFreq(void) { return m_clickFreq; }
-
     protected:
         void        OnPaint(wxPaintEvent& event);
         void        OnSize(wxSizeEvent& event);
@@ -45,7 +42,6 @@ class PlotSpectrum : public PlotPanel
         void        OnMouseDown(wxMouseEvent& event);
 
    private:
-        float       m_clickFreq;
 
         DECLARE_EVENT_TABLE()
 };

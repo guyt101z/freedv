@@ -89,6 +89,9 @@ int sc1, sc2;
 int g_outfifo2_empty;
 
 // experimental mutex to make sound card callbacks mutually exclusive
+// TODO: review code and see if we need this any more, as fifos should
+// now be thread safe
+
 wxMutex g_mutexProtectingCallbackData;
 
 // WxWidgets - initialize the application
@@ -210,14 +213,12 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
         // Add Waterfall Plot window
         m_panelWaterfall = new PlotWaterfall((wxFrame*) m_auiNbookCtrl);
         m_auiNbookCtrl->AddPage(m_panelWaterfall, _("Waterfall"), true, wxNullBitmap);
-        m_panelWaterfall->setClickFreq(FDMDV_FCENTRE);
     }
     if(wxGetApp().m_show_spect)
     {
         // Add Spectrum Plot window
         m_panelSpectrum = new PlotSpectrum((wxFrame*) m_auiNbookCtrl);
         m_auiNbookCtrl->AddPage(m_panelSpectrum, _("Spectrum"), true, wxNullBitmap);
-        m_panelSpectrum->setClickFreq(FDMDV_FCENTRE);
     }
     if(wxGetApp().m_show_scatter)
     {
@@ -460,31 +461,6 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
     m_panelScatter->add_new_samples(g_stats.rx_symbols);
     m_panelScatter->Refresh();
 
-    // This is a convenient time to update the click-tune frequency
-    // The demod is hard-wired to expect a centre frequency of
-    // FDMDV_FCENTRE.  So we want to take the signal centered on the
-    // click tune freq and re-centre it on FDMDV_FCENTRE.  For example
-    // if the click tune freq is 1500Hz, and FDMDV_CENTRE is 1200 Hz,
-    // we need to shift the input signal centred on 1500Hz down to
-    // 1200Hz, an offset of -300Hz.
-
-    // The current design has the last click freq stored in both the
-    // Waterfall and the Spectrum.  This is messy.  What would be
-    // better is the musedown event setting the global freq offset
-    // directl, or communicating via an event to this thread.
-    
-    if (m_auiNbookCtrl->GetCurrentPage() == m_panelWaterfall) {
-        g_RxFreqOffsetHz = FDMDV_FCENTRE - m_panelWaterfall->getClickFreq();
-        m_panelSpectrum->setClickFreq(m_panelWaterfall->getClickFreq());
-        //printf("Waterfall g_RxFreqOffsetHz: %f\n", g_RxFreqOffsetHz);
-    }
-        
-    if (m_auiNbookCtrl->GetCurrentPage() == m_panelSpectrum) {
-        g_RxFreqOffsetHz = FDMDV_FCENTRE - m_panelSpectrum->getClickFreq();
-        m_panelWaterfall->setClickFreq(m_panelSpectrum->getClickFreq());
-        //printf("Spectrum g_RxFreqOffsetHz: %f\n", g_RxFreqOffsetHz);
-    }
-        
     // Oscilliscope type speech plots -------------------------------------------------------
 
     short speechInPlotSamples[WAVEFORM_PLOT_BUF];

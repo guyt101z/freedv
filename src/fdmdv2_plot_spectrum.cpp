@@ -217,7 +217,9 @@ void PlotSpectrum::OnMouseDown(wxMouseEvent& event)
     // valid click if inside of plot
     if ((pt.x >= 0) && (pt.x <= m_rGrid.GetWidth()) && (pt.y >=0) && (pt.y < m_rGrid.GetHeight())) {
         float freq_hz_to_px = (float)m_rGrid.GetWidth()/(MAX_F_HZ-MIN_F_HZ);
-        m_clickFreq = (float)pt.x/freq_hz_to_px;
-        printf("PlotSpectrum::OnMouseDown m_clickFreq: %f\n", m_clickFreq);
+        float clickFreq = (float)pt.x/freq_hz_to_px;
+
+        // see PlotWaterfall::OnMouseDown()
+        g_RxFreqOffsetHz = FDMDV_FCENTRE - clickFreq;
     }
 }

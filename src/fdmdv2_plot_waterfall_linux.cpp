@@ -361,7 +361,6 @@ void PlotWaterfall::plotPixelData()
 //-------------------------------------------------------------------------
 void PlotWaterfall::OnMouseDown(wxMouseEvent& event)
 {
-    printf("PlotWaterfall::OnMouseDown\n");
     m_mouseDown = true;
     wxClientDC dc(this);
 
@@ -374,7 +373,18 @@ void PlotWaterfall::OnMouseDown(wxMouseEvent& event)
     // valid click if inside of plot
     if ((pt.x >= 0) && (pt.x <= m_rGrid.GetWidth()) && (pt.y >=0) && (pt.y < m_rGrid.GetHeight())) {
         float freq_hz_to_px = (float)m_rGrid.GetWidth()/(MAX_F_HZ-MIN_F_HZ);
-        m_clickFreq = (float)pt.x/freq_hz_to_px;
-        printf("PlotWaterfall::OnMouseDown m_clickFreq: %f\n", m_clickFreq);
+        float clickFreq = (float)pt.x/freq_hz_to_px;
+
+        // The demod is hard-wired to expect a centre frequency of
+        // FDMDV_FCENTRE.  So we want to take the signal centered on the
+        // click tune freq and re-centre it on FDMDV_FCENTRE.  For example
+        // if the click tune freq is 1500Hz, and FDMDV_CENTRE is 1200 Hz,
+        // we need to shift the input signal centred on 1500Hz down to
+        // 1200Hz, an offset of -300Hz.
+
+        // modifying a global is messy but an easy way to communicate
+        // to the tx/rx thread
+
+        g_RxFreqOffsetHz = FDMDV_FCENTRE - clickFreq;
     }
 }
