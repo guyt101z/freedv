@@ -59,5 +59,6 @@ class PlotWaterfall : public PlotPanel
 };
 
 extern float g_RxFreqOffsetHz;
+extern float g_TxFreqOffsetHz;
 
 #endif //__FDMDV2_PLOT_WATERFALL__

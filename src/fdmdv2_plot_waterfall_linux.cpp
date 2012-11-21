@@ -386,5 +386,6 @@ void PlotWaterfall::OnMouseDown(wxMouseEvent& event)
         // to the tx/rx thread
 
         g_RxFreqOffsetHz = FDMDV_FCENTRE - clickFreq;
+        g_TxFreqOffsetHz = clickFreq - FDMDV_FCENTRE;
     }
 }

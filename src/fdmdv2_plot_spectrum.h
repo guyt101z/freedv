@@ -46,5 +46,7 @@ class PlotSpectrum : public PlotPanel
         DECLARE_EVENT_TABLE()
 };
 
+extern float g_RxFreqOffsetHz;
+extern float g_TxFreqOffsetHz;
 
 #endif //__FDMDV2_PLOT_SPECTRUM__

@@ -77,10 +77,13 @@ unsigned int        g_recFromRadioSamples;
 int                 g_recFileFromRadioEventId;
 wxWindow           *g_parent;
 
-// Click to tune rx frequency offset states
+// Click to tune rx and tx frequency offset states
 float               g_RxFreqOffsetHz;
 COMP                g_RxFreqOffsetPhaseRect;
 COMP                g_RxFreqOffsetFreqRect;
+float               g_TxFreqOffsetHz;
+COMP                g_TxFreqOffsetPhaseRect;
+COMP                g_TxFreqOffsetFreqRect;
 
 // DRs debug variables, will be cleaned up eventually
 int cb_cnt, cb1, cb2;
@@ -349,6 +352,12 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     g_RxFreqOffsetFreqRect.imag = sin(g_RxFreqOffsetHz);
     g_RxFreqOffsetPhaseRect.real = cos(0.0);
     g_RxFreqOffsetPhaseRect.imag = sin(0.0);
+
+    g_TxFreqOffsetHz = 0.0;
+    g_TxFreqOffsetFreqRect.real = cos(g_TxFreqOffsetHz);
+    g_TxFreqOffsetFreqRect.imag = sin(g_TxFreqOffsetHz);
+    g_TxFreqOffsetPhaseRect.real = cos(0.0);
+    g_TxFreqOffsetPhaseRect.imag = sin(0.0);
         
 }
 
@@ -2062,6 +2071,7 @@ void per_frame_tx_processing(
     unsigned char  packed_bits[BYTES_PER_CODEC_FRAME];
     int            bits[BITS_PER_CODEC_FRAME];
     COMP           tx_fdm[2*FDMDV_NOM_SAMPLES_PER_FRAME];
+    COMP           tx_fdm_offset[2*FDMDV_NOM_SAMPLES_PER_FRAME];
     int            sync_bit;
     int            i, bit, byte;
 
@@ -2088,10 +2098,12 @@ void per_frame_tx_processing(
     fdmdv_mod(g_pFDMDV, &tx_fdm[FDMDV_NOM_SAMPLES_PER_FRAME], &bits[FDMDV_BITS_PER_FRAME], &sync_bit);
     assert(sync_bit == 0);
 
+    fdmdv_freq_shift(tx_fdm_offset, tx_fdm, g_TxFreqOffsetHz, &g_TxFreqOffsetPhaseRect, &g_TxFreqOffsetFreqRect, 2*FDMDV_NOM_SAMPLES_PER_FRAME);
+
     /* scale and convert shorts */
 
     for(i=0; i<2*FDMDV_NOM_SAMPLES_PER_FRAME; i++)
-    tx_fdm_scaled[i] = FDMDV_SCALE * tx_fdm[i].real;
+        tx_fdm_scaled[i] = FDMDV_SCALE * tx_fdm_offset[i].real;
 
 }
 
