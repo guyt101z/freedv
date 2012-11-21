@@ -183,8 +183,8 @@ void PlotWaterfall::draw(wxAutoBufferedPaintDC& dc)
 	// no data to plot so just erase to black.  Blue looks nicer
 	// but is same colour as low amplitude signal
 
-	// Bug: When Stop is pressed this code doesn't erase the lower 
-	// 25% of the Waterfall Window
+	// Bug on Linux: When Stop is pressed this code doesn't erase
+	// the lower 25% of the Waterfall Window
 
 	m_rPlot = wxRect(PLOT_BORDER + XLEFT_OFFSET, PLOT_BORDER, m_rGrid.GetWidth(), m_rGrid.GetHeight());
 	wxBrush ltGraphBkgBrush = wxBrush(BLACK_COLOR);
@@ -353,5 +353,28 @@ void PlotWaterfall::plotPixelData()
 
 	p = rowStart;
 	p.OffsetY(data, 1);
+    }
+}
+
+//-------------------------------------------------------------------------
+// OnMouseDown()
+//-------------------------------------------------------------------------
+void PlotWaterfall::OnMouseDown(wxMouseEvent& event)
+{
+    printf("PlotWaterfall::OnMouseDown\n");
+    m_mouseDown = true;
+    wxClientDC dc(this);
+
+    wxPoint pt(event.GetLogicalPosition(dc));
+
+    // map x coord to edges of actual plot
+    pt.x -= PLOT_BORDER + XLEFT_OFFSET;
+    pt.y -= PLOT_BORDER;
+
+    // valid click if inside of plot
+    if ((pt.x >= 0) && (pt.x <= m_rGrid.GetWidth()) && (pt.y >=0) && (pt.y < m_rGrid.GetHeight())) {
+        float freq_hz_to_px = (float)m_rGrid.GetWidth()/(MAX_F_HZ-MIN_F_HZ);
+        m_clickFreq = (float)pt.x/freq_hz_to_px;
+        printf("PlotWaterfall::OnMouseDown m_clickFreq: %f\n", m_clickFreq);
     }
 }

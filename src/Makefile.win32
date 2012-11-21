@@ -33,10 +33,10 @@ dlg_options.o
 
 HDRS = fdmdv2_main.h fdmdv2_defines.h fdmdv2_plot.h fdmdv2_plot_scalar.h fdmdv2_plot_waterfall_linux.h fdmdv2_plot_scatter.h fdmdv2_plot_spectrum.h fdmdv2_pa_wrapper.h topFrame.h dlg_audiooptions.h
 
-all: fdmdv2
+all: freedv
 
-fdmdv2: $(OBJS) 
-	g++ -o fdmdv2 $(OBJS) $(CPP_FLAGS) $(LIBS)
+freedv: $(OBJS) 
+	g++ -o freedv $(OBJS) $(CPP_FLAGS) $(LIBS)
 
 %.o: %.cpp $(HDRS) Makefile.win32
 	g++ $(CPP_FLAGS) -c $< -o $@

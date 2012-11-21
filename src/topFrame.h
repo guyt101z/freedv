@@ -167,7 +167,7 @@ class TopFrame : public wxFrame
 
         wxAuiNotebook* m_auiNbookCtrl;
 
-        TopFrame( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("FDMDV2"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 761,500 ), long style = wxDEFAULT_FRAME_STYLE|wxRESIZE_BORDER|wxTAB_TRAVERSAL );
+        TopFrame( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("FreeDV"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 761,500 ), long style = wxDEFAULT_FRAME_STYLE|wxRESIZE_BORDER|wxTAB_TRAVERSAL );
 
         ~TopFrame();
 
@@ -193,7 +193,7 @@ class DlgAbout : public wxDialog
 
     public:
 
-        DlgAbout( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("About FDMDV2"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 352,343 ), long style = wxDEFAULT_DIALOG_STYLE );
+        DlgAbout( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("About FreeDV"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 352,343 ), long style = wxDEFAULT_DIALOG_STYLE );
         ~DlgAbout();
 
 };

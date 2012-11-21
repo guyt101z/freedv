@@ -132,7 +132,7 @@ bool MainApp::OnInit()
         return false;
     }
     SetVendorName(wxT("CODEC2-Project"));
-    SetAppName(wxT("FDMDV2"));      // not needed, it's the default value
+    SetAppName(wxT("FreeDV"));      // not needed, it's the default value
 
     wxConfigBase *pConfig = wxConfigBase::Get();
     pConfig->SetRecordDefaults();
@@ -210,12 +210,14 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
         // Add Waterfall Plot window
         m_panelWaterfall = new PlotWaterfall((wxFrame*) m_auiNbookCtrl);
         m_auiNbookCtrl->AddPage(m_panelWaterfall, _("Waterfall"), true, wxNullBitmap);
+        m_panelWaterfall->setClickFreq(FDMDV_FCENTRE);
     }
     if(wxGetApp().m_show_spect)
     {
         // Add Spectrum Plot window
         m_panelSpectrum = new PlotSpectrum((wxFrame*) m_auiNbookCtrl);
         m_auiNbookCtrl->AddPage(m_panelSpectrum, _("Spectrum"), true, wxNullBitmap);
+        m_panelSpectrum->setClickFreq(FDMDV_FCENTRE);
     }
     if(wxGetApp().m_show_scatter)
     {
@@ -338,7 +340,15 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     g_loopPlayFileToMicIn = false;
     g_sfRecFile = NULL;
     g_recFileFromRadio = false;
-    //g_parent = parent;
+
+    // init click-tune states
+
+    g_RxFreqOffsetHz = 0.0;
+    g_RxFreqOffsetFreqRect.real = cos(g_RxFreqOffsetHz);
+    g_RxFreqOffsetFreqRect.imag = sin(g_RxFreqOffsetHz);
+    g_RxFreqOffsetPhaseRect.real = cos(0.0);
+    g_RxFreqOffsetPhaseRect.imag = sin(0.0);
+        
 }
 
 //-------------------------------------------------------------------------
@@ -435,8 +445,8 @@ MainFrame::~MainFrame()
 // OnTimer()
 //----------------------------------------------------------------
 
-// when the timer fires every DT seconds we update the GUI displays
-// On the tabbed display that is visible actually gets updated, this
+// when the timer fires every DT seconds we update the GUI displays.
+// the tabs only the plot that is visible actually gets updated, this
 // keeps CPU load reasonable
 
 void MainFrame::OnTimer(wxTimerEvent &evt)
@@ -450,13 +460,32 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
     m_panelScatter->add_new_samples(g_stats.rx_symbols);
     m_panelScatter->Refresh();
 
-    m_panelTimeOffset->add_new_sample((float)g_stats.rx_timing/FDMDV_NOM_SAMPLES_PER_FRAME);
-    m_panelTimeOffset->Refresh();
+    // This is a convenient time to update the click-tune frequency
+    // The demod is hard-wired to expect a centre frequency of
+    // FDMDV_FCENTRE.  So we want to take the signal centered on the
+    // click tune freq and re-centre it on FDMDV_FCENTRE.  For example
+    // if the click tune freq is 1500Hz, and FDMDV_CENTRE is 1200 Hz,
+    // we need to shift the input signal centred on 1500Hz down to
+    // 1200Hz, an offset of -300Hz.
 
-    m_panelFreqOffset->add_new_sample(g_stats.foff);
-    m_panelFreqOffset->Refresh();
-
-    // Osciliscope type speech plots -------------------------------------------------------
+    // The current design has the last click freq stored in both the
+    // Waterfall and the Spectrum.  This is messy.  What would be
+    // better is the musedown event setting the global freq offset
+    // directl, or communicating via an event to this thread.
+    
+    if (m_auiNbookCtrl->GetCurrentPage() == m_panelWaterfall) {
+        g_RxFreqOffsetHz = FDMDV_FCENTRE - m_panelWaterfall->getClickFreq();
+        m_panelSpectrum->setClickFreq(m_panelWaterfall->getClickFreq());
+        //printf("Waterfall g_RxFreqOffsetHz: %f\n", g_RxFreqOffsetHz);
+    }
+        
+    if (m_auiNbookCtrl->GetCurrentPage() == m_panelSpectrum) {
+        g_RxFreqOffsetHz = FDMDV_FCENTRE - m_panelSpectrum->getClickFreq();
+        m_panelWaterfall->setClickFreq(m_panelSpectrum->getClickFreq());
+        //printf("Spectrum g_RxFreqOffsetHz: %f\n", g_RxFreqOffsetHz);
+    }
+        
+    // Oscilliscope type speech plots -------------------------------------------------------
 
     short speechInPlotSamples[WAVEFORM_PLOT_BUF];
     if (fifo_read(g_plotSpeechInFifo, speechInPlotSamples, WAVEFORM_PLOT_BUF))
@@ -476,6 +505,14 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
     m_panelDemodIn->add_new_short_samples(demodInPlotSamples, WAVEFORM_PLOT_BUF, 32767);
     m_panelDemodIn->Refresh();
 
+    // Demod states -----------------------------------------------------------------------
+
+    m_panelTimeOffset->add_new_sample((float)g_stats.rx_timing/FDMDV_NOM_SAMPLES_PER_FRAME);
+    m_panelTimeOffset->Refresh();
+
+    m_panelFreqOffset->add_new_sample(g_stats.foff);
+    m_panelFreqOffset->Refresh();
+
     // SNR text box and guage ------------------------------------------------------------
 
     float snr_limited = g_stats.snr_est;
@@ -490,14 +527,14 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
     if (snr_limited > 20.0) snr_limited = 20.0;
     m_gaugeSNR->SetValue((int)(snr_limited));
 
-    // sync LED
+    // sync LED (Colours don't work on Windows)
 
     if (g_State) {
-        m_rbSync->SetForegroundColour( wxColour( 0, 255, 0 ) );
+        m_rbSync->SetForegroundColour( wxColour( 0, 255, 0 ) ); // green
         m_rbSync->SetValue(true);
     }
     else {
-        m_rbSync->SetForegroundColour( wxColour( 255, 0, 0 ) );
+        m_rbSync->SetForegroundColour( wxColour( 255, 0, 0 ) ); // red
         m_rbSync->SetValue(false);
     }
 }
@@ -1116,13 +1153,12 @@ void MainFrame::OnHelpAbout(wxCommandEvent& event)
     
     if(url.GetError() == wxURL_NOERR)
     {
-        printf("URL OK\n");
         wxString htmldata;
         wxInputStream *in = url.GetInputStream();
  
         if(in && in->IsOk())
         {
-            printf("In OK\n");
+            //printf("In OK\n");
             wxStringOutputStream html_stream(&htmldata);
             in->Read(html_stream);
             wxLogDebug(htmldata);
@@ -1131,17 +1167,15 @@ void MainFrame::OnHelpAbout(wxCommandEvent& event)
             int startIndex = htmldata.find(s) + s.Length();
             int endIndex = htmldata.find(wxT(": /fdmdv2</h2>"));
             svnLatestRev = wxT("Latest svn revision: ") + htmldata.SubString(startIndex, endIndex-1);
-            printf("startIndex: %d endIndex: %d\n", startIndex, endIndex);
+            //printf("startIndex: %d endIndex: %d\n", startIndex, endIndex);
        }
 
         delete in;
     }
-    else
-        printf("failed to parse URL\n");
 
     wxString msg;
-    msg.Printf( wxT("FreeDV: Narrow Band Digital Voice over Radio Application.\n\n")
-                wxT("GNU Public License V2.1\n")
+    msg.Printf( wxT("FreeDV: Open Source Narrow Band Digital Voice over Radio\n\n")
+                wxT("GNU Public License V2.1\n\n")
                 wxT("Copyright (c) David Witten KD0EAG and David Rowe VK5DGR\n\n")
                 wxT("svn revision: %s\n") + svnLatestRev, SVN_REV);
 
@@ -1197,14 +1231,6 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
         g_State = 0;
         printf("g_stats.snr: %f\n", g_stats.snr_est);
 
-        // init click-tune states
-
-        g_RxFreqOffsetHz = 50.0;
-        g_RxFreqOffsetFreqRect.real = cos(g_RxFreqOffsetHz);
-        g_RxFreqOffsetFreqRect.imag = sin(g_RxFreqOffsetHz);
-        g_RxFreqOffsetPhaseRect.real = cos(0.0);
-        g_RxFreqOffsetPhaseRect.imag = sin(0.0);
-        
         // attempt to start sound cards and tx/rx processing
 
         startRxStream();
@@ -1684,7 +1710,7 @@ void txRxProcessing()
     short           out48k_short[2*N48];
     int             nout;
 
-   //wxLogDebug("start infifo1: %5d outfifo1: %5d\n", fifo_n(cbData->infifo1), fifo_n(cbData->outfifo1));
+    //wxLogDebug("start infifo1: %5d outfifo1: %5d\n", fifo_n(cbData->infifo1), fifo_n(cbData->outfifo1));
 
     //
     //  RX side processing --------------------------------------------

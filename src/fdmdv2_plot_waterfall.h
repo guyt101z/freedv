@@ -56,7 +56,6 @@ class PlotWaterfall : public PlotPanel
         void        draw(wxAutoBufferedPaintDC& pdc);
         void        plotPixelData(wxAutoBufferedPaintDC&  dc);
         void        drawData();     // wxMemoryDC&  pDC);
-        void        drawData2(wxMemoryDC&  pDC, int barpos, int l, int t, int w, int h);
 
         DECLARE_EVENT_TABLE()
 };

@@ -144,7 +144,6 @@ void PlotPanel::OnMouseMove(wxMouseEvent& event)
 //-------------------------------------------------------------------------
 void PlotPanel::OnMouseDown(wxMouseEvent& event)
 {
-    m_mouseDown = true;
 }
 
 //-------------------------------------------------------------------------

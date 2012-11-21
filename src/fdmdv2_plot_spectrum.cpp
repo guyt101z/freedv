@@ -200,3 +200,24 @@ void PlotSpectrum::drawGraticule(wxAutoBufferedPaintDC&  dc)
 
 }
 
+//-------------------------------------------------------------------------
+// OnMouseDown()
+//-------------------------------------------------------------------------
+void PlotSpectrum::OnMouseDown(wxMouseEvent& event)
+{
+    m_mouseDown = true;
+    wxClientDC dc(this);
+
+    wxPoint pt(event.GetLogicalPosition(dc));
+
+    // map x coord to edges of actual plot
+    pt.x -= PLOT_BORDER + XLEFT_OFFSET;
+    pt.y -= PLOT_BORDER;
+
+    // valid click if inside of plot
+    if ((pt.x >= 0) && (pt.x <= m_rGrid.GetWidth()) && (pt.y >=0) && (pt.y < m_rGrid.GetHeight())) {
+        float freq_hz_to_px = (float)m_rGrid.GetWidth()/(MAX_F_HZ-MIN_F_HZ);
+        m_clickFreq = (float)pt.x/freq_hz_to_px;
+        printf("PlotSpectrum::OnMouseDown m_clickFreq: %f\n", m_clickFreq);
+    }
+}
