@@ -45,6 +45,8 @@ float               g_avmag[FDMDV_NSPEC];
 int   g_SquelchActive;
 float g_SquelchLevel;
 int   g_analog;
+int   g_split;
+int   g_tx;
 
 // tx/rx processing states
 int                 g_nRxIn = FDMDV_NOM_SAMPLES_PER_FRAME;
@@ -313,8 +315,6 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     m_togBtnAnalog->Disable();
     //m_togBtnALC->Disable();
     m_btnTogTX->Disable();
-    //m_togBtnLoopRx->Disable();
-    //m_togBtnLoopTx->Disable();
 
 //    m_menuItemPlayAudioFile->Enable(false);
 
@@ -358,7 +358,9 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     g_TxFreqOffsetFreqRect.imag = sin(g_TxFreqOffsetHz);
     g_TxFreqOffsetPhaseRect.real = cos(0.0);
     g_TxFreqOffsetPhaseRect.imag = sin(0.0);
-        
+ 
+    g_tx = 0;
+    g_split = 0;
 }
 
 //-------------------------------------------------------------------------
@@ -644,9 +646,12 @@ void MainFrame::OnCheckSQClick(wxCommandEvent& event)
 //-------------------------------------------------------------------------
 void MainFrame::OnTogBtnTXClick(wxCommandEvent& event)
 {
-//    m_soundFile = wxT("./hts1a.wav");
-//    m_sound = new wxSound(m_soundFile, false);
-//    m_sound->Play();
+    if (g_tx)
+        g_tx = 0;
+    else
+        g_tx = 1;
+
+    event.Skip();
 }
 
 //-------------------------------------------------------------------------
@@ -666,6 +671,10 @@ void MainFrame::OnTogBtnTxID(wxCommandEvent& event)
 }
 
 void MainFrame::OnTogBtnSplitClick(wxCommandEvent& event) {
+    if (g_split)
+        g_split = 0;
+    else
+        g_split = 1;
     event.Skip();
 }
 
@@ -932,8 +941,6 @@ void MainFrame::OnClose(wxCommandEvent& event)
     m_togBtnAnalog->Disable();
     //m_togBtnALC->Disable();
     m_btnTogTX->Disable();
-    //m_togBtnLoopRx->Disable();
-    //m_togBtnLoopTx->Disable();
 
 }
 
@@ -1205,8 +1212,6 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
         m_togTxID->Enable();
         m_togBtnAnalog->Enable();
         m_btnTogTX->Enable();
-        //m_togBtnLoopRx->Enable();
-        //m_togBtnLoopTx->Enable();
         m_togBtnOnOff->SetLabel(wxT("Stop"));
 
         // init modem and codec states
@@ -1246,8 +1251,6 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
         m_togTxID->Disable();
         m_togBtnAnalog->Disable();
         m_btnTogTX->Disable();
-        //m_togBtnLoopRx->Disable();
-        //m_togBtnLoopTx->Disable();
         m_togBtnOnOff->SetLabel(wxT("Start"));
     }
 }
@@ -1282,23 +1285,6 @@ void MainFrame::stopRxStream()
     }
 }
 
-//----------------------------------------------------------
-// OnTogBtnLoopRx()
-//----------------------------------------------------------
-void MainFrame::OnTogBtnLoopRx( wxCommandEvent& event )
-{
-    if (mute_mic == 0)
-        mute_mic = 1;
-    else
-        mute_mic = 0;
-}
-
-//----------------------------------------------------------
-// OnTogBtnLoopTx()
-//----------------------------------------------------------
-void MainFrame::OnTogBtnLoopTx( wxCommandEvent& event )
-{
-}
 
 void MainFrame::destroy_fifos(void)
 {
@@ -2179,5 +2165,29 @@ int MainFrame::txCallback(
     //printf("end cb2\n");
     cb_cnt--;
     return paContinue;
+}
+
+// Callback from plot_spectrum & plot_waterfall.  would be nice to
+// work out a way to do this without globals.
+
+void fdmdv2_clickTune(float freq) {
+
+    // The demod is hard-wired to expect a centre frequency of
+    // FDMDV_FCENTRE.  So we want to take the signal centered on the
+    // click tune freq and re-centre it on FDMDV_FCENTRE.  For example
+    // if the click tune freq is 1500Hz, and FDMDV_CENTRE is 1200 Hz,
+    // we need to shift the input signal centred on 1500Hz down to
+    // 1200Hz, an offset of -300Hz.
+
+    if (g_split) {
+        if (g_tx)
+            g_TxFreqOffsetHz = freq - FDMDV_FCENTRE;
+        else
+            g_RxFreqOffsetHz = FDMDV_FCENTRE - freq;
+    }
+    else {
+        g_TxFreqOffsetHz = freq - FDMDV_FCENTRE;
+        g_RxFreqOffsetHz = FDMDV_FCENTRE - freq;
+    }
 }
 

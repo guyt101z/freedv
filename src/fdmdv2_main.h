@@ -324,8 +324,6 @@ class MainFrame : public TopFrame
         void OnTogBtnTxID( wxCommandEvent& event );
         void OnTogBtnTXClick( wxCommandEvent& event );
         void OnTogBtnOnOff( wxCommandEvent& event );
-        void OnTogBtnLoopRx( wxCommandEvent& event );
-        void OnTogBtnLoopTx( wxCommandEvent& event );
 
 //        void OnTogBtnSplitClickUI(wxUpdateUIEvent& event);
 //        void OnTogBtnAnalogClickUI(wxUpdateUIEvent& event);

@@ -221,7 +221,6 @@ void PlotSpectrum::OnMouseDown(wxMouseEvent& event)
 
         // see PlotWaterfall::OnMouseDown()
 
-        g_RxFreqOffsetHz = FDMDV_FCENTRE - clickFreq;
-        g_TxFreqOffsetHz = clickFreq - FDMDV_FCENTRE;
+        fdmdv2_clickTune(clickFreq);
     }
 }
