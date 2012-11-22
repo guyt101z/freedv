@@ -2180,10 +2180,7 @@ void fdmdv2_clickTune(float freq) {
     // 1200Hz, an offset of -300Hz.
 
     if (g_split) {
-        if (g_tx)
-            g_TxFreqOffsetHz = freq - FDMDV_FCENTRE;
-        else
-            g_RxFreqOffsetHz = FDMDV_FCENTRE - freq;
+        g_RxFreqOffsetHz = FDMDV_FCENTRE - freq;
     }
     else {
         g_TxFreqOffsetHz = freq - FDMDV_FCENTRE;

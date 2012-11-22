@@ -108,21 +108,23 @@ TODO
     + level gauge?
 
 [ ] release clean up
-    [ ] remove anything that doesn't work (menus, buttons) from GUI
+    [X] remove anything that doesn't work (menus, buttons) from GUI
+    [X] about
+    [X] src file credits
+    [ ] decide on web site
+        + need edit by at least three of us
     [ ] help about with URL (hyperlink?) to web site
     [ ] if you press start and headphones unplugged (ie one sound card missing), it
         shouldn't crash
     [ ] do we keep/put effort into getting working ./configure && Makefile?
-    [ ] debug printfs
-    [ ] about
-    [ ] src file credits
+    [ ] remove/comment out debug printfs
     [ ] hook up squelch
     [ ] test with simulated AWGN/burst error channels
         + see if sync needs tuning to not fall over too quickly
         + nasty noises
-    [ ] version number
+    [ ] version number on GUI?  How to connect SVN verev to version?
     [ ] buffer sizes, maybe make a config number
-    [ ] read comments and make sure still valid
+    [ ] read comments and make sure they are still valid
     [ ] rig control
     [ ] click tune and split
     [ ] tool tip help for audio config dialog
@@ -130,6 +132,14 @@ TODO
     [ ] something sensible with disabling rx when tx button is pressed?        
     [ ] wire up level guage
         + I think it has relevance for analog speech, demod can handle wide input ranges
+    [ ] data feature
+        + 11 or 00 sync with good inst snr
+        + way to measure inst snr
+        + drag text to "hopper".  Set thresh for sending (time or mic level)
+    [ ] tx/rx muting for half duplex
+        + dont want funny sounds during tx
+    [ ] setup Readme
+    [ ] Donate button with hyperlink from about dialog or help menu?
 
 IDEAS
 =====
