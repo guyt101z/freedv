@@ -475,8 +475,10 @@ MainFrame::~MainFrame()
 
 void MainFrame::OnTimer(wxTimerEvent &evt)
 {
-    m_panelWaterfall->m_newdata = true;
-    m_panelWaterfall->Refresh();
+    if (m_panelWaterfall->checkDT()) {
+        m_panelWaterfall->m_newdata = true;
+        m_panelWaterfall->Refresh();
+    }
 
     m_panelSpectrum->m_newdata = true;
     m_panelSpectrum->Refresh();

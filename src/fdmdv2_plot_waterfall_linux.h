@@ -39,7 +39,8 @@ class PlotWaterfall : public PlotPanel
     public:
         PlotWaterfall(wxFrame* parent);
         ~PlotWaterfall();
- 
+        bool checkDT(void);
+
     protected:
         unsigned    m_heatmap_lut[256];
 
@@ -54,6 +55,7 @@ class PlotWaterfall : public PlotPanel
         void        OnMouseDown(wxMouseEvent& event);
 
     private:
+        float       m_dT;
 
         DECLARE_EVENT_TABLE()
 };

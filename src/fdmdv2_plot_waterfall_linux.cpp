@@ -81,6 +81,8 @@ void PlotWaterfall::OnSize(wxSizeEvent& event)
     // we want a bit map the size of m_rGrid
 
     m_pBmp = new wxBitmap(m_rGrid.GetWidth(), m_rGrid.GetHeight(), 24);
+
+    m_dT = DT;
 }
 
 //----------------------------------------------------------------
@@ -152,11 +154,30 @@ unsigned PlotWaterfall::heatmap(float val, float min, float max)
     return  (b << 16) + (g << 8) + r;
 }
 
+bool PlotWaterfall::checkDT(void)
+{
+    // Check dY is > 1 pixel before proceeding. For small screens
+    // and large WATERFALL_SECS_Y we might have less than one
+    // block per pixel.  In this case increase m_dT and perform draw
+    // less often
+
+    float px_per_sec = (float)m_rGrid.GetHeight() / WATERFALL_SECS_Y;
+    float dy = m_dT * px_per_sec;
+    
+    if (dy < 1.0) {
+        m_dT += DT;
+        return false;
+    }
+    else
+        return true;
+}
+
 //----------------------------------------------------------------
 // draw()
 //----------------------------------------------------------------
 void PlotWaterfall::draw(wxAutoBufferedPaintDC& dc)
 {
+
     m_rCtrl  = GetClientRect();
 
     // m_rGrid is coords of inner window we actually plot to.  We deflate it a bit
@@ -178,6 +199,7 @@ void PlotWaterfall::draw(wxAutoBufferedPaintDC& dc)
         m_newdata = false;
         plotPixelData();
         dc.DrawBitmap(*m_pBmp, PLOT_BORDER + XLEFT_OFFSET, PLOT_BORDER);
+        m_dT = DT;
     }
     else 
     {
@@ -254,7 +276,7 @@ void PlotWaterfall::plotPixelData()
     float       intensity_per_dB;
     float       px_per_sec;
     int         index;
-    int         dy;
+    float       dy;
     int         dy_blocks;
     int         b;
     int         px;
@@ -274,7 +296,7 @@ void PlotWaterfall::plotPixelData()
 
     // determine dy, the height of one "block"
     px_per_sec = (float)m_rGrid.GetHeight() / WATERFALL_SECS_Y;
-    dy = DT * px_per_sec;
+    dy = m_dT * px_per_sec;
 
     // number of dy high blocks in spectrogram
     dy_blocks = m_rGrid.GetHeight()/ dy;
@@ -349,6 +371,7 @@ void PlotWaterfall::plotPixelData()
         p = rowStart;
         p.OffsetY(data, 1);
     }
+
 }
 
 //-------------------------------------------------------------------------
