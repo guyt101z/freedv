@@ -49,7 +49,6 @@
 #include "fifo.h"
 
 #include "topFrame.h"
-#include "dlg_options.h"
 #include "dlg_comports.h"
 #include "fdmdv2_plot.h"
 #include "fdmdv2_plot_scalar.h"
@@ -230,7 +229,6 @@ class MainFrame : public TopFrame
 
         bool                    m_RxRunning;
 
-        // PortAudio variables
         PortAudioWrap           *m_rxPa;
         PortAudioWrap           *m_txPa;
 
@@ -276,7 +274,6 @@ class MainFrame : public TopFrame
         // protected event handlers
         virtual void OnCloseFrame(wxCloseEvent& event);
         virtual void OnExitClick(wxCommandEvent& event);
-        //void OnQuit(wxCommandEvent& event);
 
         void startTxStream();
         void startRxStream();
@@ -285,27 +282,11 @@ class MainFrame : public TopFrame
         void abortTxStream();
         void abortRxStream();
 
-        void OnOpen( wxCommandEvent& event );
-//        void OnOpenUpdateUI( wxUpdateUIEvent& event );
-        void OnSave( wxCommandEvent& event );
-//        void OnSaveUpdateUI( wxUpdateUIEvent& event );
-        void OnClose( wxCommandEvent& event );
-//        void OnCloseUpdateUI( wxUpdateUIEvent& event );
         void OnExit( wxCommandEvent& event );
-        void OnCopy( wxCommandEvent& event );
-//        void OnCopyUpdateUI( wxUpdateUIEvent& event );
-        void OnCut( wxCommandEvent& event );
-//        void OnCutUpdateUI( wxUpdateUIEvent& event );
-        void OnPaste( wxCommandEvent& event );
-//        void OnPasteUpdateUI( wxUpdateUIEvent& event );
         void OnToolsAudio( wxCommandEvent& event );
         void OnToolsAudioUI( wxUpdateUIEvent& event );
         void OnToolsComCfg( wxCommandEvent& event );
         void OnToolsComCfgUI( wxUpdateUIEvent& event );
-        void OnToolsOptions( wxCommandEvent& event );
-        void OnToolsOptionsUI( wxUpdateUIEvent& event );
-        //void OnCaptureRxStream( wxCommandEvent& event );
-       // void OnCaptureTxStream( wxCommandEvent& event );
 
         void OnPlayFileToMicIn( wxCommandEvent& event );
         void OnRecFileFromRadio( wxCommandEvent& event );
@@ -323,23 +304,13 @@ class MainFrame : public TopFrame
         // Toggle Buttons
         void OnTogBtnSplitClick(wxCommandEvent& event);
         void OnTogBtnAnalogClick(wxCommandEvent& event);
-        //void OnTogBtnALCClick(wxCommandEvent& event);
         void OnTogBtnRxID( wxCommandEvent& event );
         void OnTogBtnTxID( wxCommandEvent& event );
         void OnTogBtnTXClick( wxCommandEvent& event );
         void OnTogBtnOnOff( wxCommandEvent& event );
 
-//        void OnTogBtnSplitClickUI(wxUpdateUIEvent& event);
-//        void OnTogBtnAnalogClickUI(wxUpdateUIEvent& event);
-//        void OnTogBtnALCClickUI(wxUpdateUIEvent& event);
-//        void OnTogBtnRxIDUI(wxUpdateUIEvent& event );
-//        void OnTogBtnTxIDUI(wxUpdateUIEvent& event );
-//        void OnTogBtnTXClickUI(wxUpdateUIEvent& event );
-//        void OnTogBtnOnOffUI(wxUpdateUIEvent& event );
-
         //System Events
         void OnPaint(wxPaintEvent& event);
-        void OnClose( wxCloseEvent& event );
         void OnSize( wxSizeEvent& event );
         void OnUpdateUI( wxUpdateUIEvent& event );
         void OnDeleteConfig(wxCommandEvent&);
@@ -349,15 +320,12 @@ class MainFrame : public TopFrame
 #ifdef _USE_ONIDLE
         void OnIdle(wxIdleEvent &evt);
 #endif
-//        wxString LoadUserImage(wxImage& image);
     private:
 #ifdef __WXMSW__
-//        wxString    m_soundRes;
 #endif // __WXMSW__
         bool        m_useMemory;
         wxTextCtrl* m_tc;
         int         m_zoom;
-
         float       m_snrBeta;
 };
 

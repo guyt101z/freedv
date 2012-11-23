@@ -957,12 +957,15 @@ void MainFrame::OnRecFileFromRadio(wxCommandEvent& event)
 }
 
 //-------------------------------------------------------------------------
-// OnClose()
+// OnExit()
 //-------------------------------------------------------------------------
-void MainFrame::OnClose(wxCommandEvent& event)
+void MainFrame::OnExit(wxCommandEvent& event)
 {
     wxUnusedVar(event);
-
+    if(m_RxRunning)
+    {
+        stopRxStream();
+    }
 #ifdef _USE_TIMER
     m_plotTimer.Stop();
 #endif // _USE_TIMER
@@ -986,104 +989,7 @@ void MainFrame::OnClose(wxCommandEvent& event)
     m_togBtnAnalog->Disable();
     //m_togBtnALC->Disable();
     m_btnTogTX->Disable();
-
 }
-
-//-------------------------------------------------------------------------
-// OnExit()
-//-------------------------------------------------------------------------
-void MainFrame::OnExit(wxCommandEvent& event)
-{
-    if(m_RxRunning)
-    {
-        stopRxStream();
-    }
-    Close();
-}
-
-//-------------------------------------------------------------------------
-// OnCopy()
-//-------------------------------------------------------------------------
-void MainFrame::OnCopy(wxCommandEvent& event)
-{
-    event.Skip();
-}
-
-//-------------------------------------------------------------------------
-// OnCut()
-//-------------------------------------------------------------------------
-void MainFrame::OnCut(wxCommandEvent& event)
-{
-    event.Skip();
-}
-
-//-------------------------------------------------------------------------
-// OnPaste()
-//-------------------------------------------------------------------------
-void MainFrame::OnPaste(wxCommandEvent& event)
-{
-    event.Skip();
-}
-
-//-------------------------------------------------------------------------
-// OnCaptureRxStream()
-//-------------------------------------------------------------------------
-//void MainFrame::OnCaptureRxStream(wxCommandEvent& event)
-//{
-//    wxUnusedVar(event);
-//}
-
-//-------------------------------------------------------------------------
-// OnCaptureTxStream()
-//-------------------------------------------------------------------------
-//void MainFrame::OnCaptureTxStream(wxCommandEvent& event)
-//{
-//    wxUnusedVar(event);
-//}
-
-/*
-//-------------------------------------------------------------------------
-// OnSaveUpdateUI()
-//-------------------------------------------------------------------------
-void MainFrame::OnSaveUpdateUI(wxUpdateUIEvent& event)
-{
-//    wxUnusedVar(event);
-    event.Enable(false);
-}
-
-//-------------------------------------------------------------------------
-// OnCloseUpdateUI()
-//-------------------------------------------------------------------------
-void MainFrame::OnCloseUpdateUI(wxUpdateUIEvent& event)
-{
-//    event.Enable(false);
-}
-
-//-------------------------------------------------------------------------
-// OnCutUpdateUI()
-//-------------------------------------------------------------------------
-void MainFrame::OnCutUpdateUI(wxUpdateUIEvent& event)
-{
-//    wxUnusedVar(event);
-    event.Enable(false);
-}
-
-//-------------------------------------------------------------------------
-// OnCopyUpdateUI()
-//-------------------------------------------------------------------------
-void MainFrame::OnCopyUpdateUI(wxUpdateUIEvent& event)
-{
-    event.Enable(false);
-}
-
-//-------------------------------------------------------------------------
-// OnPasteUpdateUI()
-//-------------------------------------------------------------------------
-void MainFrame::OnPasteUpdateUI(wxUpdateUIEvent& event)
-{
-    event.Enable(false);
-}
-*/
 
 //-------------------------------------------------------------------------
 // OnToolsAudio()
@@ -1134,33 +1040,6 @@ void MainFrame::OnToolsComCfgUI(wxUpdateUIEvent& event)
 }
 
 //-------------------------------------------------------------------------
-// OnToolsOptions()
-//-------------------------------------------------------------------------
-void MainFrame::OnToolsOptions(wxCommandEvent& event)
-{
-    wxUnusedVar(event);
-    int rv = 0;
-    OptionsDlg *dlg = new OptionsDlg(NULL);
-    rv = dlg->ShowModal();
-    if(rv == wxID_OK)
-    {
-        dlg->ExchangeData(EXCHANGE_DATA_OUT);
-    }
-    delete dlg;
-}
-
-//-------------------------------------------------------------------------
-// OnToolsOptionsUI()
-//-------------------------------------------------------------------------
-void MainFrame::OnToolsOptionsUI(wxUpdateUIEvent& event)
-{
-//    wxUnusedVar(event);
-    event.Enable(false);
-    //    wxMessageBox("Got Click!", "OnToolsOptionsUI", wxOK);
-    //event.Skip();
-}
-
-//-------------------------------------------------------------------------
 // OnHelpCheckUpdates()
 //-------------------------------------------------------------------------
 void MainFrame::OnHelpCheckUpdates(wxCommandEvent& event)
@@ -1185,7 +1064,6 @@ void MainFrame::OnHelpAbout(wxCommandEvent& event)
     wxString svnLatestRev("Can't determine latest SVN revision.");
 
     // Try to determine current SVN revision from the Internet
-
     wxURL url(wxT("http://freetel.svn.sourceforge.net/svnroot/freetel/fdmdv2/"));
     
     if(url.GetError() == wxURL_NOERR)
@@ -1206,8 +1084,7 @@ void MainFrame::OnHelpAbout(wxCommandEvent& event)
             svnLatestRev = wxT("Latest svn revision: ") + htmldata.SubString(startIndex, endIndex-1);
             //printf("startIndex: %d endIndex: %d\n", startIndex, endIndex);
        }
-
-        delete in;
+       delete in;
     }
 
     wxString msg;
@@ -1218,27 +1095,6 @@ void MainFrame::OnHelpAbout(wxCommandEvent& event)
 
     wxMessageBox(msg, wxT("About"), wxOK | wxICON_INFORMATION, this);
 }
-
-/*
-//-------------------------------------------------------------------------
-// LoadUserImage()
-//-------------------------------------------------------------------------
-wxString MainFrame::LoadUserImage(wxImage& image)
-{
-    wxString filename;
-
-    filename = wxLoadFileSelector(wxT("image"), wxEmptyString);
-    if(!filename.empty())
-    {
-        if(!image.LoadFile(filename))
-        {
-            wxLogError(wxT("Couldn't load image from '%s'."), filename.c_str());
-            return wxEmptyString;
-        }
-    }
-    return filename;
-}
-*/
 
 
 //-------------------------------------------------------------------------

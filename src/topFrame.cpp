@@ -40,47 +40,11 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     m_menubarMain = new wxMenuBar(wxMB_DOCKABLE);
     file = new wxMenu();
 
-#ifdef UNIMPLEMENTED
-    wxMenuItem* m_menuItemOpen;
-    m_menuItemOpen = new wxMenuItem(file, ID_OPEN, wxString(_("&Open")) , _("Open File"), wxITEM_NORMAL);
-    file->Append(m_menuItemOpen);
-
-    wxMenuItem* m_menuItemSave;
-    m_menuItemSave = new wxMenuItem(file, ID_SAVE, wxString(_("&Save")) , _("Save current file"), wxITEM_NORMAL);
-    file->Append(m_menuItemSave);
-
-    wxMenuItem* m_menuItemClose;
-    m_menuItemClose = new wxMenuItem(file, ID_CLOSE, wxString(_("&Close")) , _("Close current file"), wxITEM_NORMAL);
-    file->Append(m_menuItemClose);
-
-    file->AppendSeparator();
-#endif
-
     wxMenuItem* m_menuItemExit;
     m_menuItemExit = new wxMenuItem(file, ID_EXIT, wxString(_("E&xit")) , _("Exit Program"), wxITEM_NORMAL);
     file->Append(m_menuItemExit);
 
     m_menubarMain->Append(file, _("&File"));
-
-#ifdef UNIMPLEMENTED
-    edit = new wxMenu();
-    wxMenuItem* m_menuItemCopy;
-    m_menuItemCopy = new wxMenuItem(edit, ID_COPY, wxString(_("&Copy")) , _("Copy selection"), wxITEM_NORMAL);
-    edit->Append(m_menuItemCopy);
-    m_menuItemCopy->Enable(false);
-
-    wxMenuItem* m_menuItemCut;
-    m_menuItemCut = new wxMenuItem(edit, ID_CUT, wxString(_("Cut")) , _("Cut Selection"), wxITEM_NORMAL);
-    edit->Append(m_menuItemCut);
-    m_menuItemCut->Enable(false);
-
-    wxMenuItem* m_menuItemPaste;
-    m_menuItemPaste = new wxMenuItem(edit, ID_PASTE, wxString(_("&Paste")) , _("Paste selection"), wxITEM_NORMAL);
-    edit->Append(m_menuItemPaste);
-    m_menuItemPaste->Enable(false);
-
-    m_menubarMain->Append(edit, _("&Edit"));
-#endif
 
     tools = new wxMenu();
     wxMenuItem* m_menuItemAudio;
@@ -91,52 +55,8 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     m_menuItemRigCtrlCfg = new wxMenuItem(tools, wxID_ANY, wxString(_("Rig Control Config")) , wxEmptyString, wxITEM_NORMAL);
     tools->Append(m_menuItemRigCtrlCfg);
 
-    wxMenuItem* m_menuItemOptions;
-    m_menuItemOptions = new wxMenuItem(tools, ID_OPTIONS, wxString(_("Other Program &Options")) , _("Set preferences"), wxITEM_NORMAL);
-    tools->Append(m_menuItemOptions);
-
-    tools->AppendSeparator();
-
-#ifdef UNIMPLEMENTED
-    wxMenuItem* m_menuItemCaptRxInStream;
-    m_menuItemCaptRxInStream = new wxMenuItem(tools, wxID_ANY, wxString(_("Capture Rx Input Stream")), wxEmptyString, wxITEM_NORMAL);
-#ifdef __WXMSW__
-    m_menuItemCaptRxInStream->SetBitmaps(wxNullBitmap);
-#elif defined(__WXGTK__)
-    m_menuItemCaptRxInStream->SetBitmap(wxNullBitmap);
-#endif
-    tools->Append(m_menuItemCaptRxInStream);
-
     wxMenuItem* m_menuItemCaptTxInStream;
     m_menuItemCaptTxInStream = new wxMenuItem(tools, wxID_ANY, wxString(_("Capture Tx Input Stream")), wxEmptyString, wxITEM_NORMAL);
-
-#ifdef __WXMSW__
-    m_menuItemCaptTxInStream->SetBitmaps(wxNullBitmap);
-#elif defined(__WXGTK__)
-    m_menuItemCaptTxInStream->SetBitmap(wxNullBitmap);
-#endif
-    tools->Append(m_menuItemCaptTxInStream);
-
-    wxMenuItem* m_menuItemCaptRxOutStream;
-    m_menuItemCaptRxOutStream = new wxMenuItem(tools, wxID_ANY, wxString(_("Capture Rx Output Stream")), wxEmptyString, wxITEM_NORMAL);
-#ifdef __WXMSW__
-    m_menuItemCaptRxOutStream->SetBitmaps(wxNullBitmap);
-#elif defined(__WXGTK__)
-    m_menuItemCaptRxOutStream->SetBitmap(wxNullBitmap);
-#endif
-    tools->Append(m_menuItemCaptRxOutStream);
-
-    wxMenuItem* m_menuItemCaptTxOutStream;
-    m_menuItemCaptTxOutStream = new wxMenuItem(tools, wxID_ANY, wxString(_("Capture Tx Output Stream")), wxEmptyString, wxITEM_NORMAL);
-#ifdef __WXMSW__
-    m_menuItemCaptTxOutStream->SetBitmaps(wxNullBitmap);
-#elif defined(__WXGTK__)
-    m_menuItemCaptTxOutStream->SetBitmap(wxNullBitmap);
-#endif
-    tools->Append(m_menuItemCaptTxOutStream);
-
-    tools->AppendSeparator();
-#endif
 
     wxMenuItem* m_menuItemPlayFileToMicIn;
     m_menuItemPlayFileToMicIn = new wxMenuItem(tools, wxID_ANY, wxString(_("Start/Stop Play File to Mic In")) , wxEmptyString, wxITEM_NORMAL);
@@ -420,33 +340,11 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     this->Connect(wxEVT_PAINT, wxPaintEventHandler(TopFrame::topFrame_OnPaint));
     this->Connect(wxEVT_SIZE, wxSizeEventHandler(TopFrame::topFrame_OnSize));
     this->Connect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(TopFrame::topFrame_OnUpdateUI));
-#ifdef UNIMPLEMENTED
-    this->Connect(m_menuItemOpen->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(TopFrame::OnOpen));
-    this->Connect(m_menuItemOpen->GetId(), wxEVT_UPDATE_UI, wxUpdateUIEventHandler(TopFrame::OnOpenUpdateUI));
-    this->Connect(m_menuItemSave->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(TopFrame::OnSave));
-    this->Connect(m_menuItemSave->GetId(), wxEVT_UPDATE_UI, wxUpdateUIEventHandler(TopFrame::OnSaveUpdateUI));
-    this->Connect(m_menuItemClose->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(TopFrame::OnClose));
-    this->Connect(m_menuItemClose->GetId(), wxEVT_UPDATE_UI, wxUpdateUIEventHandler(TopFrame::OnCloseUpdateUI));
-#endif
     this->Connect(m_menuItemExit->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(TopFrame::OnExit));
-#ifdef UNIMPLEMENTED
-    this->Connect(m_menuItemCopy->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(TopFrame::OnCopy));
-    this->Connect(m_menuItemCopy->GetId(), wxEVT_UPDATE_UI, wxUpdateUIEventHandler(TopFrame::OnCopyUpdateUI));
-    this->Connect(m_menuItemCut->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(TopFrame::OnCut));
-    this->Connect(m_menuItemCut->GetId(), wxEVT_UPDATE_UI, wxUpdateUIEventHandler(TopFrame::OnCutUpdateUI));
-    this->Connect(m_menuItemPaste->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(TopFrame::OnPaste));
-    this->Connect(m_menuItemPaste->GetId(), wxEVT_UPDATE_UI, wxUpdateUIEventHandler(TopFrame::OnPasteUpdateUI));
-#endif
     this->Connect(m_menuItemAudio->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(TopFrame::OnToolsAudio));
     this->Connect(m_menuItemAudio->GetId(), wxEVT_UPDATE_UI, wxUpdateUIEventHandler(TopFrame::OnToolsAudioUI));
     this->Connect(m_menuItemRigCtrlCfg->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(TopFrame::OnToolsComCfg));
     this->Connect(m_menuItemRigCtrlCfg->GetId(), wxEVT_UPDATE_UI, wxUpdateUIEventHandler(TopFrame::OnToolsComCfgUI));
-    this->Connect(m_menuItemOptions->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(TopFrame::OnToolsOptions));
-    this->Connect(m_menuItemOptions->GetId(), wxEVT_UPDATE_UI, wxUpdateUIEventHandler(TopFrame::OnToolsOptionsUI));
-#ifdef UNIMPLEMENTED
-//    this->Connect(m_menuItemCaptRxStream->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(TopFrame::OnCaptureRxStream));
-//    this->Connect(m_menuItemCaptTxStream->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(TopFrame::OnCaptureTxStream));
-#endif
 
     this->Connect(m_menuItemPlayFileToMicIn->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(TopFrame::OnPlayFileToMicIn));
     this->Connect(m_menuItemRecFileFromRadio->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(TopFrame::OnRecFileFromRadio));
@@ -473,10 +371,6 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     m_ckboxSNR->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(TopFrame::OnCheckSNRClick), NULL, this);
 
     m_togBtnOnOff->Connect(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler(TopFrame::OnTogBtnOnOff), NULL, this);
-#ifdef UNIMPLEMENTED
-    m_togBtnLoopRx->Connect(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler(TopFrame::OnTogBtnLoopRx), NULL, this);
-    m_togBtnLoopTx->Connect(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler(TopFrame::OnTogBtnLoopTx), NULL, this);
-#endif
     m_togBtnSplit->Connect(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler(TopFrame::OnTogBtnSplitClick), NULL, this);
     m_togBtnAnalog->Connect(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler(TopFrame::OnTogBtnAnalogClick), NULL, this);
 #ifdef ALC
@@ -494,33 +388,11 @@ TopFrame::~TopFrame()
     this->Disconnect(wxEVT_PAINT, wxPaintEventHandler(TopFrame::topFrame_OnPaint));
     this->Disconnect(wxEVT_SIZE, wxSizeEventHandler(TopFrame::topFrame_OnSize));
     this->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(TopFrame::topFrame_OnUpdateUI));
-#ifdef UNIMPLEMENTED
-    this->Disconnect(ID_OPEN, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(TopFrame::OnOpen));
-    this->Disconnect(ID_OPEN, wxEVT_UPDATE_UI, wxUpdateUIEventHandler(TopFrame::OnOpenUpdateUI));
-    this->Disconnect(ID_SAVE, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(TopFrame::OnSave));
-    this->Disconnect(ID_SAVE, wxEVT_UPDATE_UI, wxUpdateUIEventHandler(TopFrame::OnSaveUpdateUI));
-    this->Disconnect(ID_CLOSE, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(TopFrame::OnClose));
-    this->Disconnect(ID_CLOSE, wxEVT_UPDATE_UI, wxUpdateUIEventHandler(TopFrame::OnCloseUpdateUI));
-#endif
     this->Disconnect(ID_EXIT, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(TopFrame::OnExit));
-#ifdef UNIMPLEMENTED
-    this->Disconnect(ID_COPY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(TopFrame::OnCopy));
-    this->Disconnect(ID_COPY, wxEVT_UPDATE_UI, wxUpdateUIEventHandler(TopFrame::OnCopyUpdateUI));
-    this->Disconnect(ID_CUT, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(TopFrame::OnCut));
-    this->Disconnect(ID_CUT, wxEVT_UPDATE_UI, wxUpdateUIEventHandler(TopFrame::OnCutUpdateUI));
-    this->Disconnect(ID_PASTE, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(TopFrame::OnPaste));
-    this->Disconnect(ID_PASTE, wxEVT_UPDATE_UI, wxUpdateUIEventHandler(TopFrame::OnPasteUpdateUI));
-#endif
     this->Disconnect(wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(TopFrame::OnToolsAudio));
     this->Disconnect(wxID_ANY, wxEVT_UPDATE_UI, wxUpdateUIEventHandler(TopFrame::OnToolsAudioUI));
     this->Disconnect(wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(TopFrame::OnToolsComCfg));
     this->Disconnect(wxID_ANY, wxEVT_UPDATE_UI, wxUpdateUIEventHandler(TopFrame::OnToolsComCfgUI));
-    this->Disconnect(ID_OPTIONS, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(TopFrame::OnToolsOptions));
-    this->Disconnect(ID_OPTIONS, wxEVT_UPDATE_UI, wxUpdateUIEventHandler(TopFrame::OnToolsOptionsUI));
-#ifdef UNIMPLEMENTED
-//    this->Disconnect(wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(TopFrame::OnCaptureRxStream));
-//    this->Disconnect(wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(TopFrame::OnCaptureTxStream));
-#endif
 
     this->Disconnect(wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(TopFrame::OnPlayFileToMicIn));
     this->Disconnect(wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(TopFrame::OnRecFileFromRadio));
@@ -545,107 +417,12 @@ TopFrame::~TopFrame()
     m_ckboxSQ->Disconnect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(TopFrame::OnCheckSQClick), NULL, this);
 
     m_togBtnOnOff->Disconnect(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler(TopFrame::OnTogBtnOnOff), NULL, this);
-#ifdef UNIMPLEMENTED
-    m_togBtnLoopRx->Disconnect(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler(TopFrame::OnTogBtnLoopRx), NULL, this);
-    m_togBtnLoopTx->Disconnect(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler(TopFrame::OnTogBtnLoopTx), NULL, this);
-#endif
     m_togBtnSplit->Disconnect(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler(TopFrame::OnTogBtnSplitClick), NULL, this);
     m_togBtnAnalog->Disconnect(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler(TopFrame::OnTogBtnAnalogClick), NULL, this);
 #ifdef ALC
     m_togBtnALC->Disconnect(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler(TopFrame::OnTogBtnALCClick), NULL, this);
 #endif
     m_btnTogTX->Disconnect(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler(TopFrame::OnTogBtnTXClick), NULL, this);
-
-}
-
-DlgOptions::DlgOptions(wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style) : wxDialog(parent, id, title, pos, size, style)
-{
-    this->SetSizeHints(wxDefaultSize, wxDefaultSize);
-    this->SetSizeHints(wxDefaultSize, wxDefaultSize);
-
-    wxBoxSizer* bSizer30;
-    bSizer30 = new wxBoxSizer(wxVERTICAL);
-
-    wxStaticBoxSizer* sbSizer5;
-    sbSizer5 = new wxStaticBoxSizer(new wxStaticBox(this, wxID_ANY, _("Config Options")), wxHORIZONTAL);
-
-    wxGridSizer* gSizer2;
-    gSizer2 = new wxGridSizer(6, 2, 0, 0);
-
-    m_staticText2 = new wxStaticText(this, wxID_ANY, _("Option #1:"), wxDefaultPosition, wxDefaultSize, 0);
-    m_staticText2->Wrap(-1);
-    gSizer2->Add(m_staticText2, 1, wxALIGN_RIGHT|wxALL, 5);
-
-    m_textCtrl3 = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0);
-    gSizer2->Add(m_textCtrl3, 1, wxALL, 5);
-
-    m_staticText3 = new wxStaticText(this, wxID_ANY, _("Option #2:"), wxDefaultPosition, wxDefaultSize, 0);
-    m_staticText3->Wrap(-1);
-    gSizer2->Add(m_staticText3, 1, wxALIGN_RIGHT|wxALL, 5);
-
-    m_textCtrl4 = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0);
-    gSizer2->Add(m_textCtrl4, 1, wxALL, 5);
-
-    m_staticText4 = new wxStaticText(this, wxID_ANY, _("Option #3:"), wxDefaultPosition, wxDefaultSize, 0);
-    m_staticText4->Wrap(-1);
-    gSizer2->Add(m_staticText4, 1, wxALIGN_RIGHT|wxALL, 5);
-
-    m_textCtrl5 = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0);
-    gSizer2->Add(m_textCtrl5, 1, wxALL, 5);
-
-    m_staticText5 = new wxStaticText(this, wxID_ANY, _("Option #4:"), wxDefaultPosition, wxDefaultSize, 0);
-    m_staticText5->Wrap(-1);
-    gSizer2->Add(m_staticText5, 1, wxALIGN_RIGHT|wxALL, 5);
-
-    m_textCtrl6 = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0);
-    gSizer2->Add(m_textCtrl6, 1, wxALL, 5);
-
-    m_staticText6 = new wxStaticText(this, wxID_ANY, _("Option #5:"), wxDefaultPosition, wxDefaultSize, 0);
-    m_staticText6->Wrap(-1);
-    gSizer2->Add(m_staticText6, 1, wxALIGN_RIGHT|wxALL, 5);
-
-    m_textCtrl7 = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0);
-    gSizer2->Add(m_textCtrl7, 1, wxALL, 5);
-
-    m_staticText7 = new wxStaticText(this, wxID_ANY, _("Option #6:"), wxDefaultPosition, wxDefaultSize, 0);
-    m_staticText7->Wrap(-1);
-    gSizer2->Add(m_staticText7, 1, wxALIGN_RIGHT|wxALL, 5);
-
-    m_textCtrl8 = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0);
-    gSizer2->Add(m_textCtrl8, 1, wxALL, 5);
-
-
-    sbSizer5->Add(gSizer2, 1, wxEXPAND, 5);
-
-
-    bSizer30->Add(sbSizer5, 1, wxEXPAND, 5);
-
-    m_sdbSizer4 = new wxStdDialogButtonSizer();
-    m_sdbSizer4OK = new wxButton(this, wxID_OK);
-    m_sdbSizer4->AddButton(m_sdbSizer4OK);
-    m_sdbSizer4Cancel = new wxButton(this, wxID_CANCEL);
-    m_sdbSizer4->AddButton(m_sdbSizer4Cancel);
-    m_sdbSizer4->Realize();
-
-    bSizer30->Add(m_sdbSizer4, 0, wxALIGN_RIGHT, 5);
-
-
-    this->SetSizer(bSizer30);
-    this->Layout();
-
-    this->Centre(wxBOTH);
-    this->Centre(wxBOTH);
-
-    // Connect Events
-    this->Connect(wxEVT_CLOSE_WINDOW, wxCloseEventHandler(DlgOptions::OnClose));
-    this->Connect(wxEVT_INIT_DIALOG, wxInitDialogEventHandler(DlgOptions::OnInitDialog));
-}
-
-DlgOptions::~DlgOptions()
-{
-    // Disconnect Events
-    this->Disconnect(wxEVT_CLOSE_WINDOW, wxCloseEventHandler(DlgOptions::OnClose));
-    this->Disconnect(wxEVT_INIT_DIALOG, wxInitDialogEventHandler(DlgOptions::OnInitDialog));
 
 }
 
