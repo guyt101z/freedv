@@ -22,6 +22,10 @@
 #ifndef __TOPFRAME_H__
 #define __TOPFRAME_H__
 
+#ifdef DMW
+    #define SVN_REV SVN_REVISION
+#endif
+
 #include <wx/artprov.h>
 #include <wx/xrc/xmlres.h>
 #include <wx/intl.h>
@@ -176,90 +180,6 @@ class TopFrame : public wxFrame
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-/// Class DlgAbout
-///////////////////////////////////////////////////////////////////////////////
-class DlgAbout : public wxDialog
-{
-    private:
-
-    protected:
-        wxStaticBitmap* m_bitmapAbout;
-        wxStaticText* m_staticText1;
-        wxTextCtrl* m_textCtrl2;
-        wxButton* m_button9;
-
-        // Virtual event handlers, overide them in your derived class
-        virtual void OnClose( wxCloseEvent& event ) { event.Skip(); }
-        virtual void OnInitDialog( wxInitDialogEvent& event ) { event.Skip(); }
-
-
-    public:
-
-        DlgAbout( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("About FreeDV"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 352,343 ), long style = wxDEFAULT_DIALOG_STYLE );
-        ~DlgAbout();
-
-};
-
-/*
-///////////////////////////////////////////////////////////////////////////////
-/// Class DlgAudio
-///////////////////////////////////////////////////////////////////////////////
-class DlgAudio : public wxDialog
-{
-    private:
-
-    protected:
-        wxNotebook* m_nbAudioOptions;
-        wxPanel* m_panelDevices;
-        wxRadioButton* m_radioBtnPortAudio;
-        wxStaticText* m_staticText151;
-        wxTextCtrl* m_textNumChOut;
-        wxStaticText* m_staticText141;
-        wxTextCtrl* m_textNumChIn;
-        wxStaticText* m_staticText14;
-        wxComboBox* m_comboAudioCodec;
-        wxStaticText* m_staticText15;
-        wxComboBox* m_comboCodecTx;
-        wxStaticText* m_staticText16;
-        wxComboBox* m_comboRadioRx;
-        wxStaticText* m_staticText17;
-        wxComboBox* m_comboCodecSpkr;
-        wxRadioButton* m_radioBtnFileOnly;
-        wxPanel* m_panelSettings;
-        wxListBox* m_lbRxInput;
-        wxTextCtrl* m_textRxInput;
-        wxListBox* m_lbTxOutput;
-        wxTextCtrl* m_textTxOutput;
-        wxListBox* m_lbVoiceInput;
-        wxTextCtrl* m_textVoiceInput;
-        wxListBox* m_lbVoiceOutput;
-        wxTextCtrl* m_textVoiceOutput;
-        wxStdDialogButtonSizer* m_sdbSizer3;
-        wxButton* m_sdbSizer3OK;
-        wxButton* m_sdbSizer3Apply;
-        wxButton* m_sdbSizer3Cancel;
-
-        // Virtual event handlers, overide them in your derived class
-        virtual void OnClose( wxCloseEvent& event ) { event.Skip(); }
-        virtual void OnInitDialog( wxInitDialogEvent& event ) { event.Skip(); }
-        virtual void OnRxInputSelect( wxCommandEvent& event ) { event.Skip(); }
-        virtual void OnTxOutputSelect( wxCommandEvent& event ) { event.Skip(); }
-        virtual void OnVoiceInputSelect( wxCommandEvent& event ) { event.Skip(); }
-        virtual void OnVoiceOutputSelect( wxCommandEvent& event ) { event.Skip(); }
-        virtual void OnApply( wxCommandEvent& event ) { event.Skip(); }
-        virtual void OnCancel( wxCommandEvent& event ) { event.Skip(); }
-        virtual void OnOK( wxCommandEvent& event ) { event.Skip(); }
-
-
-    public:
-
-        DlgAudio( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("Audio Options"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 555,419 ), long style = wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER );
-        ~DlgAudio();
-
-};
-*/
-
-///////////////////////////////////////////////////////////////////////////////
 /// Class DlgOptions
 ///////////////////////////////////////////////////////////////////////////////
 class DlgOptions : public wxDialog
@@ -295,47 +215,5 @@ class DlgOptions : public wxDialog
 
 };
 
-/*
-///////////////////////////////////////////////////////////////////////////////
-/// Class DlgComPorts
-///////////////////////////////////////////////////////////////////////////////
-class DlgComPorts : public wxDialog
-{
-    private:
-
-    protected:
-        wxStaticText* m_staticText8;
-        wxListCtrl* m_listCtrlPortSelect;
-        wxStaticText* m_staticText9;
-        wxTextCtrl* m_textRigCtrlPort;
-        wxStaticText* m_staticText91;
-        wxTextCtrl* m_textRigCtrlBaud;
-        wxStaticText* m_staticText911;
-        wxTextCtrl* m_textRigCtrlDatabits;
-        wxStaticText* m_staticText912;
-        wxTextCtrl* m_textRigCtrlStopbits;
-        wxStaticText* m_staticText913;
-        wxTextCtrl* m_textRigCtrlParity;
-        wxStdDialogButtonSizer* m_sdbSizer5;
-        wxButton* m_sdbSizer5OK;
-        wxButton* m_sdbSizer5Apply;
-        wxButton* m_sdbSizer5Cancel;
-
-        // Virtual event handlers, overide them in your derived class
-        virtual void OnListItemSelected( wxListEvent& event ) { event.Skip(); }
-        virtual void OnCancel( wxCommandEvent& event ) { event.Skip(); }
-        virtual void OnOK( wxCommandEvent& event ) { event.Skip(); }
-        virtual void OnClose( wxCloseEvent& event ) { event.Skip(); }
-        virtual void OnInitDialog( wxInitDialogEvent& event ) { event.Skip(); }
-        virtual void OnApply( wxCommandEvent& event ) { event.Skip(); }
-
-
-    public:
-
-        DlgComPorts( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("Select Com Port"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 399,354 ), long style = wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER );
-        ~DlgComPorts();
-
-};
-*/
 
 #endif //__TOPFRAME_H__

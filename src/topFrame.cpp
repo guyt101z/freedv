@@ -8,14 +8,14 @@
 // License:
 //
 //  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU Lesser General Public License version 2.1,
+//  it under the terms of the GNU General Public License version 2.1,
 //  as published by the Free Software Foundation.  This program is
 //  distributed in the hope that it will be useful, but WITHOUT ANY
 //  WARRANTY; without even the implied warranty of MERCHANTABILITY or
 //  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
 //  License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public License
+//  You should have received a copy of the GNU General Public License
 //  along with this program; if not, see <http://www.gnu.org/licenses/>.
 //
 //==========================================================================
@@ -555,83 +555,6 @@ TopFrame::~TopFrame()
     m_togBtnALC->Disconnect(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler(TopFrame::OnTogBtnALCClick), NULL, this);
 #endif
     m_btnTogTX->Disconnect(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler(TopFrame::OnTogBtnTXClick), NULL, this);
-
-}
-
-DlgAbout::DlgAbout(wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style) : wxDialog(parent, id, title, pos, size, style)
-{
-    this->SetSizeHints(wxDefaultSize, wxDefaultSize);
-    this->SetSizeHints(wxDefaultSize, wxDefaultSize);
-
-    wxBoxSizer* bSizer20;
-    bSizer20 = new wxBoxSizer(wxVERTICAL);
-
-    wxBoxSizer* bSizer21;
-    bSizer21 = new wxBoxSizer(wxVERTICAL);
-
-    wxBoxSizer* bSizer23;
-    bSizer23 = new wxBoxSizer(wxVERTICAL);
-
-    wxBoxSizer* bSizer25;
-    bSizer25 = new wxBoxSizer(wxVERTICAL);
-
-    m_bitmapAbout = new wxStaticBitmap(this, wxID_ANY, wxNullBitmap, wxDefaultPosition, wxDefaultSize, 0);
-    bSizer25->Add(m_bitmapAbout, 1, wxALL|wxEXPAND, 5);
-
-
-    bSizer23->Add(bSizer25, 1, wxEXPAND, 5);
-
-    wxBoxSizer* bSizer26;
-    bSizer26 = new wxBoxSizer(wxVERTICAL);
-
-    m_staticText1 = new wxStaticText(this, wxID_ANY, _("MyLabel"), wxDefaultPosition, wxDefaultSize, 0);
-    m_staticText1->Wrap(-1);
-    bSizer26->Add(m_staticText1, 1, wxALL, 5);
-
-
-    bSizer23->Add(bSizer26, 0, 0, 5);
-
-
-    bSizer21->Add(bSizer23, 1, wxEXPAND, 5);
-
-    wxBoxSizer* bSizer24;
-    bSizer24 = new wxBoxSizer(wxVERTICAL);
-
-    m_textCtrl2 = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0);
-    bSizer24->Add(m_textCtrl2, 1, wxALL|wxEXPAND, 5);
-
-
-    bSizer21->Add(bSizer24, 1, wxEXPAND, 5);
-
-
-    bSizer20->Add(bSizer21, 1, wxEXPAND, 5);
-
-    wxBoxSizer* bSizer22;
-    bSizer22 = new wxBoxSizer(wxVERTICAL);
-
-    m_button9 = new wxButton(this, wxID_ANY, _("MyButton"), wxDefaultPosition, wxDefaultSize, 0);
-    bSizer22->Add(m_button9, 0, wxALIGN_BOTTOM|wxALIGN_RIGHT|wxALL, 5);
-
-
-    bSizer20->Add(bSizer22, 0, wxALIGN_RIGHT, 5);
-
-
-    this->SetSizer(bSizer20);
-    this->Layout();
-
-    this->Centre(wxBOTH);
-    this->Centre(wxBOTH);
-
-    // Connect Events
-    this->Connect(wxEVT_CLOSE_WINDOW, wxCloseEventHandler(DlgAbout::OnClose));
-    this->Connect(wxEVT_INIT_DIALOG, wxInitDialogEventHandler(DlgAbout::OnInitDialog));
-}
-
-DlgAbout::~DlgAbout()
-{
-    // Disconnect Events
-    this->Disconnect(wxEVT_CLOSE_WINDOW, wxCloseEventHandler(DlgAbout::OnClose));
-    this->Disconnect(wxEVT_INIT_DIALOG, wxInitDialogEventHandler(DlgAbout::OnInitDialog));
 
 }
 
