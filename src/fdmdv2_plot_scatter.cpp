@@ -45,6 +45,8 @@ PlotScatter::PlotScatter(wxFrame* parent) : PlotPanel(parent)
         m_mem[i].real = 0.0;
         m_mem[i].imag = 0.0;
     }
+
+    m_filter_max_xy = 0.1;
 }
 
 //----------------------------------------------------------------
@@ -70,9 +72,7 @@ void PlotScatter::draw(wxAutoBufferedPaintDC& dc)
     dc.SetBrush(ltGraphBkgBrush);
     dc.SetPen(wxPen(BLACK_COLOR, 0));
     dc.DrawRectangle(m_rPlot);
-    x_scale = (float)m_rGrid.GetWidth()/SCATTER_X_MAX;
-    y_scale = (float)m_rGrid.GetHeight()/SCATTER_Y_MAX;
-
+ 
     wxPen pen;
     pen.SetColour(LIGHT_GREEN_COLOR);
     pen.SetWidth(1);
@@ -91,6 +91,26 @@ void PlotScatter::draw(wxAutoBufferedPaintDC& dc)
     {
         m_mem[i] = m_new_samples[j];
     }
+
+    // automatically scale
+
+    float max_xy = 1E-12;
+    float real,imag;
+    for(i=0; i< SCATTER_MEM_SYMS; i++) {
+        real = fabs(m_mem[i].real);
+        imag = fabs(m_mem[i].imag);
+        if (real > max_xy)
+            max_xy = real;
+        if (imag > max_xy)
+            max_xy = imag;
+    }
+    m_filter_max_xy = BETA*m_filter_max_xy + (1 - BETA)*2.5*max_xy;
+    if (m_filter_max_xy < 0.1)
+        m_filter_max_xy = 0.1;
+    //printf("max_xy: %f m_filter_max_xy: %f\n", max_xy, m_filter_max_xy);
+
+    x_scale = (float)m_rGrid.GetWidth()/m_filter_max_xy;
+    y_scale = (float)m_rGrid.GetHeight()/m_filter_max_xy;
 
     // draw all samples
 

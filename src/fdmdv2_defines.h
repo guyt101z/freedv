@@ -44,8 +44,6 @@
 // (symbols/frame)/(graphics update period) = symbols/s sent to scatter memory
 // memory (symbols) = secs of memory * symbols/sec
 #define SCATTER_MEM_SYMS    ((int)(SCATTER_MEM_SECS*(FDMDV_NSYM/DT)))
-#define SCATTER_X_MAX       4.0
-#define SCATTER_Y_MAX       4.0
 
 // Waveform plotting constants
 

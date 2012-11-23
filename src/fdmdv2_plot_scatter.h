@@ -45,6 +45,9 @@ class PlotScatter : public PlotPanel
         void OnShow(wxShowEvent& event);
 
         DECLARE_EVENT_TABLE()
+
+    private:
+        float m_filter_max_xy;
 };
 
 #endif //__FDMDV2_PLOT_SCATTER__
