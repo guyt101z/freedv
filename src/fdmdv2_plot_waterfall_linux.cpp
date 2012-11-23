@@ -45,14 +45,14 @@ END_EVENT_TABLE()
 // @brief
 //
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
-PlotWaterfall::PlotWaterfall(wxFrame* parent): PlotPanel(parent)
+PlotWaterfall::PlotWaterfall(wxFrame* parent, bool greyscale): PlotPanel(parent)
 {
 
     for(int i = 0; i < 255; i++)
     {
         m_heatmap_lut[i] = heatmap((float)i, 0.0, 255.0);
     }
-    m_greyscale     = 0;
+    m_greyscale     = greyscale;
     m_Bufsz         = GetMaxClientSize();
     m_newdata       = false;
     m_firstPass     = true;
@@ -247,8 +247,8 @@ void PlotWaterfall::drawGraticule(wxAutoBufferedPaintDC& dc)
     {
         x = f*freq_hz_to_px;
         x += PLOT_BORDER + XLEFT_OFFSET;
-            dc.DrawLine(x, m_rGrid.GetHeight() + PLOT_BORDER, x, PLOT_BORDER);
-            sprintf(buf, "%4.0fHz", f);
+        dc.DrawLine(x, m_rGrid.GetHeight() + PLOT_BORDER, x, PLOT_BORDER);
+        sprintf(buf, "%4.0fHz", f);
         GetTextExtent(buf, &text_w, &text_h);
             dc.DrawText(buf, x - text_w/2, m_rGrid.GetHeight() + PLOT_BORDER + YBOTTOM_TEXT_OFFSET);
     }
@@ -265,6 +265,13 @@ void PlotWaterfall::drawGraticule(wxAutoBufferedPaintDC& dc)
         dc.DrawText(buf, PLOT_BORDER + XLEFT_OFFSET - text_w - XLEFT_TEXT_OFFSET, y-text_h/2);
    }
 
+    // red rx tuning line
+    dc.SetPen(wxPen(RED_COLOR, 2));
+    x = m_rxFreq*freq_hz_to_px;
+    x += PLOT_BORDER + XLEFT_OFFSET;
+    //printf("m_rxFreq %f x %d\n", m_rxFreq, x);
+    dc.DrawLine(x, m_rGrid.GetHeight()+ PLOT_BORDER, x, m_rGrid.GetHeight() + m_rCtrl.GetHeight());
+    
 }
 
 //-------------------------------------------------------------------------
@@ -363,9 +370,23 @@ void PlotWaterfall::plotPixelData()
             if (intensity < 0) intensity = 0;
             //printf("%d %f %d \n", index, g_avmag[index], intensity);
 
-            p.Red() = m_heatmap_lut[intensity] & 0xff;
-            p.Green() = (m_heatmap_lut[intensity] >> 8) & 0xff;
-            p.Blue() = (m_heatmap_lut[intensity] >> 16) & 0xff;
+            if (m_greyscale) {
+                if (intensity > 200) {
+                    p.Red() = intensity;
+                    p.Green() = intensity;
+                    p.Blue() = intensity;            
+                }
+                else {
+                    p.Red() = 0;
+                    p.Green() = 0;
+                    p.Blue() = intensity;            
+                }
+            }
+            else {
+                p.Red() = m_heatmap_lut[intensity] & 0xff;
+                p.Green() = (m_heatmap_lut[intensity] >> 8) & 0xff;
+                p.Blue() = (m_heatmap_lut[intensity] >> 16) & 0xff;
+            }
             ++p;
         }
         p = rowStart;
@@ -389,7 +410,7 @@ void PlotWaterfall::OnMouseDown(wxMouseEvent& event)
     pt.y -= PLOT_BORDER;
 
     // valid click if inside of plot
-    if ((pt.x >= 0) && (pt.x <= m_rGrid.GetWidth()) && (pt.y >=0) && (pt.y < m_rGrid.GetHeight())) 
+    if ((pt.x >= 0) && (pt.x <= m_rGrid.GetWidth()) && (pt.y >=0)) 
     {
         float freq_hz_to_px = (float)m_rGrid.GetWidth()/(MAX_F_HZ-MIN_F_HZ);
         float clickFreq = (float)pt.x/freq_hz_to_px;

@@ -26,6 +26,7 @@
 
 #include <wx/tglbtn.h>
 #include <wx/app.h>
+#include <wx/aboutdlg.h>
 #include "wx/rawbmp.h"
 #include "wx/file.h"
 #include "wx/filename.h"

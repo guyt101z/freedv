@@ -198,6 +198,12 @@ void PlotSpectrum::drawGraticule(wxAutoBufferedPaintDC&  dc)
         dc.DrawText(buf, PLOT_BORDER + XLEFT_OFFSET - text_w - XLEFT_TEXT_OFFSET, y-text_h/2);
    }
 
+    // red rx tuning line
+    dc.SetPen(wxPen(RED_COLOR, 2));
+    x = m_rxFreq*freq_hz_to_px;
+    x += PLOT_BORDER + XLEFT_OFFSET;
+    //printf("m_rxFreq %f x %d\n", m_rxFreq, x);
+    dc.DrawLine(x, m_rGrid.GetHeight()+ PLOT_BORDER, x, m_rGrid.GetHeight() + m_rCtrl.GetHeight());
 
 }
 
@@ -216,7 +222,7 @@ void PlotSpectrum::OnMouseDown(wxMouseEvent& event)
     pt.y -= PLOT_BORDER;
 
     // valid click if inside of plot
-    if ((pt.x >= 0) && (pt.x <= m_rGrid.GetWidth()) && (pt.y >=0) && (pt.y < m_rGrid.GetHeight())) {
+    if ((pt.x >= 0) && (pt.x <= m_rGrid.GetWidth()) && (pt.y >=0)) {
         float freq_hz_to_px = (float)m_rGrid.GetWidth()/(MAX_F_HZ-MIN_F_HZ);
         float clickFreq = (float)pt.x/freq_hz_to_px;
 

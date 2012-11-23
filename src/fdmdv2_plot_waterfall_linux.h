@@ -37,9 +37,11 @@
 class PlotWaterfall : public PlotPanel
 {
     public:
-        PlotWaterfall(wxFrame* parent);
+    PlotWaterfall(wxFrame* parent, bool greyscale);
         ~PlotWaterfall();
         bool checkDT(void);
+        void setGreyscale(bool greyscale) { m_greyscale = greyscale; }
+        void setRxFreq(float rxFreq) { m_rxFreq = rxFreq; }
 
     protected:
         unsigned    m_heatmap_lut[256];
@@ -56,6 +58,7 @@ class PlotWaterfall : public PlotPanel
 
     private:
         float       m_dT;
+        float       m_rxFreq;
 
         DECLARE_EVENT_TABLE()
 };

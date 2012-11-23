@@ -217,7 +217,8 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     if(wxGetApp().m_show_wf)
     {
         // Add Waterfall Plot window
-        m_panelWaterfall = new PlotWaterfall((wxFrame*) m_auiNbookCtrl);
+
+        m_panelWaterfall = new PlotWaterfall((wxFrame*) m_auiNbookCtrl, false);
         m_auiNbookCtrl->AddPage(m_panelWaterfall, _("Waterfall"), true, wxNullBitmap);
     }
     if(wxGetApp().m_show_spect)
@@ -362,6 +363,8 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     g_RxFreqOffsetFreqRect.imag = sin(g_RxFreqOffsetHz);
     g_RxFreqOffsetPhaseRect.real = cos(0.0);
     g_RxFreqOffsetPhaseRect.imag = sin(0.0);
+    m_panelWaterfall->setRxFreq(FDMDV_FCENTRE - g_RxFreqOffsetHz);
+    m_panelSpectrum->setRxFreq(FDMDV_FCENTRE - g_RxFreqOffsetHz);
 
     g_TxFreqOffsetHz = 0.0;
     g_TxFreqOffsetFreqRect.real = cos(g_TxFreqOffsetHz);
@@ -476,10 +479,12 @@ MainFrame::~MainFrame()
 void MainFrame::OnTimer(wxTimerEvent &evt)
 {
     if (m_panelWaterfall->checkDT()) {
+        m_panelWaterfall->setRxFreq(FDMDV_FCENTRE - g_RxFreqOffsetHz);
         m_panelWaterfall->m_newdata = true;
         m_panelWaterfall->Refresh();
     }
 
+    m_panelSpectrum->setRxFreq(FDMDV_FCENTRE - g_RxFreqOffsetHz);
     m_panelSpectrum->m_newdata = true;
     m_panelSpectrum->Refresh();
 
@@ -693,10 +698,15 @@ void MainFrame::OnCheckSNRClick(wxCommandEvent& event)
 //-------------------------------------------------------------------------
 void MainFrame::OnTogBtnTXClick(wxCommandEvent& event)
 {
-    if (g_tx)
-        g_tx = 0;
-    else
-        g_tx = 1;
+    if (g_tx) {
+        // tx-> rx transition, swap to Waterfall
+        m_auiNbookCtrl->ChangeSelection(0); 
+    }
+    else {
+        // rx-> tx transition, swap to Mic In page to monitor speech
+        m_auiNbookCtrl->ChangeSelection(4); // is there a way to avoid hard coding this?
+   }
+    g_tx = m_btnTogTX->GetValue();
 
     event.Skip();
 }
@@ -1091,11 +1101,27 @@ void MainFrame::OnHelpAbout(wxCommandEvent& event)
 
     wxString msg;
     msg.Printf( wxT("FreeDV: Open Source Narrow Band Digital Voice over Radio\n\n")
+                wxT("http://freedv.org\n\n")
                 wxT("GNU Public License V2.1\n\n")
                 wxT("Copyright (c) David Witten KD0EAG and David Rowe VK5DGR\n\n")
                 wxT("svn revision: %s\n") + svnLatestRev, SVN_REV);
 
     wxMessageBox(msg, wxT("About"), wxOK | wxICON_INFORMATION, this);
+
+#ifdef TRY_WX_ABOUT
+
+    // DR: I tried this but I like out home made dialog better
+
+    wxAboutDialogInfo aboutInfo;
+    aboutInfo.SetName("FreeDV");
+    aboutInfo.SetVersion(wxT("svn revision: %s\n") + svnLatestRev, SVN_REV);
+    aboutInfo.SetDescription(_("Open Source Narrow Band Digital Voice over Radio"));
+    aboutInfo.SetCopyright("Copyright (C) 2012");
+    aboutInfo.SetWebSite("http://freedv.org");
+    aboutInfo.AddDeveloper("David Witten KD0EAG and David Rowe VK5DGR");
+    wxAboutBox(aboutInfo);
+#endif
+
 }
 
 
