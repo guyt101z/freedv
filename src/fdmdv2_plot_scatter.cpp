@@ -105,8 +105,8 @@ void PlotScatter::draw(wxAutoBufferedPaintDC& dc)
             max_xy = imag;
     }
     m_filter_max_xy = BETA*m_filter_max_xy + (1 - BETA)*2.5*max_xy;
-    if (m_filter_max_xy < 0.1)
-        m_filter_max_xy = 0.1;
+    if (m_filter_max_xy < 0.001)
+        m_filter_max_xy = 0.001;
     //printf("max_xy: %f m_filter_max_xy: %f\n", max_xy, m_filter_max_xy);
 
     x_scale = (float)m_rGrid.GetWidth()/m_filter_max_xy;
