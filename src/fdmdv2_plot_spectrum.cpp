@@ -23,7 +23,8 @@
 
 #include "fdmdv2_main.h"
 
-extern float g_avmag[];
+extern float g_avmag[];                 // average mag data passed to draw() 
+void fdmdv2_clickTune(float frequency); // callback to pass new click freq
 
 BEGIN_EVENT_TABLE(PlotSpectrum, PlotPanel)
     EVT_MOTION          (PlotSpectrum::OnMouseMove)

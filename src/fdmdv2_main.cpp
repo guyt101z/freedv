@@ -47,6 +47,7 @@ float g_SquelchLevel;
 int   g_analog;
 int   g_split;
 int   g_tx;
+float g_snr;
 
 // tx/rx processing states
 int                 g_nRxIn = FDMDV_NOM_SAMPLES_PER_FRAME;
@@ -236,8 +237,8 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
         // Add Demod Input window
 
         m_panelDemodIn = new PlotScalar((wxFrame*) m_auiNbookCtrl, WAVEFORM_PLOT_TIME, 1.0/WAVEFORM_PLOT_FS, -1, 1, 1, 0.2, "%2.1f", 0);
-       m_auiNbookCtrl->AddPage(m_panelDemodIn, _("Demod In"), true, wxNullBitmap);
-       g_plotDemodInFifo = fifo_create(2*WAVEFORM_PLOT_BUF);
+        m_auiNbookCtrl->AddPage(m_panelDemodIn, _("Frm Radio"), true, wxNullBitmap);
+        g_plotDemodInFifo = fifo_create(2*WAVEFORM_PLOT_BUF);
     }
 
     if(wxGetApp().m_show_speech_in)
@@ -245,8 +246,8 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
         // Add Speech Input window
 
         m_panelSpeechIn = new PlotScalar((wxFrame*) m_auiNbookCtrl, WAVEFORM_PLOT_TIME, 1.0/WAVEFORM_PLOT_FS, -1, 1, 1, 0.2, "%2.1f", 0);
-       m_auiNbookCtrl->AddPage(m_panelSpeechIn, _("Speech In"), true, wxNullBitmap);
-       g_plotSpeechInFifo = fifo_create(2*WAVEFORM_PLOT_BUF);
+        m_auiNbookCtrl->AddPage(m_panelSpeechIn, _("Frm Mic"), true, wxNullBitmap);
+        g_plotSpeechInFifo = fifo_create(2*WAVEFORM_PLOT_BUF);
     }
 
     if(wxGetApp().m_show_speech_out)
@@ -254,7 +255,7 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
         // Add Speech Output window
 
         m_panelSpeechOut = new PlotScalar((wxFrame*) m_auiNbookCtrl, WAVEFORM_PLOT_TIME, 1.0/WAVEFORM_PLOT_FS, -1, 1, 1, 0.2, "%2.1f", 0);
-       m_auiNbookCtrl->AddPage(m_panelSpeechOut, _("Speech Out"), true, wxNullBitmap);
+       m_auiNbookCtrl->AddPage(m_panelSpeechOut, _("To Spkr/Hdphns"), true, wxNullBitmap);
        g_plotSpeechOutFifo = fifo_create(2*WAVEFORM_PLOT_BUF);
     }
 
@@ -298,6 +299,10 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     wxGetApp().m_recFileFromRadioPath = pConfig->Read("/File/recFileFromRadioPath", wxT(""));
     wxGetApp().m_recFileFromRadioSecs = pConfig->Read("/File/recFileFromRadioSecs", 30);
 
+    bool slow = false;
+    wxGetApp().m_snrSlow = pConfig->Read("/Audio/snrSlow", slow);
+    //printf("wxGetApp().m_snrSlow %d\n", (int)wxGetApp().m_snrSlow);
+
     pConfig->SetPath(wxT("/"));
 
 //    this->Connect(m_menuItemHelpUpdates->GetId(), wxEVT_UPDATE_UI, wxUpdateUIEventHandler(TopFrame::OnHelpCheckUpdatesUI));
@@ -326,6 +331,11 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     wxString sqsnr_string(sqsnr);
     m_textSQ->SetLabel(sqsnr_string);
     m_ckboxSQ->SetValue(g_SquelchActive);
+
+    // SNR settings
+
+    m_ckboxSNR->SetValue(wxGetApp().m_snrSlow);
+    setsnrBeta(wxGetApp().m_snrSlow);
 
 #ifdef _USE_TIMER
     Bind(wxEVT_TIMER, &MainFrame::OnTimer, this);       // ID_MY_WINDOW);
@@ -414,6 +424,8 @@ MainFrame::~MainFrame()
         pConfig->Write(wxT("/File/playFileToMicInPath"), wxGetApp().m_playFileToMicInPath);
         pConfig->Write(wxT("/File/recFileFromRadioPath"), wxGetApp().m_recFileFromRadioPath);
         pConfig->Write(wxT("/File/recFileFromRadioSecs"), wxGetApp().m_recFileFromRadioSecs);
+
+        pConfig->Write(wxT("/Audio/snrSlow"), wxGetApp().m_snrSlow);
     }
 
     m_togRxID->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnRxIDUI), NULL, this);
@@ -502,11 +514,22 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
 
     // SNR text box and guage ------------------------------------------------------------
 
-    float snr_limited = g_stats.snr_est;
+    // LP filter g_stats.snr_est some more to stabilise the
+    // display. g_stats.snr_est already has some low pass filtering
+    // but we need it fairly fast to activate squelch.  So we
+    // optionally perform some further filtering for the display
+    // version of SNR.  The "Slow" checkbox controls the amount of
+    // filtering.  The filtered snr also controls the squelch
+
+    g_snr = m_snrBeta*g_snr + (1.0 - m_snrBeta)*g_stats.snr_est;
+    float snr_limited = g_snr;
 
     if (snr_limited < -9.0) snr_limited = -9.0; // stop text box overflow
     char snr[15];
-    sprintf(snr, "%4.1f", snr_limited);
+    if (wxGetApp().m_snrSlow)
+        sprintf(snr, "%4.1f", snr_limited);
+    else
+        sprintf(snr, "%d", (int)(snr_limited+0.5)); // round to nearest dB
     wxString snr_string(snr);
     m_textSNR->SetLabel(snr_string);
 
@@ -639,6 +662,28 @@ void MainFrame::OnCheckSQClick(wxCommandEvent& event)
     {
         g_SquelchActive = false;
     }
+}
+
+void MainFrame::setsnrBeta(bool snrSlow)
+{
+    if(snrSlow)
+    {
+        m_snrBeta = 0.9; // make this closer to 1.0 to smooth SNR est further
+    }
+    else
+    {
+        m_snrBeta = 0.0; // no smoothing of SNR estimate from demodulator
+    }
+}
+
+//-------------------------------------------------------------------------
+// OnCheckSQClick()
+//-------------------------------------------------------------------------
+void MainFrame::OnCheckSNRClick(wxCommandEvent& event)
+{
+    wxGetApp().m_snrSlow = m_ckboxSNR->GetValue();
+    setsnrBeta(wxGetApp().m_snrSlow);
+    //printf("m_snrSlow: %d\n", (int)wxGetApp().m_snrSlow);
 }
 
 //-------------------------------------------------------------------------
@@ -1219,7 +1264,9 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
         g_pFDMDV  = fdmdv_create();
         g_pCodec2 = codec2_create(CODEC2_MODE_1400);
         g_State = 0;
-        printf("g_stats.snr: %f\n", g_stats.snr_est);
+        g_snr = 0.0;
+
+        //printf("g_stats.snr: %f\n", g_stats.snr_est);
 
         // attempt to start sound cards and tx/rx processing
 
@@ -1586,19 +1633,6 @@ void MainFrame::startRxStream()
 }
 
 
-//----------------------------------------------------------------
-// update average of each spectrum point
-//----------------------------------------------------------------
-void MainFrame::averageData(float mag_dB[])
-{
-    int i;
-
-    for(i = 0; i < FDMDV_NSPEC; i++)
-    {
-        g_avmag[i] = (1.0 - BETA) * g_avmag[i] + BETA * mag_dB[i];
-    }
-}
-
 // returns number of output samples generated by resampling
 
 int resample(SRC_STATE *src,
@@ -1734,6 +1768,11 @@ void txRxProcessing()
         else {
             memset(out8k_short, 0, sizeof(short)*N8);
             fifo_read(cbData->rxoutfifo, out8k_short, N8);
+        }
+        
+        if (g_SquelchActive && (g_SquelchLevel > g_snr)) {
+            //printf("g_SquelchLevel: %f g_snr: %f\n", g_SquelchLevel, g_snr);
+            memset(out8k_short, 0, sizeof(short)*N8);
         }
 
         resample_for_plot(g_plotSpeechOutFifo, out8k_short, N8);
@@ -1960,7 +1999,7 @@ void per_frame_rx_processing(
         // Average rx spectrum data using a simple IIR low pass filter
         for(i = 0; i < FDMDV_NSPEC; i++)
         {
-            g_avmag[i] = (1.0 - BETA) * g_avmag[i] + BETA * rx_spec[i];
+            g_avmag[i] = BETA * g_avmag[i] + (1.0 - BETA) * rx_spec[i];
         }
 
         //
@@ -1984,7 +2023,7 @@ void per_frame_rx_processing(
                     output_buf[i] = 0;
                 fifo_write(output_fifo, output_buf, N8);
 
-                if((g_stats.fest_coarse_fine == 1) && (g_stats.snr_est > 3.0))
+                if(g_stats.fest_coarse_fine == 1)
                 {
                     next_state = 1;
                 }

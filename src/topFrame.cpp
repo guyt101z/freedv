@@ -186,15 +186,18 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     //------------------------------
     // Box for S/N ratio (Numeric)
     //------------------------------
-    //wxBoxSizer* bSizer29;
-    //bSizer29 = new wxBoxSizer(wxVERTICAL);
+
     m_textSNR = new wxStaticText(this, wxID_ANY, wxT(" 0.0"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE);
-    //m_textSNR = new wxStaticText(this, wxID_ANY, wxEmptyString, wxPoint(-1,-1), wxSize(35,25), wxTE_READONLY);
-    //m_textSNR->SetToolTip(_("Show SNR ratio numerically."));
-    //m_textSNR->SetMinSize(wxSize(35,25));
-    //bSizer29->Add(m_textSNR, 0, wxALIGN_CENTER|wxALL, 1);
-    //snrSizer->Add(bSizer29, 0, wxEXPAND, 1);
     snrSizer->Add(m_textSNR, 0, wxALIGN_CENTER_HORIZONTAL, 1);
+
+    //------------------------------
+    // S/N ratio slow Checkbox
+    //------------------------------
+
+    m_ckboxSNR = new wxCheckBox(this, wxID_ANY, _("Slow"), wxDefaultPosition, wxDefaultSize, wxCHK_2STATE);
+    m_ckboxSNR->SetToolTip(_("Smooth but slow SNR estimation"));
+    snrSizer->Add(m_ckboxSNR, 0, wxALIGN_CENTER_HORIZONTAL, 5);
+
     leftSizer->Add(snrSizer, 2, wxALIGN_CENTER_HORIZONTAL|wxEXPAND|wxALL, 1);
 
     //------------------------------
@@ -206,6 +209,7 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     m_gaugeLevel->SetToolTip(_("Display signal level."));
     levelSizer->Add(m_gaugeLevel, 1, wxALIGN_CENTER_HORIZONTAL|wxALL, 10);
     leftSizer->Add(levelSizer, 2, wxALIGN_CENTER|wxALL|wxEXPAND, 1);
+
     bSizer1->Add(leftSizer, 0, wxALL|wxEXPAND, 5);
 
     //=====================================================
@@ -465,6 +469,8 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     m_sliderSQ->Connect(wxEVT_SCROLL_CHANGED, wxScrollEventHandler(TopFrame::OnCmdSliderScrollChanged), NULL, this);
     m_sliderSQ->Connect(wxEVT_SCROLL_TOP, wxScrollEventHandler(TopFrame::OnSliderScrollTop), NULL, this);
     m_ckboxSQ->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(TopFrame::OnCheckSQClick), NULL, this);
+
+    m_ckboxSNR->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(TopFrame::OnCheckSNRClick), NULL, this);
 
     m_togBtnOnOff->Connect(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler(TopFrame::OnTogBtnOnOff), NULL, this);
 #ifdef UNIMPLEMENTED

@@ -83,6 +83,7 @@ class TopFrame : public wxFrame
         wxMenu* help;
         wxGauge* m_gaugeSNR;
         wxStaticText* m_textSNR;
+        wxCheckBox* m_ckboxSNR;
         wxGauge* m_gaugeLevel;
         wxTextCtrl* m_txtCtrl;
         wxSlider* m_sliderSQ;
@@ -137,6 +138,7 @@ class TopFrame : public wxFrame
         virtual void OnCmdSliderScrollChanged( wxScrollEvent& event ) { event.Skip(); }
         virtual void OnSliderScrollTop( wxScrollEvent& event ) { event.Skip(); }
         virtual void OnCheckSQClick( wxCommandEvent& event ) { event.Skip(); }
+        virtual void OnCheckSNRClick( wxCommandEvent& event ) { event.Skip(); }
 
         virtual void OnTogBtnLoopRx( wxCommandEvent& event ) { event.Skip(); }
         virtual void OnTogBtnLoopTx( wxCommandEvent& event ) { event.Skip(); }

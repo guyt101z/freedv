@@ -22,7 +22,8 @@
 #include "wx/wx.h"
 #include "fdmdv2_main.h"
 
-extern float g_avmag[]; // magnitude spectrum passed in to draw() 
+extern float g_avmag[];                 // av mag spec passed in to draw() 
+void fdmdv2_clickTune(float frequency); // callback to pass new click freq
 
 BEGIN_EVENT_TABLE(PlotWaterfall, PlotPanel)
     EVT_PAINT           (PlotWaterfall::OnPaint)
@@ -236,7 +237,7 @@ void PlotWaterfall::drawGraticule(wxAutoBufferedPaintDC& dc)
     // Horizontal gridlines
 
     dc.SetPen(m_penDotDash);
-    for(time=0; time<=WATERFALL_SECS_Y; time++) {
+    for(time=0; time<=WATERFALL_SECS_Y; time+=WATERFALL_SECS_STEP) {
 	y = m_rGrid.GetHeight() - time*time_s_to_py;
 	y += PLOT_BORDER;
 	dc.DrawLine(PLOT_BORDER + XLEFT_OFFSET, y, 
@@ -255,7 +256,7 @@ void PlotWaterfall::plotPixelData()
 {
     float       spec_index_per_px;
     float       intensity_per_dB;
-    int         px_per_sec;
+    float       px_per_sec;
     int         index;
     int         dy;
     int         dy_blocks;

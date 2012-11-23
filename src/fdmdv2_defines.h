@@ -31,11 +31,12 @@
 #define MIN_MAG_DB        -40.0     // min of spectrogram/waterfall magnitude axis
 #define MAX_MAG_DB          0.0     // max of spectrogram/waterfall magnitude axis
 #define STEP_MAG_DB         5.0     // magnitude axis step
-#define BETA                0.1     // constant for time averaging spectrum data
+#define BETA                0.9     // constant for time averaging spectrum data
 #define MIN_F_HZ            0       // min freq on Waterfall and Spectrum
 #define MAX_F_HZ            4000    // max freq on Waterfall and Spectrum
 #define STEP_F_HZ           500     // freq step on Waterfall and Spectrum graticule
 #define WATERFALL_SECS_Y    5       // number of seconds respresented by y axis of waterfall
+#define WATERFALL_SECS_STEP 5       // graticule y axis steps of waterfall
 #define DT                  0.1     // time between real time graphing updates
 #define FS                  8000    // FDMDV modem sample rate
 
@@ -69,6 +70,8 @@
 
 // Squelch
 #define SQ_DEFAULT_SNR      4.0
+
+#define SNRSLOW_BETA        0.5                           // time constant for slow SNR for display
 
 enum
 {

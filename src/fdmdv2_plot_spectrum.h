@@ -46,6 +46,4 @@ class PlotSpectrum : public PlotPanel
         DECLARE_EVENT_TABLE()
 };
 
-void fdmdv2_clickTune(float frequency);
-
 #endif //__FDMDV2_PLOT_SPECTRUM__

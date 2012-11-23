@@ -126,6 +126,8 @@ class MainApp : public wxApp
         wxString            m_recFileFromRadioPath;
         unsigned int        m_recFileFromRadioSecs;
 
+        bool                m_snrSlow;
+
         int                 m_show_wf;
         int                 m_show_spect;
         int                 m_show_scatter;
@@ -269,12 +271,14 @@ class MainFrame : public TopFrame
                              int soundCard, int sampleRate, int inputChannels);
 
  protected:
+
+        void setsnrBeta(bool snrSlow);
+
         // protected event handlers
         virtual void OnCloseFrame(wxCloseEvent& event);
         virtual void OnExitClick(wxCommandEvent& event);
         //void OnQuit(wxCommandEvent& event);
 
-        void averageData(float mag_dB[]);
         void startTxStream();
         void startRxStream();
         void stopTxStream();
@@ -315,6 +319,7 @@ class MainFrame : public TopFrame
         void OnCmdSliderScrollChanged( wxScrollEvent& event );
         void OnSliderScrollTop( wxScrollEvent& event );
         void OnCheckSQClick( wxCommandEvent& event );
+        void OnCheckSNRClick( wxCommandEvent& event );
 
         // Toggle Buttons
         void OnTogBtnSplitClick(wxCommandEvent& event);
@@ -353,6 +358,8 @@ class MainFrame : public TopFrame
         bool        m_useMemory;
         wxTextCtrl* m_tc;
         int         m_zoom;
+
+        float       m_snrBeta;
 };
 
 void resample_for_plot(struct FIFO *plotFifo, short buf[], int length);
