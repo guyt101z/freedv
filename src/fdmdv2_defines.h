@@ -77,4 +77,9 @@ enum
     ID_PAINT_BG
 };
 
+// Codec 2 LPC Post Filter defaults, from codec-dev/src/quantise.c
+
+#define CODEC2_LPC_PF_GAMMA 0.5
+#define CODEC2_LPC_PF_BETA  0.2
+
 #endif  //__FDMDV2_DEFINES__

@@ -300,10 +300,15 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     wxGetApp().m_recFileFromRadioPath = pConfig->Read("/File/recFileFromRadioPath", wxT(""));
     wxGetApp().m_recFileFromRadioSecs = pConfig->Read("/File/recFileFromRadioSecs", 30);
 
-    bool slow = false;
+    bool slow = false; // prevents compile error when using default bool
     wxGetApp().m_snrSlow = pConfig->Read("/Audio/snrSlow", slow);
-    //printf("wxGetApp().m_snrSlow %d\n", (int)wxGetApp().m_snrSlow);
 
+    bool t = true;     // prevents compile error when using default bool
+    wxGetApp().m_codec2LPCPostFilterEnable     = pConfig->Read(wxT("/Filter/codec2LPCPostFilterEnable"),    t);
+    wxGetApp().m_codec2LPCPostFilterBassBoost  = pConfig->Read(wxT("/Filter/codec2LPCPostFilterBassBoost"), t);
+    wxGetApp().m_codec2LPCPostFilterGamma      = pConfig->Read(wxT("/Filter/codec2LPCPostFilterGamma"),     CODEC2_LPC_PF_GAMMA);
+    wxGetApp().m_codec2LPCPostFilterBeta       = pConfig->Read(wxT("/Filter/codec2LPCPostFilterBeta"),      CODEC2_LPC_PF_BETA);
+    
     pConfig->SetPath(wxT("/"));
 
 //    this->Connect(m_menuItemHelpUpdates->GetId(), wxEVT_UPDATE_UI, wxUpdateUIEventHandler(TopFrame::OnHelpCheckUpdatesUI));
@@ -1011,6 +1016,22 @@ void MainFrame::OnToolsAudio(wxCommandEvent& event)
     wxUnusedVar(event);
     int rv = 0;
     AudioOptsDialog *dlg = new AudioOptsDialog(NULL);
+    rv = dlg->ShowModal();
+    if(rv == wxID_OK)
+    {
+        dlg->ExchangeData(EXCHANGE_DATA_OUT);
+    }
+    delete dlg;
+}
+
+//-------------------------------------------------------------------------
+// OnToolsFilter()
+//-------------------------------------------------------------------------
+void MainFrame::OnToolsFilter(wxCommandEvent& event)
+{
+    wxUnusedVar(event);
+    int rv = 0;
+    FilterDlg *dlg = new FilterDlg(NULL);
     rv = dlg->ShowModal();
     if(rv == wxID_OK)
     {

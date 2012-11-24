@@ -105,6 +105,8 @@ class TopFrame : public wxFrame
         virtual void OnExit( wxCommandEvent& event ) { event.Skip(); }
         virtual void OnToolsAudio( wxCommandEvent& event ) { event.Skip(); }
         virtual void OnToolsAudioUI( wxUpdateUIEvent& event ) { event.Skip(); }
+        virtual void OnToolsFilter( wxCommandEvent& event ) { event.Skip(); }
+        virtual void OnToolsFilterUI( wxUpdateUIEvent& event ) { event.Skip(); }
         virtual void OnToolsComCfg( wxCommandEvent& event ) { event.Skip(); }
         virtual void OnToolsComCfgUI( wxUpdateUIEvent& event ) { event.Skip(); }
         virtual void OnPlayFileToMicIn( wxCommandEvent& event ) { event.Skip(); }

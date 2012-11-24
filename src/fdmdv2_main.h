@@ -60,6 +60,7 @@
 #include "sndfile.h"
 #include "portaudio.h"
 #include "dlg_audiooptions.h"
+#include "dlg_filter.h"
 
 #define _USE_TIMER              1
 #define _USE_ONIDLE             1
@@ -127,6 +128,12 @@ class MainApp : public wxApp
 
         bool                m_snrSlow;
 
+        // Codec 2 Post Filter
+        bool                m_codec2LPCPostFilterEnable;
+        bool                m_codec2LPCPostFilterBassBoost;
+        float               m_codec2LPCPostFilterGamma;
+        float               m_codec2LPCPostFilterBeta;
+        
         int                 m_show_wf;
         int                 m_show_spect;
         int                 m_show_scatter;
@@ -288,6 +295,7 @@ class MainFrame : public TopFrame
         void OnToolsAudioUI( wxUpdateUIEvent& event );
         void OnToolsComCfg( wxCommandEvent& event );
         void OnToolsComCfgUI( wxUpdateUIEvent& event );
+        void OnToolsFilter( wxCommandEvent& event );
 
         void OnPlayFileToMicIn( wxCommandEvent& event );
         void OnRecFileFromRadio( wxCommandEvent& event );
