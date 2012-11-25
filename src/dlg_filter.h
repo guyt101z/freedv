@@ -30,19 +30,19 @@
 class FilterDlg : public wxDialog
 {
     public:
-        FilterDlg( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("Filter"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 399,354 ), long style = wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER );
+        FilterDlg( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("Filter"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 400,250 ), long style = wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER );
         ~FilterDlg();
 
         void    ExchangeData(int inout);
 
     protected:
         // Handlers for events.
-        void    OnListItemSelected(wxListEvent& event);
         void    OnCancel(wxCommandEvent& event);
         void    OnOK(wxCommandEvent& event);
         void    OnClose(wxCloseEvent& event);
         void    OnInitDialog(wxInitDialogEvent& event);
-        void    OnApply(wxCommandEvent& event);
+        void    OnBetaScroll(wxScrollEvent& event);
+        void    OnGammaScroll(wxScrollEvent& event);
 
         wxStaticText* m_staticText8;
         wxCheckBox*   m_codec2LPCPostFilterEnable;
@@ -50,8 +50,10 @@ class FilterDlg : public wxDialog
         wxCheckBox*   m_codec2LPCPostFilterBassBoost;
         wxStaticText* m_staticText91;
         wxSlider*     m_codec2LPCPostFilterBeta;
+        wxStaticText* m_staticTextBeta;
         wxStaticText* m_staticText911;
         wxSlider*     m_codec2LPCPostFilterGamma;
+        wxStaticText* m_staticTextGamma;
 
         wxStdDialogButtonSizer* m_sdbSizer5;
         wxButton*     m_sdbSizer5OK;
