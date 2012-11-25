@@ -69,6 +69,8 @@
 
 #define SNRSLOW_BETA        0.5                           // time constant for slow SNR for display
 
+#define MAX_TXID            1024
+
 enum
 {
     ID_ROTATE_LEFT = wxID_HIGHEST + 1,

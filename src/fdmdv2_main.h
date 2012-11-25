@@ -62,6 +62,7 @@
 #include "portaudio.h"
 #include "dlg_audiooptions.h"
 #include "dlg_filter.h"
+#include "varicode.h"
 
 #define _USE_TIMER              1
 #define _USE_ONIDLE             1

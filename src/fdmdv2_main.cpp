@@ -48,6 +48,7 @@ int   g_analog;
 int   g_split;
 int   g_tx;
 float g_snr;
+char  g_txid[MAX_TXID];
 
 // tx/rx processing states
 int                 g_nRxIn = FDMDV_NOM_SAMPLES_PER_FRAME;
@@ -313,7 +314,7 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     pConfig->SetPath(wxT("/"));
 
 //    this->Connect(m_menuItemHelpUpdates->GetId(), wxEVT_UPDATE_UI, wxUpdateUIEventHandler(TopFrame::OnHelpCheckUpdatesUI));
-    m_togRxID->Connect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnRxIDUI), NULL, this);
+    //m_togRxID->Connect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnRxIDUI), NULL, this);
     m_togTxID->Connect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnTxIDUI), NULL, this);
     m_togBtnOnOff->Connect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnOnOffUI), NULL, this);
     m_togBtnSplit->Connect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnSplitClickUI), NULL, this);
@@ -322,7 +323,7 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     m_btnTogTX->Connect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnTXClickUI), NULL, this);
 
     m_togBtnSplit->Disable();
-    m_togRxID->Disable();
+    //m_togRxID->Disable();
     m_togTxID->Disable();
     m_togBtnAnalog->Disable();
     //m_togBtnALC->Disable();
@@ -438,7 +439,7 @@ MainFrame::~MainFrame()
         pConfig->Write(wxT("/Audio/snrSlow"), wxGetApp().m_snrSlow);
     }
 
-    m_togRxID->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnRxIDUI), NULL, this);
+    //m_togRxID->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnRxIDUI), NULL, this);
     m_togTxID->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnTxIDUI), NULL, this);
     m_togBtnOnOff->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnOnOffUI), NULL, this);
     m_togBtnSplit->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnSplitClickUI), NULL, this);
@@ -731,6 +732,9 @@ void MainFrame::OnTogBtnRxID(wxCommandEvent& event)
 //-------------------------------------------------------------------------
 void MainFrame::OnTogBtnTxID(wxCommandEvent& event)
 {
+    printf("MainFrame::OnTogBtnTxID");
+    wxString txid = m_togTxID.GetValue();
+    strncpy(g_txid, (const char*) txid.mb_str(wxConvUTF8), MAX_TXID-1);
     event.Skip();
 }
 
@@ -1003,7 +1007,7 @@ void MainFrame::OnExit(wxCommandEvent& event)
         stopRxStream();
     }
     m_togBtnSplit->Disable();
-    m_togRxID->Disable();
+    //m_togRxID->Disable();
     m_togTxID->Disable();
     m_togBtnAnalog->Disable();
     //m_togBtnALC->Disable();
@@ -1128,11 +1132,13 @@ void MainFrame::OnHelpAbout(wxCommandEvent& event)
 
 #ifdef TRY_WX_ABOUT
 
-    // DR: I tried this but I like out home made dialog better
+    // DR: I tried this but I like our home made dialog better It
+    // would be nice to have a proper hyperlink, need a custom dialog
+    // for that
 
     wxAboutDialogInfo aboutInfo;
     aboutInfo.SetName("FreeDV");
-    aboutInfo.SetVersion(wxT("svn revision: %s\n") + svnLatestRev, SVN_REV);
+    aboutInfo.SetVersion(wxT("svn revision: %s\n") + svnLatestRev, SVN_REVISION);
     aboutInfo.SetDescription(_("Open Source Narrow Band Digital Voice over Radio"));
     aboutInfo.SetCopyright("Copyright (C) 2012");
     aboutInfo.SetWebSite("http://freedv.org");
@@ -1155,7 +1161,7 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
     if (startStop.IsSameAs("Start")) {
 
         m_togBtnSplit->Enable();
-        m_togRxID->Enable();
+        //m_togRxID->Enable();
         m_togTxID->Enable();
         m_togBtnAnalog->Enable();
         m_btnTogTX->Enable();
@@ -1205,7 +1211,7 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
         codec2_destroy(g_pCodec2);
 
         m_togBtnSplit->Disable();
-        m_togRxID->Disable();
+        //m_togRxID->Disable();
         m_togTxID->Disable();
         m_togBtnAnalog->Disable();
         m_btnTogTX->Disable();

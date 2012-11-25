@@ -51,13 +51,13 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     m_menuItemAudio = new wxMenuItem(tools, wxID_ANY, wxString(_("&Audio Config")) , wxEmptyString, wxITEM_NORMAL);
     tools->Append(m_menuItemAudio);
 
-    wxMenuItem* m_menuItemFilter;
-    m_menuItemFilter = new wxMenuItem(tools, wxID_ANY, wxString(_("&Filter")) , wxEmptyString, wxITEM_NORMAL);
-    tools->Append(m_menuItemFilter);
-
     wxMenuItem* m_menuItemRigCtrlCfg;
     m_menuItemRigCtrlCfg = new wxMenuItem(tools, wxID_ANY, wxString(_("&PTT Config")) , wxEmptyString, wxITEM_NORMAL);
     tools->Append(m_menuItemRigCtrlCfg);
+
+    wxMenuItem* m_menuItemFilter;
+    m_menuItemFilter = new wxMenuItem(tools, wxID_ANY, wxString(_("&Filter")) , wxEmptyString, wxITEM_NORMAL);
+    tools->Append(m_menuItemFilter);
 
     wxMenuItem* m_menuItemCaptTxInStream;
     m_menuItemCaptTxInStream = new wxMenuItem(tools, wxID_ANY, wxString(_("&Capture Tx Input Stream")), wxEmptyString, wxITEM_NORMAL);
@@ -158,8 +158,10 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     lowerSizer = new wxBoxSizer(wxHORIZONTAL);
     wxBoxSizer* bSizer15;
     bSizer15 = new wxBoxSizer(wxVERTICAL);
-    m_txtCtrl = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0);
-    bSizer15->Add(m_txtCtrl, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL|wxEXPAND, 5);
+    m_txtCtrlTx = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0);
+    bSizer15->Add(m_txtCtrlTx, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL|wxEXPAND, 5);
+    m_txtCtrlRx = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_READONLY);
+    bSizer15->Add(m_txtCtrlRx, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL|wxEXPAND, 5);
     lowerSizer->Add(bSizer15, 1, wxEXPAND, 5);
     wxBoxSizer* bSizer141;
     bSizer141 = new wxBoxSizer(wxHORIZONTAL);
@@ -168,10 +170,12 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     // These are the buttons that autosend the userid (?)
     //=====================================================
 
+#ifdef UNIMPLEMENTED
     // RxID
     //---------
     m_togRxID = new wxToggleButton(this, wxID_ANY, _("RxID"), wxDefaultPosition, wxDefaultSize, 0);
     bSizer141->Add(m_togRxID, 0, wxALIGN_CENTER_VERTICAL|wxALIGN_LEFT|wxALL|wxFIXED_MINSIZE, 5);
+#endif
 
     // TxID
     //---------
@@ -352,7 +356,7 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     this->Connect(m_menuItemHelpUpdates->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(TopFrame::OnHelpCheckUpdates));
     this->Connect(m_menuItemHelpUpdates->GetId(), wxEVT_UPDATE_UI, wxUpdateUIEventHandler(TopFrame::OnHelpCheckUpdatesUI));
     this->Connect(m_menuItemAbout->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(TopFrame::OnHelpAbout));
-    m_togRxID->Connect(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler(TopFrame::OnTogBtnRxID), NULL, this);
+    //m_togRxID->Connect(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler(TopFrame::OnTogBtnRxID), NULL, this);
     m_togTxID->Connect(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler(TopFrame::OnTogBtnTxID), NULL, this);
     m_sliderSQ->Connect(wxEVT_SCROLL_TOP, wxScrollEventHandler(TopFrame::OnCmdSliderScroll), NULL, this);
     m_sliderSQ->Connect(wxEVT_SCROLL_BOTTOM, wxScrollEventHandler(TopFrame::OnCmdSliderScroll), NULL, this);
@@ -402,7 +406,7 @@ TopFrame::~TopFrame()
     this->Disconnect(wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(TopFrame::OnHelpCheckUpdates));
     this->Disconnect(wxID_ANY, wxEVT_UPDATE_UI, wxUpdateUIEventHandler(TopFrame::OnHelpCheckUpdatesUI));
     this->Disconnect(ID_ABOUT, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(TopFrame::OnHelpAbout));
-    m_togRxID->Disconnect(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler(TopFrame::OnTogBtnRxID), NULL, this);
+    //m_togRxID->Disconnect(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler(TopFrame::OnTogBtnRxID), NULL, this);
     m_togTxID->Disconnect(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler(TopFrame::OnTogBtnTxID), NULL, this);
     m_sliderSQ->Disconnect(wxEVT_SCROLL_TOP, wxScrollEventHandler(TopFrame::OnCmdSliderScroll), NULL, this);
     m_sliderSQ->Disconnect(wxEVT_SCROLL_BOTTOM, wxScrollEventHandler(TopFrame::OnCmdSliderScroll), NULL, this);

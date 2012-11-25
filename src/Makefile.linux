@@ -15,7 +15,7 @@ SVN_REVISION=$(shell svnversion)
 CODEC2_INC=-I$(CODEC2_PATH)/src
 CODEC2_LIB=$(CODEC2_PATH)/src/.libs/libcodec2.a
 
-CPP_FLAGS = $(WX_CPPFLAGS) $(CODEC2_INC) -I. -g -Wall -O3 -DSVN_REV=\"$(SVN_REVISION)\"
+CPP_FLAGS = $(WX_CPPFLAGS) $(CODEC2_INC) -I. -g -Wall -O3 -DSVN_REVISION=\"$(SVN_REVISION)\"
 LIBS = $(WX_LIBS) $(CODEC2_LIB) -lm -lportaudiocpp -lpthread -lsndfile /usr/lib/libsamplerate.so.0
 
 OBJS = topFrame.o \
@@ -30,7 +30,7 @@ dlg_audiooptions.o \
 dlg_comports.o \
 dlg_filter.o
 
-HDRS = dlg_audiooptions.h dlg_comports.h dlg_filter.h fdmdv2_main.h fdmdv2_defines.h fdmdv2_plot.h fdmdv2_plot_scalar.h fdmdv2_plot_waterfall_linux.h fdmdv2_plot_scatter.h fdmdv2_plot_spectrum.h fdmdv2_pa_wrapper.h
+HDRS = dlg_audiooptions.h dlg_comports.h dlg_filter.h fdmdv2_main.h fdmdv2_defines.h fdmdv2_plot.h fdmdv2_plot_scalar.h fdmdv2_plot_waterfall_linux.h fdmdv2_plot_scatter.h fdmdv2_plot_spectrum.h fdmdv2_pa_wrapper.h topFrame.h
 
 all: freedv
 
