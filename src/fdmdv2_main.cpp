@@ -732,9 +732,9 @@ void MainFrame::OnTogBtnRxID(wxCommandEvent& event)
 //-------------------------------------------------------------------------
 void MainFrame::OnTogBtnTxID(wxCommandEvent& event)
 {
-    printf("MainFrame::OnTogBtnTxID");
-    wxString txid = m_togTxID.GetValue();
+    wxString txid = m_txtCtrlTx->GetValue();
     strncpy(g_txid, (const char*) txid.mb_str(wxConvUTF8), MAX_TXID-1);
+    printf("MainFrame::OnTogBtnTxID, sending: %s\n", g_txid);
     event.Skip();
 }
 
