@@ -56,19 +56,19 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     tools->Append(m_menuItemFilter);
 
     wxMenuItem* m_menuItemRigCtrlCfg;
-    m_menuItemRigCtrlCfg = new wxMenuItem(tools, wxID_ANY, wxString(_("Rig Control Config")) , wxEmptyString, wxITEM_NORMAL);
+    m_menuItemRigCtrlCfg = new wxMenuItem(tools, wxID_ANY, wxString(_("&PTT Config")) , wxEmptyString, wxITEM_NORMAL);
     tools->Append(m_menuItemRigCtrlCfg);
 
     wxMenuItem* m_menuItemCaptTxInStream;
-    m_menuItemCaptTxInStream = new wxMenuItem(tools, wxID_ANY, wxString(_("Capture Tx Input Stream")), wxEmptyString, wxITEM_NORMAL);
+    m_menuItemCaptTxInStream = new wxMenuItem(tools, wxID_ANY, wxString(_("&Capture Tx Input Stream")), wxEmptyString, wxITEM_NORMAL);
 
     wxMenuItem* m_menuItemPlayFileToMicIn;
-    m_menuItemPlayFileToMicIn = new wxMenuItem(tools, wxID_ANY, wxString(_("Start/Stop Play File to Mic In")) , wxEmptyString, wxITEM_NORMAL);
+    m_menuItemPlayFileToMicIn = new wxMenuItem(tools, wxID_ANY, wxString(_("&Start/Stop Play File to Mic In")) , wxEmptyString, wxITEM_NORMAL);
     g_playFileToMicInEventId = m_menuItemPlayFileToMicIn->GetId();
     tools->Append(m_menuItemPlayFileToMicIn);
 
     wxMenuItem* m_menuItemRecFileFromRadio;
-    m_menuItemRecFileFromRadio = new wxMenuItem(tools, wxID_ANY, wxString(_("Start/Stop Record File from Radio")) , wxEmptyString, wxITEM_NORMAL);
+    m_menuItemRecFileFromRadio = new wxMenuItem(tools, wxID_ANY, wxString(_("S&tart/Stop Record File from Radio")) , wxEmptyString, wxITEM_NORMAL);
     g_recFileFromRadioEventId = m_menuItemRecFileFromRadio->GetId();
     tools->Append(m_menuItemRecFileFromRadio);
 
@@ -110,14 +110,12 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     //------------------------------
     // Box for S/N ratio (Numeric)
     //------------------------------
-
     m_textSNR = new wxStaticText(this, wxID_ANY, wxT(" 0.0"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE);
     snrSizer->Add(m_textSNR, 0, wxALIGN_CENTER_HORIZONTAL, 1);
 
     //------------------------------
     // S/N ratio slow Checkbox
     //------------------------------
-
     m_ckboxSNR = new wxCheckBox(this, wxID_ANY, _("Slow"), wxDefaultPosition, wxDefaultSize, wxCHK_2STATE);
     m_ckboxSNR->SetToolTip(_("Smooth but slow SNR estimation"));
     snrSizer->Add(m_ckboxSNR, 0, wxALIGN_CENTER_HORIZONTAL, 5);
@@ -204,7 +202,6 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     //------------------------------
     // Squelch Level static text box
     //------------------------------
-
     m_textSQ = new wxStaticText(this, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE);
 
     sbSizer3->Add(m_textSQ, 0, wxALIGN_CENTER_HORIZONTAL, 0);
@@ -212,13 +209,10 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     //------------------------------
     // Squelch Toggle Checkbox
     //------------------------------
-
     m_ckboxSQ = new wxCheckBox(this, wxID_ANY, _(""), wxDefaultPosition, wxDefaultSize, wxCHK_2STATE);
     m_ckboxSQ->SetToolTip(_("Activate/Deactivate Squelch"));
 
     sbSizer3->Add(m_ckboxSQ, 0, wxALIGN_CENTER_HORIZONTAL, 0);
-
-
     rightSizer->Add(sbSizer3, 2, wxALIGN_CENTER_HORIZONTAL|wxEXPAND, 0);
 
     //------------------------------

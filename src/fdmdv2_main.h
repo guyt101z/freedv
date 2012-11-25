@@ -42,6 +42,7 @@
 #include <wx/sound.h>
 #include <wx/url.h>
 #include <wx/sstream.h>
+#include <wx/listbox.h>
 
 #include <samplerate.h>
 

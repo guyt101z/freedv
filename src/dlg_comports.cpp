@@ -29,8 +29,13 @@ ComPortsDlg::ComPortsDlg(wxWindow* parent, wxWindowID id, const wxString& title,
 {
     this->SetSizeHints(wxDefaultSize, wxDefaultSize);
     this->SetSizeHints(wxDefaultSize, wxDefaultSize);
-//    m_serialports = HdwPortList();
-//    m_serialports.setType(PORT_TYPE_SERIAL);
+    wxStaticText* m_staticText8;
+    wxStaticText* m_staticText9;
+    wxStaticText* m_staticText91;
+    wxStaticText* m_staticText911;
+    wxStaticText* m_staticText912;
+    wxStaticText* m_staticText913;
+    wxStdDialogButtonSizer* m_sdbSizer5;
 
     wxBoxSizer* bSizer30;
     bSizer30 = new wxBoxSizer(wxVERTICAL);
@@ -42,22 +47,23 @@ ComPortsDlg::ComPortsDlg(wxWindow* parent, wxWindowID id, const wxString& title,
     m_staticText8->Wrap(-1);
     gSizer3->Add(m_staticText8, 0, wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT|wxALL, 2);
 
-    m_listCtrlPortSelect = new wxListCtrl(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLC_ICON|wxLC_SINGLE_SEL);
-    gSizer3->Add(m_listCtrlPortSelect, 2, wxALL|wxEXPAND, 2);
-
+    m_listCtrlPorts = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+    gSizer3->Add(m_listCtrlPorts, 2, wxALL|wxEXPAND, 2);
+/*
     m_staticText9 = new wxStaticText(this, wxID_ANY, _("Use Port:"), wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT);
     m_staticText9->Wrap(-1);
     gSizer3->Add(m_staticText9, 1, wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT|wxALL, 2);
 
     m_textRigCtrlPort = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0);
     gSizer3->Add(m_textRigCtrlPort, 1, wxALIGN_CENTER_VERTICAL|wxALL, 2);
+*/
 
     m_staticText91 = new wxStaticText(this, wxID_ANY, _("Buad Rate:"), wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT);
     m_staticText91->Wrap(-1);
     gSizer3->Add(m_staticText91, 1, wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT|wxALL, 2);
 
-    m_textRigCtrlBaud = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0);
-    gSizer3->Add(m_textRigCtrlBaud, 1, wxALIGN_CENTER_VERTICAL|wxALL, 2);
+    m_listCtrlBaudrates = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+    gSizer3->Add(m_listCtrlBaudrates, 2, wxALL|wxEXPAND, 2);
 
     m_staticText911 = new wxStaticText(this, wxID_ANY, _("Data Bits:"), wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT);
     m_staticText911->Wrap(-1);
@@ -72,14 +78,13 @@ ComPortsDlg::ComPortsDlg(wxWindow* parent, wxWindowID id, const wxString& title,
 
     m_textRigCtrlStopbits = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0);
     gSizer3->Add(m_textRigCtrlStopbits, 1, wxALIGN_CENTER_VERTICAL|wxALL, 2);
-
+ 
     m_staticText913 = new wxStaticText(this, wxID_ANY, _("Parity:"), wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT);
     m_staticText913->Wrap(-1);
     gSizer3->Add(m_staticText913, 1, wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT|wxALL, 2);
 
     m_textRigCtrlParity = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0);
     gSizer3->Add(m_textRigCtrlParity, 1, wxALIGN_CENTER_VERTICAL|wxALL, 2);
-
 
     bSizer30->Add(gSizer3, 1, wxALIGN_CENTER_HORIZONTAL|wxALL|wxEXPAND, 5);
 
@@ -94,7 +99,6 @@ ComPortsDlg::ComPortsDlg(wxWindow* parent, wxWindowID id, const wxString& title,
 
     bSizer30->Add(m_sdbSizer5, 0, wxEXPAND, 5);
 
-
     this->SetSizer(bSizer30);
     this->Layout();
 
@@ -106,7 +110,8 @@ ComPortsDlg::ComPortsDlg(wxWindow* parent, wxWindowID id, const wxString& title,
     m_sdbSizer5Apply->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(ComPortsDlg::OnApply), NULL, this);
     m_sdbSizer5Cancel->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(ComPortsDlg::OnCancel), NULL, this);
     m_sdbSizer5OK->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(ComPortsDlg::OnOK), NULL, this);
-    m_listCtrlPortSelect->Connect(wxEVT_COMMAND_LIST_ITEM_SELECTED, wxListEventHandler(ComPortsDlg::OnListItemSelected), NULL, this);
+    m_listCtrlPorts->Connect(wxEVT_COMMAND_LIST_ITEM_SELECTED, wxListEventHandler(ComPortsDlg::OnPortItemSelected), NULL, this);
+    m_listCtrlBaudrates->Connect(wxEVT_COMMAND_LIST_ITEM_SELECTED, wxListEventHandler(ComPortsDlg::OnBaudrateItemSelected), NULL, this);
 }
 
 //-------------------------------------------------------------------------
@@ -116,18 +121,73 @@ ComPortsDlg::~ComPortsDlg()
 {
     // Disconnect Events
     this->Disconnect(wxEVT_INIT_DIALOG, wxInitDialogEventHandler(ComPortsDlg::OnInitDialog));
-    m_listCtrlPortSelect->Disconnect(wxEVT_COMMAND_LIST_ITEM_SELECTED, wxListEventHandler(ComPortsDlg::OnListItemSelected), NULL, this);
+    m_listCtrlPorts->Disconnect(wxEVT_COMMAND_LIST_ITEM_SELECTED, wxListEventHandler(ComPortsDlg::OnPortItemSelected), NULL, this);
+    m_listCtrlBaudrates->Disconnect(wxEVT_COMMAND_LIST_ITEM_SELECTED, wxListEventHandler(ComPortsDlg::OnBaudrateItemSelected), NULL, this);
     m_sdbSizer5Apply->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(ComPortsDlg::OnApply), NULL, this);
     m_sdbSizer5Cancel->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(ComPortsDlg::OnCancel), NULL, this);
     m_sdbSizer5OK->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(ComPortsDlg::OnOK), NULL, this);
 }
 
 //-------------------------------------------------------------------------
-// OnListItemSelected()
+// OnInitDialog()
 //-------------------------------------------------------------------------
-void ComPortsDlg::OnListItemSelected(wxListEvent& event)
+void ComPortsDlg::OnInitDialog(wxInitDialogEvent& event)
 {
-    // TODO: Implement OnListItemSelected
+    populatePortList();
+    ExchangeData(EXCHANGE_DATA_IN);
+}
+
+//-------------------------------------------------------------------------
+// populatePortList()
+//-------------------------------------------------------------------------
+void ComPortsDlg::populatePortList()
+{
+    int i = 0;
+    wxListItem inf;
+    wxString buf;
+    long idx;
+    long baudrates[] = { 110, 300, 1200, 2400, 9600, 19200, 38400, 57600, 115200 };
+    
+    m_listCtrlPorts->Clear();
+    m_listCtrlBaudrates->Clear();
+    for(i = 0; i < 9; i++)
+    {
+        buf.Printf("%u", baudrates[i]);
+        m_listCtrlBaudrates->Append(buf);
+    }
+        
+#ifdef  __WXMSW__
+#define PREDICATE   
+    for(i = 1; i <= 32; i++)
+    {
+        buf.Printf("COM%u:", i);
+        idx = m_listCtrlPorts->Append(buf);
+    }
+    for(i = 33; i <= 128; i++)
+    {
+        buf.Printf("\\\\.\\com%u:", i);
+        idx = m_listCtrlPorts->Append(buf);
+    }
+
+#endif
+
+#ifdef  __WXGTK__
+    for(i = 0; i < 32; i++)
+    {
+        buf.Printf("/dev/ttyS%u", i);
+        idx = m_listCtrlPorts->Append(buf);
+    }
+    for(i = 0; i < 32; i++)
+    {
+        buf.Printf("/dev/ttyUSB%u", i);
+        idx = m_listCtrlPorts->Append(buf);
+    }
+#endif
+
+#ifdef __WXOSX__
+#define MAXPORTS    20
+#endif
+
 }
 
 //-------------------------------------------------------------------------
@@ -136,18 +196,27 @@ void ComPortsDlg::OnListItemSelected(wxListEvent& event)
 void ComPortsDlg::ExchangeData(int inout)
 {
     wxConfigBase *pConfig = wxConfigBase::Get();
+    wxString str;
+    long l;
+    int i;
+    
     if(inout == EXCHANGE_DATA_IN)
     {
-        m_textRigCtrlPort->SetValue(wxGetApp().m_strRigCtrlPort);
-        m_textRigCtrlBaud->SetValue(wxGetApp().m_strRigCtrlBaud);
+        str = wxGetApp().m_strRigCtrlPort;
+        m_listCtrlPorts->SetStringSelection(str);
+
+        str = wxGetApp().m_strRigCtrlBaud;
+        m_listCtrlBaudrates->SetStringSelection(str);
+
         m_textRigCtrlDatabits->SetValue(wxGetApp().m_strRigCtrlDatabits);
         m_textRigCtrlStopbits->SetValue(wxGetApp().m_strRigCtrlStopbits);
         m_textRigCtrlParity->SetValue(wxGetApp().m_strRigCtrlParity);
     }
     if(inout == EXCHANGE_DATA_OUT)
     {
-        wxGetApp().m_strRigCtrlPort             = m_textRigCtrlPort->GetValue();
-        wxGetApp().m_strRigCtrlBaud             = m_textRigCtrlBaud->GetValue();
+        wxGetApp().m_strRigCtrlPort             = m_listCtrlPorts->GetStringSelection();
+        wxGetApp().m_strRigCtrlBaud             = m_listCtrlBaudrates->GetStringSelection();
+
         wxGetApp().m_strRigCtrlDatabits         = m_textRigCtrlDatabits->GetValue();
         wxGetApp().m_strRigCtrlStopbits         = m_textRigCtrlStopbits->GetValue();
         wxGetApp().m_strRigCtrlParity           = m_textRigCtrlParity->GetValue();
@@ -162,6 +231,22 @@ void ComPortsDlg::ExchangeData(int inout)
         pConfig->Flush();
     }
     delete wxConfigBase::Set((wxConfigBase *) NULL);
+}
+
+//-------------------------------------------------------------------------
+// OnPortItemSelected()
+//-------------------------------------------------------------------------
+void ComPortsDlg::OnPortItemSelected(wxListEvent& event)
+{
+    // TODO: Implement OnListItemSelected
+}
+
+//-------------------------------------------------------------------------
+// OnBaudrateItemSelected()
+//-------------------------------------------------------------------------
+void ComPortsDlg::OnBaudrateItemSelected(wxListEvent& event)
+{
+    // TODO: Implement OnListItemSelected
 }
 
 //-------------------------------------------------------------------------
@@ -194,15 +279,6 @@ void ComPortsDlg::OnApply(wxCommandEvent& event)
 void ComPortsDlg::OnClose(wxCloseEvent& event)
 {
     this->EndModal(wxID_OK);
-}
-
-//-------------------------------------------------------------------------
-// OnInitDialog()
-//-------------------------------------------------------------------------
-void ComPortsDlg::OnInitDialog(wxInitDialogEvent& event)
-{
-    ExchangeData(EXCHANGE_DATA_IN);
-//    populateAudioInfo();
 }
 
 /*

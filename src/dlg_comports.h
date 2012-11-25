@@ -38,30 +38,25 @@ class ComPortsDlg : public wxDialog
         ~ComPortsDlg();
 
         void    ExchangeData(int inout);
+        void    populatePortList(void);
         //ArrayOfPorts m_serialports;
 
     protected:
         // Handlers for events.
-        void    OnListItemSelected(wxListEvent& event);
+        void    OnPortItemSelected(wxListEvent& event);
+        void    OnBaudrateItemSelected(wxListEvent& event);
         void    OnCancel(wxCommandEvent& event);
         void    OnOK(wxCommandEvent& event);
         void    OnClose(wxCloseEvent& event);
         void    OnInitDialog(wxInitDialogEvent& event);
         void    OnApply(wxCommandEvent& event);
 
-        wxStaticText* m_staticText8;
-        wxListCtrl* m_listCtrlPortSelect;
-        wxStaticText* m_staticText9;
+        wxListBox*  m_listCtrlPorts;
         wxTextCtrl* m_textRigCtrlPort;
-        wxStaticText* m_staticText91;
-        wxTextCtrl* m_textRigCtrlBaud;
-        wxStaticText* m_staticText911;
+        wxListBox*  m_listCtrlBaudrates;
         wxTextCtrl* m_textRigCtrlDatabits;
-        wxStaticText* m_staticText912;
         wxTextCtrl* m_textRigCtrlStopbits;
-        wxStaticText* m_staticText913;
         wxTextCtrl* m_textRigCtrlParity;
-        wxStdDialogButtonSizer* m_sdbSizer5;
         wxButton* m_sdbSizer5OK;
         wxButton* m_sdbSizer5Apply;
         wxButton* m_sdbSizer5Cancel;

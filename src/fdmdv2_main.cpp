@@ -256,8 +256,8 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
         // Add Speech Output window
 
         m_panelSpeechOut = new PlotScalar((wxFrame*) m_auiNbookCtrl, WAVEFORM_PLOT_TIME, 1.0/WAVEFORM_PLOT_FS, -1, 1, 1, 0.2, "%2.1f", 0);
-       m_auiNbookCtrl->AddPage(m_panelSpeechOut, _("To Spkr/Hdphns"), true, wxNullBitmap);
-       g_plotSpeechOutFifo = fifo_create(2*WAVEFORM_PLOT_BUF);
+        m_auiNbookCtrl->AddPage(m_panelSpeechOut, _("To Spkr/Hdphns"), true, wxNullBitmap);
+        g_plotSpeechOutFifo = fifo_create(2*WAVEFORM_PLOT_BUF);
     }
 
     if(wxGetApp().m_show_timing)
@@ -1125,7 +1125,7 @@ void MainFrame::OnHelpAbout(wxCommandEvent& event)
                 wxT("http://freedv.org\n\n")
                 wxT("GNU Public License V2.1\n\n")
                 wxT("Copyright (c) David Witten KD0EAG and David Rowe VK5DGR\n\n")
-                wxT("svn revision: %s\n") + svnLatestRev, SVN_REV);
+                wxT("svn revision: %s\n") + svnLatestRev, SVN_REVISION);
 
     wxMessageBox(msg, wxT("About"), wxOK | wxICON_INFORMATION, this);
 
