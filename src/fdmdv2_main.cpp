@@ -306,9 +306,10 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     bool t = true;     // prevents compile error when using default bool
     wxGetApp().m_codec2LPCPostFilterEnable     = pConfig->Read(wxT("/Filter/codec2LPCPostFilterEnable"),    t);
     wxGetApp().m_codec2LPCPostFilterBassBoost  = pConfig->Read(wxT("/Filter/codec2LPCPostFilterBassBoost"), t);
-    wxGetApp().m_codec2LPCPostFilterGamma      = pConfig->Read(wxT("/Filter/codec2LPCPostFilterGamma"),     CODEC2_LPC_PF_GAMMA);
-    wxGetApp().m_codec2LPCPostFilterBeta       = pConfig->Read(wxT("/Filter/codec2LPCPostFilterBeta"),      CODEC2_LPC_PF_BETA);
-    
+    wxGetApp().m_codec2LPCPostFilterGamma      = (float)pConfig->Read(wxT("/Filter/codec2LPCPostFilterGamma"),     CODEC2_LPC_PF_GAMMA*100)/100.0;
+    wxGetApp().m_codec2LPCPostFilterBeta       = (float)pConfig->Read(wxT("/Filter/codec2LPCPostFilterBeta"),      CODEC2_LPC_PF_BETA*100)/100.0;
+    //printf("main(): m_codec2LPCPostFilterBeta: %f\n", wxGetApp().m_codec2LPCPostFilterBeta);
+
     pConfig->SetPath(wxT("/"));
 
 //    this->Connect(m_menuItemHelpUpdates->GetId(), wxEVT_UPDATE_UI, wxUpdateUIEventHandler(TopFrame::OnHelpCheckUpdatesUI));
@@ -379,6 +380,7 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
  
     g_tx = 0;
     g_split = 0;
+
 }
 
 //-------------------------------------------------------------------------
@@ -1030,13 +1032,8 @@ void MainFrame::OnToolsAudio(wxCommandEvent& event)
 void MainFrame::OnToolsFilter(wxCommandEvent& event)
 {
     wxUnusedVar(event);
-    int rv = 0;
-    FilterDlg *dlg = new FilterDlg(NULL);
-    rv = dlg->ShowModal();
-    if(rv == wxID_OK)
-    {
-        dlg->ExchangeData(EXCHANGE_DATA_OUT);
-    }
+    FilterDlg *dlg = new FilterDlg(NULL, m_RxRunning);
+    dlg->ShowModal();
     delete dlg;
 }
 
@@ -1168,6 +1165,15 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
 
         g_pFDMDV  = fdmdv_create();
         g_pCodec2 = codec2_create(CODEC2_MODE_1400);
+
+        // init Codec 2 LPC Post Filter
+
+        codec2_set_lpc_post_filter(g_pCodec2, 
+                                   wxGetApp().m_codec2LPCPostFilterEnable, 
+                                   wxGetApp().m_codec2LPCPostFilterBassBoost, 
+                                   wxGetApp().m_codec2LPCPostFilterBeta, 
+                                   wxGetApp().m_codec2LPCPostFilterGamma);
+
         g_State = 0;
         g_snr = 0.0;
 

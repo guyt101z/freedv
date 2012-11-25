@@ -30,7 +30,9 @@
 class FilterDlg : public wxDialog
 {
     public:
-        FilterDlg( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("Filter"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 400,250 ), long style = wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER );
+        FilterDlg( wxWindow* parent, bool running, wxWindowID id = wxID_ANY, const wxString& title = _("Filter"), 
+                   const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 400,250 ), 
+                   long style = wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER );
         ~FilterDlg();
 
         void    ExchangeData(int inout);
@@ -39,10 +41,14 @@ class FilterDlg : public wxDialog
         // Handlers for events.
         void    OnCancel(wxCommandEvent& event);
         void    OnOK(wxCommandEvent& event);
+        void    OnDefault(wxCommandEvent& event);
         void    OnClose(wxCloseEvent& event);
         void    OnInitDialog(wxInitDialogEvent& event);
+
         void    OnBetaScroll(wxScrollEvent& event);
         void    OnGammaScroll(wxScrollEvent& event);
+        void    OnEnable(wxScrollEvent& event);
+        void    OnBassBoost(wxScrollEvent& event);
 
         wxStaticText* m_staticText8;
         wxCheckBox*   m_codec2LPCPostFilterEnable;
@@ -57,8 +63,16 @@ class FilterDlg : public wxDialog
 
         wxStdDialogButtonSizer* m_sdbSizer5;
         wxButton*     m_sdbSizer5OK;
-        wxButton*     m_sdbSizer5Apply;
+        wxButton*     m_sdbSizer5Default;
         wxButton*     m_sdbSizer5Cancel;
+
+     private:
+        bool          m_running;
+        float         m_beta;
+        float         m_gamma;
+        void          setBeta(void);  // sets slider and static text from m_beta
+        void          setGamma(void); // sets slider and static text from m_gamma
+        void          setCodec2(void);
 };
 
 #endif // __FILTER_DIALOG__
