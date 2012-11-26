@@ -50,6 +50,10 @@ class ComPortsDlg : public wxDialog
         void    OnClose(wxCloseEvent& event);
         void    OnInitDialog(wxInitDialogEvent& event);
         void    OnApply(wxCommandEvent& event);
+        void    OnRTSClick(wxCommandEvent& event);
+        void    OnRTSPosClick(wxCommandEvent& event);
+        void    OnDTRClick(wxCommandEvent& event);
+        void    OnDTRPosClick(wxCommandEvent& event);
 
         wxListBox*  m_listCtrlPorts;
         wxTextCtrl* m_textRigCtrlPort;
@@ -57,9 +61,14 @@ class ComPortsDlg : public wxDialog
         wxTextCtrl* m_textRigCtrlDatabits;
         wxTextCtrl* m_textRigCtrlStopbits;
         wxTextCtrl* m_textRigCtrlParity;
-        wxButton* m_sdbSizer5OK;
-        wxButton* m_sdbSizer5Apply;
-        wxButton* m_sdbSizer5Cancel;
+        wxButton*   m_sdbSizer5OK;
+        wxButton*   m_sdbSizer5Apply;
+        wxButton*   m_sdbSizer5Cancel;
+        
+        wxRadioButton *m_rbUseRTS;
+        wxCheckBox    *m_ckRTSPos;
+        wxRadioButton *m_rbUseDTR;
+        wxCheckBox    *m_ckDTRPos;
 };
 
 #endif // __COMPORTS_DIALOG__

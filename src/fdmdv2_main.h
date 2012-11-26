@@ -123,6 +123,10 @@ class MainApp : public wxApp
         wxString            m_strRigCtrlDatabits;
         wxString            m_strRigCtrlStopbits;
         wxString            m_strRigCtrlParity;
+        bool                m_boolUseRTS;
+        bool                m_boolRTSPos;
+        bool                m_boolUseDTR;
+        bool                m_boolDTRPos;
 
         wxString            m_playFileToMicInPath;
         wxString            m_recFileFromRadioPath;

@@ -402,41 +402,45 @@ MainFrame::~MainFrame()
         GetClientSize(&w, &h);
         GetPosition(&x, &y);
         wxLogDebug("x = %d y = %d w = %d h = %d\n", x,y,w,h);
-        pConfig->Write(wxT("/MainFrame/top"),           (long) x);
-        pConfig->Write(wxT("/MainFrame/left"),          (long) y);
-        pConfig->Write(wxT("/MainFrame/width"),         (long) w);
-        pConfig->Write(wxT("/MainFrame/height"),        (long) h);
-        pConfig->Write(wxT("/MainFrame/show_wf"),       wxGetApp().m_show_wf);
-        pConfig->Write(wxT("/MainFrame/show_spect"),    wxGetApp().m_show_spect);
-        pConfig->Write(wxT("/MainFrame/show_scatter"),  wxGetApp().m_show_scatter);
-        pConfig->Write(wxT("/MainFrame/show_timing"),   wxGetApp().m_show_timing);
-        pConfig->Write(wxT("/MainFrame/show_freq"),     wxGetApp().m_show_freq);
-        pConfig->Write(wxT("/MainFrame/show_speech_in"),wxGetApp().m_show_speech_in);
-        pConfig->Write(wxT("/MainFrame/show_speech_out"),wxGetApp().m_show_speech_out);
-        pConfig->Write(wxT("/MainFrame/show_demod_in"),wxGetApp().m_show_demod_in);
+        pConfig->Write(wxT("/MainFrame/top"),               (long) x);
+        pConfig->Write(wxT("/MainFrame/left"),              (long) y);
+        pConfig->Write(wxT("/MainFrame/width"),             (long) w);
+        pConfig->Write(wxT("/MainFrame/height"),            (long) h);
+        pConfig->Write(wxT("/MainFrame/show_wf"),           wxGetApp().m_show_wf);
+        pConfig->Write(wxT("/MainFrame/show_spect"),        wxGetApp().m_show_spect);
+        pConfig->Write(wxT("/MainFrame/show_scatter"),      wxGetApp().m_show_scatter);
+        pConfig->Write(wxT("/MainFrame/show_timing"),       wxGetApp().m_show_timing);
+        pConfig->Write(wxT("/MainFrame/show_freq"),         wxGetApp().m_show_freq);
+        pConfig->Write(wxT("/MainFrame/show_speech_in"),    wxGetApp().m_show_speech_in);
+        pConfig->Write(wxT("/MainFrame/show_speech_out"),   wxGetApp().m_show_speech_out);
+        pConfig->Write(wxT("/MainFrame/show_demod_in"),     wxGetApp().m_show_demod_in);
 
-        pConfig->Write(wxT("/Audio/SquelchActive"),     g_SquelchActive);
-        pConfig->Write(wxT("/Audio/SquelchLevel"),     (int)(g_SquelchLevel*2.0));
+        pConfig->Write(wxT("/Audio/SquelchActive"),         g_SquelchActive);
+        pConfig->Write(wxT("/Audio/SquelchLevel"),          (int)(g_SquelchLevel*2.0));
 
-        pConfig->Write(wxT("/Audio/framesPerBuffer"),        wxGetApp().m_framesPerBuffer);
+        pConfig->Write(wxT("/Audio/framesPerBuffer"),       wxGetApp().m_framesPerBuffer);
 
-        pConfig->Write(wxT("/Audio/soundCard1InDeviceNum"),       g_soundCard1InDeviceNum);
-        pConfig->Write(wxT("/Audio/soundCard1OutDeviceNum"),      g_soundCard1OutDeviceNum);
-        pConfig->Write(wxT("/Audio/soundCard1SampleRate"),        g_soundCard1SampleRate );
+        pConfig->Write(wxT("/Audio/soundCard1InDeviceNum"),   g_soundCard1InDeviceNum);
+        pConfig->Write(wxT("/Audio/soundCard1OutDeviceNum"),  g_soundCard1OutDeviceNum);
+        pConfig->Write(wxT("/Audio/soundCard1SampleRate"),    g_soundCard1SampleRate );
 
-        pConfig->Write(wxT("/Audio/soundCard2InDeviceNum"),       g_soundCard2InDeviceNum);
-        pConfig->Write(wxT("/Audio/soundCard2OutDeviceNum"),      g_soundCard2OutDeviceNum);
-        pConfig->Write(wxT("/Audio/soundCard2SampleRate"),        g_soundCard2SampleRate );
+        pConfig->Write(wxT("/Audio/soundCard2InDeviceNum"),   g_soundCard2InDeviceNum);
+        pConfig->Write(wxT("/Audio/soundCard2OutDeviceNum"),  g_soundCard2OutDeviceNum);
+        pConfig->Write(wxT("/Audio/soundCard2SampleRate"),    g_soundCard2SampleRate );
 
-        pConfig->Write(wxT("/Rig/Port"),                wxGetApp().m_strRigCtrlPort);
-        pConfig->Write(wxT("/Rig/Baud"),                wxGetApp().m_strRigCtrlBaud);
-        pConfig->Write(wxT("/Rig/DataBits"),            wxGetApp().m_strRigCtrlDatabits);
-        pConfig->Write(wxT("/Rig/StopBits"),            wxGetApp().m_strRigCtrlStopbits);
-        pConfig->Write(wxT("/Rig/Parity"),              wxGetApp().m_strRigCtrlParity);
+        pConfig->Write(wxT("/Rig/Port"),                    wxGetApp().m_strRigCtrlPort);
+        pConfig->Write(wxT("/Rig/Baud"),                    wxGetApp().m_strRigCtrlBaud);
+        pConfig->Write(wxT("/Rig/DataBits"),                wxGetApp().m_strRigCtrlDatabits);
+        pConfig->Write(wxT("/Rig/StopBits"),                wxGetApp().m_strRigCtrlStopbits);
+        pConfig->Write(wxT("/Rig/Parity"),                  wxGetApp().m_strRigCtrlParity);
+        pConfig->Write(wxT("/Rig/UseRTS"),                  wxGetApp().m_boolUseRTS);
+        pConfig->Write(wxT("/Rig/RTSPolarity"),             wxGetApp().m_boolRTSPos);
+        pConfig->Write(wxT("/Rig/UseDTR"),                  wxGetApp().m_boolUseDTR);
+        pConfig->Write(wxT("/Rig/DTRPolarity"),             wxGetApp().m_boolDTRPos);
 
-        pConfig->Write(wxT("/File/playFileToMicInPath"), wxGetApp().m_playFileToMicInPath);
-        pConfig->Write(wxT("/File/recFileFromRadioPath"), wxGetApp().m_recFileFromRadioPath);
-        pConfig->Write(wxT("/File/recFileFromRadioSecs"), wxGetApp().m_recFileFromRadioSecs);
+        pConfig->Write(wxT("/File/playFileToMicInPath"),    wxGetApp().m_playFileToMicInPath);
+        pConfig->Write(wxT("/File/recFileFromRadioPath"),   wxGetApp().m_recFileFromRadioPath);
+        pConfig->Write(wxT("/File/recFileFromRadioSecs"),   wxGetApp().m_recFileFromRadioSecs);
 
         pConfig->Write(wxT("/Audio/snrSlow"), wxGetApp().m_snrSlow);
     }
@@ -450,8 +454,9 @@ MainFrame::~MainFrame()
     m_btnTogTX->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnTXClickUI), NULL, this);
 
     if (m_RxRunning)
+    {
         stopRxStream();
-
+    }
     if (g_sfPlayFile != NULL)
     {
         sf_close(g_sfPlayFile);

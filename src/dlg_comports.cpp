@@ -41,7 +41,7 @@ ComPortsDlg::ComPortsDlg(wxWindow* parent, wxWindowID id, const wxString& title,
     bSizer30 = new wxBoxSizer(wxVERTICAL);
 
     wxGridSizer* gSizer3;
-    gSizer3 = new wxGridSizer(6, 2, 0, 0);
+    gSizer3 = new wxGridSizer(8, 2, 0, 0);
 
     m_staticText8 = new wxStaticText(this, wxID_ANY, _("Available Ports:"), wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT);
     m_staticText8->Wrap(-1);
@@ -49,6 +49,7 @@ ComPortsDlg::ComPortsDlg(wxWindow* parent, wxWindowID id, const wxString& title,
 
     m_listCtrlPorts = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
     gSizer3->Add(m_listCtrlPorts, 2, wxALL|wxEXPAND, 2);
+
 /*
     m_staticText9 = new wxStaticText(this, wxID_ANY, _("Use Port:"), wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT);
     m_staticText9->Wrap(-1);
@@ -88,6 +89,23 @@ ComPortsDlg::ComPortsDlg(wxWindow* parent, wxWindowID id, const wxString& title,
 
     bSizer30->Add(gSizer3, 1, wxALIGN_CENTER_HORIZONTAL|wxALL|wxEXPAND, 5);
 
+//    wxStaticBoxSizer* polaritySizer;
+//    polaritySizer = new wxStaticBoxSizer(new wxStaticBox(this, wxID_ANY, _("")), wxHORIZONTAL);
+//    gSizer3->Add(polaritySizer, 0, wxALIGN_CENTER|wxALL, 1);
+
+    m_rbUseRTS = new wxRadioButton( this, wxID_ANY, wxT("Use RTS"), wxDefaultPosition, wxDefaultSize, 0 );
+    gSizer3->Add(m_rbUseRTS, 0, wxALIGN_CENTER|wxALL, 1);
+
+    m_ckRTSPos = new wxCheckBox( this, wxID_ANY, wxT("RTS = +V"), wxDefaultPosition, wxDefaultSize, 0 );
+    gSizer3->Add(m_ckRTSPos, 0, wxALIGN_CENTER|wxALL, 1);
+
+    m_rbUseDTR = new wxRadioButton( this, wxID_ANY, wxT("Use DTR"), wxDefaultPosition, wxDefaultSize, 0 );
+    gSizer3->Add(m_rbUseDTR, 0, wxALIGN_CENTER|wxALL, 1);
+
+    m_ckDTRPos = new wxCheckBox( this, wxID_ANY, wxT("DTR = +V"), wxDefaultPosition, wxDefaultSize, 0 );
+    gSizer3->Add(m_ckDTRPos, 0, wxALIGN_CENTER|wxALL, 1);
+
+
     m_sdbSizer5 = new wxStdDialogButtonSizer();
     m_sdbSizer5OK = new wxButton(this, wxID_OK);
     m_sdbSizer5->AddButton(m_sdbSizer5OK);
@@ -112,6 +130,13 @@ ComPortsDlg::ComPortsDlg(wxWindow* parent, wxWindowID id, const wxString& title,
     m_sdbSizer5OK->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(ComPortsDlg::OnOK), NULL, this);
     m_listCtrlPorts->Connect(wxEVT_COMMAND_LIST_ITEM_SELECTED, wxListEventHandler(ComPortsDlg::OnPortItemSelected), NULL, this);
     m_listCtrlBaudrates->Connect(wxEVT_COMMAND_LIST_ITEM_SELECTED, wxListEventHandler(ComPortsDlg::OnBaudrateItemSelected), NULL, this);
+/*
+    void    OnApply(wxCommandEvent& event);
+    void    OnRTSClick(wxCommandEvent& event);
+    void    OnRTSPosClick(wxCommandEvent& event);
+    void    OnDTRClick(wxCommandEvent& event);
+    void    OnDTRPosClick(wxCommandEvent& event);
+*/
 }
 
 //-------------------------------------------------------------------------
@@ -211,6 +236,11 @@ void ComPortsDlg::ExchangeData(int inout)
         m_textRigCtrlDatabits->SetValue(wxGetApp().m_strRigCtrlDatabits);
         m_textRigCtrlStopbits->SetValue(wxGetApp().m_strRigCtrlStopbits);
         m_textRigCtrlParity->SetValue(wxGetApp().m_strRigCtrlParity);
+
+        m_rbUseRTS->SetValue(wxGetApp().m_boolUseRTS);
+        m_ckRTSPos->SetValue(wxGetApp().m_boolRTSPos);
+        m_rbUseDTR->SetValue(wxGetApp().m_boolUseDTR);
+        m_ckDTRPos->SetValue(wxGetApp().m_boolDTRPos);
     }
     if(inout == EXCHANGE_DATA_OUT)
     {
@@ -221,6 +251,11 @@ void ComPortsDlg::ExchangeData(int inout)
         wxGetApp().m_strRigCtrlStopbits         = m_textRigCtrlStopbits->GetValue();
         wxGetApp().m_strRigCtrlParity           = m_textRigCtrlParity->GetValue();
 
+        wxGetApp().m_boolUseRTS                  = m_rbUseRTS->GetValue();
+        wxGetApp().m_boolRTSPos                  = m_ckRTSPos->GetValue();
+        wxGetApp().m_boolUseDTR                  = m_rbUseDTR->GetValue();
+        wxGetApp().m_boolDTRPos                  = m_ckDTRPos->GetValue();
+
         pConfig->Write(wxT("/Rig/Port"),        wxGetApp().m_strRigCtrlPort);
         pConfig->Write(wxT("/Rig/Baud"),        wxGetApp().m_strRigCtrlBaud);
         pConfig->Write(wxT("/Rig/DataBits"),    wxGetApp().m_strRigCtrlDatabits);
@@ -228,11 +263,22 @@ void ComPortsDlg::ExchangeData(int inout)
         pConfig->Write(wxT("/Rig/Parity"),      wxGetApp().m_strRigCtrlParity);
         //m_textRigCtrlFlowControl
 
+        pConfig->Write(wxT("/Rig/UseRTS"),      wxGetApp().m_boolUseRTS);
+        pConfig->Write(wxT("/Rig/RTSPolarity"), wxGetApp().m_boolRTSPos);
+        pConfig->Write(wxT("/Rig/UseDTR"),      wxGetApp().m_boolUseDTR);
+        pConfig->Write(wxT("/Rig/DTRPolarity"), wxGetApp().m_boolDTRPos);
+
         pConfig->Flush();
     }
     delete wxConfigBase::Set((wxConfigBase *) NULL);
 }
-
+/*
+    void    OnApply(wxCommandEvent& event);
+    void    OnRTSClick(wxCommandEvent& event);
+    void    OnRTSPosClick(wxCommandEvent& event);
+    void    OnDTRClick(wxCommandEvent& event);
+    void    OnDTRPosClick(wxCommandEvent& event);
+*/
 //-------------------------------------------------------------------------
 // OnPortItemSelected()
 //-------------------------------------------------------------------------
