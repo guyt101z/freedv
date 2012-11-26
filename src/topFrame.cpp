@@ -127,9 +127,15 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     //------------------------------
     wxStaticBoxSizer* levelSizer;
     levelSizer = new wxStaticBoxSizer(new wxStaticBox(this, wxID_ANY, _("Level")), wxVERTICAL);
+
+    m_textLevel = new wxStaticText(this, wxID_ANY, wxT(""), wxDefaultPosition, wxSize(50,-1), wxALIGN_CENTRE);
+    m_textLevel->SetForegroundColour(wxColour(255,0,0));
+    levelSizer->Add(m_textLevel, 0, wxALIGN_LEFT, 1);
+
     m_gaugeLevel = new wxGauge(this, wxID_ANY, 100, wxDefaultPosition, wxSize(15,135), wxGA_SMOOTH|wxGA_VERTICAL);
-    m_gaugeLevel->SetToolTip(_("Display signal level."));
+    m_gaugeLevel->SetToolTip(_("Peak of From Radio in Rx, or peak of From Mic in Tx mode.  If Red you should reduce your levels"));
     levelSizer->Add(m_gaugeLevel, 1, wxALIGN_CENTER_HORIZONTAL|wxALL, 10);
+
     leftSizer->Add(levelSizer, 2, wxALIGN_CENTER|wxALL|wxEXPAND, 1);
 
     bSizer1->Add(leftSizer, 0, wxALL|wxEXPAND, 5);
@@ -188,9 +194,11 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     bSizer15 = new wxBoxSizer(wxVERTICAL);
 
     m_txtCtrlTx = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0);
+    m_txtCtrlTx->SetToolTip(_("Text in this box wll be sent when TxID button is pressed"));
     bSizer15->Add(m_txtCtrlTx, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL|wxEXPAND, 5);
     m_txtCtrlRx = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_READONLY|wxTE_MULTILINE);
     bSizer15->Add(m_txtCtrlRx, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL|wxEXPAND, 5);
+    m_txtCtrlRx->SetToolTip(_("Text will be received here when RxID button is pressed"));
     lowerSizer->Add(bSizer15, 1, wxEXPAND, 5);
 
     wxBoxSizer* bSizer141;

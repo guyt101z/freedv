@@ -548,7 +548,7 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
     m_panelFreqOffset->add_new_sample(g_stats.foff);
     m_panelFreqOffset->Refresh();
 
-    // SNR text box and guage ------------------------------------------------------------
+    // SNR text box and gauge ------------------------------------------------------------
 
     // LP filter g_stats.snr_est some more to stabilise the
     // display. g_stats.snr_est already has some low pass filtering
@@ -572,6 +572,51 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
     if (snr_limited < 0.0) snr_limited = 0;
     if (snr_limited > 20.0) snr_limited = 20.0;
     m_gaugeSNR->SetValue((int)(snr_limited));
+
+    // Level Guage -----------------------------------------------------------------------
+
+    float tooHighThresh;
+    if (!g_tx && m_RxRunning) {
+        // receive mode - display From Radio peaks
+
+        // peak from this DT sampling period
+        int maxDemodIn = 0;
+        for(int i=0; i<WAVEFORM_PLOT_BUF; i++)
+            if (maxDemodIn < abs(demodInPlotSamples[i]))
+                maxDemodIn = abs(demodInPlotSamples[i]);
+
+        // peak from last second
+        if (maxDemodIn > m_maxLevel)
+            m_maxLevel = maxDemodIn;
+
+        tooHighThresh = FROM_RADIO_MAX;
+   }
+    else {
+        // transmit mode - display From Mic peaks
+
+        // peak from this DT sampling period
+        int maxSpeechIn = 0;
+        for(int i=0; i<WAVEFORM_PLOT_BUF; i++)
+            if (maxSpeechIn < abs(speechInPlotSamples[i]))
+                maxSpeechIn = abs(speechInPlotSamples[i]);
+
+        // peak from last second
+        if (maxSpeechIn > m_maxLevel)
+            m_maxLevel = maxSpeechIn;
+        
+       tooHighThresh = FROM_MIC_MAX;
+    }
+    
+    // Peak Readng meter: updates peaks immediately, then slowly decays
+
+    int maxScaled = (int)(100.0 * ((float)m_maxLevel/32767.0));
+    m_gaugeLevel->SetValue(maxScaled);
+    if (((float)maxScaled/100) > tooHighThresh)
+        m_textLevel->SetLabel("Too High");
+    else
+        m_textLevel->SetLabel("");
+
+    m_maxLevel *= LEVEL_BETA;
 
     // sync LED (Colours don't work on Windows)
 
@@ -756,8 +801,13 @@ void MainFrame::OnTogBtnTXClick(wxCommandEvent& event)
     else {
         // rx-> tx transition, swap to Mic In page to monitor speech
         m_auiNbookCtrl->ChangeSelection(4); // is there a way to avoid hard coding this?
-   }
+    }
     g_tx = m_btnTogTX->GetValue();
+
+    // reset level gauge
+    m_maxLevel = 0;
+    m_textLevel->SetLabel(wxT(""));
+    m_gaugeLevel->SetValue(0);
 
     event.Skip();
 }
@@ -787,7 +837,7 @@ void MainFrame::sendTxID(void)
     //for(int i=0; i<nout; i++)
     //    printf("%d", varicode[i]);
     //printf("\n");
-    int ret = fifo_write(g_txDataInFifo, varicode, nout);
+    fifo_write(g_txDataInFifo, varicode, nout);
     //printf("MainFrame::OnTogBtnTxID, sending: %s nout: %d ret: %d\n", txid2, nout, ret);
 }
 
@@ -1025,9 +1075,9 @@ void MainFrame::OnRecFileFromRadio(wxCommandEvent& event)
         long secs;
         if (secsString.ToLong(&secs)) {
             wxGetApp().m_recFileFromRadioSecs = (unsigned int)secs;
-            printf(" secondsToRecord: %d\n",  (unsigned int)secs);
+            //printf(" secondsToRecord: %d\n",  (unsigned int)secs);
             g_recFromRadioSamples = FS*(unsigned int)secs;
-            printf("g_recFromRadioSamples: %d\n", g_recFromRadioSamples);
+            //printf("g_recFromRadioSamples: %d\n", g_recFromRadioSamples);
         }
         else {
             wxMessageBox(wxT("Invalid number of Seconds"), wxT("Record File From Radio"), wxOK);
@@ -1256,6 +1306,10 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
         m_txIDTimerTics = 0.0;
         m_txtCtrlRx->SetValue(wxT(""));
 
+         m_maxLevel = 0;
+        m_textLevel->SetLabel(wxT(""));
+        m_gaugeLevel->SetValue(0);
+
         //printf("g_stats.snr: %f\n", g_stats.snr_est);
 
         // attempt to start sound cards and tx/rx processing
@@ -1376,12 +1430,10 @@ void  MainFrame::initPortAudioDevice(PortAudioWrap *pa, int inDevice, int outDev
     // portaudio struct so can't return any errors. So no need to trap
     // any errors in this function.
 
-    printf("indDevice: %d outDevice: %d\n", inDevice, outDevice);
     // init input params
 
     pa->setInputDevice(inDevice);
     pa->setInputChannelCount(inputChannels);           // stereo input
-    printf("maxInputChannels: %d\n", inputChannels);
     pa->setInputSampleFormat(PA_SAMPLE_TYPE);
     pa->setInputLatency(pa->getInputDefaultLowLatency());
     pa->setInputHostApiStreamInfo(NULL);
@@ -1404,7 +1456,6 @@ void  MainFrame::initPortAudioDevice(PortAudioWrap *pa, int inDevice, int outDev
     */
 
     pa->setFramesPerBuffer(wxGetApp().m_framesPerBuffer);
-    printf("framesPerBuffer: %d\n", wxGetApp().m_framesPerBuffer);
     pa->setSampleRate(sampleRate);
     pa->setStreamFlags(paClipOff);
 }
@@ -1873,8 +1924,8 @@ int MainFrame::rxCallback(
 
     wxMutexLocker lock(g_mutexProtectingCallbackData);
 
-    if (statusFlags)
-        printf("cb1 statusFlags: 0x%x\n", (int)statusFlags);
+    //if (statusFlags)
+    //    printf("cb1 statusFlags: 0x%x\n", (int)statusFlags);
 
     //
     //  RX side processing --------------------------------------------
@@ -2150,7 +2201,9 @@ void per_frame_tx_processing(
     data_flag_index = codec2_get_spare_bit_index(c2);
     assert(data_flag_index != -1); // not supported for all rates
 
-    // if there is low speech energy and data to send, then send data frame
+    // potential bug: this should really track background noise level
+    // e.g. look at minimum frame energy.  OW a high backfround level might
+    // mean no data....
 
     if ((peak < SILENCE_THRESHOLD) && fifo_used(g_txDataInFifo)) {
         //printf("sending data ...\n");
@@ -2237,8 +2290,8 @@ int MainFrame::txCallback(
 
     wxMutexLocker lock(g_mutexProtectingCallbackData);
 
-    if (statusFlags)
-        printf("cb2 statusFlags: 0x%x\n", (int)statusFlags);
+    //    if (statusFlags)
+    //  printf("cb2 statusFlags: 0x%x\n", (int)statusFlags);
 
     // assemble a mono buffer (just use left channel) and write to FIFO
 

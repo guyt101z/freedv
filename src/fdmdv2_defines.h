@@ -67,6 +67,12 @@
 // Squelch
 #define SQ_DEFAULT_SNR      4.0
 
+// Level Gauge
+#define FROM_RADIO_MAX       0.8
+#define FROM_MIC_MAX         0.8
+#define LEVEL_BETA           0.99
+
+// SNR
 #define SNRSLOW_BETA        0.5                           // time constant for slow SNR for display
 
 // Data

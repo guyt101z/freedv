@@ -89,6 +89,7 @@ class TopFrame : public wxFrame
         wxStaticText* m_textSNR;
         wxCheckBox* m_ckboxSNR;
         wxGauge* m_gaugeLevel;
+        wxStaticText* m_textLevel;
         wxTextCtrl* m_txtCtrlTx;
         wxTextCtrl* m_txtCtrlRx;
         wxSlider* m_sliderSQ;

@@ -348,6 +348,9 @@ class MainFrame : public TopFrame
         int         m_zoom;
         float       m_snrBeta;
         float       m_txIDTimerTics;
+
+        // level Gauge
+        float       m_maxLevel;
 };
 
 void resample_for_plot(struct FIFO *plotFifo, short buf[], int length);
