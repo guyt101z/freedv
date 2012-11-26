@@ -923,6 +923,7 @@ void MainFrame::OnPlayFileToMicIn(wxCommandEvent& event)
 }
 
 // extra panel added to file save dialog to set number of seconds to record for
+
 MyExtraRecFilePanel::MyExtraRecFilePanel(wxWindow *parent): wxPanel(parent)
 {
     wxBoxSizer *sizerTop = new wxBoxSizer(wxHORIZONTAL);
@@ -982,8 +983,8 @@ void MainFrame::OnRecFileFromRadio(wxCommandEvent& event)
         wxString fileName, extension;
         soundFile = openFileDialog.GetPath();
         wxFileName::SplitPath(soundFile, &wxGetApp().m_recFileFromRadioPath, &fileName, &extension);
-        //wxLogDebug("m_recFileFromRadioPath: %s", wxGetApp().m_recFileFromRadioPath);
-        //wxLogDebug("sounfFile: %s", soundFile);
+        wxLogDebug("m_recFileFromRadioPath: %s", wxGetApp().m_recFileFromRadioPath);
+        wxLogDebug("soundFile: %s", soundFile);
         sfInfo.format = 0;
 
         if(!extension.IsEmpty())
@@ -1010,22 +1011,29 @@ void MainFrame::OnRecFileFromRadio(wxCommandEvent& event)
             return;         
         }
 
-
+        // Bug: on Win32 I cant read m_recFileFromRadioSecs, so have hard coded it
+        #ifdef __WIN32__
+        long secs = wxGetApp().m_recFileFromRadioSecs;
+        g_recFromRadioSamples = FS*(unsigned int)secs;
+        #else
         // work out number of samples to record
 
         wxWindow * const ctrl = openFileDialog.GetExtraControl();
         wxString secsString = static_cast<MyExtraRecFilePanel*>(ctrl)->getSecondsToRecord();
+        wxLogDebug("test: %s secsString: %s\n", wxT("testing 123"), secsString);
+
         long secs;
         if (secsString.ToLong(&secs)) {
             wxGetApp().m_recFileFromRadioSecs = (unsigned int)secs;
-            //printf(" secondsToRecord: %d\n",  (unsigned int)secs);
+            printf(" secondsToRecord: %d\n",  (unsigned int)secs);
             g_recFromRadioSamples = FS*(unsigned int)secs;
-            //printf("g_recFromRadioSamples: %d\n", g_recFromRadioSamples);
+            printf("g_recFromRadioSamples: %d\n", g_recFromRadioSamples);
         }
         else {
             wxMessageBox(wxT("Invalid number of Seconds"), wxT("Record File From Radio"), wxOK);
             return;
         }
+        #endif
 
         g_sfRecFile = sf_open(soundFile, SFM_WRITE, &sfInfo);
         if(g_sfRecFile == NULL)

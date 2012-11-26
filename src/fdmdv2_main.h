@@ -208,8 +208,14 @@ class MyExtraRecFilePanel : public wxPanel
 {
 public:
     MyExtraRecFilePanel(wxWindow *parent);
+    ~MyExtraRecFilePanel() {
+        wxLogDebug("Destructor\n");
+    }
     void setSecondsToRecord(wxString value) { m_secondsToRecord->SetValue(value); }
-    wxString getSecondsToRecord(void) { return m_secondsToRecord->GetValue(); }
+    wxString getSecondsToRecord(void) { 
+        wxLogDebug("getSecondsToRecord: %s\n",m_secondsToRecord->GetValue());
+        return m_secondsToRecord->GetValue(); 
+    }
 private:
     wxTextCtrl *m_secondsToRecord;
 };

@@ -41,6 +41,9 @@ freedv: $(OBJS)
 %.o: %.cpp $(HDRS) Makefile.win32
 	g++ $(CPP_FLAGS) -c $< -o $@
 
+%.o: %.c $(HDRS) Makefile.win32
+	g++ $(CPP_FLAGS) -c $< -o $@
+
 clean:
 	rm -f *.o fdmdv2
 
