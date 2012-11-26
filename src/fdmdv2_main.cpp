@@ -52,6 +52,8 @@ float g_snr;
 // sending and receiving data
 struct FIFO         *g_txDataInFifo;
 struct VARICODE_DEC  g_varicode_dec_states;
+unsigned char        g_prev_packed_bits[BYTES_PER_CODEC_FRAME];
+struct FIFO         *g_rxDataOutFifo;
 
 // tx/rx processing states
 int                 g_nRxIn = FDMDV_NOM_SAMPLES_PER_FRAME;
@@ -308,6 +310,14 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     wxGetApp().m_codec2LPCPostFilterBeta       = (float)pConfig->Read(wxT("/Filter/codec2LPCPostFilterBeta"),      CODEC2_LPC_PF_BETA*100)/100.0;
     //printf("main(): m_codec2LPCPostFilterBeta: %f\n", wxGetApp().m_codec2LPCPostFilterBeta);
 
+    wxString txID = pConfig->Read("/Data/txID", wxT(""));
+    m_txtCtrlTx->SetValue(txID);
+    bool f = false;
+    bool txIDEnable = pConfig->Read("/Data/txIDEnable", f);
+    m_togTxID->SetValue(txIDEnable);
+    bool rxIDEnable = pConfig->Read("/Data/rxIDEnable", f);
+    m_togRxID->SetValue(rxIDEnable);
+
     pConfig->SetPath(wxT("/"));
 
 //    this->Connect(m_menuItemHelpUpdates->GetId(), wxEVT_UPDATE_UI, wxUpdateUIEventHandler(TopFrame::OnHelpCheckUpdatesUI));
@@ -320,7 +330,7 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     m_btnTogTX->Connect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnTXClickUI), NULL, this);
 
     m_togBtnSplit->Disable();
-    //m_togRxID->Disable();
+    m_togRxID->Disable();
     m_togTxID->Disable();
     m_togBtnAnalog->Disable();
     //m_togBtnALC->Disable();
@@ -382,8 +392,8 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     // data states
     
     g_txDataInFifo = fifo_create(MAX_TXID*VARICODE_MAX_BITS);   
+    g_rxDataOutFifo = fifo_create(MAX_TXID*VARICODE_MAX_BITS);   
     varicode_decode_init(&g_varicode_dec_states);
-
 }
 
 //-------------------------------------------------------------------------
@@ -443,7 +453,11 @@ MainFrame::~MainFrame()
         pConfig->Write(wxT("/File/recFileFromRadioSecs"),   wxGetApp().m_recFileFromRadioSecs);
 
         pConfig->Write(wxT("/Audio/snrSlow"), wxGetApp().m_snrSlow);
-    }
+
+        pConfig->Write(wxT("/Data/txID"), m_txtCtrlTx->GetValue());
+        pConfig->Write(wxT("/Data/txIDEnable"), m_togTxID->GetValue());
+        pConfig->Write(wxT("/Data/rxIDEnable"), m_togRxID->GetValue());
+   }
 
     //m_togRxID->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnRxIDUI), NULL, this);
     m_togTxID->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnTxIDUI), NULL, this);
@@ -569,6 +583,28 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
         m_rbSync->SetForegroundColour( wxColour( 255, 0, 0 ) ); // red
         m_rbSync->SetValue(false);
     }
+
+    // send Tx ID
+
+    if (m_togTxID->GetValue()) {
+        m_txIDTimerTics += DT;
+        if (m_txIDTimerTics > TXID_PERIOD) {
+            m_txIDTimerTics = 0.0;
+            sendTxID();
+        }
+    }
+
+    // See if any ID info received
+
+    if (m_togRxID->GetValue()) {
+        short ashort;
+        while (fifo_read(g_rxDataOutFifo, &ashort, 1) == 0) {            
+            wxString s;
+            s.Printf("%c", (char)ashort);
+            m_txtCtrlRx->AppendText(s);
+        }
+    }
+
 }
 #endif
 
@@ -735,11 +771,11 @@ void MainFrame::OnTogBtnRxID(wxCommandEvent& event)
 }
 
 //-------------------------------------------------------------------------
-// OnTogBtnTxID()
+// sendTxID()
 //-------------------------------------------------------------------------
-void MainFrame::OnTogBtnTxID(wxCommandEvent& event)
+void MainFrame::sendTxID(void)
 {
-    wxString txid = m_txtCtrlTx->GetValue();
+    wxString txid = m_txtCtrlTx->GetValue() + " ";
     char txid2[MAX_TXID];
     strncpy(txid2, (const char*) txid.mb_str(wxConvUTF8), MAX_TXID-1);
     
@@ -747,13 +783,20 @@ void MainFrame::OnTogBtnTxID(wxCommandEvent& event)
 
     short varicode[MAX_TXID*VARICODE_MAX_BITS];
     int nout = varicode_encode(varicode, txid2, MAX_TXID*VARICODE_MAX_BITS, strlen(txid2));
-    printf("tx varicode: ");
-    for(int i=0; i<nout; i++)
-        printf("%d", varicode[i]);
-    printf("\n");
+    //printf("tx varicode: ");
+    //for(int i=0; i<nout; i++)
+    //    printf("%d", varicode[i]);
+    //printf("\n");
     int ret = fifo_write(g_txDataInFifo, varicode, nout);
-    printf("MainFrame::OnTogBtnTxID, sending: %s nout: %d ret: %d\n", txid2, nout, ret);
+    //printf("MainFrame::OnTogBtnTxID, sending: %s nout: %d ret: %d\n", txid2, nout, ret);
+}
 
+//-------------------------------------------------------------------------
+// OnTogBtnTxID()
+//-------------------------------------------------------------------------
+void MainFrame::OnTogBtnTxID(wxCommandEvent& event)
+{
+    m_txIDTimerTics = TXID_PERIOD; // this forces an immediate send in OnTimer
     event.Skip();
 }
 
@@ -1026,7 +1069,7 @@ void MainFrame::OnExit(wxCommandEvent& event)
         stopRxStream();
     }
     m_togBtnSplit->Disable();
-    //m_togRxID->Disable();
+    m_togRxID->Disable();
     m_togTxID->Disable();
     m_togBtnAnalog->Disable();
     //m_togBtnALC->Disable();
@@ -1180,7 +1223,7 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
     if (startStop.IsSameAs("Start")) {
 
         m_togBtnSplit->Enable();
-        //m_togRxID->Enable();
+        m_togRxID->Enable();
         m_togTxID->Enable();
         m_togBtnAnalog->Enable();
         m_btnTogTX->Enable();
@@ -1201,6 +1244,9 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
 
         g_State = 0;
         g_snr = 0.0;
+
+        m_txIDTimerTics = 0.0;
+        m_txtCtrlRx->SetValue(wxT(""));
 
         //printf("g_stats.snr: %f\n", g_stats.snr_est);
 
@@ -1230,7 +1276,7 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
         codec2_destroy(g_pCodec2);
 
         m_togBtnSplit->Disable();
-        //m_togRxID->Disable();
+        m_togRxID->Disable();
         m_togTxID->Disable();
         m_togBtnAnalog->Disable();
         m_btnTogTX->Disable();
@@ -1983,7 +2029,8 @@ void per_frame_rx_processing(
                 }
                 if(sync_bit == 1)
                 {
-                    int data_flag_index;
+                    int  data_flag_index;
+                    char ascii_out[MAX_TXID];
 
                     // second half of frame of codec bits
                     memcpy(&codec_bits[FDMDV_BITS_PER_FRAME], rx_bits, FDMDV_BITS_PER_FRAME*sizeof(int));
@@ -2003,7 +2050,6 @@ void per_frame_rx_processing(
                         // if data construct data frame, varicode decode, write to fifo, send event
 
                         short varicode[BITS_PER_CODEC_FRAME - 1];
-                        char  ascii_out[MAX_TXID];
                         int   n_ascii;
 
                         for(i=0,j=0; i<data_flag_index; i++,j++)
@@ -2014,8 +2060,16 @@ void per_frame_rx_processing(
                         
                         if (n_ascii) {
                             ascii_out[n_ascii] = 0;
-                            printf("%d ascii received: %s\n", n_ascii, ascii_out);
+                            //printf("rx data: %s\n", ascii_out);
+                            for(i=0; i<n_ascii; i++) {
+                                short ashort = (short)ascii_out[i];
+                                fifo_write(g_rxDataOutFifo, &ashort, 1);
+                            }
                         }
+ 
+                        // use previous frame of packed bits if we have lost this one due to data
+                        memcpy(packed_bits, g_prev_packed_bits, BYTES_PER_CODEC_FRAME);
+
                     }
                     else {
 
@@ -2044,9 +2098,14 @@ void per_frame_rx_processing(
 
                         assert(codec2_samples_per_frame(c2) == (2*N8));
 
-                        codec2_decode(c2, output_buf, packed_bits);
-                        fifo_write(output_fifo, output_buf, codec2_samples_per_frame(c2));
+                        memcpy(g_prev_packed_bits, packed_bits, BYTES_PER_CODEC_FRAME);
                     }
+
+                    // always decode a speech frame, even when we have losta frame due to data
+
+                    codec2_decode(c2, output_buf, packed_bits);
+                    fifo_write(output_fifo, output_buf, codec2_samples_per_frame(c2));
+
                 }
                 break;
         }
@@ -2086,7 +2145,7 @@ void per_frame_tx_processing(
     // if there is low speech energy and data to send, then send data frame
 
     if ((peak < SILENCE_THRESHOLD) && fifo_used(g_txDataInFifo)) {
-        printf("sending data ...\n");
+        //printf("sending data ...\n");
 
         // we have to handle the case where we might not have a whole
         // frame of data to send, in that case pad with zeros

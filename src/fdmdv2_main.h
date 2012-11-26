@@ -284,6 +284,7 @@ class MainFrame : public TopFrame
  protected:
 
         void setsnrBeta(bool snrSlow);
+        void sendTxID(void);
 
         // protected event handlers
         virtual void OnCloseFrame(wxCloseEvent& event);
@@ -336,12 +337,11 @@ class MainFrame : public TopFrame
         void OnIdle(wxIdleEvent &evt);
 #endif
     private:
-#ifdef __WXMSW__
-#endif // __WXMSW__
         bool        m_useMemory;
         wxTextCtrl* m_tc;
         int         m_zoom;
         float       m_snrBeta;
+        float       m_txIDTimerTics;
 };
 
 void resample_for_plot(struct FIFO *plotFifo, short buf[], int length);

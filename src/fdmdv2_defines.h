@@ -71,7 +71,8 @@
 
 // Data
 #define MAX_TXID            1024
-#define SILENCE_THRESHOLD    100
+#define SILENCE_THRESHOLD    300                          // when Mic In beneath this level we drop vocie frame and send data
+#define TXID_PERIOD           10                          // period between sending data
 
 enum
 {

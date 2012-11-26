@@ -154,35 +154,66 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
 
     upperSizer->Add(m_auiNbookCtrl, 1, wxALIGN_TOP|wxEXPAND, 1);
     centerSizer->Add(upperSizer, 1, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALIGN_TOP|wxEXPAND, 0);
+
+    // lower middle used for user ID
+
+#ifdef NEW
+    wxBoxSizer* lowerSizer = new wxBoxSizer(wxVERTICAL);
+
+    wxBoxSizer* lowerSizerTop = new wxBoxSizer(wxHORIZONTAL);
+    wxBoxSizer* lowerSizerBottom = new wxBoxSizer(wxHORIZONTAL);
+
+    m_txtCtrlTx = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0);
+    lowerSizerTop->Add(m_txtCtrlTx, 0, wxALL|wxEXPAND, 5);
+    
+    m_togTxID = new wxToggleButton(this, wxID_ANY, _("TxID"), wxDefaultPosition, wxDefaultSize, 0);
+    m_togTxID->SetToolTip(_("Send Tx ID information"));
+    //lowerSizerTop->Add(m_togTxID, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL, 5);
+    /*
+    m_txtCtrlRx = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0);
+    lowerSizerBottom->Add(m_txtCtrlRx, 1, wxALL|wxEXPAND, 5);
+
+    m_togRxID = new wxToggleButton(this, wxID_ANY, _("RxID"), wxDefaultPosition, wxDefaultSize, 0);
+    m_togRxID->SetToolTip(_("Enable reception of ID information"));
+    lowerSizerBottom->Add(m_togRxID, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL, 5);
+    */
+    lowerSizer->Add(lowerSizerTop, 0 ,wxEXPAND);
+    //lowerSizer->Add(lowerSizerBottom);
+#endif
+
     wxBoxSizer* lowerSizer;
     lowerSizer = new wxBoxSizer(wxHORIZONTAL);
+
     wxBoxSizer* bSizer15;
     bSizer15 = new wxBoxSizer(wxVERTICAL);
+
     m_txtCtrlTx = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0);
     bSizer15->Add(m_txtCtrlTx, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL|wxEXPAND, 5);
-    m_txtCtrlRx = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_READONLY);
+    m_txtCtrlRx = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_READONLY|wxTE_MULTILINE);
     bSizer15->Add(m_txtCtrlRx, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL|wxEXPAND, 5);
     lowerSizer->Add(bSizer15, 1, wxEXPAND, 5);
+
     wxBoxSizer* bSizer141;
-    bSizer141 = new wxBoxSizer(wxHORIZONTAL);
+    bSizer141 = new wxBoxSizer(wxVERTICAL);
 
     //=====================================================
     // These are the buttons that autosend the userid (?)
     //=====================================================
 
-#ifdef UNIMPLEMENTED
-    // RxID
-    //---------
-    m_togRxID = new wxToggleButton(this, wxID_ANY, _("RxID"), wxDefaultPosition, wxDefaultSize, 0);
-    bSizer141->Add(m_togRxID, 0, wxALIGN_CENTER_VERTICAL|wxALIGN_LEFT|wxALL|wxFIXED_MINSIZE, 5);
-#endif
-
     // TxID
     //---------
     m_togTxID = new wxToggleButton(this, wxID_ANY, _("TxID"), wxDefaultPosition, wxDefaultSize, 0);
-    bSizer141->Add(m_togTxID, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    m_togTxID->SetToolTip(_("Send Tx ID information"));
+    bSizer141->Add(m_togTxID, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
+
+    // RxID
+    //---------
+    m_togRxID = new wxToggleButton(this, wxID_ANY, _("RxID"), wxDefaultPosition, wxDefaultSize, 0);
+    m_togRxID->SetToolTip(_("Enable reception of ID information"));
+    bSizer141->Add(m_togRxID, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_LEFT|wxALL|wxFIXED_MINSIZE, 5);
 
     lowerSizer->Add(bSizer141, 0, wxALIGN_RIGHT, 5);
+
     centerSizer->Add(lowerSizer, 0, wxALIGN_BOTTOM|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxEXPAND, 2);
     bSizer1->Add(centerSizer, 4, wxALIGN_CENTER_HORIZONTAL|wxALL|wxEXPAND, 1);
 
