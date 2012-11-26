@@ -30,14 +30,13 @@
 #include "varicode.h"
 #include "varicode_table.h"
 
-#define VARICODE_MAX_BITS (10+2) /* 10 bits for code plus 2 0 bits for inter-character space */
 
 /*
   output is an unpacked array of bits of maximum size max_out.  Note
   unpacked arrays are a more suitable form for modulator input.
 */
 
-int varicode_encode(int varicode_out[], char ascii_in[], int max_out, int n_in) {
+int varicode_encode(short varicode_out[], char ascii_in[], int max_out, int n_in) {
     int            n_out, index, n_zeros, v_len;
     unsigned short byte1, byte2, packed;
 
@@ -83,62 +82,75 @@ int varicode_encode(int varicode_out[], char ascii_in[], int max_out, int n_in) 
 
 void varicode_decode_init(struct VARICODE_DEC *dec_states)
 {
+    dec_states->state = 0;
     dec_states->n_zeros = 0;
     dec_states->v_len = 0;
     dec_states->packed = 0;
 }
 
-static int decode_one_bit(struct VARICODE_DEC *s, char *single_ascii, int varicode_in)
+static int decode_one_bit(struct VARICODE_DEC *s, char *single_ascii, short varicode_in)
 {
     int            found, i;
     unsigned short byte1, byte2;
 
-    if (varicode_in) {
-        s->packed |= (0x8000 >> s->v_len);
-        s->n_zeros = 0;
+    //printf("decode_one_bit : state: %d varicode_in: %d packed: 0x%x n_zeros: %d\n",
+    //       s->state, varicode_in, s->packed, s->n_zeros);
+
+    if (s->state == 0) {
+        if (!varicode_in)
+            return 0;
+        else 
+            s->state = 1;
     }
-    else {
-        s->n_zeros++;
-    }
-    s->v_len++;
 
-    found = 0;
+    if (s->state == 1) {
+        if (varicode_in) {
+            s->packed |= (0x8000 >> s->v_len);
+            s->n_zeros = 0;
+        }
+        else {
+            s->n_zeros++;
+        }
+        s->v_len++;
 
-    /* end of character code */
+        found = 0;
 
-    if (s->n_zeros == 2) {
-        if (s->v_len) {
-            byte1 = s->packed >> 8;
-            byte2 = s->packed & 0xff;
+        /* end of character code */
 
-            /* run thru table but note with bit errors means we might
-               not actually find a match */
+        if (s->n_zeros == 2) {
+            if (s->v_len) {
+                byte1 = s->packed >> 8;
+                byte2 = s->packed & 0xff;
 
-            for(i=0; i<128; i++) {
-                if ((byte1 == varicode_table[2*i]) && (byte2 == varicode_table[2*i+1])) {
-                    found = 1;
-                    *single_ascii = i;
+                /* run thru table but note with bit errors means we might
+                   not actually find a match */
+
+                for(i=0; i<128; i++) {
+                    if ((byte1 == varicode_table[2*i]) && (byte2 == varicode_table[2*i+1])) {
+                        found = 1;
+                        *single_ascii = i;
+                    }
                 }
             }
+            varicode_decode_init(s);
         }
-        varicode_decode_init(s);
+
+        /* code can run too long if we have a bit error */
+
+        if (s->v_len > VARICODE_MAX_BITS)
+            varicode_decode_init(s);
     }
 
-    /* code can run too long if we have a bit error */
-
-    if (s->v_len > VARICODE_MAX_BITS)
-        varicode_decode_init(s);
-  
     return found;
 }
 
-int varicode_decode(struct VARICODE_DEC *dec_states, char ascii_out[], int varicode_in[], int max_out, int n_in) {
+int varicode_decode(struct VARICODE_DEC *dec_states, char ascii_out[], short varicode_in[], int max_out, int n_in) {
     int            output, n_out;
     char           single_ascii;
 
     n_out = 0;
 
-    printf("varicode_decode: n_in: %d\n", n_in);
+    //printf("varicode_decode: n_in: %d\n", n_in);
 
     while(n_in && (n_out < max_out)) {
         output = decode_one_bit(dec_states, &single_ascii, *varicode_in);
@@ -157,7 +169,7 @@ int varicode_decode(struct VARICODE_DEC *dec_states, char ascii_out[], int varic
 #ifdef VARICODE_UNITTEST
 int main(void) {
     char *ascii_in;
-    int *varicode;
+    short *varicode;
     int  i, n_varicode_bits_out, n_ascii_chars_out, length, half;
     char *ascii_out;
     struct VARICODE_DEC dec_states;
@@ -165,23 +177,27 @@ int main(void) {
     length = sizeof(varicode_table)/2;
 
     ascii_in = (char*)malloc(length);
-    varicode = (int*)malloc(VARICODE_MAX_BITS*sizeof(int)*length);
+    varicode = (short*)malloc(VARICODE_MAX_BITS*sizeof(short)*length);
     ascii_out = (char*)malloc(length);
     
+    // 1. test all Varicode codes -------------------------------------------------------------
+
     for(i=0; i<length; i++)
         ascii_in[i] = (char)i;
     n_varicode_bits_out = varicode_encode(varicode, ascii_in, VARICODE_MAX_BITS*length, length);
 
-    printf("n_varicode_bits_out: %d\n", n_varicode_bits_out);
+    //printf("n_varicode_bits_out: %d\n", n_varicode_bits_out);
+
+    // split decode in half to test how it preseves state between calls 
 
     varicode_decode_init(&dec_states);
     half = n_varicode_bits_out/2;
     n_ascii_chars_out  = varicode_decode(&dec_states, ascii_out, varicode, length, half);
-    printf("n_ascii_chars_out: %d\n", n_ascii_chars_out);
+    //printf("n_ascii_chars_out: %d\n", n_ascii_chars_out);
 
     n_ascii_chars_out += varicode_decode(&dec_states, &ascii_out[n_ascii_chars_out], 
                                          &varicode[half], length-n_ascii_chars_out, n_varicode_bits_out - half);
-    printf("n_ascii_chars_out: %d\n", n_ascii_chars_out);
+    //printf("n_ascii_chars_out: %d\n", n_ascii_chars_out);
 
     assert(n_ascii_chars_out == length);
 
@@ -190,10 +206,32 @@ int main(void) {
     //}
 
     //printf("ascii_out: %s\n", ascii_out);
+
     if (memcmp(ascii_in, ascii_out, length) == 0)
-        printf("Pass\n");
+        printf("Test 1 Pass\n");
     else
-        printf("Fail\n");
+        printf("Test 1 Fail\n");
+
+    // 2. Test some ascii with a run of zeros -----------------------------------------------------
+
+    sprintf(ascii_in, "CQ CQ CQ, this is VK5DGR");
+    assert(strlen(ascii_in) < length);
+
+    for(i=0; i<3; i++) {
+        n_varicode_bits_out = varicode_encode(varicode, ascii_in, VARICODE_MAX_BITS*length, strlen(ascii_in));
+        n_ascii_chars_out   = varicode_decode(&dec_states, ascii_out, varicode, length, n_varicode_bits_out);
+        ascii_out[n_ascii_chars_out] = 0;
+
+        printf("ascii_out: %s\n", ascii_out);
+        if (strcmp(ascii_in, ascii_out) == 0)
+            printf("Test 2 Pass\n");
+        else
+            printf("Test 2 Fail\n");
+
+        memset(varicode, 0, sizeof(short)*20);
+        n_ascii_chars_out = varicode_decode(&dec_states, ascii_out, varicode, length, 20);
+        assert(n_ascii_chars_out == 0);
+    }
 
     free(ascii_in);
     free(ascii_out);
