@@ -76,14 +76,22 @@ int                 g_soundCard2OutDeviceNum;
 int                 g_soundCard2SampleRate;
 
 // playing and recording from sound files
+
 SNDFILE            *g_sfPlayFile;
 bool                g_playFileToMicIn;
 bool                g_loopPlayFileToMicIn;
 int                 g_playFileToMicInEventId;
+
 SNDFILE            *g_sfRecFile;
 bool                g_recFileFromRadio;
 unsigned int        g_recFromRadioSamples;
 int                 g_recFileFromRadioEventId;
+
+SNDFILE            *g_sfPlayFileFromRadio;
+bool                g_playFileFromRadio;
+bool                g_loopPlayFileFromRadio;
+int                 g_playFileFromRadioEventId;
+
 wxWindow           *g_parent;
 
 // Click to tune rx and tx frequency offset states
@@ -301,6 +309,7 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     wxGetApp().m_playFileToMicInPath = pConfig->Read("/File/playFileToMicInPath", wxT(""));
     wxGetApp().m_recFileFromRadioPath = pConfig->Read("/File/recFileFromRadioPath", wxT(""));
     wxGetApp().m_recFileFromRadioSecs = pConfig->Read("/File/recFileFromRadioSecs", 30);
+    wxGetApp().m_playFileFromRadioPath = pConfig->Read("/File/playFileToFromRadioPath", wxT(""));
 
     bool slow = false; // prevents compile error when using default bool
     wxGetApp().m_snrSlow = pConfig->Read("/Audio/snrSlow", slow);
@@ -369,8 +378,13 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     g_sfPlayFile = NULL;
     g_playFileToMicIn = false;
     g_loopPlayFileToMicIn = false;
+
     g_sfRecFile = NULL;
     g_recFileFromRadio = false;
+
+    g_sfPlayFileFromRadio = NULL;
+    g_playFileFromRadio = false;
+    g_loopPlayFileFromRadio = false;
 
     // init click-tune states
 
@@ -453,6 +467,7 @@ MainFrame::~MainFrame()
         pConfig->Write(wxT("/File/playFileToMicInPath"),    wxGetApp().m_playFileToMicInPath);
         pConfig->Write(wxT("/File/recFileFromRadioPath"),   wxGetApp().m_recFileFromRadioPath);
         pConfig->Write(wxT("/File/recFileFromRadioSecs"),   wxGetApp().m_recFileFromRadioSecs);
+        pConfig->Write(wxT("/File/playFileFromRadioPath"),wxGetApp().m_playFileFromRadioPath);
 
         pConfig->Write(wxT("/Audio/snrSlow"), wxGetApp().m_snrSlow);
 
@@ -974,6 +989,83 @@ void MainFrame::OnPlayFileToMicIn(wxCommandEvent& event)
 
         SetStatusText(wxT("Playing File: ") + fileName + wxT(" to Mic Input") , 0);
         g_playFileToMicIn = true;
+    }
+}
+
+//-------------------------------------------------------------------------
+// OnPlayFileFromRadio()
+//-------------------------------------------------------------------------
+
+// This puppy "plays" a recorded file into the denmonulator input, allowing us
+// to replay off air signals.
+
+void MainFrame::OnPlayFileFromRadio(wxCommandEvent& event)
+{
+    wxUnusedVar(event);
+
+    printf("OnPlayFileFromRadio:: %d\n", (int)g_playFileFromRadio);
+    if (g_playFileFromRadio) {
+        printf("OnPlayFileFromRadio:: Stop\n");
+        g_mutexProtectingCallbackData.Lock();
+        g_playFileFromRadio = false;
+        sf_close(g_sfPlayFileFromRadio);
+        SetStatusText(wxT(""));
+        g_mutexProtectingCallbackData.Unlock();
+    }
+    else {
+
+        wxString    soundFile;
+        SF_INFO     sfInfo;
+
+        wxFileDialog openFileDialog(
+                                    this,
+                                    wxT("Play File - From Radio"),
+                                    wxGetApp().m_playFileFromRadioPath,
+                                    wxEmptyString,
+                                    wxT("WAV and RAW files (*.wav;*.raw)|*.wav;*.raw|")
+                                    wxT("All files (*.*)|*.*"),
+                                    wxFD_OPEN | wxFD_FILE_MUST_EXIST
+                                    );
+
+        // add the loop check box
+        openFileDialog.SetExtraControlCreator(&createMyExtraPlayFilePanel);
+ 
+        if(openFileDialog.ShowModal() == wxID_CANCEL)
+        {
+            return;     // the user changed their mind...
+        }
+
+        wxString fileName, extension;
+        soundFile = openFileDialog.GetPath();
+        wxFileName::SplitPath(soundFile, &wxGetApp().m_playFileFromRadioPath, &fileName, &extension);
+        //wxLogDebug("m_playFileToFromRadioPath: %s", wxGetApp().m_playFileFromRadioPath);
+        sfInfo.format = 0;
+
+        if(!extension.IsEmpty())
+        {
+            extension.LowerCase();
+            if(extension == wxT("raw"))
+            {
+                sfInfo.format     = SF_FORMAT_RAW | SF_FORMAT_PCM_16;
+                sfInfo.channels   = 1;
+                sfInfo.samplerate = FS;
+            }
+        }
+        g_sfPlayFileFromRadio = sf_open(soundFile, SFM_READ, &sfInfo);
+        if(g_sfPlayFileFromRadio == NULL)
+        {
+            wxString strErr = sf_strerror(NULL);
+            wxMessageBox(strErr, wxT("Couldn't open sound file"), wxOK);
+            return;
+        }
+        
+        wxWindow * const ctrl = openFileDialog.GetExtraControl();
+
+        // Huh?! I just copied wxWidgets-2.9.4/samples/dialogs ....
+        g_loopPlayFileFromRadio = static_cast<MyExtraPlayFilePanel*>(ctrl)->getLoopPlayFileToMicIn();
+
+        SetStatusText(wxT("Playing File: ") + fileName + wxT("into From Radio") , 0);
+        g_playFileFromRadio = true;
     }
 }
 
@@ -1774,7 +1866,6 @@ void txRxProcessing()
         unsigned int n8k;
 
         n8k = resample(cbData->insrc1, in8k_short, in48k_short, FS, g_soundCard1SampleRate, N8, nsam);
-        fifo_write(cbData->rxinfifo, in8k_short, n8k);
 
         // optionally save signal from radio (demod input to file).
         // Really useful for testing and development as it allows to
@@ -1798,6 +1889,27 @@ void txRxProcessing()
         }
         g_mutexProtectingCallbackData.Unlock();
 
+        // optionally read signal from radio (file to demod input).
+        // Really useful for testing and development as it allows to
+        // develop using off air signals
+
+        g_mutexProtectingCallbackData.Lock();
+        if (g_playFileFromRadio && (g_sfPlayFileFromRadio != NULL)) {
+            int n = sf_read_short(g_sfPlayFileFromRadio, in8k_short, N8);
+            if (n != N8) {
+                if (g_loopPlayFileFromRadio)
+                    sf_seek(g_sfPlayFileFromRadio, 0, SEEK_SET);
+                else {
+                    printf("playFileFromRadio fnsihed, issuing event!\n");
+                    wxCommandEvent event( wxEVT_COMMAND_MENU_SELECTED, g_playFileFromRadioEventId );
+                    // call stop/start play menu item, should be thread safe
+                    g_parent->GetEventHandler()->AddPendingEvent( event );
+                }
+            }
+        }
+        g_mutexProtectingCallbackData.Unlock();
+
+        fifo_write(cbData->rxinfifo, in8k_short, n8k);
         resample_for_plot(g_plotDemodInFifo, in8k_short, n8k);
 
         per_frame_rx_processing(cbData->rxoutfifo, g_CodecBits, cbData->rxinfifo, &g_nRxIn, &g_State, g_pCodec2);
@@ -2104,7 +2216,7 @@ void per_frame_rx_processing(
                     data_flag_index = codec2_get_spare_bit_index(c2);
                     assert(data_flag_index != -1); // not supported for all rates
                     
-                    if (codec_bits[data_flag_index]) {
+                    if (0/*codec_bits[data_flag_index]*/) {
                         //printf("data_flag_index: %d\n", data_flag_index);
                         //printf("rx data bits: ");
                         //for(i=0; i<BITS_PER_CODEC_FRAME; i++)

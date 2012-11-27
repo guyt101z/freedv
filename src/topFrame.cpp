@@ -23,6 +23,7 @@
 
 extern int g_playFileToMicInEventId;
 extern int g_recFileFromRadioEventId;
+extern int g_playFileFromRadioEventId;
 
 //=========================================================================
 // Code that lays out the main application window
@@ -63,15 +64,19 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     m_menuItemCaptTxInStream = new wxMenuItem(tools, wxID_ANY, wxString(_("&Capture Tx Input Stream")), wxEmptyString, wxITEM_NORMAL);
 
     wxMenuItem* m_menuItemPlayFileToMicIn;
-    m_menuItemPlayFileToMicIn = new wxMenuItem(tools, wxID_ANY, wxString(_("&Start/Stop Play File to Mic In")) , wxEmptyString, wxITEM_NORMAL);
+    m_menuItemPlayFileToMicIn = new wxMenuItem(tools, wxID_ANY, wxString(_("Start/Stop Play File - Mic In")) , wxEmptyString, wxITEM_NORMAL);
     g_playFileToMicInEventId = m_menuItemPlayFileToMicIn->GetId();
     tools->Append(m_menuItemPlayFileToMicIn);
 
     wxMenuItem* m_menuItemRecFileFromRadio;
-    m_menuItemRecFileFromRadio = new wxMenuItem(tools, wxID_ANY, wxString(_("S&tart/Stop Record File from Radio")) , wxEmptyString, wxITEM_NORMAL);
+    m_menuItemRecFileFromRadio = new wxMenuItem(tools, wxID_ANY, wxString(_("Start/Stop Record File - From Radio")) , wxEmptyString, wxITEM_NORMAL);
     g_recFileFromRadioEventId = m_menuItemRecFileFromRadio->GetId();
     tools->Append(m_menuItemRecFileFromRadio);
 
+    wxMenuItem* m_menuItemPlayFileFromRadio;
+    m_menuItemPlayFileFromRadio = new wxMenuItem(tools, wxID_ANY, wxString(_("Start/Stop Play File - From Radio")) , wxEmptyString, wxITEM_NORMAL);
+    g_playFileFromRadioEventId = m_menuItemPlayFileFromRadio->GetId();
+    tools->Append(m_menuItemPlayFileFromRadio);
     m_menubarMain->Append(tools, _("&Tools"));
 
     help = new wxMenu();
@@ -391,6 +396,7 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
 
     this->Connect(m_menuItemPlayFileToMicIn->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(TopFrame::OnPlayFileToMicIn));
     this->Connect(m_menuItemRecFileFromRadio->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(TopFrame::OnRecFileFromRadio));
+    this->Connect(m_menuItemPlayFileFromRadio->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(TopFrame::OnPlayFileFromRadio));
 
     this->Connect(m_menuItemHelpUpdates->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(TopFrame::OnHelpCheckUpdates));
     this->Connect(m_menuItemHelpUpdates->GetId(), wxEVT_UPDATE_UI, wxUpdateUIEventHandler(TopFrame::OnHelpCheckUpdatesUI));
@@ -441,6 +447,7 @@ TopFrame::~TopFrame()
 
     this->Disconnect(wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(TopFrame::OnPlayFileToMicIn));
     this->Disconnect(wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(TopFrame::OnRecFileFromRadio));
+    this->Disconnect(wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(TopFrame::OnPlayFileFromRadio));
 
     this->Disconnect(wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(TopFrame::OnHelpCheckUpdates));
     this->Disconnect(wxID_ANY, wxEVT_UPDATE_UI, wxUpdateUIEventHandler(TopFrame::OnHelpCheckUpdatesUI));

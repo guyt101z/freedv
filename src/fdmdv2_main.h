@@ -131,6 +131,7 @@ class MainApp : public wxApp
         wxString            m_playFileToMicInPath;
         wxString            m_recFileFromRadioPath;
         unsigned int        m_recFileFromRadioSecs;
+        wxString            m_playFileFromRadioPath;
 
         bool                m_snrSlow;
 
@@ -312,6 +313,7 @@ class MainFrame : public TopFrame
 
         void OnPlayFileToMicIn( wxCommandEvent& event );
         void OnRecFileFromRadio( wxCommandEvent& event );
+        void OnPlayFileFromRadio( wxCommandEvent& event );
 
         void OnHelpCheckUpdates( wxCommandEvent& event );
         void OnHelpCheckUpdatesUI( wxUpdateUIEvent& event );

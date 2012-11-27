@@ -113,6 +113,7 @@ class TopFrame : public wxFrame
         virtual void OnToolsComCfgUI( wxUpdateUIEvent& event ) { event.Skip(); }
         virtual void OnPlayFileToMicIn( wxCommandEvent& event ) { event.Skip(); }
         virtual void OnRecFileFromRadio( wxCommandEvent& event ) { event.Skip(); }
+        virtual void OnPlayFileFromRadio( wxCommandEvent& event ) { event.Skip(); }
 
         virtual void OnHelpCheckUpdates( wxCommandEvent& event ) { event.Skip(); }
         virtual void OnHelpCheckUpdatesUI( wxUpdateUIEvent& event ) { event.Skip(); }
