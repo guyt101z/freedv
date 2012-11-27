@@ -60,6 +60,10 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     m_menuItemFilter = new wxMenuItem(tools, wxID_ANY, wxString(_("&Filter")) , wxEmptyString, wxITEM_NORMAL);
     tools->Append(m_menuItemFilter);
 
+    wxMenuItem* m_menuItemSetCallSign;
+    m_menuItemSetCallSign = new wxMenuItem(tools, wxID_ANY, wxString(_("Set Call Sign")) , wxEmptyString, wxITEM_NORMAL);
+    tools->Append(m_menuItemSetCallSign);
+
     wxMenuItem* m_menuItemCaptTxInStream;
     m_menuItemCaptTxInStream = new wxMenuItem(tools, wxID_ANY, wxString(_("&Capture Tx Input Stream")), wxEmptyString, wxITEM_NORMAL);
 
@@ -168,46 +172,19 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
 
     // lower middle used for user ID
 
-#ifdef NEW
-    wxBoxSizer* lowerSizer = new wxBoxSizer(wxVERTICAL);
-
-    wxBoxSizer* lowerSizerTop = new wxBoxSizer(wxHORIZONTAL);
-    wxBoxSizer* lowerSizerBottom = new wxBoxSizer(wxHORIZONTAL);
-
-    m_txtCtrlTx = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0);
-    lowerSizerTop->Add(m_txtCtrlTx, 0, wxALL|wxEXPAND, 5);
-    
-    m_togTxID = new wxToggleButton(this, wxID_ANY, _("TxID"), wxDefaultPosition, wxDefaultSize, 0);
-    m_togTxID->SetToolTip(_("Send Tx ID information"));
-    //lowerSizerTop->Add(m_togTxID, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL, 5);
-    /*
-    m_txtCtrlRx = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0);
-    lowerSizerBottom->Add(m_txtCtrlRx, 1, wxALL|wxEXPAND, 5);
-
-    m_togRxID = new wxToggleButton(this, wxID_ANY, _("RxID"), wxDefaultPosition, wxDefaultSize, 0);
-    m_togRxID->SetToolTip(_("Enable reception of ID information"));
-    lowerSizerBottom->Add(m_togRxID, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL, 5);
-    */
-    lowerSizer->Add(lowerSizerTop, 0 ,wxEXPAND);
-    //lowerSizer->Add(lowerSizerBottom);
-#endif
-
     wxBoxSizer* lowerSizer;
     lowerSizer = new wxBoxSizer(wxHORIZONTAL);
 
     wxBoxSizer* bSizer15;
     bSizer15 = new wxBoxSizer(wxVERTICAL);
 
-    m_txtCtrlTx = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0);
-    m_txtCtrlTx->SetToolTip(_("Text in this box wll be sent when TxID button is pressed"));
-    bSizer15->Add(m_txtCtrlTx, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL|wxEXPAND, 5);
-    m_txtCtrlRx = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_READONLY|wxTE_MULTILINE);
-    bSizer15->Add(m_txtCtrlRx, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL|wxEXPAND, 5);
-    m_txtCtrlRx->SetToolTip(_("Text will be received here when RxID button is pressed"));
+    m_txtCtrlCallSign = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_READONLY);
+    m_txtCtrlCallSign->SetToolTip(_("Call Sign of transmitting station will appear here"));
+    bSizer15->Add(m_txtCtrlCallSign, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL|wxEXPAND, 5);
     lowerSizer->Add(bSizer15, 1, wxEXPAND, 5);
 
     wxBoxSizer* bSizer141;
-    bSizer141 = new wxBoxSizer(wxVERTICAL);
+    bSizer141 = new wxBoxSizer(wxHORIZONTAL);
 
     //=====================================================
     // These are the buttons that autosend the userid (?)
@@ -393,6 +370,8 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     this->Connect(m_menuItemFilter->GetId(), wxEVT_UPDATE_UI, wxUpdateUIEventHandler(TopFrame::OnToolsFilterUI));
     this->Connect(m_menuItemRigCtrlCfg->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(TopFrame::OnToolsComCfg));
     this->Connect(m_menuItemRigCtrlCfg->GetId(), wxEVT_UPDATE_UI, wxUpdateUIEventHandler(TopFrame::OnToolsComCfgUI));
+    this->Connect(m_menuItemSetCallSign->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(TopFrame::OnToolsSetCallSign));
+    this->Connect(m_menuItemSetCallSign->GetId(), wxEVT_UPDATE_UI, wxUpdateUIEventHandler(TopFrame::OnToolsSetCallSignUI));
 
     this->Connect(m_menuItemPlayFileToMicIn->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(TopFrame::OnPlayFileToMicIn));
     this->Connect(m_menuItemRecFileFromRadio->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(TopFrame::OnRecFileFromRadio));

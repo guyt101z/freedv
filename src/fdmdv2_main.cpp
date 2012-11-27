@@ -49,10 +49,9 @@ int   g_split;
 int   g_tx;
 float g_snr;
 
-// sending and receiving data
+// sending and receiving Call Sign data
 struct FIFO         *g_txDataInFifo;
 struct VARICODE_DEC  g_varicode_dec_states;
-unsigned char        g_prev_packed_bits[BYTES_PER_CODEC_FRAME];
 struct FIFO         *g_rxDataOutFifo;
 
 // tx/rx processing states
@@ -321,13 +320,7 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     wxGetApp().m_codec2LPCPostFilterBeta       = (float)pConfig->Read(wxT("/Filter/codec2LPCPostFilterBeta"),      CODEC2_LPC_PF_BETA*100)/100.0;
     //printf("main(): m_codec2LPCPostFilterBeta: %f\n", wxGetApp().m_codec2LPCPostFilterBeta);
 
-    wxString txID = pConfig->Read("/Data/txID", wxT(""));
-    m_txtCtrlTx->SetValue(txID);
-    bool f = false;
-    bool txIDEnable = pConfig->Read("/Data/txIDEnable", f);
-    m_togTxID->SetValue(txIDEnable);
-    bool rxIDEnable = pConfig->Read("/Data/rxIDEnable", f);
-    m_togRxID->SetValue(rxIDEnable);
+    wxGetApp().m_callSign = pConfig->Read("/Data/CallSign", wxT(""));
 
     pConfig->SetPath(wxT("/"));
 
@@ -407,8 +400,8 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
 
     // data states
     
-    g_txDataInFifo = fifo_create(MAX_TXID*VARICODE_MAX_BITS);   
-    g_rxDataOutFifo = fifo_create(MAX_TXID*VARICODE_MAX_BITS);   
+    g_txDataInFifo = fifo_create(MAX_CALLSIGN*VARICODE_MAX_BITS);   
+    g_rxDataOutFifo = fifo_create(MAX_CALLSIGN*VARICODE_MAX_BITS);   
     varicode_decode_init(&g_varicode_dec_states);
 }
 
@@ -471,9 +464,7 @@ MainFrame::~MainFrame()
 
         pConfig->Write(wxT("/Audio/snrSlow"), wxGetApp().m_snrSlow);
 
-        pConfig->Write(wxT("/Data/txID"), m_txtCtrlTx->GetValue());
-        pConfig->Write(wxT("/Data/txIDEnable"), m_togTxID->GetValue());
-        pConfig->Write(wxT("/Data/rxIDEnable"), m_togRxID->GetValue());
+        pConfig->Write(wxT("/Data/CallSign"), wxGetApp().m_callSign);
    }
 
     //m_togRxID->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnRxIDUI), NULL, this);
@@ -646,24 +637,37 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
         m_rbSync->SetValue(false);
     }
 
-    // send Tx ID
+    // send Callsign
 
-    if (m_togTxID->GetValue()) {
-        m_txIDTimerTics += DT;
-        if (m_txIDTimerTics > TXID_PERIOD) {
-            m_txIDTimerTics = 0.0;
-            sendTxID();
-        }
+    if (fifo_used(g_txDataInFifo) == 0) {
+        char callsign[MAX_CALLSIGN];
+        strncpy(callsign, (const char*) wxGetApp().m_callSign.mb_str(wxConvUTF8), MAX_CALLSIGN-1);
+        char callsigncr[MAX_CALLSIGN+1];
+        strcpy(callsigncr, callsign);
+        callsigncr[strlen(callsign)] = 13;
+
+        // varicode encode and write to tx data fifo
+
+        short varicode[MAX_CALLSIGN*VARICODE_MAX_BITS];
+        int nout = varicode_encode(varicode, callsigncr, MAX_CALLSIGN*VARICODE_MAX_BITS, strlen(callsign)+1);
+        fifo_write(g_txDataInFifo, varicode, nout);
+        //printf("Callsign sending: %s nout: %d\n", callsign, nout);
     }
 
-    // See if any ID info received
+    // See if any callsign info received
 
-    if (m_togRxID->GetValue()) {
-        short ashort;
-        while (fifo_read(g_rxDataOutFifo, &ashort, 1) == 0) {            
+    short ashort;
+    while (fifo_read(g_rxDataOutFifo, &ashort, 1) == 0) {            
+        if ((ashort == 13) || ((m_pcallsign - m_callsign) > MAX_CALLSIGN-1)) {
+            // CR completes line
+            *m_pcallsign = 0;
+            m_pcallsign = m_callsign;
+        }
+        else {
+            *m_pcallsign++ = (char)ashort;
             wxString s;
-            s.Printf("%c", (char)ashort);
-            m_txtCtrlRx->AppendText(s);
+            s.Printf("%s", m_callsign);
+            m_txtCtrlCallSign->SetValue(s);
         }
     }
 
@@ -841,32 +845,10 @@ void MainFrame::OnTogBtnRxID(wxCommandEvent& event)
 }
 
 //-------------------------------------------------------------------------
-// sendTxID()
-//-------------------------------------------------------------------------
-void MainFrame::sendTxID(void)
-{
-    wxString txid = m_txtCtrlTx->GetValue() + " ";
-    char txid2[MAX_TXID];
-    strncpy(txid2, (const char*) txid.mb_str(wxConvUTF8), MAX_TXID-1);
-    
-    // varicode encode and write to tx data fifo
-
-    short varicode[MAX_TXID*VARICODE_MAX_BITS];
-    int nout = varicode_encode(varicode, txid2, MAX_TXID*VARICODE_MAX_BITS, strlen(txid2));
-    //printf("tx varicode: ");
-    //for(int i=0; i<nout; i++)
-    //    printf("%d", varicode[i]);
-    //printf("\n");
-    fifo_write(g_txDataInFifo, varicode, nout);
-    //printf("MainFrame::OnTogBtnTxID, sending: %s nout: %d ret: %d\n", txid2, nout, ret);
-}
-
-//-------------------------------------------------------------------------
 // OnTogBtnTxID()
 //-------------------------------------------------------------------------
 void MainFrame::OnTogBtnTxID(wxCommandEvent& event)
 {
-    m_txIDTimerTics = TXID_PERIOD; // this forces an immediate send in OnTimer
     event.Skip();
 }
 
@@ -1259,6 +1241,18 @@ void MainFrame::OnToolsFilter(wxCommandEvent& event)
 }
 
 //-------------------------------------------------------------------------
+// OnToolsSetCallSign()
+//-------------------------------------------------------------------------
+void MainFrame::OnToolsSetCallSign(wxCommandEvent& event)
+{
+    wxUnusedVar(event);
+    printf("MainFrame::OnToolSetCallSign\n");
+    wxGetApp().m_callSign = wxGetTextFromUser(wxT("Enter Callsign"), 
+                                              wxT("Enter Callsign"),
+                                              wxGetApp().m_callSign);
+}
+
+//-------------------------------------------------------------------------
 // OnToolsAudioUI()
 //-------------------------------------------------------------------------
 void MainFrame::OnToolsAudioUI(wxUpdateUIEvent& event)
@@ -1347,21 +1341,6 @@ void MainFrame::OnHelpAbout(wxCommandEvent& event)
 
     wxMessageBox(msg, wxT("About"), wxOK | wxICON_INFORMATION, this);
 
-#ifdef TRY_WX_ABOUT
-
-    // DR: I tried this but I like our home made dialog better It
-    // would be nice to have a proper hyperlink, need a custom dialog
-    // for that
-
-    wxAboutDialogInfo aboutInfo;
-    aboutInfo.SetName("FreeDV");
-    aboutInfo.SetVersion(wxT("svn revision: %s\n") + svnLatestRev, SVN_REVISION);
-    aboutInfo.SetDescription(_("Open Source Narrow Band Digital Voice over Radio"));
-    aboutInfo.SetCopyright("Copyright (C) 2012");
-    aboutInfo.SetWebSite("http://freedv.org");
-    aboutInfo.AddDeveloper("David Witten KD0EAG and David Rowe VK5DGR");
-    wxAboutBox(aboutInfo);
-#endif
 
 }
 
@@ -1378,8 +1357,8 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
     if (startStop.IsSameAs("Start")) {
 
         m_togBtnSplit->Enable();
-        m_togRxID->Enable();
-        m_togTxID->Enable();
+        //m_togRxID->Enable();
+        //m_togTxID->Enable();
         m_togBtnAnalog->Enable();
         m_btnTogTX->Enable();
         m_togBtnOnOff->SetLabel(wxT("Stop"));
@@ -1400,10 +1379,9 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
         g_State = 0;
         g_snr = 0.0;
 
-        m_txIDTimerTics = 0.0;
-        m_txtCtrlRx->SetValue(wxT(""));
+        m_pcallsign = m_callsign;
 
-         m_maxLevel = 0;
+        m_maxLevel = 0;
         m_textLevel->SetLabel(wxT(""));
         m_gaugeLevel->SetValue(0);
 
@@ -2105,7 +2083,7 @@ void per_frame_rx_processing(
     int                 rx_bits[FDMDV_BITS_PER_FRAME];
     unsigned char       packed_bits[BYTES_PER_CODEC_FRAME];
     float               rx_spec[FDMDV_NSPEC];
-    int                 i,j;
+    int                 i;
     int                 nin_prev;
     int                 bit;
     int                 byte;
@@ -2206,79 +2184,49 @@ void per_frame_rx_processing(
                 if(sync_bit == 1)
                 {
                     int  data_flag_index;
-                    char ascii_out[MAX_TXID];
 
                     // second half of frame of codec bits
                     memcpy(&codec_bits[FDMDV_BITS_PER_FRAME], rx_bits, FDMDV_BITS_PER_FRAME*sizeof(int));
 
-                    // lets see if this is a data frame
+                    // extract data bit
 
                     data_flag_index = codec2_get_spare_bit_index(c2);
                     assert(data_flag_index != -1); // not supported for all rates
                     
-                    if (codec_bits[data_flag_index]) {
-                        //printf("data_flag_index: %d\n", data_flag_index);
-                        //printf("rx data bits: ");
-                        //for(i=0; i<BITS_PER_CODEC_FRAME; i++)
-                        //    printf("%d",codec_bits[i]);
-                        //printf("\n");
+                    short abit = codec_bits[data_flag_index];
+                    char  ascii_out;
 
-                        // if data construct data frame, varicode decode, write to fifo, send event
-
-                        short varicode[BITS_PER_CODEC_FRAME - 1];
-                        int   n_ascii;
-
-                        for(i=0,j=0; i<data_flag_index; i++,j++)
-                            varicode[j] = codec_bits[i];
-                        for(i=data_flag_index+1; i<BITS_PER_CODEC_FRAME; i++,j++)
-                            varicode[j] = codec_bits[i];
-                        n_ascii = varicode_decode(&g_varicode_dec_states, ascii_out, varicode, MAX_TXID, BITS_PER_CODEC_FRAME-1);
-                        
-                        if (n_ascii) {
-                            ascii_out[n_ascii] = 0;
-                            //printf("rx data: %s\n", ascii_out);
-                            for(i=0; i<n_ascii; i++) {
-                                short ashort = (short)ascii_out[i];
-                                fifo_write(g_rxDataOutFifo, &ashort, 1);
-                            }
-                        }
- 
-                        // use previous frame of packed bits if we have lost this one due to data
-                        memcpy(packed_bits, g_prev_packed_bits, BYTES_PER_CODEC_FRAME);
-
+                    int n_ascii = varicode_decode(&g_varicode_dec_states, &ascii_out, &abit, 1, 1);
+                    assert((n_ascii == 0) || (n_ascii == 1));
+                    if (n_ascii) {
+                        short ashort = ascii_out;
+                        fifo_write(g_rxDataOutFifo, &ashort, 1);
                     }
-                    else {
 
-                        // if voice reconstruct missing bit we steal for data flag and decode
+                    // reconstruct missing bit we steal for data bit and decode speech
                         
-                        codec2_rebuild_spare_bit(c2, codec_bits);
+                    codec2_rebuild_spare_bit(c2, codec_bits);
 
-                        // pack bits, MSB received first
+                    // pack bits, MSB received first
 
-                        bit  = 7;
-                        byte = 0;
-                        memset(packed_bits, 0, BYTES_PER_CODEC_FRAME);
-                        for(i = 0; i < BITS_PER_CODEC_FRAME; i++)
+                    bit  = 7;
+                    byte = 0;
+                    memset(packed_bits, 0, BYTES_PER_CODEC_FRAME);
+                    for(i = 0; i < BITS_PER_CODEC_FRAME; i++)
+                    {
+                        packed_bits[byte] |= (codec_bits[i] << bit);
+                        bit--;
+                        if(bit < 0)
                         {
-                            packed_bits[byte] |= (codec_bits[i] << bit);
-                            bit--;
-                            if(bit < 0)
-                                {
-                                    bit = 7;
-                                    byte++;
-                                }
+                            bit = 7;
+                            byte++;
                         }
-                        assert(byte == BYTES_PER_CODEC_FRAME);
-
-                        // add decoded speech to end of output buffer
-
-                        assert(codec2_samples_per_frame(c2) == (2*N8));
-
-                        memcpy(g_prev_packed_bits, packed_bits, BYTES_PER_CODEC_FRAME);
                     }
+                    assert(byte == BYTES_PER_CODEC_FRAME);
 
-                    // always decode a speech frame, even when we have losta frame due to data
+                    // add decoded speech to end of output buffer
 
+                    assert(codec2_samples_per_frame(c2) == (2*N8));
                     codec2_decode(c2, output_buf, packed_bits);
                     fifo_write(output_fifo, output_buf, codec2_samples_per_frame(c2));
 
@@ -2301,73 +2249,33 @@ void per_frame_tx_processing(
     COMP           tx_fdm_offset[2*FDMDV_NOM_SAMPLES_PER_FRAME];
     int            sync_bit;
     int            i, bit, byte, data_flag_index;
-    unsigned int   nread;
-    short          peak, abit;
+    short          abit;
 
-    // detect silence (todo: or maybe once every 5-10 secs?)
+    codec2_encode(c2, packed_bits, input_buf);
 
-    peak = 0.0;
-    for(i=0; i<2*N8; i++) {
-        if (input_buf[i] > peak)
-           peak = input_buf[i];            
+    /* unpack bits, MSB first */
+
+    bit = 7; byte = 0;
+    for(i=0; i<BITS_PER_CODEC_FRAME; i++) {
+        bits[i] = (packed_bits[byte] >> bit) & 0x1;
+        bit--;
+        if (bit < 0) {
+            bit = 7;
+            byte++;
+        }
     }
+    assert(byte == BYTES_PER_CODEC_FRAME);
 
     // voice/data flag is a spare bit in 1400 bit/s frame that
-    // codec defines
+    // codec defines.  Use this 1 bit/frame to send call sign data
 
     data_flag_index = codec2_get_spare_bit_index(c2);
     assert(data_flag_index != -1); // not supported for all rates
 
-    // potential bug: this should really track background noise level
-    // e.g. look at minimum frame energy.  OW a high backfround level might
-    // mean no data....
-
-    if ((peak < SILENCE_THRESHOLD) && fifo_used(g_txDataInFifo)) {
-        //printf("sending data ...\n");
-
-        // we have to handle the case where we might not have a whole
-        // frame of data to send, in that case pad with zeros
-
-        for(i=0; i<data_flag_index; i++) {
-            nread = fifo_read(g_txDataInFifo, &abit, 1);
-            //printf("nread: %d abit: %d\n", nread, abit);
-            if (nread)
-                bits[i] = 0;
-            else
-                bits[i] = abit;
-        }
-        bits[data_flag_index] = 1; // signals a data frame
-        for(i=data_flag_index+1; i<BITS_PER_CODEC_FRAME; i++) {
-            nread = fifo_read(g_txDataInFifo, &abit, 1);
-            if (nread)
-                bits[i] = 0;
-            else
-                bits[i] = abit;
-        }
-
-        //printf("tx data bits: ");
-        //for(i=0; i<BITS_PER_CODEC_FRAME; i++)
-        //    printf("%d",bits[i]);
-        //printf("\n");
-    }
-    else {
-        codec2_encode(c2, packed_bits, input_buf);
-        
-        /* unpack bits, MSB first */
-
-        bit = 7; byte = 0;
-        for(i=0; i<BITS_PER_CODEC_FRAME; i++) {
-            bits[i] = (packed_bits[byte] >> bit) & 0x1;
-            bit--;
-            if (bit < 0) {
-                bit = 7;
-                byte++;
-            }
-        }
-        assert(byte == BYTES_PER_CODEC_FRAME);
-
+    if (fifo_read(g_txDataInFifo, &abit, 1) == 0)
+        bits[data_flag_index] = abit;
+    else
         bits[data_flag_index] = 0;
-    }
 
     /* modulate even and odd frames */
 

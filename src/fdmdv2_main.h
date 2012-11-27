@@ -43,6 +43,7 @@
 #include <wx/url.h>
 #include <wx/sstream.h>
 #include <wx/listbox.h>
+#include <wx/textdlg.h>
 
 #include <samplerate.h>
 
@@ -132,6 +133,8 @@ class MainApp : public wxApp
         wxString            m_recFileFromRadioPath;
         unsigned int        m_recFileFromRadioSecs;
         wxString            m_playFileFromRadioPath;
+
+        wxString            m_callSign;
 
         bool                m_snrSlow;
 
@@ -291,7 +294,6 @@ class MainFrame : public TopFrame
  protected:
 
         void setsnrBeta(bool snrSlow);
-        void sendTxID(void);
 
         // protected event handlers
         virtual void OnCloseFrame(wxCloseEvent& event);
@@ -310,6 +312,7 @@ class MainFrame : public TopFrame
         void OnToolsComCfg( wxCommandEvent& event );
         void OnToolsComCfgUI( wxUpdateUIEvent& event );
         void OnToolsFilter( wxCommandEvent& event );
+        void OnToolsSetCallSign(wxCommandEvent& event);
 
         void OnPlayFileToMicIn( wxCommandEvent& event );
         void OnRecFileFromRadio( wxCommandEvent& event );
@@ -349,7 +352,10 @@ class MainFrame : public TopFrame
         wxTextCtrl* m_tc;
         int         m_zoom;
         float       m_snrBeta;
-        float       m_txIDTimerTics;
+
+        // Callsign
+        char        m_callsign[MAX_CALLSIGN];
+        char       *m_pcallsign;
 
         // level Gauge
         float       m_maxLevel;

@@ -90,8 +90,7 @@ class TopFrame : public wxFrame
         wxCheckBox* m_ckboxSNR;
         wxGauge* m_gaugeLevel;
         wxStaticText* m_textLevel;
-        wxTextCtrl* m_txtCtrlTx;
-        wxTextCtrl* m_txtCtrlRx;
+        wxTextCtrl* m_txtCtrlCallSign;
         wxSlider* m_sliderSQ;
         wxCheckBox* m_ckboxSQ;
         wxStaticText* m_textSQ;
@@ -109,6 +108,8 @@ class TopFrame : public wxFrame
         virtual void OnToolsAudioUI( wxUpdateUIEvent& event ) { event.Skip(); }
         virtual void OnToolsFilter( wxCommandEvent& event ) { event.Skip(); }
         virtual void OnToolsFilterUI( wxUpdateUIEvent& event ) { event.Skip(); }
+        virtual void OnToolsSetCallSign( wxCommandEvent& event ) { event.Skip(); }
+        virtual void OnToolsSetCallSignUI( wxUpdateUIEvent& event ) { event.Skip(); }
         virtual void OnToolsComCfg( wxCommandEvent& event ) { event.Skip(); }
         virtual void OnToolsComCfgUI( wxUpdateUIEvent& event ) { event.Skip(); }
         virtual void OnPlayFileToMicIn( wxCommandEvent& event ) { event.Skip(); }
