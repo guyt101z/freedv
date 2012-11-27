@@ -309,7 +309,7 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     wxGetApp().m_playFileToMicInPath = pConfig->Read("/File/playFileToMicInPath", wxT(""));
     wxGetApp().m_recFileFromRadioPath = pConfig->Read("/File/recFileFromRadioPath", wxT(""));
     wxGetApp().m_recFileFromRadioSecs = pConfig->Read("/File/recFileFromRadioSecs", 30);
-    wxGetApp().m_playFileFromRadioPath = pConfig->Read("/File/playFileToFromRadioPath", wxT(""));
+    wxGetApp().m_playFileFromRadioPath = pConfig->Read("/File/playFileFromRadioPath", wxT(""));
 
     bool slow = false; // prevents compile error when using default bool
     wxGetApp().m_snrSlow = pConfig->Read("/Audio/snrSlow", slow);
@@ -2216,7 +2216,7 @@ void per_frame_rx_processing(
                     data_flag_index = codec2_get_spare_bit_index(c2);
                     assert(data_flag_index != -1); // not supported for all rates
                     
-                    if (0/*codec_bits[data_flag_index]*/) {
+                    if (codec_bits[data_flag_index]) {
                         //printf("data_flag_index: %d\n", data_flag_index);
                         //printf("rx data bits: ");
                         //for(i=0; i<BITS_PER_CODEC_FRAME; i++)

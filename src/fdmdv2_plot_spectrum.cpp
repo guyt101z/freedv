@@ -123,12 +123,13 @@ void PlotSpectrum::draw(wxAutoBufferedPaintDC& dc)
         pen.SetWidth(1);
         dc.SetPen(pen);
 
-	index_to_px = (float)m_rGrid.GetWidth()/FDMDV_NSPEC;
+        index_to_px = ((float)FDMDV_MAX_F_HZ/(float)MAX_F_HZ)*(float)m_rGrid.GetWidth()/FDMDV_NSPEC;
 	mag_dB_to_py = (float)m_rGrid.GetHeight()/(MAX_MAG_DB-MIN_MAG_DB);
+        int last_index = ((float)MAX_F_HZ/(float)FDMDV_MAX_F_HZ)*FDMDV_NSPEC;
 
 	prev_x = PLOT_BORDER + XLEFT_OFFSET;
 	prev_y = PLOT_BORDER;
-        for(index = 0; index < FDMDV_NSPEC; index++)
+        for(index = 0; index < last_index; index++)
         {
             x = index*index_to_px;
 	    mag = g_avmag[index];
