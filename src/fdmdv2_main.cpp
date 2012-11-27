@@ -218,13 +218,15 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     {
         // Add Waterfall Plot window
 
-        m_panelWaterfall = new PlotWaterfall((wxFrame*) m_auiNbookCtrl, false);
+        m_panelWaterfall = new PlotWaterfall((wxFrame*) m_auiNbookCtrl, false, 0);
+        m_panelWaterfall->SetToolTip(_("Left click to tune, Right click to toggle mono/colour"));
         m_auiNbookCtrl->AddPage(m_panelWaterfall, _("Waterfall"), true, wxNullBitmap);
     }
     if(wxGetApp().m_show_spect)
     {
         // Add Spectrum Plot window
         m_panelSpectrum = new PlotSpectrum((wxFrame*) m_auiNbookCtrl);
+        m_panelSpectrum->SetToolTip(_("Left click to tune"));
         m_auiNbookCtrl->AddPage(m_panelSpectrum, _("Spectrum"), true, wxNullBitmap);
     }
     if(wxGetApp().m_show_scatter)
@@ -817,6 +819,9 @@ void MainFrame::OnTogBtnTXClick(wxCommandEvent& event)
 //-------------------------------------------------------------------------
 void MainFrame::OnTogBtnRxID(wxCommandEvent& event)
 {
+    // empty any junk in rx data FIFO
+    short junk;
+    while(fifo_read(g_rxDataOutFifo,&junk,1) == 0);
     event.Skip();
 }
 

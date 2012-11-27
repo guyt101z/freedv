@@ -28,8 +28,9 @@ void fdmdv2_clickTune(float frequency); // callback to pass new click freq
 BEGIN_EVENT_TABLE(PlotWaterfall, PlotPanel)
     EVT_PAINT           (PlotWaterfall::OnPaint)
     EVT_MOTION          (PlotWaterfall::OnMouseMove)
-    EVT_LEFT_DOWN       (PlotWaterfall::OnMouseDown)
-    EVT_LEFT_UP         (PlotWaterfall::OnMouseUp)
+    EVT_LEFT_DOWN       (PlotWaterfall::OnMouseLeftDown)
+    EVT_RIGHT_DOWN      (PlotWaterfall::OnMouseRightDown)
+    EVT_LEFT_UP         (PlotWaterfall::OnMouseLeftUp)
     EVT_MOUSEWHEEL      (PlotWaterfall::OnMouseWheelMoved)
     EVT_SIZE            (PlotWaterfall::OnSize)
     EVT_SHOW            (PlotWaterfall::OnShow)
@@ -45,14 +46,15 @@ END_EVENT_TABLE()
 // @brief
 //
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
-PlotWaterfall::PlotWaterfall(wxFrame* parent, bool greyscale): PlotPanel(parent)
+PlotWaterfall::PlotWaterfall(wxFrame* parent, bool graticule, int colour): PlotPanel(parent)
 {
 
     for(int i = 0; i < 255; i++)
     {
         m_heatmap_lut[i] = heatmap((float)i, 0.0, 255.0);
     }
-    m_greyscale     = greyscale;
+    m_graticule     = graticule;
+    m_colour        = colour;
     m_Bufsz         = GetMaxClientSize();
     m_newdata       = false;
     m_firstPass     = true;
@@ -60,6 +62,8 @@ PlotWaterfall::PlotWaterfall(wxFrame* parent, bool greyscale): PlotPanel(parent)
     SetLabelSize(10.0);
 
     m_pBmp = NULL;
+    m_max_mag = MAX_MAG_DB;
+    m_min_mag = MIN_MAG_DB;
 }
 
 // When the window size gets set we can work outthe size of the window
@@ -241,25 +245,40 @@ void PlotWaterfall::drawGraticule(wxAutoBufferedPaintDC& dc)
     // upper LH coords of plot area are (PLOT_BORDER + XLEFT_OFFSET, PLOT_BORDER)
     // lower RH coords of plot area are (PLOT_BORDER + XLEFT_OFFSET + m_rGrid.GetWidth(), 
     //                                   PLOT_BORDER + m_rGrid.GetHeight())
-    // Vertical gridlines
-    dc.SetPen(m_penShortDash);
+
+    // Major Vertical gridlines and legend
+    //dc.SetPen(m_penShortDash);
     for(f=STEP_F_HZ; f<MAX_F_HZ; f+=STEP_F_HZ) 
     {
         x = f*freq_hz_to_px;
         x += PLOT_BORDER + XLEFT_OFFSET;
-        dc.DrawLine(x, m_rGrid.GetHeight() + PLOT_BORDER, x, PLOT_BORDER);
+
+        if (m_graticule)
+            dc.DrawLine(x, m_rGrid.GetHeight() + PLOT_BORDER, x, PLOT_BORDER);
+        else
+            dc.DrawLine(x, m_rGrid.GetHeight() + PLOT_BORDER, x, m_rGrid.GetHeight() + PLOT_BORDER + YBOTTOM_TEXT_OFFSET);
+            
         sprintf(buf, "%4.0fHz", f);
         GetTextExtent(buf, &text_w, &text_h);
-            dc.DrawText(buf, x - text_w/2, m_rGrid.GetHeight() + PLOT_BORDER + YBOTTOM_TEXT_OFFSET);
+        dc.DrawText(buf, x - text_w/2, m_rGrid.GetHeight() + PLOT_BORDER + YBOTTOM_TEXT_OFFSET);
     }
 
+    for(f=STEP_MINOR_F_HZ; f<MAX_F_HZ; f+=STEP_MINOR_F_HZ) 
+    {
+        x = f*freq_hz_to_px;
+        x += PLOT_BORDER + XLEFT_OFFSET;
+        dc.DrawLine(x, m_rGrid.GetHeight() + PLOT_BORDER, x, m_rGrid.GetHeight() + PLOT_BORDER + YBOTTOM_TEXT_OFFSET-5);
+    }
+    
     // Horizontal gridlines
     dc.SetPen(m_penDotDash);
     for(time=0; time<=WATERFALL_SECS_Y; time+=WATERFALL_SECS_STEP) {
-	y = m_rGrid.GetHeight() - time*time_s_to_py;
-	y += PLOT_BORDER;
-	dc.DrawLine(PLOT_BORDER + XLEFT_OFFSET, y, 
-		    (m_rGrid.GetWidth() + PLOT_BORDER + XLEFT_OFFSET), y);
+       y = m_rGrid.GetHeight() - time*time_s_to_py;
+       y += PLOT_BORDER;
+
+        if (m_graticule)
+            dc.DrawLine(PLOT_BORDER + XLEFT_OFFSET, y, 
+                        (m_rGrid.GetWidth() + PLOT_BORDER + XLEFT_OFFSET), y);
         sprintf(buf, "%3.0fs", time);
 	GetTextExtent(buf, &text_w, &text_h);
         dc.DrawText(buf, PLOT_BORDER + XLEFT_OFFSET - text_w - XLEFT_TEXT_OFFSET, y-text_h/2);
@@ -270,7 +289,7 @@ void PlotWaterfall::drawGraticule(wxAutoBufferedPaintDC& dc)
     x = m_rxFreq*freq_hz_to_px;
     x += PLOT_BORDER + XLEFT_OFFSET;
     //printf("m_rxFreq %f x %d\n", m_rxFreq, x);
-    dc.DrawLine(x, m_rGrid.GetHeight()+ PLOT_BORDER, x, m_rGrid.GetHeight() + m_rCtrl.GetHeight());
+    dc.DrawLine(x, m_rGrid.GetHeight()+ PLOT_BORDER, x, m_rCtrl.GetHeight());
     
 }
 
@@ -308,7 +327,18 @@ void PlotWaterfall::plotPixelData()
     // number of dy high blocks in spectrogram
     dy_blocks = m_rGrid.GetHeight()/ dy;
 
-    intensity_per_dB  = (float)256 /(MAX_MAG_DB - MIN_MAG_DB);
+    // update min and max amplitude estimates
+
+    float max_mag = MIN_MAG_DB;
+    for(int i=0; i<FDMDV_NSPEC; i++) {
+        if (g_avmag[i] > max_mag)
+            max_mag = g_avmag[i];
+    }
+    m_max_mag = BETA*m_max_mag + (1 - BETA)*max_mag;
+    m_min_mag = max_mag - 20.0;
+    //printf("max_mag: %f m_max_mag: %f\n", max_mag, m_max_mag);
+    //intensity_per_dB  = (float)256 /(MAX_MAG_DB - MIN_MAG_DB);
+    intensity_per_dB  = (float)256 /(m_max_mag - m_min_mag);
     spec_index_per_px = (float)FDMDV_NSPEC / (float) m_rGrid.GetWidth();
 
     /*
@@ -365,27 +395,35 @@ void PlotWaterfall::plotPixelData()
             index = px * spec_index_per_px;
             assert(index < FDMDV_NSPEC);
 
-            intensity = intensity_per_dB * (g_avmag[index] - MIN_MAG_DB);
+            intensity = intensity_per_dB * (g_avmag[index] - m_min_mag);
             if(intensity > 255) intensity = 255;
             if (intensity < 0) intensity = 0;
             //printf("%d %f %d \n", index, g_avmag[index], intensity);
 
-            if (m_greyscale) {
-                if (intensity > 200) {
+            switch (m_colour) {
+            case 0:
+                p.Red() = m_heatmap_lut[intensity] & 0xff;
+                p.Green() = (m_heatmap_lut[intensity] >> 8) & 0xff;
+                p.Blue() = (m_heatmap_lut[intensity] >> 16) & 0xff;
+                break;
+            case 1:
+                p.Red() = intensity;
+                p.Green() = intensity;
+                p.Blue() = intensity;       
+                break;
+            case 2:
+                if (intensity > 250) {
                     p.Red() = intensity;
                     p.Green() = intensity;
-                    p.Blue() = intensity;            
+                    p.Blue() = intensity;
                 }
                 else {
                     p.Red() = 0;
                     p.Green() = 0;
-                    p.Blue() = intensity;            
+                    p.Blue() = intensity;
                 }
-            }
-            else {
-                p.Red() = m_heatmap_lut[intensity] & 0xff;
-                p.Green() = (m_heatmap_lut[intensity] >> 8) & 0xff;
-                p.Blue() = (m_heatmap_lut[intensity] >> 16) & 0xff;
+                    
+                break;
             }
             ++p;
         }
@@ -396,9 +434,9 @@ void PlotWaterfall::plotPixelData()
 }
 
 //-------------------------------------------------------------------------
-// OnMouseDown()
+// OnMouseLeftDown()
 //-------------------------------------------------------------------------
-void PlotWaterfall::OnMouseDown(wxMouseEvent& event)
+void PlotWaterfall::OnMouseLeftDown(wxMouseEvent& event)
 {
     m_mouseDown = true;
     wxClientDC dc(this);
@@ -419,3 +457,14 @@ void PlotWaterfall::OnMouseDown(wxMouseEvent& event)
         fdmdv2_clickTune(clickFreq);
     }
 }
+
+//-------------------------------------------------------------------------
+// OnMouseRightDown()
+//-------------------------------------------------------------------------
+void PlotWaterfall::OnMouseRightDown(wxMouseEvent& event)
+{
+    m_colour++;
+    if (m_colour == 3)
+        m_colour = 0;
+}
+

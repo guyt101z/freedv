@@ -45,7 +45,7 @@
 #define XLEFT_OFFSET        40
 #define XLEFT_TEXT_OFFSET   6
 #define YBOTTOM_OFFSET      20
-#define YBOTTOM_TEXT_OFFSET 6
+#define YBOTTOM_TEXT_OFFSET 15
 #define GRID_INCREMENT      50
 
 #define BLACK_COLOR         wxColor(0x00, 0x00, 0x00)
@@ -109,8 +109,9 @@ class PlotPanel : public wxPanel
 
         // some useful events
         void            OnMouseMove(wxMouseEvent& event);
-        virtual void    OnMouseDown(wxMouseEvent& event);
-        void            OnMouseUp(wxMouseEvent& event);
+        virtual void    OnMouseLeftDown(wxMouseEvent& event);
+        void            OnMouseLeftUp(wxMouseEvent& event);
+        virtual void    OnMouseRightDown(wxMouseEvent& event);
         void            OnMouseWheelMoved(wxMouseEvent& event);
         void            OnClose(wxCloseEvent& event ){ event.Skip(); }
         void            OnSize( wxSizeEvent& event );

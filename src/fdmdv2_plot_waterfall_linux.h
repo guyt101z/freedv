@@ -37,7 +37,7 @@
 class PlotWaterfall : public PlotPanel
 {
     public:
-    PlotWaterfall(wxFrame* parent, bool greyscale);
+    PlotWaterfall(wxFrame* parent, bool graticule, int colour);
         ~PlotWaterfall();
         bool checkDT(void);
         void setGreyscale(bool greyscale) { m_greyscale = greyscale; }
@@ -54,11 +54,16 @@ class PlotWaterfall : public PlotPanel
         void        drawGraticule(wxAutoBufferedPaintDC&  dc);
         void        draw(wxAutoBufferedPaintDC& dc);
         void        plotPixelData();
-        void        OnMouseDown(wxMouseEvent& event);
+        void        OnMouseLeftDown(wxMouseEvent& event);
+        void        OnMouseRightDown(wxMouseEvent& event);
 
     private:
         float       m_dT;
         float       m_rxFreq;
+        bool        m_graticule;
+        float       m_min_mag;
+        float       m_max_mag;
+        int         m_colour;
 
         DECLARE_EVENT_TABLE()
 };

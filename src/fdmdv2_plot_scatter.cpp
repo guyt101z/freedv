@@ -25,8 +25,6 @@
 BEGIN_EVENT_TABLE(PlotScatter, PlotPanel)
     EVT_PAINT           (PlotScatter::OnPaint)
     EVT_MOTION          (PlotScatter::OnMouseMove)
-    EVT_LEFT_DOWN       (PlotScatter::OnMouseDown)
-    EVT_LEFT_UP         (PlotScatter::OnMouseUp)
     EVT_MOUSEWHEEL      (PlotScatter::OnMouseWheelMoved)
     EVT_SIZE            (PlotScatter::OnSize)
     EVT_SHOW            (PlotScatter::OnShow)

@@ -28,8 +28,8 @@ void fdmdv2_clickTune(float frequency); // callback to pass new click freq
 
 BEGIN_EVENT_TABLE(PlotSpectrum, PlotPanel)
     EVT_MOTION          (PlotSpectrum::OnMouseMove)
-    EVT_LEFT_DOWN       (PlotSpectrum::OnMouseDown)
-    EVT_LEFT_UP         (PlotSpectrum::OnMouseUp)
+    EVT_LEFT_DOWN       (PlotSpectrum::OnMouseLeftDown)
+    EVT_LEFT_UP         (PlotSpectrum::OnMouseLeftUp)
     EVT_MOUSEWHEEL      (PlotSpectrum::OnMouseWheelMoved)
     EVT_PAINT           (PlotSpectrum::OnPaint)
     EVT_SHOW            (PlotSpectrum::OnShow)
@@ -175,16 +175,28 @@ void PlotSpectrum::drawGraticule(wxAutoBufferedPaintDC&  dc)
 
     // Vertical gridlines
 
-    dc.SetPen(m_penShortDash);
     for(f=STEP_F_HZ; f<MAX_F_HZ; f+=STEP_F_HZ) {
 	x = f*freq_hz_to_px;
 	x += PLOT_BORDER + XLEFT_OFFSET;
+
+        dc.SetPen(m_penShortDash);
         dc.DrawLine(x, m_rGrid.GetHeight() + PLOT_BORDER, x, PLOT_BORDER);
+        dc.SetPen(wxPen(BLACK_COLOR, 1));
+        dc.DrawLine(x, m_rGrid.GetHeight() + PLOT_BORDER, x, m_rGrid.GetHeight() + PLOT_BORDER + YBOTTOM_TEXT_OFFSET);
+
         sprintf(buf, "%4.0fHz", f);
 	GetTextExtent(buf, &text_w, &text_h);
         dc.DrawText(buf, x - text_w/2, m_rGrid.GetHeight() + PLOT_BORDER + YBOTTOM_TEXT_OFFSET);
     }
 
+    dc.SetPen(wxPen(BLACK_COLOR, 1));
+    for(f=STEP_MINOR_F_HZ; f<MAX_F_HZ; f+=STEP_MINOR_F_HZ) 
+    {
+        x = f*freq_hz_to_px;
+        x += PLOT_BORDER + XLEFT_OFFSET;
+        dc.DrawLine(x, m_rGrid.GetHeight() + PLOT_BORDER, x, m_rGrid.GetHeight() + PLOT_BORDER + YBOTTOM_TEXT_OFFSET-5);
+    }
+    
     // Horizontal gridlines
 
     dc.SetPen(m_penDotDash);
@@ -203,14 +215,14 @@ void PlotSpectrum::drawGraticule(wxAutoBufferedPaintDC&  dc)
     x = m_rxFreq*freq_hz_to_px;
     x += PLOT_BORDER + XLEFT_OFFSET;
     //printf("m_rxFreq %f x %d\n", m_rxFreq, x);
-    dc.DrawLine(x, m_rGrid.GetHeight()+ PLOT_BORDER, x, m_rGrid.GetHeight() + m_rCtrl.GetHeight());
+    dc.DrawLine(x, m_rGrid.GetHeight()+ PLOT_BORDER, x, m_rCtrl.GetHeight());
 
 }
 
 //-------------------------------------------------------------------------
 // OnMouseDown()
 //-------------------------------------------------------------------------
-void PlotSpectrum::OnMouseDown(wxMouseEvent& event)
+void PlotSpectrum::OnMouseLeftDown(wxMouseEvent& event)
 {
     m_mouseDown = true;
     wxClientDC dc(this);

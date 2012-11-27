@@ -26,8 +26,6 @@
 BEGIN_EVENT_TABLE(PlotScalar, PlotPanel)
     EVT_PAINT           (PlotScalar::OnPaint)
     EVT_MOTION          (PlotScalar::OnMouseMove)
-    EVT_LEFT_DOWN       (PlotScalar::OnMouseDown)
-    EVT_LEFT_UP         (PlotScalar::OnMouseUp)
     EVT_MOUSEWHEEL      (PlotScalar::OnMouseWheelMoved)
     EVT_SIZE            (PlotScalar::OnSize)
     EVT_SHOW            (PlotScalar::OnShow)

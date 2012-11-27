@@ -24,8 +24,9 @@
 BEGIN_EVENT_TABLE(PlotPanel, wxPanel)
     EVT_PAINT           (PlotPanel::OnPaint)
     EVT_MOTION          (PlotPanel::OnMouseMove)
-    EVT_LEFT_DOWN       (PlotPanel::OnMouseDown)
-    EVT_LEFT_UP         (PlotPanel::OnMouseUp)
+    EVT_LEFT_DOWN       (PlotPanel::OnMouseLeftDown)
+    EVT_LEFT_UP         (PlotPanel::OnMouseLeftUp)
+    EVT_RIGHT_DOWN      (PlotPanel::OnMouseRightDown)
     EVT_MOUSEWHEEL      (PlotPanel::OnMouseWheelMoved)
     EVT_SIZE            (PlotPanel::OnSize)
     EVT_SHOW            (PlotPanel::OnShow)
@@ -140,9 +141,16 @@ void PlotPanel::OnMouseMove(wxMouseEvent& event)
 }
 
 //-------------------------------------------------------------------------
-// OnMouseDown()
+// OnMouseLeftDown()
 //-------------------------------------------------------------------------
-void PlotPanel::OnMouseDown(wxMouseEvent& event)
+void PlotPanel::OnMouseLeftDown(wxMouseEvent& event)
+{
+}
+
+//-------------------------------------------------------------------------
+// OnMouseRightDown()
+//-------------------------------------------------------------------------
+void PlotPanel::OnMouseRightDown(wxMouseEvent& event)
 {
 }
 
@@ -154,9 +162,9 @@ void PlotPanel::OnMouseWheelMoved(wxMouseEvent& event)
 }
 
 //-------------------------------------------------------------------------
-// OnMouseUp()
+// OnMouseLeftUp()
 //-------------------------------------------------------------------------
-void PlotPanel::OnMouseUp(wxMouseEvent& event)
+void PlotPanel::OnMouseLeftUp(wxMouseEvent& event)
 {
     m_mouseDown = false;
 }
