@@ -4,7 +4,7 @@
 // Purpose:         Implements simple wxWidgets application with GUI.
 // Created:         Apr. 9, 2012
 // Authors:         David Rowe, David Witten
-// 
+//  
 // License:
 //
 //  This program is free software; you can redistribute it and/or modify
