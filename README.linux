@@ -73,6 +73,20 @@ Build portaudio
    possible to build fdmdv2 without "make install", by passing
    --prefix to the ./configure stage.
 
+Build libctb (Communications Toolbox)
+-------------------------------------
+
+$ wget https://iftools.com/download/ctb/0.16/libctb-0.16.tar.gz
+$ tar xvzf libctb-0.16.tar.gz
+$ cd libctb-0.16/build
+build$ make
+build$ sudo make install
+
+I found the "sudo make DEBUG=0 GPIB=0 install" didn't install the kbhit.h file:
+
+build$ sudo cp ../include/ctb-0.16/kbhit.h /usr/local/include/ctb-0.16
+build$ sudo ldconfig
+
 Build codec2-dev
 ----------------
 
