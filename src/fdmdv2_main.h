@@ -51,6 +51,11 @@
 #include "fdmdv.h"
 #include "fifo.h"
 
+#include "ctb-0.16/ctb.h"
+#include "ctb-0.16/portscan.h"
+#include "ctb-0.16/serportx.h"
+#include "ctb-0.16/serport.h"
+
 #include "topFrame.h"
 #include "dlg_comports.h"
 #include "fdmdv2_plot.h"
@@ -124,6 +129,8 @@ class MainApp : public wxApp
         wxString            m_strRigCtrlDatabits;
         wxString            m_strRigCtrlStopbits;
         wxString            m_strRigCtrlParity;
+        bool                m_boolUseSerialPTT;
+        bool                m_boolUseTonePTT;
         bool                m_boolUseRTS;
         bool                m_boolRTSPos;
         bool                m_boolUseDTR;
@@ -261,6 +268,9 @@ class MainFrame : public TopFrame
         
         txRxThread*             m_txRxThread;
 
+        void SetupSerialPort(void);
+        void CloseSerialPort(void);
+
 #ifdef _USE_TIMER
         wxTimer                 m_plotTimer;
 #endif
@@ -291,7 +301,10 @@ class MainFrame : public TopFrame
     void initPortAudioDevice(PortAudioWrap *pa, int inDevice, int outDevice, 
                              int soundCard, int sampleRate, int inputChannels);
 
- protected:
+    protected:
+
+        ctb::IOBase*            m_device;
+        ctb::SerialPort*        m_serialPort;
 
         void setsnrBeta(bool snrSlow);
 
@@ -305,7 +318,7 @@ class MainFrame : public TopFrame
         void stopRxStream();
         void abortTxStream();
         void abortRxStream();
-
+        
         void OnExit( wxCommandEvent& event );
         void OnToolsAudio( wxCommandEvent& event );
         void OnToolsAudioUI( wxUpdateUIEvent& event );
@@ -352,7 +365,7 @@ class MainFrame : public TopFrame
         wxTextCtrl* m_tc;
         int         m_zoom;
         float       m_snrBeta;
-
+        
         // Callsign
         char        m_callsign[MAX_CALLSIGN];
         char       *m_pcallsign;

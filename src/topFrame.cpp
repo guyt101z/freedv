@@ -342,9 +342,9 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     //------------------------------
     wxBoxSizer* bSizer11;
     bSizer11 = new wxBoxSizer(wxVERTICAL);
-    m_btnTogTX = new wxToggleButton(this, wxID_ANY, _("TX"), wxDefaultPosition, wxDefaultSize, 0);
-    m_btnTogTX->SetToolTip(_("Switch between Receive and Transmit"));
-    bSizer11->Add(m_btnTogTX, 1, wxALIGN_CENTER|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    m_btnTogPTT = new wxToggleButton(this, wxID_ANY, _("PTT"), wxDefaultPosition, wxDefaultSize, 0);
+    m_btnTogPTT->SetToolTip(_("PTT Switch between Receive and Transmit"));
+    bSizer11->Add(m_btnTogPTT, 1, wxALIGN_CENTER|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 1);
     sbSizer5->Add(bSizer11, 2, wxEXPAND, 1);
     rightSizer->Add(sbSizer5, 2, wxALIGN_CENTER|wxALL|wxEXPAND, 3);
     bSizer1->Add(rightSizer, 0, wxALL|wxEXPAND, 3);
@@ -404,7 +404,7 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
 #ifdef ALC
     m_togBtnALC->Connect(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler(TopFrame::OnTogBtnALCClick), NULL, this);
 #endif
-    m_btnTogTX->Connect(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler(TopFrame::OnTogBtnTXClick), NULL, this);
+    m_btnTogPTT->Connect(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler(TopFrame::OnTogBtnTXClick), NULL, this);
 }
 
 TopFrame::~TopFrame()
@@ -453,7 +453,7 @@ TopFrame::~TopFrame()
 #ifdef ALC
     m_togBtnALC->Disconnect(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler(TopFrame::OnTogBtnALCClick), NULL, this);
 #endif
-    m_btnTogTX->Disconnect(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler(TopFrame::OnTogBtnTXClick), NULL, this);
+    m_btnTogPTT->Disconnect(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler(TopFrame::OnTogBtnTXClick), NULL, this);
 
 }
 

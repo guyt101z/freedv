@@ -151,7 +151,7 @@ class TopFrame : public wxFrame
         wxToggleButton* m_togBtnSplit;
         wxToggleButton* m_togBtnAnalog;
         wxToggleButton* m_togBtnALC;
-        wxToggleButton* m_btnTogTX;
+        wxToggleButton* m_btnTogPTT;
         wxToggleButton* m_togBtnLoopRx;
         wxToggleButton* m_togBtnLoopTx;
 

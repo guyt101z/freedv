@@ -160,6 +160,8 @@ bool MainApp::OnInit()
     m_textVoiceOutput.Empty();
     m_strSampleRate.Empty();
     m_strBitrate.Empty();
+    m_boolUseTonePTT   = false;
+    m_boolUseSerialPTT = true;
     // Create the main application window
     MainFrame *frame = new MainFrame(NULL);
     SetTopWindow(frame);
@@ -205,15 +207,15 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     // note: run DebugView program to see this message under windows
     wxLogDebug("x = %d y = %d w = %d h = %d\n", x,y,w,h);
 
-    wxGetApp().m_show_wf      = pConfig->Read(wxT("/MainFrame/show_wf"),      1);
-    wxGetApp().m_show_spect   = pConfig->Read(wxT("/MainFrame/show_spect"),   1);
-    wxGetApp().m_show_scatter = pConfig->Read(wxT("/MainFrame/show_scatter"), 1);
-    wxGetApp().m_show_timing  = pConfig->Read(wxT("/MainFrame/show_timing"),  1);
-    wxGetApp().m_show_freq    = pConfig->Read(wxT("/MainFrame/show_freq"),    1);
-    wxGetApp().m_show_speech_in = pConfig->Read(wxT("/MainFrame/show_speech_in"),    1);
-    wxGetApp().m_show_speech_out = pConfig->Read(wxT("/MainFrame/show_speech_out"),    1);
-    wxGetApp().m_show_demod_in = pConfig->Read(wxT("/MainFrame/show_demod_in"),    1);
-    
+    wxGetApp().m_show_wf            = pConfig->Read(wxT("/MainFrame/show_wf"),      1);
+    wxGetApp().m_show_spect         = pConfig->Read(wxT("/MainFrame/show_spect"),   1);
+    wxGetApp().m_show_scatter       = pConfig->Read(wxT("/MainFrame/show_scatter"), 1);
+    wxGetApp().m_show_timing        = pConfig->Read(wxT("/MainFrame/show_timing"),  1);
+    wxGetApp().m_show_freq          = pConfig->Read(wxT("/MainFrame/show_freq"),    1);
+    wxGetApp().m_show_speech_in     = pConfig->Read(wxT("/MainFrame/show_speech_in"),    1);
+    wxGetApp().m_show_speech_out    = pConfig->Read(wxT("/MainFrame/show_speech_out"),    1);
+    wxGetApp().m_show_demod_in      = pConfig->Read(wxT("/MainFrame/show_demod_in"),    1);
+
     g_SquelchActive = pConfig->Read(wxT("/Audio/SquelchActive"), 1);
     g_SquelchLevel = pConfig->Read(wxT("/Audio/SquelchLevel"), (int)(SQ_DEFAULT_SNR*2));
     g_SquelchLevel /= 2.0;
@@ -299,12 +301,17 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
             g_nSoundCards = 2;
     }
 
-    wxGetApp().m_strRigCtrlPort     = pConfig->Read("/Rig/Port",                wxT("\\\\.\\com1"));
-    wxGetApp().m_strRigCtrlBaud     = pConfig->Read("/Rig/Baud",                wxT("9600"));
-    wxGetApp().m_strRigCtrlDatabits = pConfig->Read("/Rig/DataBits",            wxT("8"));
-    wxGetApp().m_strRigCtrlStopbits = pConfig->Read("/Rig/StopBits",            wxT("1"));
-    wxGetApp().m_strRigCtrlParity   = pConfig->Read("/Rig/Parity",              wxT("n"));
-
+    wxGetApp().m_strRigCtrlPort     = pConfig->Read(wxT("/Rig/Port"),           wxT("COM3"));
+    wxGetApp().m_strRigCtrlBaud     = pConfig->Read(wxT("/Rig/Baud"),           wxT("9600"));
+    wxGetApp().m_strRigCtrlDatabits = pConfig->Read(wxT("/Rig/DataBits"),       wxT("8"));
+    wxGetApp().m_strRigCtrlStopbits = pConfig->Read(wxT("/Rig/StopBits"),       wxT("1"));
+    wxGetApp().m_strRigCtrlParity   = pConfig->Read(wxT("/Rig/Parity"),         wxT("n"));
+    wxGetApp().m_boolUseTonePTT     = pConfig->ReadBool(wxT("/Rig/UseTonePTT"),     false);
+    wxGetApp().m_boolUseSerialPTT   = pConfig->ReadBool(wxT("/Rig/UseSerialPTT"),   true);
+    wxGetApp().m_boolUseRTS         = pConfig->ReadBool(wxT("/Rig/UseRTS"),         true);
+    wxGetApp().m_boolRTSPos         = pConfig->ReadBool(wxT("/Rig/RTSPolarity"),    false);
+    wxGetApp().m_boolUseDTR         = pConfig->ReadBool(wxT("/Rig/UseDTR"),         false);
+    wxGetApp().m_boolDTRPos         = pConfig->ReadBool(wxT("/Rig/DTRPolarity"),    false);
     wxGetApp().m_playFileToMicInPath = pConfig->Read("/File/playFileToMicInPath", wxT(""));
     wxGetApp().m_recFileFromRadioPath = pConfig->Read("/File/recFileFromRadioPath", wxT(""));
     wxGetApp().m_recFileFromRadioSecs = pConfig->Read("/File/recFileFromRadioSecs", 30);
@@ -331,19 +338,20 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     m_togBtnSplit->Connect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnSplitClickUI), NULL, this);
     m_togBtnAnalog->Connect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnAnalogClickUI), NULL, this);
     //m_togBtnALC->Connect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnALCClickUI), NULL, this);
-    m_btnTogTX->Connect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnTXClickUI), NULL, this);
+    m_btnTogPTT->Connect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnTXClickUI), NULL, this);
 
     m_togBtnSplit->Disable();
     m_togRxID->Disable();
     m_togTxID->Disable();
     m_togBtnAnalog->Disable();
     //m_togBtnALC->Disable();
-    m_btnTogTX->Disable();
+    //m_btnTogPTT->Disable();
+    SetupSerialPort();
+
 
 //    m_menuItemPlayAudioFile->Enable(false);
 
     // squelch settings
-
     char sqsnr[15];
     m_sliderSQ->SetValue((int)(g_SquelchLevel*2.0));
     sprintf(sqsnr, "%4.1f", g_SquelchLevel);
@@ -399,7 +407,6 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     g_split = 0;
 
     // data states
-    
     g_txDataInFifo = fifo_create(MAX_CALLSIGN*VARICODE_MAX_BITS);   
     g_rxDataOutFifo = fifo_create(MAX_CALLSIGN*VARICODE_MAX_BITS);   
     varicode_decode_init(&g_varicode_dec_states);
@@ -456,6 +463,8 @@ MainFrame::~MainFrame()
         pConfig->Write(wxT("/Rig/RTSPolarity"),             wxGetApp().m_boolRTSPos);
         pConfig->Write(wxT("/Rig/UseDTR"),                  wxGetApp().m_boolUseDTR);
         pConfig->Write(wxT("/Rig/DTRPolarity"),             wxGetApp().m_boolDTRPos);
+        pConfig->Write(wxT("/Rig/UseTonePTT"),              wxGetApp().m_boolUseTonePTT);
+        pConfig->Write(wxT("/Rig/UseSerialPTT"),            wxGetApp().m_boolUseSerialPTT);
 
         pConfig->Write(wxT("/File/playFileToMicInPath"),    wxGetApp().m_playFileToMicInPath);
         pConfig->Write(wxT("/File/recFileFromRadioPath"),   wxGetApp().m_recFileFromRadioPath);
@@ -473,8 +482,10 @@ MainFrame::~MainFrame()
     m_togBtnSplit->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnSplitClickUI), NULL, this);
     m_togBtnAnalog->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnAnalogClickUI), NULL, this);
     //m_togBtnALC->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnALCClickUI), NULL, this);
-    m_btnTogTX->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnTXClickUI), NULL, this);
-
+    m_btnTogPTT->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnTXClickUI), NULL, this);
+    
+    CloseSerialPort();
+    
     if (m_RxRunning)
     {
         stopRxStream();
@@ -815,16 +826,29 @@ void MainFrame::OnCheckSNRClick(wxCommandEvent& event)
 //-------------------------------------------------------------------------
 void MainFrame::OnTogBtnTXClick(wxCommandEvent& event)
 {
-    if (g_tx) {
+    if (g_tx) 
+    {
         // tx-> rx transition, swap to Waterfall
         m_auiNbookCtrl->ChangeSelection(0); 
     }
-    else {
+    else 
+    {
         // rx-> tx transition, swap to Mic In page to monitor speech
         m_auiNbookCtrl->ChangeSelection(4); // is there a way to avoid hard coding this?
     }
-    g_tx = m_btnTogTX->GetValue();
-
+    g_tx = m_btnTogPTT->GetValue();
+    
+    if(event.IsChecked()) 
+    {
+        m_serialPort->SetLineState(ctb::LinestateRts);
+       // m_btnTogPTT->SetLabel(wxT("PTT"));
+    } 
+    else 
+    {
+        m_serialPort->ClrLineState(ctb::LinestateRts);
+       // m_btnTogPTT->SetLabel(wxT("PTT"));
+    }
+    
     // reset level gauge
     m_maxLevel = 0;
     m_textLevel->SetLabel(wxT(""));
@@ -1210,7 +1234,7 @@ void MainFrame::OnExit(wxCommandEvent& event)
     m_togTxID->Disable();
     m_togBtnAnalog->Disable();
     //m_togBtnALC->Disable();
-    m_btnTogTX->Disable();
+    m_btnTogPTT->Disable();
 }
 
 //-------------------------------------------------------------------------
@@ -1272,6 +1296,8 @@ void MainFrame::OnToolsComCfg(wxCommandEvent& event)
     if(rv == wxID_OK)
     {
         dlg->ExchangeData(EXCHANGE_DATA_OUT);
+        CloseSerialPort();
+        SetupSerialPort();
     }
     delete dlg;
 }
@@ -1360,7 +1386,7 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
         //m_togRxID->Enable();
         //m_togTxID->Enable();
         m_togBtnAnalog->Enable();
-        m_btnTogTX->Enable();
+        m_btnTogPTT->Enable();
         m_togBtnOnOff->SetLabel(wxT("Stop"));
 
         // init modem and codec states
@@ -1416,7 +1442,7 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
         m_togRxID->Disable();
         m_togTxID->Disable();
         m_togBtnAnalog->Disable();
-        m_btnTogTX->Disable();
+        m_btnTogPTT->Disable();
         m_togBtnOnOff->SetLabel(wxT("Start"));
     }
 }
@@ -2384,3 +2410,53 @@ void fdmdv2_clickTune(float freq) {
     }
 }
 
+//----------------------------------------------------------------
+// SetupSerialPort()
+//----------------------------------------------------------------
+void MainFrame::SetupSerialPort(void)
+{
+/*
+    wxString            m_strRigCtrlBaud;
+    wxString            m_strRigCtrlDatabits;
+    wxString            m_strRigCtrlStopbits;
+    wxString            m_strRigCtrlParity;
+    bool                m_boolUseSerialPTT;
+    bool                m_boolUseTonePTT;
+    bool                m_boolUseRTS;
+    bool                m_boolRTSPos;
+    bool                m_boolUseDTR;
+    bool                m_boolDTRPos;
+*/
+    long baudrate;
+    
+    wxGetApp().m_strRigCtrlBaud.ToLong(&baudrate, 10);
+    if(!wxGetApp().m_strRigCtrlPort.IsEmpty())
+    {
+        wxString protocol = wxGetApp().m_strRigCtrlDatabits + wxGetApp().m_strRigCtrlParity + wxGetApp().m_strRigCtrlStopbits; //"8N1";
+        m_serialPort = new ctb::SerialPort();
+        if(m_serialPort->Open(wxGetApp().m_strRigCtrlPort.c_str(), baudrate, protocol.c_str(), ctb::SerialPort::NoFlowControl ) >= 0 ) 
+        {
+            m_device = m_serialPort;
+        }
+        m_btnTogPTT->Enable(true);
+        //m_btnTogPTT->SetLabel(wxT("Rx"));
+    }
+    else
+    {
+        wxMessageBox(wxT("You must select a Serial port to Open!"), wxT("Error"), wxOK);
+    }
+}
+
+//----------------------------------------------------------------
+// CloseSerialPort()
+//----------------------------------------------------------------
+void MainFrame::CloseSerialPort(void)
+{
+    if(m_serialPort->IsOpen())
+    {
+        m_serialPort->Close();
+        m_device = NULL; 
+        //m_btnTogPTT->SetLabel(wxT("PTT"));
+        m_btnTogPTT->Enable(false);
+    }
+}

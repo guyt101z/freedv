@@ -386,9 +386,12 @@ void AudioOptsDialog::OnInitDialog( wxInitDialogEvent& event )
     ExchangeData(EXCHANGE_DATA_IN);
 }
 
+//-------------------------------------------------------------------------
+// OnInitDialog()
+//
 // helper function to look up name of devNum, and if it exists write
 // name to textCtrl.  Used to trap dissapearing devices.
-
+//-------------------------------------------------------------------------
 int AudioOptsDialog::setTextCtrlIfDevNumValid(wxTextCtrl *textCtrl, wxListCtrl *listCtrl, int devNum)
 {
     int i, aDevNum, found_devNum;
@@ -414,7 +417,6 @@ int AudioOptsDialog::setTextCtrlIfDevNumValid(wxTextCtrl *textCtrl, wxListCtrl *
         return -1;
     }
 }
-
 
 //-------------------------------------------------------------------------
 // ExchangeData()
@@ -639,7 +641,7 @@ void AudioOptsDialog::OnDeviceSelect(wxListEvent& event)
 */
 
 //-------------------------------------------------------------------------
-// DisplaySupportedSampleRates()
+// buildListOfSupportedSampleRates()
 //-------------------------------------------------------------------------
 int AudioOptsDialog:: buildListOfSupportedSampleRates(wxComboBox *cbSampleRate, int devNum, int in_out)
 {
@@ -705,7 +707,7 @@ int AudioOptsDialog:: buildListOfSupportedSampleRates(wxComboBox *cbSampleRate, 
 }
 
 //-------------------------------------------------------------------------
-// GetAPIInfo()
+// showAPIInfo()
 //-------------------------------------------------------------------------
 void AudioOptsDialog::showAPIInfo()
 {
@@ -839,11 +841,10 @@ void AudioOptsDialog::populateParams(AudioInfoDisplay ai)
 
 //-------------------------------------------------------------------------
 // OnDeviceSelect()
-//-------------------------------------------------------------------------
-
+//
 // helper function to set up "Device:" and "Sample Rate:" fields when
 // we click on a line in the list of devices box
-
+//-------------------------------------------------------------------------
 void AudioOptsDialog::OnDeviceSelect(wxComboBox *cbSampleRate, 
                                      wxTextCtrl *textCtrl, 
                                      int        *devNum, 
@@ -924,10 +925,13 @@ void AudioOptsDialog::OnTxOutDeviceSelect(wxListEvent& evt)
                    AUDIO_OUT);
 }
 
+//-------------------------------------------------------------------------
+// plotDeviceInputForAFewSecs()
+//
 // opens a record device and plots the input speech for a few seconds.  This is "modal" using
 // synchronous portaudio functions, so the GUI will not respond until after test sample has been
 // taken
-
+//-------------------------------------------------------------------------
 void AudioOptsDialog::plotDeviceInputForAFewSecs(int devNum, PlotScalar *plotScalar) {
     PaStreamParameters  inputParameters;
     PaStream           *stream = NULL;
@@ -1012,10 +1016,13 @@ void AudioOptsDialog::plotDeviceInputForAFewSecs(int devNum, PlotScalar *plotSca
     src_delete(src);
 }
 
+//-------------------------------------------------------------------------
+// plotDeviceOutputForAFewSecs()
+//
 // opens a play device and plays a tone for a few seconds.  This is "modal" using
 // synchronous portaudio functions, so the GUI will not respond until after test sample has been
 // taken.  Also plots a pretty picture like the record versions
-
+//-------------------------------------------------------------------------
 void AudioOptsDialog::plotDeviceOutputForAFewSecs(int devNum, PlotScalar *plotScalar) {
     PaStreamParameters  outputParameters;
     PaStream           *stream = NULL;

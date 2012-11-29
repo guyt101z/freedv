@@ -23,7 +23,16 @@
 #define __COMPORTS_DIALOG__
 
 #include "fdmdv2_main.h"
-#include "fdmdv2_hdw_ports.h"
+#include <wx/settings.h>
+#include <wx/xrc/xmlres.h>
+#include <wx/xrc/xh_bmp.h>
+#include <wx/dialog.h>
+#include <wx/sizer.h>
+#include <wx/statbox.h>
+#include <wx/checkbox.h>
+#include <wx/listbox.h>
+#include <wx/radiobut.h>
+#include <wx/button.h>
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 // Class ComPortsDlg
@@ -31,44 +40,36 @@
 class ComPortsDlg : public wxDialog
 {
     public:
-        /** Constructor */
-//        ComPortsDlg(wxWindow* parent);
-//        ~ComPortsDlg();
-        ComPortsDlg( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("Select Com Port"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 399,354 ), long style = wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER );
-        ~ComPortsDlg();
-
+        ComPortsDlg(wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("Hardware PTT"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize(450,300), long style = wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER);
+        virtual ~ComPortsDlg();
         void    ExchangeData(int inout);
-        void    populatePortList(void);
-        //ArrayOfPorts m_serialports;
 
     protected:
-        // Handlers for events.
-        void    OnPortItemSelected(wxListEvent& event);
-        void    OnBaudrateItemSelected(wxListEvent& event);
-        void    OnCancel(wxCommandEvent& event);
-        void    OnOK(wxCommandEvent& event);
-        void    OnClose(wxCloseEvent& event);
-        void    OnInitDialog(wxInitDialogEvent& event);
-        void    OnApply(wxCommandEvent& event);
-        void    OnRTSClick(wxCommandEvent& event);
-        void    OnRTSPosClick(wxCommandEvent& event);
-        void    OnDTRClick(wxCommandEvent& event);
-        void    OnDTRPosClick(wxCommandEvent& event);
+        wxCheckBox* m_ckUsePTTRtChan;
+        wxListBox* m_listCtrlPorts;
+        wxCheckBox* m_ckUseSerialPTT;
+        wxRadioButton* m_rbUseDTR;
+        wxCheckBox* m_ckRTSPos;
+        wxRadioButton* m_rbUseRTS;
+        wxCheckBox* m_ckDTRPos;
+        wxButton* m_buttonOK;
+        wxButton* m_buttonCancel;
+        wxButton* m_buttonApply;
 
-        wxListBox*  m_listCtrlPorts;
-        wxTextCtrl* m_textRigCtrlPort;
-        wxListBox*  m_listCtrlBaudrates;
-        wxTextCtrl* m_textRigCtrlDatabits;
-        wxTextCtrl* m_textRigCtrlStopbits;
-        wxTextCtrl* m_textRigCtrlParity;
-        wxButton*   m_sdbSizer5OK;
-        wxButton*   m_sdbSizer5Apply;
-        wxButton*   m_sdbSizer5Cancel;
-        
-        wxRadioButton *m_rbUseRTS;
-        wxCheckBox    *m_ckRTSPos;
-        wxRadioButton *m_rbUseDTR;
-        wxCheckBox    *m_ckDTRPos;
+    protected:
+        void populatePortList(void);
+        void PTTAudioClick(wxCommandEvent& event);
+        void PTTPortSlelcted(wxCommandEvent& event);
+        void PTTUseSerialClicked(wxCommandEvent& event);
+        void UseDTRCliched(wxCommandEvent& event);
+        void DTRVPlusClicked(wxCommandEvent& event);
+        void UseRTSClicked(wxCommandEvent& event);
+        void RTSVPlusClicked(wxCommandEvent& event);
+        void OnOK(wxCommandEvent& event);
+        void OnCancel(wxCommandEvent& event);
+        void OnApply(wxCommandEvent& event);
+        virtual void OnInitDialog(wxInitDialogEvent& event);
+
 };
 
 #endif // __COMPORTS_DIALOG__
