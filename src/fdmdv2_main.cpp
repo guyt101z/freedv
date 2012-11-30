@@ -845,55 +845,53 @@ void MainFrame::OnTogBtnTXClick(wxCommandEvent& event)
     // on the Tools>PTT configuration page.
     if(event.IsChecked()) 
     {
-        if(wxGetApp().m_boolUseRTS)
+        if(wxGetApp().m_boolUseRTS)     // Use RTS
         {
-            if(wxGetApp().m_boolRTSPos)
+            if(wxGetApp().m_boolRTSPos) // RTS asserted HIGH
             {
                 m_serialPort->SetLineState(ctb::LinestateRts);
             }
-            else
+            else                        // RTS asserted LOW
             {
                 m_serialPort->ClrLineState(ctb::LinestateRts);
             }
         }
-        else
+        else                            // Use DTR
         {
-            if(wxGetApp().m_boolRTSPos)
+            if(wxGetApp().m_boolDTRPos) // DTR asserted HIGH
             {
-                m_serialPort->ClrLineState(ctb::LinestateRts);
+                m_serialPort->SetLineState(ctb::LinestateDtr);
             }
-            else
+            else                        // DTR asserted LOW
             {
-                m_serialPort->SetLineState(ctb::LinestateRts);
+                m_serialPort->ClrLineState(ctb::LinestateDtr);
             }
         }
-       // m_btnTogPTT->SetLabel(wxT("PTT"));
     } 
-    else 
+    else  // !isChecked() - so Clear
     {
-        if(wxGetApp().m_boolUseDTR)
+        if(wxGetApp().m_boolUseRTS)     // Use RTS
         {
-            if(wxGetApp().m_boolDTRPos)
+            if(wxGetApp().m_boolRTSPos) // RTS cleared LOW
             {
-                m_serialPort->SetLineState(ctb::LinestateDtr);
+                m_serialPort->ClrLineState(ctb::LinestateRts);
             }
-            else
+            else                        // RTS cleared HIGH
+            {
+                m_serialPort->SetLineState(ctb::LinestateRts);
+            }
+        }
+        else                            // Use DTR
+        {
+            if(wxGetApp().m_boolDTRPos) // DTR cleared LOW
             {
                 m_serialPort->ClrLineState(ctb::LinestateDtr);
             }
-        }
-        else
-        {
-            if(wxGetApp().m_boolDTRPos)
-            {
-                m_serialPort->ClrLineState(ctb::LinestateDtr);
-            }
-            else
+            else                        // DTR cleared HIGH
             {
                 m_serialPort->SetLineState(ctb::LinestateDtr);
             }
         }
-       // m_btnTogPTT->SetLabel(wxT("PTT"));
     } 
     
     // reset level gauge
@@ -2485,8 +2483,28 @@ void MainFrame::SetupSerialPort(void)
         if(m_serialPort->Open(wxGetApp().m_strRigCtrlPort.c_str(), baudrate, protocol.c_str(), ctb::SerialPort::NoFlowControl ) >= 0 ) 
         {
             m_device = m_serialPort;
+            //  always start PTT cleared
+            if(wxGetApp().m_boolRTSPos) // RTS cleared LOW
+            {
+                m_serialPort->ClrLineState(ctb::LinestateRts);
+            }
+            else                        // RTS cleared HIGH
+            {
+                m_serialPort->SetLineState(ctb::LinestateRts);
+            }
+            if(wxGetApp().m_boolDTRPos) // DTR cleared LOW
+            {
+                m_serialPort->ClrLineState(ctb::LinestateDtr);
+            }
+            else                        // DTR cleared HIGH
+            {
+                m_serialPort->SetLineState(ctb::LinestateDtr);
+            }
+            m_serialPort->ClrLineState(ctb::LinestateRts);
+            m_serialPort->ClrLineState(ctb::LinestateDtr);
+            m_btnTogPTT->Enable(true);
+            m_btnTogPTT->SetValue(false);
         }
-        m_btnTogPTT->Enable(true);
         //m_btnTogPTT->SetLabel(wxT("Rx"));
     }
     else
