@@ -42,7 +42,16 @@ Many variations are possible.
        http://www.mega-nerd.com/SRC/libsamplerate-0.1.8.tar.gz(not Win32 binaries)
    ./configure && make && make install
 
-7. svn co fdmdv2
+7. libctb (Communications Toolbox):
+
+$ wget https://iftools.com/download/ctb/0.16/libctb-0.16.tar.gz
+$ tar xvzf libctb-0.16.tar.gz
+$ cd libctb-0.16/build
+$ mingw32-make -f makefile.gcc DEBUG=0 GPIB=0
+
+I couldn't find an install command line that worked, so manually copied the libs and include files.
+
+8. svn co fdmdv2
    cd fdmdv2/src
    make -f Makefile.Win32
 
