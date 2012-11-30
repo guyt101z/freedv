@@ -188,7 +188,9 @@ int MainApp::OnExit()
 MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
 {
     m_zoom              = 1.;
-
+    m_serialPort        = NULL;
+    m_device            = NULL;
+    
     tools->AppendSeparator();
     wxMenuItem* m_menuItemToolsConfigDelete;
     m_menuItemToolsConfigDelete = new wxMenuItem(tools, wxID_ANY, wxString(_("&Restore defaults")) , wxT("Delete config file/keys and restore defaults"), wxITEM_NORMAL);
@@ -837,17 +839,62 @@ void MainFrame::OnTogBtnTXClick(wxCommandEvent& event)
         m_auiNbookCtrl->ChangeSelection(4); // is there a way to avoid hard coding this?
     }
     g_tx = m_btnTogPTT->GetValue();
-    
+    // The following sets and clears may be exactly inverted.  
+    // I don't know and I'm not set up to tell yet.
+    // If so, one just needs to invert the polarity selection
+    // on the Tools>PTT configuration page.
     if(event.IsChecked()) 
     {
-        m_serialPort->SetLineState(ctb::LinestateRts);
+        if(wxGetApp().m_boolUseRTS)
+        {
+            if(wxGetApp().m_boolRTSPos)
+            {
+                m_serialPort->SetLineState(ctb::LinestateRts);
+            }
+            else
+            {
+                m_serialPort->ClrLineState(ctb::LinestateRts);
+            }
+        }
+        else
+        {
+            if(wxGetApp().m_boolRTSPos)
+            {
+                m_serialPort->ClrLineState(ctb::LinestateRts);
+            }
+            else
+            {
+                m_serialPort->SetLineState(ctb::LinestateRts);
+            }
+        }
        // m_btnTogPTT->SetLabel(wxT("PTT"));
     } 
     else 
     {
-        m_serialPort->ClrLineState(ctb::LinestateRts);
+        if(wxGetApp().m_boolUseDTR)
+        {
+            if(wxGetApp().m_boolDTRPos)
+            {
+                m_serialPort->SetLineState(ctb::LinestateDtr);
+            }
+            else
+            {
+                m_serialPort->ClrLineState(ctb::LinestateDtr);
+            }
+        }
+        else
+        {
+            if(wxGetApp().m_boolDTRPos)
+            {
+                m_serialPort->ClrLineState(ctb::LinestateDtr);
+            }
+            else
+            {
+                m_serialPort->SetLineState(ctb::LinestateDtr);
+            }
+        }
        // m_btnTogPTT->SetLabel(wxT("PTT"));
-    }
+    } 
     
     // reset level gauge
     m_maxLevel = 0;
@@ -1291,12 +1338,13 @@ void MainFrame::OnToolsComCfg(wxCommandEvent& event)
 {
     wxUnusedVar(event);
     int rv = 0;
+
+    CloseSerialPort();
     ComPortsDlg *dlg = new ComPortsDlg(NULL);
     rv = dlg->ShowModal();
     if(rv == wxID_OK)
     {
         dlg->ExchangeData(EXCHANGE_DATA_OUT);
-        CloseSerialPort();
         SetupSerialPort();
     }
     delete dlg;
@@ -2452,10 +2500,11 @@ void MainFrame::SetupSerialPort(void)
 //----------------------------------------------------------------
 void MainFrame::CloseSerialPort(void)
 {
-    if(m_serialPort->IsOpen())
+    if((m_serialPort != NULL) && m_serialPort->IsOpen())
     {
         m_serialPort->Close();
-        m_device = NULL; 
+        m_serialPort = NULL;
+        m_device     = NULL; 
         //m_btnTogPTT->SetLabel(wxT("PTT"));
         m_btnTogPTT->Enable(false);
     }
