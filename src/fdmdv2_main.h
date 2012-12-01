@@ -314,7 +314,7 @@ class MainFrame : public TopFrame
 
         // protected event handlers
         virtual void OnCloseFrame(wxCloseEvent& event);
-        virtual void OnExitClick(wxCommandEvent& event);
+        void OnExitClick(wxCommandEvent& event);
 
         void startTxStream();
         void startRxStream();

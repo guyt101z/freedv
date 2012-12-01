@@ -350,12 +350,8 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     m_togTxID->Disable();
     m_togBtnAnalog->Disable();
     //m_togBtnALC->Disable();
-    //m_btnTogPTT->Disable();
-    
+   
     SetupSerialPort();
-
-
-//    m_menuItemPlayAudioFile->Enable(false);
 
     // squelch settings
     char sqsnr[15];
@@ -709,7 +705,7 @@ void MainFrame::OnCloseFrame(wxCloseEvent& event)
     Pa_Terminate();
     Destroy();
 }
-
+/*
 //-------------------------------------------------------------------------
 // OnExitClick()
 //-------------------------------------------------------------------------
@@ -718,6 +714,7 @@ void MainFrame::OnExitClick(wxCommandEvent& event)
     Pa_Terminate();
     Destroy();
 }
+*/
 
 //-------------------------------------------------------------------------
 // OnTop()
@@ -1273,10 +1270,12 @@ void MainFrame::OnRecFileFromRadio(wxCommandEvent& event)
 void MainFrame::OnExit(wxCommandEvent& event)
 {
     wxUnusedVar(event);
+/*    
     if(m_RxRunning)
     {
         stopRxStream();
     }
+*/    
 #ifdef _USE_TIMER
     m_plotTimer.Stop();
 #endif // _USE_TIMER
@@ -1300,6 +1299,17 @@ void MainFrame::OnExit(wxCommandEvent& event)
     m_togBtnAnalog->Disable();
     //m_togBtnALC->Disable();
     m_btnTogPTT->Disable();
+    CloseSerialPort();
+    Pa_Terminate();
+    Destroy();
+}
+
+//-------------------------------------------------------------------------
+// OnExitClick()
+//-------------------------------------------------------------------------
+void MainFrame::OnExitClick(wxCommandEvent& event)
+{
+    OnExit(event);
 }
 
 //-------------------------------------------------------------------------
@@ -1356,14 +1366,15 @@ void MainFrame::OnToolsComCfg(wxCommandEvent& event)
 {
     wxUnusedVar(event);
     int rv = 0;
-
-    int iLineState   = m_serialPort->GetLineState();
-    // ctb::LinestateRts 
-//    bool bDtrState = m_serialPort->GetLineState(ctb::LinestateDtr);
-    bool bPTTEnabled = m_btnTogPTT->IsEnabled();
+    int  iLineState  = 0;
+    //bool bPTTEnabled = m_btnTogPTT->IsEnabled();
     bool bPTTState   = m_btnTogPTT->GetValue();
-  
-    CloseSerialPort();
+
+    if(m_serialPort != NULL)
+    {
+        int iLineState   = m_serialPort->GetLineState();
+        CloseSerialPort();
+    }
     ComPortsDlg *dlg = new ComPortsDlg(NULL);
     rv = dlg->ShowModal();
     if(rv == wxID_OK)
@@ -1374,25 +1385,27 @@ void MainFrame::OnToolsComCfg(wxCommandEvent& event)
     else if(rv == wxID_CANCEL)
     {
         SetupSerialPort();
-        if(iLineState | ctb::LinestateRts)
+        if(m_serialPort != NULL)
         {
-            m_serialPort->SetLineState(ctb::LinestateRts);
+            if(iLineState | ctb::LinestateRts)
+            {
+                m_serialPort->SetLineState(ctb::LinestateRts);
+            }
+            else
+            {
+                m_serialPort->ClrLineState(ctb::LinestateRts);
+            }
+            if(iLineState | ctb::LinestateDtr)
+            {
+                m_serialPort->SetLineState(ctb::LinestateDtr);
+            }
+            else
+            {
+                m_serialPort->ClrLineState(ctb::LinestateDtr);
+            }
+        // m_btnTogPTT->Enable(bPTTEnabled);
+            m_btnTogPTT->SetValue(bPTTState);
         }
-        else
-        {
-            m_serialPort->ClrLineState(ctb::LinestateRts);
-        }
-        if(iLineState | ctb::LinestateDtr)
-        {
-            m_serialPort->SetLineState(ctb::LinestateDtr);
-        }
-        else
-        {
-            m_serialPort->ClrLineState(ctb::LinestateDtr);
-        }
-                                                                                                                                                             
-        m_btnTogPTT->Enable(bPTTEnabled);
-        m_btnTogPTT->SetValue(bPTTState);
  }
     delete dlg;
 }
@@ -1475,13 +1488,16 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
 
     // we are attempting to start
 
-    if (startStop.IsSameAs("Start")) {
-
+    if (startStop.IsSameAs("Start")) 
+    {
         m_togBtnSplit->Enable();
         //m_togRxID->Enable();
         //m_togTxID->Enable();
         m_togBtnAnalog->Enable();
-        m_btnTogPTT->Enable();
+        if(m_serialPort != NULL)
+        {
+            m_btnTogPTT->Enable();
+        }
         m_togBtnOnOff->SetLabel(wxT("Stop"));
 
         // init modem and codec states
@@ -1512,11 +1528,11 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
 
         startRxStream();
 
-        if (m_RxRunning) {
-
-            #ifdef _USE_TIMER
+        if (m_RxRunning) 
+        {
+    #ifdef _USE_TIMER
             m_plotTimer.Start(_REFRESH_TIMER_PERIOD, wxTIMER_CONTINUOUS);
-            #endif // _USE_TIMER
+    #endif // _USE_TIMER
         }
     }
    
@@ -1683,7 +1699,6 @@ void MainFrame::startRxStream()
         }
                 
         // Init Sound card 1 ----------------------------------------------
-
         // sanity check on sound card device numbers
 
         if ((m_rxPa->getDeviceCount() <= g_soundCard1InDeviceNum) ||
@@ -2510,18 +2525,6 @@ void fdmdv2_clickTune(float freq) {
 //----------------------------------------------------------------
 void MainFrame::SetupSerialPort(void)
 {
-/*
-    wxString            m_strRigCtrlBaud;
-    wxString            m_strRigCtrlDatabits;
-    wxString            m_strRigCtrlStopbits;
-    wxString            m_strRigCtrlParity;
-    bool                m_boolUseSerialPTT;
-    bool                m_boolUseTonePTT;
-    bool                m_boolUseRTS;
-    bool                m_boolRTSPos;
-    bool                m_boolUseDTR;
-    bool                m_boolDTRPos;
-*/
     long baudrate;
     
     wxGetApp().m_strRigCtrlBaud.ToLong(&baudrate, 10);
@@ -2551,6 +2554,12 @@ void MainFrame::SetupSerialPort(void)
             }
             m_btnTogPTT->Enable(true);
             m_btnTogPTT->SetValue(false);
+        }
+        else
+        {
+            m_serialPort = NULL;
+            m_device     = NULL;
+            m_btnTogPTT->Disable();
         }
     }
 /*    
