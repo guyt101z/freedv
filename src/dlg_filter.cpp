@@ -62,7 +62,7 @@ FilterDlg::FilterDlg(wxWindow* parent, bool running, wxWindowID id, const wxStri
     newLPCPFControl(&m_codec2LPCPostFilterGamma, &m_staticTextGamma, right, "Gamma");
     lpcpfs->Add(right, 0, wxALL, 5);
 
-    bSizer30->Add(lpcpfs, 0, wxALL, 5);
+    bSizer30->Add(lpcpfs, 0, wxALL, 3);
 
     // EQ Filters -----------------------------------------------------------
 
@@ -78,19 +78,20 @@ FilterDlg::FilterDlg(wxWindow* parent, bool running, wxWindowID id, const wxStri
     m_SpkOutMid    = newEQ(eqSpkOutSizer, "Mid"   , MAX_FREQ_DEF, enableQ);
     m_SpkOutTreble = newEQ(eqSpkOutSizer, "Treble", MAX_FREQ_DEF, disableQ);
     
-    bSizer30->Add(eqMicInSizer, 0, wxALL|wxEXPAND, 5);
-    bSizer30->Add(eqSpkOutSizer, 0, wxALL, 5);
+    bSizer30->Add(eqMicInSizer, 0, wxALL|wxEXPAND, 3);
+    bSizer30->Add(eqSpkOutSizer, 0, wxALL, 3);
 
     // Spectrum Plots -----------------------------------------------------------
 
     long nb_style = wxAUI_NB_BOTTOM | wxAUI_NB_TAB_SPLIT | wxAUI_NB_TAB_MOVE | wxAUI_NB_SCROLL_BUTTONS;
-    m_auiNotebook = new wxAuiNotebook(this, wxID_ANY, wxDefaultPosition, wxSize(200,400), nb_style);
+    m_auiNotebook = new wxAuiNotebook(this, wxID_ANY, wxDefaultPosition, wxSize(-1,300), nb_style);
     m_auiNotebook->SetFont(wxFont(8, 70, 90, 90, false, wxEmptyString));
 
-    bSizer30->Add(m_auiNotebook, 0, wxEXPAND|wxALL, 5);
+    bSizer30->Add(m_auiNotebook, 0, wxEXPAND|wxALL, 3);
     
     m_MicInFreqRespPlot = new PlotSpectrum((wxFrame*) m_auiNotebook, FILTER_MIN_MAG_DB, FILTER_MAX_MAG_DB);
     m_auiNotebook->AddPage(m_MicInFreqRespPlot, _("Microphone In Equaliser"));
+
     m_SpkOutFreqRespPlot = new PlotSpectrum((wxFrame*)m_auiNotebook, FILTER_MIN_MAG_DB, FILTER_MAX_MAG_DB);
     m_auiNotebook->AddPage(m_SpkOutFreqRespPlot, _("Speaker Out Equaliser"));
 
@@ -98,13 +99,13 @@ FilterDlg::FilterDlg(wxWindow* parent, bool running, wxWindowID id, const wxStri
 
     wxBoxSizer* bSizer31 = new wxBoxSizer(wxHORIZONTAL);
     m_sdbSizer5OK = new wxButton(this, wxID_OK);
-    bSizer31->Add(m_sdbSizer5OK, 0, wxALL, 5);
+    bSizer31->Add(m_sdbSizer5OK, 0, wxALL, 2);
     m_sdbSizer5Default = new wxButton(this, wxID_ANY, wxT("Default"));
-    bSizer31->Add(m_sdbSizer5Default, 0, wxALL, 5);
+    bSizer31->Add(m_sdbSizer5Default, 0, wxALL, 2);
     m_sdbSizer5Cancel = new wxButton(this, wxID_CANCEL);
-    bSizer31->Add(m_sdbSizer5Cancel, 0, wxALL, 5);
+    bSizer31->Add(m_sdbSizer5Cancel, 0, wxALL, 2);
 
-    bSizer30->Add(bSizer31, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
+    bSizer30->Add(bSizer31, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 0);
 
     this->SetSizer(bSizer30);
     this->Layout();
@@ -173,7 +174,7 @@ void FilterDlg::newEQControl(wxSlider** slider, wxStaticText** value, wxStaticBo
     bs->Add(*slider, 1, wxALIGN_CENTER_VERTICAL|wxALL, 2);
 
     *value = new wxStaticText(this, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
-    bs->Add(*value, 0, wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT|wxALL, 5);
+    bs->Add(*value, 0, wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT|wxALL, 4);
 }
 
 EQ FilterDlg::newEQ(wxStaticBoxSizer *bs, wxString eqName, float maxFreqHz, bool enableQ)
@@ -336,7 +337,7 @@ void FilterDlg::OnGammaScroll(wxScrollEvent& event) {
 void FilterDlg::setFreq(EQ *eq)
 {
     wxString buf;
-    buf.Printf(wxT("%3.2f"), eq->freqHz);
+    buf.Printf(wxT("%3.0f"), eq->freqHz);
     eq->valueFreq->SetLabel(buf);
     int slider = (int)((eq->freqHz/eq->maxFreqHz)*SLIDER_MAX + 0.5);
     eq->sliderFreq->SetValue(slider);

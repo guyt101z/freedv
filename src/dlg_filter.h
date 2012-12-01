@@ -53,7 +53,7 @@ class FilterDlg : public wxDialog
 {
     public:
         FilterDlg( wxWindow* parent, bool running, wxWindowID id = wxID_ANY, const wxString& title = _("Filter"), 
-                   const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 800,900 ), 
+                   const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 800,800 ), 
                    long style = wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER );
         ~FilterDlg();
 
