@@ -52,7 +52,24 @@ FilterDlg::FilterDlg(wxWindow* parent, bool running, wxWindowID id, const wxStri
 
     wxStaticBoxSizer* lpcpfs = new wxStaticBoxSizer(new wxStaticBox(this, wxID_ANY, _("LPC Post Filter")), wxHORIZONTAL);
 
-    wxBoxSizer* left = new wxBoxSizer(wxVERTICAL);
+#define GRID
+#ifdef GRID
+   wxGridSizer* gs = new wxGridSizer(2,2,0,0);
+
+    m_codec2LPCPostFilterEnable = new wxCheckBox(this, wxID_ANY, _("Enable"), wxDefaultPosition,wxDefaultSize, wxCHK_2STATE);
+    gs->Add(m_codec2LPCPostFilterEnable);
+
+    newLPCPFControl(&m_codec2LPCPostFilterBeta, &m_staticTextBeta, gs, "Beta");
+
+    m_codec2LPCPostFilterBassBoost = new wxCheckBox(this, wxID_ANY, _("0-1 kHz 3dB Boost"), wxDefaultPosition, wxDefaultSize, wxCHK_2STATE);
+    gs->Add(m_codec2LPCPostFilterBassBoost);
+
+    newLPCPFControl(&m_codec2LPCPostFilterGamma, &m_staticTextGamma, gs, "Gamma");
+
+    lpcpfs->Add(gs, 0, wxALL, 0);
+
+#else
+   wxBoxSizer* left = new wxBoxSizer(wxVERTICAL);
 
     m_codec2LPCPostFilterEnable = new wxCheckBox(this, wxID_ANY, _("Enable"), wxDefaultPosition,wxDefaultSize, wxCHK_2STATE);
     left->Add(m_codec2LPCPostFilterEnable);
@@ -66,25 +83,30 @@ FilterDlg::FilterDlg(wxWindow* parent, bool running, wxWindowID id, const wxStri
     newLPCPFControl(&m_codec2LPCPostFilterBeta, &m_staticTextBeta, right, "Beta");
     newLPCPFControl(&m_codec2LPCPostFilterGamma, &m_staticTextGamma, right, "Gamma");
     lpcpfs->Add(right, 0, wxALL, 5);
+#endif
 
-    bSizer30->Add(lpcpfs, 0, wxALL, 3);
+    bSizer30->Add(lpcpfs, 0, wxALL, 0);
 
     // EQ Filters -----------------------------------------------------------
 
     wxStaticBoxSizer* eqMicInSizer = new wxStaticBoxSizer(new wxStaticBox(this, wxID_ANY, _("Mic In Equaliser")), wxVERTICAL);
+    wxBoxSizer* eqMicInSizer1 = new wxBoxSizer(wxHORIZONTAL);
 
-    m_MicInBass   = newEQ(eqMicInSizer, "Bass"  , MAX_FREQ_BASS, disableQ);
+    m_MicInBass   = newEQ(eqMicInSizer1, "Bass"  , MAX_FREQ_BASS, disableQ);
+    m_MicInTreble = newEQ(eqMicInSizer1, "Treble", MAX_FREQ_DEF, disableQ);
+    eqMicInSizer->Add(eqMicInSizer1);
     m_MicInMid    = newEQ(eqMicInSizer, "Mid"   , MAX_FREQ_DEF, enableQ);
-    m_MicInTreble = newEQ(eqMicInSizer, "Treble", MAX_FREQ_DEF, disableQ);
 
     wxStaticBoxSizer* eqSpkOutSizer = new wxStaticBoxSizer(new wxStaticBox(this, wxID_ANY, _("Speaker Out Equaliser")), wxVERTICAL);
+    wxBoxSizer* eqSpkOutSizer1 = new wxBoxSizer(wxHORIZONTAL);
 
-    m_SpkOutBass   = newEQ(eqSpkOutSizer, "Bass"  , MAX_FREQ_BASS, disableQ);
+    m_SpkOutBass   = newEQ(eqSpkOutSizer1, "Bass"  , MAX_FREQ_BASS, disableQ);
+    m_SpkOutTreble = newEQ(eqSpkOutSizer1, "Treble", MAX_FREQ_DEF, disableQ);
+    eqSpkOutSizer->Add(eqSpkOutSizer1);
     m_SpkOutMid    = newEQ(eqSpkOutSizer, "Mid"   , MAX_FREQ_DEF, enableQ);
-    m_SpkOutTreble = newEQ(eqSpkOutSizer, "Treble", MAX_FREQ_DEF, disableQ);
     
-    bSizer30->Add(eqMicInSizer, 0, wxALL|wxEXPAND, 3);
-    bSizer30->Add(eqSpkOutSizer, 0, wxALL, 3);
+    bSizer30->Add(eqMicInSizer, 0, wxALL, 0);
+    bSizer30->Add(eqSpkOutSizer, 0, wxALL, 0);
 
     // Spectrum Plots -----------------------------------------------------------
 
@@ -171,30 +193,30 @@ void FilterDlg::newLPCPFControl(wxSlider **slider, wxStaticText **stValue, wxSiz
     wxBoxSizer *bs = new wxBoxSizer(wxHORIZONTAL);
 
     wxStaticText* st = new wxStaticText(this, wxID_ANY, controlName, wxDefaultPosition, wxSize(70,-1), wxALIGN_RIGHT);
-    bs->Add(st, 0, wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT|wxALL, 2);
+    bs->Add(st, 0, wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT|wxALL, 0);
 
     *slider = new wxSlider(this, wxID_ANY, 0, 0, SLIDER_MAX, wxDefaultPosition, wxSize(SLIDER_LENGTH,wxDefaultCoord));
-    bs->Add(*slider, 1, wxALIGN_CENTER_VERTICAL|wxALL, 2);
+    bs->Add(*slider, 1, wxALIGN_CENTER_VERTICAL|wxALL, 0);
 
     *stValue = new wxStaticText(this, wxID_ANY, wxT("0.0"), wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
-    bs->Add(*stValue, 1, wxALIGN_CENTER_VERTICAL|wxALIGN_LEFT|wxALL, 2);
+    bs->Add(*stValue, 1, wxALIGN_CENTER_VERTICAL|wxALIGN_LEFT|wxALL, 0);
 
-    s->Add(bs, 1);
+    s->Add(bs, 0);
 }
 
 void FilterDlg::newEQControl(wxSlider** slider, wxStaticText** value, wxStaticBoxSizer *bs, wxString controlName)
 {
     wxStaticText* label = new wxStaticText(this, wxID_ANY, controlName, wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT);
-    bs->Add(label, 0, wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT|wxALL, 2);
+    bs->Add(label, 0, wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT|wxALL, 0);
 
     *slider = new wxSlider(this, wxID_ANY, 0, 0, SLIDER_MAX, wxDefaultPosition, wxSize(SLIDER_LENGTH,wxDefaultCoord));
-    bs->Add(*slider, 1, wxALIGN_CENTER_VERTICAL|wxALL, 2);
+    bs->Add(*slider, 1, wxALIGN_CENTER_VERTICAL|wxALL, 0);
 
-    *value = new wxStaticText(this, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
-    bs->Add(*value, 0, wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT|wxALL, 4);
+    *value = new wxStaticText(this, wxID_ANY, wxT("100"), wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
+    bs->Add(*value, 0, wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT|wxALL, 0);
 }
 
-EQ FilterDlg::newEQ(wxStaticBoxSizer *bs, wxString eqName, float maxFreqHz, bool enableQ)
+EQ FilterDlg::newEQ(wxSizer *bs, wxString eqName, float maxFreqHz, bool enableQ)
 {
     EQ eq;
 
@@ -233,10 +255,11 @@ void FilterDlg::ExchangeData(int inout)
         // Mic In Equaliser
 
         m_MicInBass.freqHz = wxGetApp().m_MicInBassFreqHz; setFreq(&m_MicInBass);
+        m_MicInBass.freqHz = limit(m_MicInBass.freqHz, 1.0, MAX_FREQ_BASS);
 
+        calcFilterSpectrum(&m_MicInBass, m_MicInMagdB);
         m_MicInFreqRespPlot->m_newdata = true;
         m_MicInFreqRespPlot->Refresh();
-        calcFilterSpectrum(&m_MicInBass, m_MicInMagdB);
     }
     if(inout == EXCHANGE_DATA_OUT)
     {
@@ -260,6 +283,12 @@ void FilterDlg::ExchangeData(int inout)
         pConfig->Flush();
     }
     delete wxConfigBase::Set((wxConfigBase *) NULL);
+}
+
+float FilterDlg::limit(float value, float min, float max) {
+    if (value < min) return min;
+    if (value > max) return max;
+    return value;
 }
 
 //-------------------------------------------------------------------------

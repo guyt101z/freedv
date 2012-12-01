@@ -53,7 +53,7 @@ class FilterDlg : public wxDialog
 {
     public:
         FilterDlg( wxWindow* parent, bool running, wxWindowID id = wxID_ANY, const wxString& title = _("Filter"), 
-                   const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 800,800 ), 
+                   const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 800, 700 ), 
                    long style = wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER );
         ~FilterDlg();
 
@@ -104,7 +104,7 @@ class FilterDlg : public wxDialog
         void          setCodec2(void);
  
         void          newEQControl(wxSlider** slider, wxStaticText** value, wxStaticBoxSizer *bs, wxString controlName);
-        EQ            newEQ(wxStaticBoxSizer *bs, wxString eqName, float maxFreqHz, bool enableQ);
+        EQ            newEQ(wxSizer *bs, wxString eqName, float maxFreqHz, bool enableQ);
         void          newLPCPFControl(wxSlider **slider, wxStaticText **stValue, wxSizer *sbs, wxString controlName);
         wxAuiNotebook *m_auiNotebook;
         void          setFreq(EQ *eq);
@@ -118,6 +118,8 @@ class FilterDlg : public wxDialog
         EQ            m_SpkOutBass;
         EQ            m_SpkOutMid;
         EQ            m_SpkOutTreble;
+
+        float         limit(float value, float min, float max);
 
 };
 
