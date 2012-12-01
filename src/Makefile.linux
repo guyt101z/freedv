@@ -7,6 +7,7 @@
 
 WX_GTK_PATH=/home/david/Desktop/wxWidgets-2.9.4/build_gtk
 CODEC2_PATH=/home/david/codec2-dev
+SOX_LIB_PATH=/home/david/tmp/sox-14.4.0/src/.libs
 
 WX_CONFIG=$(WX_GTK_PATH)/wx-config
 WX_CPPFLAGS = $(shell $(WX_CONFIG) --cxxflags)
@@ -14,9 +15,10 @@ WX_LIBS = $(shell $(WX_CONFIG) --libs core, base, aui, adv, net)
 SVN_REVISION=$(shell svnversion)
 CODEC2_INC=-I$(CODEC2_PATH)/src
 CODEC2_LIB=$(CODEC2_PATH)/src/.libs/libcodec2.a
+SOX_LIB=$(SOX_LIB_PATH)/libsox.a
 
 CPP_FLAGS = $(WX_CPPFLAGS) $(CODEC2_INC) -I. -g -Wall -O3 -DSVN_REVISION=\"$(SVN_REVISION)\"
-LIBS = $(WX_LIBS) $(CODEC2_LIB) -lm -lportaudiocpp -lpthread -lsndfile /usr/lib/libsamplerate.so.0 -lctb-0.16
+LIBS = $(WX_LIBS) $(CODEC2_LIB) -lm -lportaudiocpp -lpthread -lsndfile /usr/lib/libsamplerate.so.0 -lctb-0.16 $(SOX_LIB)
 
 OBJS = topFrame.o \
 fdmdv2_main.o \
@@ -29,7 +31,9 @@ fdmdv2_pa_wrapper.o \
 dlg_audiooptions.o \
 dlg_comports.o \
 dlg_filter.o \
-varicode.o
+varicode.o \
+sox_biquad.o
+
 
 HDRS = dlg_audiooptions.h dlg_comports.h dlg_filter.h fdmdv2_main.h fdmdv2_defines.h fdmdv2_plot.h fdmdv2_plot_scalar.h fdmdv2_plot_waterfall_linux.h fdmdv2_plot_scatter.h fdmdv2_plot_spectrum.h fdmdv2_pa_wrapper.h topFrame.h varicode.h
 

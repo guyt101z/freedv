@@ -19,6 +19,7 @@
 //
 //==========================================================================
 #include "dlg_filter.h"
+#include "sox_biquad.h"
 
 #define SLIDER_MAX 100
 #define SLIDER_LENGTH 155
@@ -28,6 +29,10 @@
 
 #define MAX_FREQ_BASS      600.00
 #define MAX_FREQ_DEF      3000.00
+
+#define IMP_AMP           2000.0
+#define F_STEP_DFT        50.0
+#define F_MAG_N           (int)(MAX_F_HZ/F_STEP_DFT)
 
 extern struct CODEC2      *g_pCodec2;
 
@@ -89,10 +94,16 @@ FilterDlg::FilterDlg(wxWindow* parent, bool running, wxWindowID id, const wxStri
 
     bSizer30->Add(m_auiNotebook, 0, wxEXPAND|wxALL, 3);
     
-    m_MicInFreqRespPlot = new PlotSpectrum((wxFrame*) m_auiNotebook, FILTER_MIN_MAG_DB, FILTER_MAX_MAG_DB);
+    m_MicInMagdB = new float[F_MAG_N];
+    for(int i=0; i<F_MAG_N; i++)
+        m_MicInMagdB[i] = 0.0;
+    m_MicInFreqRespPlot = new PlotSpectrum((wxFrame*) m_auiNotebook, m_MicInMagdB, F_MAG_N, FILTER_MIN_MAG_DB, FILTER_MAX_MAG_DB);
     m_auiNotebook->AddPage(m_MicInFreqRespPlot, _("Microphone In Equaliser"));
 
-    m_SpkOutFreqRespPlot = new PlotSpectrum((wxFrame*)m_auiNotebook, FILTER_MIN_MAG_DB, FILTER_MAX_MAG_DB);
+    m_SpkOutMagdB = new float[F_MAG_N];
+    for(int i=0; i<F_MAG_N; i++)
+        m_SpkOutMagdB[i] = 0.0;
+    m_SpkOutFreqRespPlot = new PlotSpectrum((wxFrame*)m_auiNotebook, m_SpkOutMagdB, F_MAG_N, FILTER_MIN_MAG_DB, FILTER_MAX_MAG_DB);
     m_auiNotebook->AddPage(m_SpkOutFreqRespPlot, _("Speaker Out Equaliser"));
 
     // OK - Cancel - Default Buttons at the bottom --------------------------
@@ -126,6 +137,8 @@ FilterDlg::FilterDlg(wxWindow* parent, bool running, wxWindowID id, const wxStri
     m_sdbSizer5Cancel->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(FilterDlg::OnCancel), NULL, this);
     m_sdbSizer5Default->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(FilterDlg::OnDefault), NULL, this);
     m_sdbSizer5OK->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(FilterDlg::OnOK), NULL, this);
+
+    sox_biquad_start();
 }
 
 //-------------------------------------------------------------------------
@@ -133,6 +146,10 @@ FilterDlg::FilterDlg(wxWindow* parent, bool running, wxWindowID id, const wxStri
 //-------------------------------------------------------------------------
 FilterDlg::~FilterDlg()
 {
+    delete m_MicInMagdB;
+    delete m_SpkOutMagdB;
+    sox_biquad_finish();
+
     // Disconnect Events
 
     this->Disconnect(wxEVT_INIT_DIALOG, wxInitDialogEventHandler(FilterDlg::OnInitDialog));
@@ -216,6 +233,10 @@ void FilterDlg::ExchangeData(int inout)
         // Mic In Equaliser
 
         m_MicInBass.freqHz = wxGetApp().m_MicInBassFreqHz; setFreq(&m_MicInBass);
+
+        m_MicInFreqRespPlot->m_newdata = true;
+        m_MicInFreqRespPlot->Refresh();
+        calcFilterSpectrum(&m_MicInBass, m_MicInMagdB);
     }
     if(inout == EXCHANGE_DATA_OUT)
     {
@@ -258,6 +279,9 @@ void FilterDlg::OnDefault(wxCommandEvent& event)
     m_gamma = CODEC2_LPC_PF_GAMMA; setGamma();
     m_codec2LPCPostFilterEnable->SetValue(true);
     m_codec2LPCPostFilterBassBoost->SetValue(true);
+
+    m_MicInBass.freqHz = 1.0;
+
 }
 
 //-------------------------------------------------------------------------
@@ -343,10 +367,67 @@ void FilterDlg::setFreq(EQ *eq)
     eq->sliderFreq->SetValue(slider);
 }
 
-void FilterDlg::OnMicInBassFreqScroll(wxScrollEvent& event)
+void FilterDlg::sliderToFreq(EQ *eq)
 {
-    m_MicInBass.freqHz = ((float)m_MicInBass.sliderFreq->GetValue()/SLIDER_MAX)*m_MicInBass.maxFreqHz;
-    printf("FilterDlg::OnMicInBassFreqScroll m_MicInBass.freqHz: %f\n", m_MicInBass.freqHz);
+    eq->freqHz = ((float)eq->sliderFreq->GetValue()/SLIDER_MAX)*eq->maxFreqHz;
+    if (eq->freqHz < 1.0) eq->freqHz = 1.0; // sox deosn't like 0 Hz;
     setFreq(&m_MicInBass);
+    calcFilterSpectrum(eq, m_MicInMagdB);
+    m_MicInFreqRespPlot->m_newdata = true;
+    m_MicInFreqRespPlot->Refresh();
 }
 
+void FilterDlg::OnMicInBassFreqScroll(wxScrollEvent& event)
+{
+    sliderToFreq(&m_MicInBass);
+}
+
+#define NIMP 50
+
+void FilterDlg::calcFilterSpectrum(EQ *eq, float magdB[]) {
+    void       *sbq;
+    const char *argv[10];
+    char        highpass[80];
+    char        freq[80];
+    short       in[NIMP];
+    short       out[NIMP];
+    COMP        X[(int)(MAX_F_HZ/F_STEP_DFT)];
+    float       f,w;
+    int         i, k, argc;
+
+    // find impulse response -----------------------------------
+
+    for(i=0; i<NIMP; i++)
+        in[i] = 0;
+    in[0] = IMP_AMP;
+
+    sprintf(highpass, "highpass"); argv[0] = highpass;
+    sprintf(freq, "%f", eq->freqHz); argv[1] = freq;
+    argc=1;
+    //printf("argv[0]: %s argv[1]: %s\n", argv[0], argv[1]);
+    sbq = sox_biquad_create(argc, argv);
+
+    sox_biquad_filter(sbq, out, in, NIMP);
+    //for(i=0; i<NIMP; i++)
+    //    printf("%d\n", out[i]);
+   
+    sox_biquad_destroy(sbq);
+
+    //for(i=0; i<NIMP; i++)
+    //    out[i] = 0.0;
+    //out[0] = IMP_AMP;
+
+    // calculate discrete time continous frequency Fourer transform
+    // doing this from basic principles rather than FFT for no good reason
+
+    for(f=0,i=0; f<MAX_F_HZ; f+=F_STEP_DFT,i++) {
+        w = M_PI*f/MAX_F_HZ;
+        X[i].real = 0.0; X[i].imag = 0.0;
+        for(k=0; k<NIMP; k++) {
+            X[i].real += ((float)out[k]/IMP_AMP) * cos(w*k);
+            X[i].imag -= ((float)out[k]/IMP_AMP) * sin(w*k);
+        }
+        magdB[i] = 10.0*log10(X[i].real* X[i].real + X[i].imag*X[i].imag + 1E-12);
+        //printf("f: %f X[%d] = %f %f magdB = %f\n", f, i, X[i].real, X[i].imag,  magdB[i]);
+    }
+}

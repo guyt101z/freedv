@@ -91,6 +91,9 @@ class FilterDlg : public wxDialog
         wxButton*     m_sdbSizer5Cancel;
         PlotSpectrum* m_MicInFreqRespPlot;
         PlotSpectrum* m_SpkOutFreqRespPlot;
+    
+        float        *m_MicInMagdB;
+        float        *m_SpkOutMagdB;
 
      private:
         bool          m_running;
@@ -105,6 +108,8 @@ class FilterDlg : public wxDialog
         void          newLPCPFControl(wxSlider **slider, wxStaticText **stValue, wxSizer *sbs, wxString controlName);
         wxAuiNotebook *m_auiNotebook;
         void          setFreq(EQ *eq);
+        void          sliderToFreq(EQ *eq);
+        void          calcFilterSpectrum(EQ *eq, float magdB[]);
 
         EQ            m_MicInBass;
         EQ            m_MicInMid;

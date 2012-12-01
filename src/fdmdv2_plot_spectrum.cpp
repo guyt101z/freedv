@@ -45,7 +45,7 @@ END_EVENT_TABLE()
 // @brief
 //
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
-PlotSpectrum::PlotSpectrum(wxFrame* parent, float min_mag_db, float max_mag_db): PlotPanel(parent)
+PlotSpectrum::PlotSpectrum(wxFrame* parent, float *magdB, int n_magdB, float min_mag_db, float max_mag_db): PlotPanel(parent)
 {
     m_greyscale     = 0;
     m_Bufsz         = GetMaxClientSize();
@@ -53,6 +53,9 @@ PlotSpectrum::PlotSpectrum(wxFrame* parent, float min_mag_db, float max_mag_db):
     m_firstPass     = true;
     m_line_color    = 0;
     SetLabelSize(10.0);
+
+    m_magdB         = magdB;
+    m_n_magdB       = n_magdB;     // number of points in magdB that covers 0 ... MAX_F_HZ of spectrum
     m_max_mag_db    = max_mag_db;
     m_min_mag_db    = min_mag_db;
     m_rxFreq        = 0.0;
@@ -126,7 +129,8 @@ void PlotSpectrum::draw(wxAutoBufferedPaintDC& dc)
         pen.SetWidth(1);
         dc.SetPen(pen);
 
-        index_to_px = ((float)FDMDV_MAX_F_HZ/(float)MAX_F_HZ)*(float)m_rGrid.GetWidth()/FDMDV_NSPEC;
+        //index_to_px = ((float)FDMDV_MAX_F_HZ/(float)MAX_F_HZ)*(float)m_rGrid.GetWidth()/FDMDV_NSPEC;
+        index_to_px = (float)m_rGrid.GetWidth()/m_n_magdB;
 	mag_dB_to_py = (float)m_rGrid.GetHeight()/(m_max_mag_db - m_min_mag_db);
         int last_index = ((float)MAX_F_HZ/(float)FDMDV_MAX_F_HZ)*FDMDV_NSPEC;
 
@@ -135,7 +139,7 @@ void PlotSpectrum::draw(wxAutoBufferedPaintDC& dc)
         for(index = 0; index < last_index; index++)
         {
             x = index*index_to_px;
-	    mag = g_avmag[index];
+	    mag = m_magdB[index];
 	    if (mag > m_max_mag_db) mag = m_max_mag_db;
 	    if (mag < m_min_mag_db) mag = m_min_mag_db;
 	    y = -(mag - m_max_mag_db) * mag_dB_to_py;

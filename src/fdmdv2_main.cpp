@@ -236,7 +236,8 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     if(wxGetApp().m_show_spect)
     {
         // Add Spectrum Plot window
-        m_panelSpectrum = new PlotSpectrum((wxFrame*) m_auiNbookCtrl);
+        m_panelSpectrum = new PlotSpectrum((wxFrame*) m_auiNbookCtrl, g_avmag, 
+                                           FDMDV_NSPEC*((float)MAX_F_HZ/FDMDV_MAX_F_HZ));
         m_panelSpectrum->SetToolTip(_("Left click to tune"));
         m_auiNbookCtrl->AddPage(m_panelSpectrum, _("Spectrum"), true, wxNullBitmap);
     }
@@ -329,7 +330,7 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     wxGetApp().m_codec2LPCPostFilterBeta       = (float)pConfig->Read(wxT("/Filter/codec2LPCPostFilterBeta"),      CODEC2_LPC_PF_BETA*100)/100.0;
     //printf("main(): m_codec2LPCPostFilterBeta: %f\n", wxGetApp().m_codec2LPCPostFilterBeta);
 
-    wxGetApp().m_MicInBassFreqHz = pConfig->Read(wxT("/Filter/MicInBassFreqHz"),    0.0);
+    wxGetApp().m_MicInBassFreqHz = pConfig->Read(wxT("/Filter/MicInBassFreqHz"),    1.0);
 
     wxGetApp().m_callSign = pConfig->Read("/Data/CallSign", wxT(""));
 

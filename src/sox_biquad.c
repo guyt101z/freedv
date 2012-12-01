@@ -55,14 +55,14 @@ void sox_biquad_finish(void)
   argv[0] = "highpass"; argv[1]="1000"; argc=1;
 */
 
-void *sox_biquad_create(int argc, char *argv[])
+void *sox_biquad_create(int argc, const char *argv[])
 {
     int ret;
     sox_effect_t *e;
     int (*start)(sox_effect_t *); /* function pointer to effect start func */
     
     e = sox_create_effect(sox_find_effect(argv[0])); assert(e != NULL);
-    assert(sox_effect_options(e, argc, &argv[1]) == SOX_SUCCESS);
+    assert(sox_effect_options(e, argc, (char * const*)&argv[1]) == SOX_SUCCESS);
 
     start = e->handler.start;
     e->in_signal.rate = 8000;     /* locked at FS=8000 Hz */

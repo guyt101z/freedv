@@ -73,6 +73,24 @@ Build portaudio
    possible to build fdmdv2 without "make install", by passing
    --prefix to the ./configure stage.
 
+<<<<<<< .mine
+Build libsox
+------------
+
+We use some of the internal sox functions for the equaliser feature.
+
+wget http://sourceforge.net/projects/sox/files/sox/14.4.0/sox-14.4.0.tar.gz/download
+tar xvzf sox-14.4.0.tar.gz
+cd sox-14.4.0
+
+Now we only want to use a few internal functions of sox.  This
+configure line mkes sure we don't build in unneeded depednancies:
+
+sox-14.4.0$ ./configure --enable-shared=no --without-id3tag --without-png --disable-gomp --with-oggvorbis=no --with-oss=no --with-flac=no --disable-dl-sndfile
+
+sox-14.4.0$ make
+
+=======
 Build libctb (Communications Toolbox)
 -------------------------------------
 
@@ -87,6 +105,7 @@ I found the "sudo make DEBUG=0 GPIB=0 install" didn't install the kbhit.h file:
 build$ sudo cp ../include/ctb-0.16/kbhit.h /usr/local/include/ctb-0.16
 build$ sudo ldconfig
 
+>>>>>>> .r1094
 Build codec2-dev
 ----------------
 
@@ -125,34 +144,44 @@ TODO
     [X] remove anything that doesn't work (menus, buttons) from GUI
     [X] about
     [X] src file credits
-    [ ] decide on web site
+    [X] decide on web site
         + need edit by at least three of us
-    [ ] help about with URL (hyperlink?) to web site
-    [ ] if you press start and headphones unplugged (ie one sound card missing), it
+    [X] if you press start and headphones unplugged (ie one sound card missing), it
         shouldn't crash
-    [ ] do we keep/put effort into getting working ./configure && Makefile?
+    [X] hook up squelch
+    [X] version number on GUI?  How to connect SVN verev to version?
+    [X] click tune and split
+    [X] rm loopback buttons
+
+    [ ] bug in record file on Win32
+    [ ] svn version tag?
+        + i.e. 1.0 etc rather than number
+    [ ] waterfall
+        + is graticule useful
+        + peaks showing
+        + showing fades properly
+    [ ] record/play dialogs layout
     [ ] remove/comment out debug printfs
-    [ ] hook up squelch
-    [ ] test with simulated AWGN/burst error channels
+    [ ] Credits: Mel, Tapr, Bruce,  Peter M, cesco, Dave W
+    [ ] rig control
+    [ ] data feature
+    [ ] always on top option
+    [ ] linux version
+
+    [ ] help about with URL (hyperlink?) to web site
+    [ ] do we keep/put effort into getting working ./configure && Makefile?
+    [-] test with simulated AWGN/burst error channels
         + see if sync needs tuning to not fall over too quickly
         + nasty noises
-    [ ] version number on GUI?  How to connect SVN verev to version?
     [ ] buffer sizes, maybe make a config number
     [ ] read comments and make sure they are still valid
-    [ ] rig control
-    [ ] click tune and split
     [ ] tool tip help for audio config dialog
-    [ ] rm loopback buttons
     [ ] something sensible with disabling rx when tx button is pressed?        
     [ ] wire up level guage
         + I think it has relevance for analog speech, demod can handle wide input ranges
-    [ ] data feature
-        + 11 or 00 sync with good inst snr
-        + way to measure inst snr
-        + drag text to "hopper".  Set thresh for sending (time or mic level)
     [ ] tx/rx muting for half duplex
         + dont want funny sounds during tx
-    [ ] setup Readme
+    [ ] setup doc
     [ ] Donate button with hyperlink from about dialog or help menu?
 
 IDEAS
@@ -206,3 +235,5 @@ What a good scatter diagram/spectrum looks like
 Setting up in audio loopback
 
 Explain one and two soundcard modes
+
+Right click drag tabs, new window, tab order
