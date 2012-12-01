@@ -319,7 +319,9 @@ class MainFrame : public TopFrame
         void abortTxStream();
         void abortRxStream();
         
+        void OnTop(wxCommandEvent& event);
         void OnExit( wxCommandEvent& event );
+
         void OnToolsAudio( wxCommandEvent& event );
         void OnToolsAudioUI( wxUpdateUIEvent& event );
         void OnToolsComCfg( wxCommandEvent& event );

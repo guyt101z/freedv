@@ -24,6 +24,23 @@
 
 #include "fdmdv2_main.h"
 
+enum {disableQ = false, enableQ = true};
+
+typedef struct { 
+    wxSlider *sliderFreq;
+    wxSlider *sliderGain;
+    wxSlider *sliderQ;
+
+    int       sliderFreqId;
+    int       sliderGainId;
+    int       sliderQId;
+    
+    float     freqHz;
+    float     gaindB;
+    float     Q;
+    
+} EQ;
+
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 // Class FilterDlg
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
@@ -31,7 +48,7 @@ class FilterDlg : public wxDialog
 {
     public:
         FilterDlg( wxWindow* parent, bool running, wxWindowID id = wxID_ANY, const wxString& title = _("Filter"), 
-                   const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 400,250 ), 
+                   const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 800,800 ), 
                    long style = wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER );
         ~FilterDlg();
 
@@ -65,6 +82,8 @@ class FilterDlg : public wxDialog
         wxButton*     m_sdbSizer5OK;
         wxButton*     m_sdbSizer5Default;
         wxButton*     m_sdbSizer5Cancel;
+        PlotSpectrum* m_MicInFreqRespPlot;
+        PlotSpectrum* m_SpkOutFreqRespPlot;
 
      private:
         bool          m_running;
@@ -73,6 +92,20 @@ class FilterDlg : public wxDialog
         void          setBeta(void);  // sets slider and static text from m_beta
         void          setGamma(void); // sets slider and static text from m_gamma
         void          setCodec2(void);
+ 
+        EQ            newEQ(wxStaticBoxSizer *bs, wxString eqName, bool enable);
+        wxSlider*     newEQControl(wxStaticBoxSizer *bs, wxString controlName);
+        void          newLPCPFControl(wxSlider **slider, wxStaticText **stValue, wxSizer *sbs, wxString controlName);
+        wxAuiNotebook *m_auiNotebook;
+
+        EQ            m_MicInBass;
+        EQ            m_MicInMid;
+        EQ            m_MicInTreble;
+
+        EQ            m_SpkOutBass;
+        EQ            m_SpkOutMid;
+        EQ            m_SpkOutTreble;
+
 };
 
 #endif // __FILTER_DIALOG__

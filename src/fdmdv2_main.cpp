@@ -594,7 +594,7 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
     if (snr_limited > 20.0) snr_limited = 20.0;
     m_gaugeSNR->SetValue((int)(snr_limited));
 
-    // Level Guage -----------------------------------------------------------------------
+    // Level Gauge -----------------------------------------------------------------------
 
     float tooHighThresh;
     if (!g_tx && m_RxRunning) {
@@ -713,6 +713,22 @@ void MainFrame::OnExitClick(wxCommandEvent& event)
 {
     Pa_Terminate();
     Destroy();
+}
+
+//-------------------------------------------------------------------------
+// OnTop()
+//-------------------------------------------------------------------------
+void MainFrame::OnTop(wxCommandEvent& event)
+{
+    int style = GetWindowStyle();
+
+    if (style & wxSTAY_ON_TOP) {
+        style &= ~wxSTAY_ON_TOP;
+    }
+    else {
+        style |= wxSTAY_ON_TOP;
+    }
+    SetWindowStyle(style);
 }
 
 //-------------------------------------------------------------------------
@@ -1115,7 +1131,7 @@ void MainFrame::OnPlayFileFromRadio(wxCommandEvent& event)
         // Huh?! I just copied wxWidgets-2.9.4/samples/dialogs ....
         g_loopPlayFileFromRadio = static_cast<MyExtraPlayFilePanel*>(ctrl)->getLoopPlayFileToMicIn();
 
-        SetStatusText(wxT("Playing File: ") + fileName + wxT("into From Radio") , 0);
+        SetStatusText(wxT("Playing File: ") + fileName + wxT(" into From Radio") , 0);
         g_playFileFromRadio = true;
     }
 }

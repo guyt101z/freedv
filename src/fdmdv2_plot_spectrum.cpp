@@ -45,7 +45,7 @@ END_EVENT_TABLE()
 // @brief
 //
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
-PlotSpectrum::PlotSpectrum(wxFrame* parent): PlotPanel(parent)
+PlotSpectrum::PlotSpectrum(wxFrame* parent, float min_mag_db, float max_mag_db): PlotPanel(parent)
 {
     m_greyscale     = 0;
     m_Bufsz         = GetMaxClientSize();
@@ -53,6 +53,9 @@ PlotSpectrum::PlotSpectrum(wxFrame* parent): PlotPanel(parent)
     m_firstPass     = true;
     m_line_color    = 0;
     SetLabelSize(10.0);
+    m_max_mag_db    = max_mag_db;
+    m_min_mag_db    = min_mag_db;
+    m_rxFreq        = 0.0;
 }
 
 //----------------------------------------------------------------
@@ -124,7 +127,7 @@ void PlotSpectrum::draw(wxAutoBufferedPaintDC& dc)
         dc.SetPen(pen);
 
         index_to_px = ((float)FDMDV_MAX_F_HZ/(float)MAX_F_HZ)*(float)m_rGrid.GetWidth()/FDMDV_NSPEC;
-	mag_dB_to_py = (float)m_rGrid.GetHeight()/(MAX_MAG_DB-MIN_MAG_DB);
+	mag_dB_to_py = (float)m_rGrid.GetHeight()/(m_max_mag_db - m_min_mag_db);
         int last_index = ((float)MAX_F_HZ/(float)FDMDV_MAX_F_HZ)*FDMDV_NSPEC;
 
 	prev_x = PLOT_BORDER + XLEFT_OFFSET;
@@ -133,9 +136,9 @@ void PlotSpectrum::draw(wxAutoBufferedPaintDC& dc)
         {
             x = index*index_to_px;
 	    mag = g_avmag[index];
-	    if (mag > MAX_MAG_DB) mag = MAX_MAG_DB;
-	    if (mag < MIN_MAG_DB) mag = MIN_MAG_DB;
-	    y = -mag * mag_dB_to_py;
+	    if (mag > m_max_mag_db) mag = m_max_mag_db;
+	    if (mag < m_min_mag_db) mag = m_min_mag_db;
+	    y = -(mag - m_max_mag_db) * mag_dB_to_py;
 
 	    x += PLOT_BORDER + XLEFT_OFFSET;
 	    y += PLOT_BORDER;
@@ -168,7 +171,7 @@ void PlotSpectrum::drawGraticule(wxAutoBufferedPaintDC&  dc)
     dc.SetPen(wxPen(BLACK_COLOR, 1));
 
     freq_hz_to_px = (float)m_rGrid.GetWidth()/(MAX_F_HZ-MIN_F_HZ);
-    mag_dB_to_py = (float)m_rGrid.GetHeight()/(MAX_MAG_DB-MIN_MAG_DB);
+    mag_dB_to_py = (float)m_rGrid.GetHeight()/(m_max_mag_db - m_min_mag_db);
 
     // upper LH coords of plot area are (PLOT_BORDER + XLEFT_OFFSET, PLOT_BORDER)
     // lower RH coords of plot area are (PLOT_BORDER + XLEFT_OFFSET + m_rGrid.GetWidth(), 
@@ -201,22 +204,25 @@ void PlotSpectrum::drawGraticule(wxAutoBufferedPaintDC&  dc)
     // Horizontal gridlines
 
     dc.SetPen(m_penDotDash);
-    for(mag=MIN_MAG_DB; mag<=MAX_MAG_DB; mag+=STEP_MAG_DB) {
-	y = -mag*mag_dB_to_py;
+    for(mag=m_min_mag_db; mag<=m_max_mag_db; mag+=STEP_MAG_DB) {
+	y = -(mag - m_max_mag_db) * mag_dB_to_py;
 	y += PLOT_BORDER;
 	dc.DrawLine(PLOT_BORDER + XLEFT_OFFSET, y, 
 		    (m_rGrid.GetWidth() + PLOT_BORDER + XLEFT_OFFSET), y);
         sprintf(buf, "%3.0fdB", mag);
 	GetTextExtent(buf, &text_w, &text_h);
         dc.DrawText(buf, PLOT_BORDER + XLEFT_OFFSET - text_w - XLEFT_TEXT_OFFSET, y-text_h/2);
-   }
+    }
 
     // red rx tuning line
-    dc.SetPen(wxPen(RED_COLOR, 2));
-    x = m_rxFreq*freq_hz_to_px;
-    x += PLOT_BORDER + XLEFT_OFFSET;
-    //printf("m_rxFreq %f x %d\n", m_rxFreq, x);
-    dc.DrawLine(x, m_rGrid.GetHeight()+ PLOT_BORDER, x, m_rCtrl.GetHeight());
+    
+    if (m_rxFreq != 0.0) {
+        dc.SetPen(wxPen(RED_COLOR, 2));
+        x = m_rxFreq*freq_hz_to_px;
+        x += PLOT_BORDER + XLEFT_OFFSET;
+        //printf("m_rxFreq %f x %d\n", m_rxFreq, x);
+        dc.DrawLine(x, m_rGrid.GetHeight()+ PLOT_BORDER, x, m_rCtrl.GetHeight());
+    }
 
 }
 
