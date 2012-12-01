@@ -348,6 +348,7 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     m_togBtnAnalog->Disable();
     //m_togBtnALC->Disable();
     //m_btnTogPTT->Disable();
+    
     SetupSerialPort();
 
 
@@ -1353,6 +1354,12 @@ void MainFrame::OnToolsComCfg(wxCommandEvent& event)
     wxUnusedVar(event);
     int rv = 0;
 
+    int iLineState   = m_serialPort->GetLineState();
+    // ctb::LinestateRts 
+//    bool bDtrState = m_serialPort->GetLineState(ctb::LinestateDtr);
+    bool bPTTEnabled = m_btnTogPTT->IsEnabled();
+    bool bPTTState   = m_btnTogPTT->GetValue();
+  
     CloseSerialPort();
     ComPortsDlg *dlg = new ComPortsDlg(NULL);
     rv = dlg->ShowModal();
@@ -1361,6 +1368,29 @@ void MainFrame::OnToolsComCfg(wxCommandEvent& event)
         dlg->ExchangeData(EXCHANGE_DATA_OUT);
         SetupSerialPort();
     }
+    else if(rv == wxID_CANCEL)
+    {
+        SetupSerialPort();
+        if(iLineState | ctb::LinestateRts)
+        {
+            m_serialPort->SetLineState(ctb::LinestateRts);
+        }
+        else
+        {
+            m_serialPort->ClrLineState(ctb::LinestateRts);
+        }
+        if(iLineState | ctb::LinestateDtr)
+        {
+            m_serialPort->SetLineState(ctb::LinestateDtr);
+        }
+        else
+        {
+            m_serialPort->ClrLineState(ctb::LinestateDtr);
+        }
+                                                                                                                                                             
+        m_btnTogPTT->Enable(bPTTEnabled);
+        m_btnTogPTT->SetValue(bPTTState);
+ }
     delete dlg;
 }
 
@@ -2494,12 +2524,12 @@ void MainFrame::SetupSerialPort(void)
     wxGetApp().m_strRigCtrlBaud.ToLong(&baudrate, 10);
     if(!wxGetApp().m_strRigCtrlPort.IsEmpty())
     {
-        wxString protocol = wxGetApp().m_strRigCtrlDatabits + wxGetApp().m_strRigCtrlParity + wxGetApp().m_strRigCtrlStopbits; //"8N1";
+        wxString protocol = wxGetApp().m_strRigCtrlDatabits + wxGetApp().m_strRigCtrlParity + wxGetApp().m_strRigCtrlStopbits;  //"8N1";
         m_serialPort = new ctb::SerialPort();
         if(m_serialPort->Open(wxGetApp().m_strRigCtrlPort.c_str(), baudrate, protocol.c_str(), ctb::SerialPort::NoFlowControl ) >= 0 ) 
         {
             m_device = m_serialPort;
-            //  always start PTT cleared
+            //  always start with PTT cleared
             if(wxGetApp().m_boolRTSPos) // RTS cleared LOW
             {
                 m_serialPort->ClrLineState(ctb::LinestateRts);
@@ -2516,17 +2546,16 @@ void MainFrame::SetupSerialPort(void)
             {
                 m_serialPort->SetLineState(ctb::LinestateDtr);
             }
-            m_serialPort->ClrLineState(ctb::LinestateRts);
-            m_serialPort->ClrLineState(ctb::LinestateDtr);
             m_btnTogPTT->Enable(true);
             m_btnTogPTT->SetValue(false);
         }
-        //m_btnTogPTT->SetLabel(wxT("Rx"));
     }
+/*    
     else
     {
         wxMessageBox(wxT("You must select a Serial port to Open!"), wxT("Error"), wxOK);
     }
+*/
 }
 
 //----------------------------------------------------------------

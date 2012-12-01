@@ -75,22 +75,24 @@ ComPortsDlg::ComPortsDlg(wxWindow* parent, wxWindowID id, const wxString& title,
     gridSizer17->Add(0, 0, 0, 0, 5);
 */
     m_rbUseDTR = new wxRadioButton(this, wxID_ANY, _("Use DTR"), wxDefaultPosition, wxSize(-1,-1), 0);
+    m_rbUseDTR->SetToolTip(_("Toggle DTR line for PTT"));
     m_rbUseDTR->SetValue(1);
     gridSizer17->Add(m_rbUseDTR, 0, wxALIGN_CENTER|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL, 5);
 
-    m_ckRTSPos = new wxCheckBox(this, wxID_ANY, _("DTR = +V"), wxDefaultPosition, wxSize(-1,-1), 0);
-    m_ckRTSPos->SetValue(false);
-    gridSizer17->Add(m_ckRTSPos, 0, wxALIGN_CENTER|wxALIGN_RIGHT, 5);
+    m_ckDTRPos = new wxCheckBox(this, wxID_ANY, _("DTR = +V"), wxDefaultPosition, wxSize(-1,-1), 0);
+    m_ckDTRPos->SetToolTip(_("Set Polarity of the DTR line"));
+    m_ckDTRPos->SetValue(false);
+    gridSizer17->Add(m_ckDTRPos, 0, wxALIGN_CENTER|wxALIGN_RIGHT, 5);
 
     m_rbUseRTS = new wxRadioButton(this, wxID_ANY, _("Use RTS"), wxDefaultPosition, wxSize(-1,-1), 0);
     m_rbUseRTS->SetToolTip(_("Toggle the RTS pin for PTT"));
     m_rbUseRTS->SetValue(1);
     gridSizer17->Add(m_rbUseRTS, 0, wxALIGN_CENTER|wxALIGN_RIGHT, 5);
 
-    m_ckDTRPos = new wxCheckBox(this, wxID_ANY, _("RTS = +V"), wxDefaultPosition, wxSize(-1,-1), 0);
-    m_ckDTRPos->SetValue(false);
-    m_ckDTRPos->SetToolTip(_("Set Polarity of the RTS line"));
-    gridSizer17->Add(m_ckDTRPos, 0, wxALIGN_CENTER|wxALIGN_RIGHT, 5);
+    m_ckRTSPos = new wxCheckBox(this, wxID_ANY, _("RTS = +V"), wxDefaultPosition, wxSize(-1,-1), 0);
+    m_ckRTSPos->SetValue(false);
+    m_ckRTSPos->SetToolTip(_("Set Polarity of the RTS line"));
+    gridSizer17->Add(m_ckRTSPos, 0, wxALIGN_CENTER|wxALIGN_RIGHT, 5);
 
     wxBoxSizer* boxSizer12 = new wxBoxSizer(wxHORIZONTAL);
     mainSizer->Add(boxSizer12, 0, wxLEFT|wxRIGHT|wxTOP|wxBOTTOM|wxALIGN_CENTER_HORIZONTAL, 5);
@@ -115,7 +117,7 @@ ComPortsDlg::ComPortsDlg(wxWindow* parent, wxWindowID id, const wxString& title,
     // Connect events
     this->Connect(wxEVT_INIT_DIALOG, wxInitDialogEventHandler(ComPortsDlg::OnInitDialog), NULL, this);
 //    m_ckPTTRtChan->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(ComPortsDlg::PTTAudioClick), NULL, this);
-    m_listCtrlPorts->Connect(wxEVT_COMMAND_LISTBOX_SELECTED, wxCommandEventHandler(ComPortsDlg::PTTPortSlelcted), NULL, this);
+//    m_listCtrlPorts->Connect(wxEVT_COMMAND_LISTBOX_SELECTED, wxCommandEventHandler(ComPortsDlg::PTTPortSlelcted), NULL, this);
     m_ckUseSerialPTT->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(ComPortsDlg::PTTUseSerialClicked), NULL, this);
     m_rbUseDTR->Connect(wxEVT_COMMAND_RADIOBUTTON_SELECTED, wxCommandEventHandler(ComPortsDlg::UseDTRCliched), NULL, this);
     m_ckRTSPos->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(ComPortsDlg::DTRVPlusClicked), NULL, this);
@@ -134,7 +136,7 @@ ComPortsDlg::~ComPortsDlg()
     // Disconnect Events
     this->Disconnect(wxEVT_INIT_DIALOG, wxInitDialogEventHandler(ComPortsDlg::OnInitDialog), NULL, this);
 //    m_ckPTTRtChan->Disconnect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(ComPortsDlg::PTTAudioClick), NULL, this);
-    m_listCtrlPorts->Disconnect(wxEVT_COMMAND_LISTBOX_SELECTED, wxCommandEventHandler(ComPortsDlg::PTTPortSlelcted), NULL, this);
+//    m_listCtrlPorts->Disconnect(wxEVT_COMMAND_LISTBOX_SELECTED, wxCommandEventHandler(ComPortsDlg::PTTPortSlelcted), NULL, this);
     m_ckUseSerialPTT->Disconnect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(ComPortsDlg::PTTUseSerialClicked), NULL, this);
     m_rbUseDTR->Disconnect(wxEVT_COMMAND_RADIOBUTTON_SELECTED, wxCommandEventHandler(ComPortsDlg::UseDTRCliched), NULL, this);
     m_ckRTSPos->Disconnect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(ComPortsDlg::DTRVPlusClicked), NULL, this);
@@ -213,12 +215,12 @@ void ComPortsDlg::ExchangeData(int inout)
         wxGetApp().m_boolUseDTR                 = m_rbUseDTR->GetValue();
         wxGetApp().m_boolDTRPos                 = m_ckDTRPos->IsChecked();
         
-        pConfig->Write(wxT("/Rig/UseRTS"),                  wxGetApp().m_boolUseRTS);
-        pConfig->Write(wxT("/Rig/RTSPolarity"),             wxGetApp().m_boolRTSPos);
-        pConfig->Write(wxT("/Rig/UseDTR"),                  wxGetApp().m_boolUseDTR);
-        pConfig->Write(wxT("/Rig/DTRPolarity"),             wxGetApp().m_boolDTRPos);
-        pConfig->Write(wxT("/Rig/UseTonePTT"),              wxGetApp().m_boolUseTonePTT);
-        pConfig->Write(wxT("/Rig/UseSerialPTT"),            wxGetApp().m_boolUseSerialPTT);
+        pConfig->Write(wxT("/Rig/UseRTS"),          wxGetApp().m_boolUseRTS);
+        pConfig->Write(wxT("/Rig/RTSPolarity"),     wxGetApp().m_boolRTSPos);
+        pConfig->Write(wxT("/Rig/UseDTR"),          wxGetApp().m_boolUseDTR);
+        pConfig->Write(wxT("/Rig/DTRPolarity"),     wxGetApp().m_boolDTRPos);
+        pConfig->Write(wxT("/Rig/UseTonePTT"),      wxGetApp().m_boolUseTonePTT);
+        pConfig->Write(wxT("/Rig/UseSerialPTT"),    wxGetApp().m_boolUseSerialPTT);
 
 //        wxGetApp().m_strRigCtrlBaud             = m_listCtrlBaudrates->GetStringSelection();
 //        wxGetApp().m_strRigCtrlDatabits         = m_textRigCtrlDatabits->GetValue();
@@ -235,22 +237,13 @@ void ComPortsDlg::ExchangeData(int inout)
     }
     delete wxConfigBase::Set((wxConfigBase *) NULL);
 }
-/*
-//-------------------------------------------------------------------------
-// OnPortItemSelected()
-//-------------------------------------------------------------------------
-void ComPortsDlg::OnPortItemSelected(wxListEvent& event)
-{
-    // TODO: Implement OnListItemSelected
-}
-*/
 
 //-------------------------------------------------------------------------
 // DTRVPlusClicked()
 //-------------------------------------------------------------------------
 void ComPortsDlg::DTRVPlusClicked(wxCommandEvent& event)
 {
-    wxMessageBox(wxT("DTRVPlusClicked"));
+    //wxMessageBox(wxT("DTRVPlusClicked"));
 }
 
 //-------------------------------------------------------------------------
@@ -258,26 +251,6 @@ void ComPortsDlg::DTRVPlusClicked(wxCommandEvent& event)
 //-------------------------------------------------------------------------
 void ComPortsDlg::PTTAudioClick(wxCommandEvent& event)
 {
-}
-
-//-------------------------------------------------------------------------
-// PTTPortSlelcted()
-//-------------------------------------------------------------------------
-void ComPortsDlg::PTTPortSlelcted(wxCommandEvent& event)
-{
-/*
-    wxMessageBox(wxT("PTTPortSlelcted"));
-    if(event.IsChecked())
-    {
-        m_ckPTTRtChan->SetValue(false);
-        m_ckPTTRtChan->Enable(false);
-    }
-    else
-    {
-        //m_ckPTTRtChan->SetValue(false);
-        m_ckPTTRtChan->Enable(true);
-    }
-*/
 }
 
 //-------------------------------------------------------------------------

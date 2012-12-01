@@ -59,7 +59,7 @@ class ComPortsDlg : public wxDialog
     protected:
         void populatePortList(void);
         void PTTAudioClick(wxCommandEvent& event);
-        void PTTPortSlelcted(wxCommandEvent& event);
+//        void PTTPortSlelcted(wxCommandEvent& event);
         void PTTUseSerialClicked(wxCommandEvent& event);
         void UseDTRCliched(wxCommandEvent& event);
         void DTRVPlusClicked(wxCommandEvent& event);
@@ -69,7 +69,6 @@ class ComPortsDlg : public wxDialog
         void OnCancel(wxCommandEvent& event);
         void OnApply(wxCommandEvent& event);
         virtual void OnInitDialog(wxInitDialogEvent& event);
-
 };
 
 #endif // __COMPORTS_DIALOG__
