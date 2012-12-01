@@ -23,8 +23,11 @@
 #define SLIDER_MAX 100
 #define SLIDER_LENGTH 155
 
-#define MIN_MAG_DB -20.0
-#define MAX_MAG_DB  20.0
+#define FILTER_MIN_MAG_DB -20.0
+#define FILTER_MAX_MAG_DB  20.0
+
+#define MAX_FREQ_BASS      600.00
+#define MAX_FREQ_DEF      3000.00
 
 extern struct CODEC2      *g_pCodec2;
 
@@ -65,15 +68,15 @@ FilterDlg::FilterDlg(wxWindow* parent, bool running, wxWindowID id, const wxStri
 
     wxStaticBoxSizer* eqMicInSizer = new wxStaticBoxSizer(new wxStaticBox(this, wxID_ANY, _("Mic In Equaliser")), wxVERTICAL);
 
-    m_MicInBass   = newEQ(eqMicInSizer, "Bass"  , disableQ);
-    m_MicInMid    = newEQ(eqMicInSizer, "Mid"   , enableQ);
-    m_MicInTreble = newEQ(eqMicInSizer, "Treble", disableQ);
+    m_MicInBass   = newEQ(eqMicInSizer, "Bass"  , MAX_FREQ_BASS, disableQ);
+    m_MicInMid    = newEQ(eqMicInSizer, "Mid"   , MAX_FREQ_DEF, enableQ);
+    m_MicInTreble = newEQ(eqMicInSizer, "Treble", MAX_FREQ_DEF, disableQ);
 
     wxStaticBoxSizer* eqSpkOutSizer = new wxStaticBoxSizer(new wxStaticBox(this, wxID_ANY, _("Speaker Out Equaliser")), wxVERTICAL);
 
-    m_SpkOutBass   = newEQ(eqSpkOutSizer, "Bass"  , disableQ);
-    m_SpkOutMid    = newEQ(eqSpkOutSizer, "Mid"   , enableQ);
-    m_SpkOutTreble = newEQ(eqSpkOutSizer, "Treble", disableQ);
+    m_SpkOutBass   = newEQ(eqSpkOutSizer, "Bass"  , MAX_FREQ_BASS, disableQ);
+    m_SpkOutMid    = newEQ(eqSpkOutSizer, "Mid"   , MAX_FREQ_DEF, enableQ);
+    m_SpkOutTreble = newEQ(eqSpkOutSizer, "Treble", MAX_FREQ_DEF, disableQ);
     
     bSizer30->Add(eqMicInSizer, 0, wxALL|wxEXPAND, 5);
     bSizer30->Add(eqSpkOutSizer, 0, wxALL, 5);
@@ -86,9 +89,9 @@ FilterDlg::FilterDlg(wxWindow* parent, bool running, wxWindowID id, const wxStri
 
     bSizer30->Add(m_auiNotebook, 0, wxEXPAND|wxALL, 5);
     
-    m_MicInFreqRespPlot = new PlotSpectrum((wxFrame*) m_auiNotebook, MIN_MAG_DB, MAX_MAG_DB);
+    m_MicInFreqRespPlot = new PlotSpectrum((wxFrame*) m_auiNotebook, FILTER_MIN_MAG_DB, FILTER_MAX_MAG_DB);
     m_auiNotebook->AddPage(m_MicInFreqRespPlot, _("Microphone In Equaliser"));
-    m_SpkOutFreqRespPlot = new PlotSpectrum((wxFrame*)m_auiNotebook, MIN_MAG_DB, MAX_MAG_DB);
+    m_SpkOutFreqRespPlot = new PlotSpectrum((wxFrame*)m_auiNotebook, FILTER_MIN_MAG_DB, FILTER_MAX_MAG_DB);
     m_auiNotebook->AddPage(m_SpkOutFreqRespPlot, _("Speaker Out Equaliser"));
 
     // OK - Cancel - Default Buttons at the bottom --------------------------
@@ -117,6 +120,8 @@ FilterDlg::FilterDlg(wxWindow* parent, bool running, wxWindowID id, const wxStri
     m_codec2LPCPostFilterBeta->Connect(wxEVT_SCROLL_CHANGED, wxScrollEventHandler(FilterDlg::OnBetaScroll), NULL, this);
     m_codec2LPCPostFilterGamma->Connect(wxEVT_SCROLL_CHANGED, wxScrollEventHandler(FilterDlg::OnGammaScroll), NULL, this);
 
+    m_MicInBass.sliderFreq->Connect(wxEVT_SCROLL_CHANGED, wxScrollEventHandler(FilterDlg::OnMicInBassFreqScroll), NULL, this);
+
     m_sdbSizer5Cancel->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(FilterDlg::OnCancel), NULL, this);
     m_sdbSizer5Default->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(FilterDlg::OnDefault), NULL, this);
     m_sdbSizer5OK->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(FilterDlg::OnOK), NULL, this);
@@ -128,9 +133,16 @@ FilterDlg::FilterDlg(wxWindow* parent, bool running, wxWindowID id, const wxStri
 FilterDlg::~FilterDlg()
 {
     // Disconnect Events
+
     this->Disconnect(wxEVT_INIT_DIALOG, wxInitDialogEventHandler(FilterDlg::OnInitDialog));
+
+    m_codec2LPCPostFilterEnable->Disconnect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxScrollEventHandler(FilterDlg::OnEnable), NULL, this);
+    m_codec2LPCPostFilterBassBoost->Disconnect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxScrollEventHandler(FilterDlg::OnBassBoost), NULL, this);
     m_codec2LPCPostFilterBeta->Disconnect(wxEVT_SCROLL_CHANGED, wxScrollEventHandler(FilterDlg::OnBetaScroll), NULL, this);
     m_codec2LPCPostFilterGamma->Disconnect(wxEVT_SCROLL_CHANGED, wxScrollEventHandler(FilterDlg::OnGammaScroll), NULL, this);
+
+    m_MicInBass.sliderFreq->Disconnect(wxEVT_SCROLL_CHANGED, wxScrollEventHandler(FilterDlg::OnMicInBassFreqScroll), NULL, this);
+
     m_sdbSizer5Cancel->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(FilterDlg::OnCancel), NULL, this);
     m_sdbSizer5Default->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(FilterDlg::OnDefault), NULL, this);
     m_sdbSizer5OK->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(FilterDlg::OnOK), NULL, this);
@@ -152,27 +164,31 @@ void FilterDlg::newLPCPFControl(wxSlider **slider, wxStaticText **stValue, wxSiz
     s->Add(bs, 1);
 }
 
-wxSlider *FilterDlg::newEQControl(wxStaticBoxSizer *bs, wxString controlName)
+void FilterDlg::newEQControl(wxSlider** slider, wxStaticText** value, wxStaticBoxSizer *bs, wxString controlName)
 {
-    wxStaticText* st = new wxStaticText(this, wxID_ANY, controlName, wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT);
-    bs->Add(st, 0, wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT|wxALL, 2);
+    wxStaticText* label = new wxStaticText(this, wxID_ANY, controlName, wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT);
+    bs->Add(label, 0, wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT|wxALL, 2);
 
-    wxSlider* slider = new wxSlider(this, wxID_ANY, 0, 0, SLIDER_MAX, wxDefaultPosition, wxSize(SLIDER_LENGTH,wxDefaultCoord));
-    bs->Add(slider, 1, wxALIGN_CENTER_VERTICAL|wxALL, 2);
+    *slider = new wxSlider(this, wxID_ANY, 0, 0, SLIDER_MAX, wxDefaultPosition, wxSize(SLIDER_LENGTH,wxDefaultCoord));
+    bs->Add(*slider, 1, wxALIGN_CENTER_VERTICAL|wxALL, 2);
 
-    return slider;
+    *value = new wxStaticText(this, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
+    bs->Add(*value, 0, wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT|wxALL, 5);
 }
 
-EQ FilterDlg::newEQ(wxStaticBoxSizer *bs, wxString eqName, bool enableQ)
+EQ FilterDlg::newEQ(wxStaticBoxSizer *bs, wxString eqName, float maxFreqHz, bool enableQ)
 {
     EQ eq;
 
     wxStaticBoxSizer *bsEQ = new wxStaticBoxSizer(new wxStaticBox(this, wxID_ANY, eqName), wxHORIZONTAL);
 
-    eq.sliderFreq = newEQControl(bsEQ, "Freq"); eq.sliderFreqId = eq.sliderFreq->GetId();
-    eq.sliderGain = newEQControl(bsEQ, "Gain");
+    newEQControl(&eq.sliderFreq, &eq.valueFreq, bsEQ, "Freq"); 
+    eq.maxFreqHz = maxFreqHz; 
+    eq.sliderFreqId = eq.sliderFreq->GetId();
+
+    newEQControl(&eq.sliderGain, &eq.valueGain, bsEQ, "Gain");
     if (enableQ)
-        eq.sliderQ = newEQControl(bsEQ, "Q");
+        newEQControl(&eq.sliderQ, &eq.valueQ, bsEQ, "Q");
     else
         eq.sliderQ = NULL;
 
@@ -189,15 +205,21 @@ void FilterDlg::ExchangeData(int inout)
     wxConfigBase *pConfig = wxConfigBase::Get();
     if(inout == EXCHANGE_DATA_IN)
     {
-        //printf("EXCHANGE_DATA_IN\n");
+        // LPC Post filter
+
         m_codec2LPCPostFilterEnable->SetValue(wxGetApp().m_codec2LPCPostFilterEnable);
         m_codec2LPCPostFilterBassBoost->SetValue(wxGetApp().m_codec2LPCPostFilterBassBoost);
         m_beta = wxGetApp().m_codec2LPCPostFilterBeta; setBeta();
         m_gamma = wxGetApp().m_codec2LPCPostFilterGamma; setGamma();
+
+        // Mic In Equaliser
+
+        m_MicInBass.freqHz = wxGetApp().m_MicInBassFreqHz; setFreq(&m_MicInBass);
     }
     if(inout == EXCHANGE_DATA_OUT)
     {
-        //printf("EXCHANGE_DATA_OUT\n");
+        // LPC Post filter
+
         wxGetApp().m_codec2LPCPostFilterEnable     = m_codec2LPCPostFilterEnable->GetValue();
         wxGetApp().m_codec2LPCPostFilterBassBoost  = m_codec2LPCPostFilterBassBoost->GetValue();
         wxGetApp().m_codec2LPCPostFilterBeta       = m_beta;
@@ -207,6 +229,11 @@ void FilterDlg::ExchangeData(int inout)
         pConfig->Write(wxT("/Filter/codec2LPCPostFilterBassBoost"),  wxGetApp().m_codec2LPCPostFilterBassBoost);
         pConfig->Write(wxT("/Filter/codec2LPCPostFilterBeta"),       m_beta*100.0);
         pConfig->Write(wxT("/Filter/codec2LPCPostFilterGamma"),      m_gamma*100.0);
+
+        // Mic In Equaliser
+
+        wxGetApp().m_MicInBassFreqHz = m_MicInBass.freqHz;
+        pConfig->Write(wxT("/Filter/MicInBassFreqHz"), m_MicInBass.freqHz);
 
         pConfig->Flush();
     }
@@ -304,5 +331,21 @@ void FilterDlg::OnGammaScroll(wxScrollEvent& event) {
     m_gamma = (float)m_codec2LPCPostFilterGamma->GetValue()/SLIDER_MAX;
     setGamma();
     setCodec2();
+}
+
+void FilterDlg::setFreq(EQ *eq)
+{
+    wxString buf;
+    buf.Printf(wxT("%3.2f"), eq->freqHz);
+    eq->valueFreq->SetLabel(buf);
+    int slider = (int)((eq->freqHz/eq->maxFreqHz)*SLIDER_MAX + 0.5);
+    eq->sliderFreq->SetValue(slider);
+}
+
+void FilterDlg::OnMicInBassFreqScroll(wxScrollEvent& event)
+{
+    m_MicInBass.freqHz = ((float)m_MicInBass.sliderFreq->GetValue()/SLIDER_MAX)*m_MicInBass.maxFreqHz;
+    printf("FilterDlg::OnMicInBassFreqScroll m_MicInBass.freqHz: %f\n", m_MicInBass.freqHz);
+    setFreq(&m_MicInBass);
 }
 

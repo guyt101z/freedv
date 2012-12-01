@@ -145,12 +145,16 @@ class MainApp : public wxApp
 
         bool                m_snrSlow;
 
-        // Codec 2 Post Filter
+        // LPC Post Filter
+
         bool                m_codec2LPCPostFilterEnable;
         bool                m_codec2LPCPostFilterBassBoost;
         float               m_codec2LPCPostFilterGamma;
         float               m_codec2LPCPostFilterBeta;
         
+        // Mic In Equaliser
+        float               m_MicInBassFreqHz;
+
         int                 m_show_wf;
         int                 m_show_spect;
         int                 m_show_scatter;

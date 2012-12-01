@@ -27,9 +27,12 @@
 enum {disableQ = false, enableQ = true};
 
 typedef struct { 
-    wxSlider *sliderFreq;
-    wxSlider *sliderGain;
-    wxSlider *sliderQ;
+    wxSlider     *sliderFreq;
+    wxStaticText *valueFreq;
+    wxSlider     *sliderGain;
+    wxStaticText *valueGain;
+    wxSlider     *sliderQ;
+    wxStaticText *valueQ;
 
     int       sliderFreqId;
     int       sliderGainId;
@@ -38,6 +41,8 @@ typedef struct {
     float     freqHz;
     float     gaindB;
     float     Q;
+
+    float     maxFreqHz;
     
 } EQ;
 
@@ -48,7 +53,7 @@ class FilterDlg : public wxDialog
 {
     public:
         FilterDlg( wxWindow* parent, bool running, wxWindowID id = wxID_ANY, const wxString& title = _("Filter"), 
-                   const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 800,800 ), 
+                   const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 800,900 ), 
                    long style = wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER );
         ~FilterDlg();
 
@@ -66,6 +71,8 @@ class FilterDlg : public wxDialog
         void    OnGammaScroll(wxScrollEvent& event);
         void    OnEnable(wxScrollEvent& event);
         void    OnBassBoost(wxScrollEvent& event);
+
+        void    OnMicInBassFreqScroll(wxScrollEvent& event);
 
         wxStaticText* m_staticText8;
         wxCheckBox*   m_codec2LPCPostFilterEnable;
@@ -93,10 +100,11 @@ class FilterDlg : public wxDialog
         void          setGamma(void); // sets slider and static text from m_gamma
         void          setCodec2(void);
  
-        EQ            newEQ(wxStaticBoxSizer *bs, wxString eqName, bool enable);
-        wxSlider*     newEQControl(wxStaticBoxSizer *bs, wxString controlName);
+        void          newEQControl(wxSlider** slider, wxStaticText** value, wxStaticBoxSizer *bs, wxString controlName);
+        EQ            newEQ(wxStaticBoxSizer *bs, wxString eqName, float maxFreqHz, bool enableQ);
         void          newLPCPFControl(wxSlider **slider, wxStaticText **stValue, wxSizer *sbs, wxString controlName);
         wxAuiNotebook *m_auiNotebook;
+        void          setFreq(EQ *eq);
 
         EQ            m_MicInBass;
         EQ            m_MicInMid;
