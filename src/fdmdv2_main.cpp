@@ -330,7 +330,7 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     wxGetApp().m_codec2LPCPostFilterBeta       = (float)pConfig->Read(wxT("/Filter/codec2LPCPostFilterBeta"),      CODEC2_LPC_PF_BETA*100)/100.0;
     //printf("main(): m_codec2LPCPostFilterBeta: %f\n", wxGetApp().m_codec2LPCPostFilterBeta);
 
-    wxGetApp().m_MicInBassFreqHz = pConfig->Read(wxT("/Filter/MicInBassFreqHz"),    1.0);
+    wxGetApp().m_MicInBassFreqHz = (float)pConfig->Read(wxT("/Filter/MicInBassFreqHz"),    1);
 
     wxGetApp().m_callSign = pConfig->Read("/Data/CallSign", wxT(""));
 

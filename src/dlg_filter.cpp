@@ -252,7 +252,7 @@ void FilterDlg::ExchangeData(int inout)
         m_beta = wxGetApp().m_codec2LPCPostFilterBeta; setBeta();
         m_gamma = wxGetApp().m_codec2LPCPostFilterGamma; setGamma();
 
-        // Mic In Equaliser
+       // Mic In Equaliser
 
         m_MicInBass.freqHz = wxGetApp().m_MicInBassFreqHz; setFreq(&m_MicInBass);
         m_MicInBass.freqHz = limit(m_MicInBass.freqHz, 1.0, MAX_FREQ_BASS);
@@ -272,13 +272,13 @@ void FilterDlg::ExchangeData(int inout)
 
         pConfig->Write(wxT("/Filter/codec2LPCPostFilterEnable"),     wxGetApp().m_codec2LPCPostFilterEnable);
         pConfig->Write(wxT("/Filter/codec2LPCPostFilterBassBoost"),  wxGetApp().m_codec2LPCPostFilterBassBoost);
-        pConfig->Write(wxT("/Filter/codec2LPCPostFilterBeta"),       m_beta*100.0);
-        pConfig->Write(wxT("/Filter/codec2LPCPostFilterGamma"),      m_gamma*100.0);
+        pConfig->Write(wxT("/Filter/codec2LPCPostFilterBeta"),       (int)(m_beta*100.0));
+        pConfig->Write(wxT("/Filter/codec2LPCPostFilterGamma"),      (int)(m_gamma*100.0));
 
         // Mic In Equaliser
 
         wxGetApp().m_MicInBassFreqHz = m_MicInBass.freqHz;
-        pConfig->Write(wxT("/Filter/MicInBassFreqHz"), m_MicInBass.freqHz);
+        pConfig->Write(wxT("/Filter/MicInBassFreqHz"), (int)m_MicInBass.freqHz);
 
         pConfig->Flush();
     }
