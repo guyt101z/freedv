@@ -30,7 +30,8 @@
 class PlotSpectrum : public PlotPanel
 {
     public:
-    PlotSpectrum(wxFrame* parent, float *magdB, int n_magdB, float min_mag_db=MIN_MAG_DB, float max_mag_db=MAX_MAG_DB);
+    PlotSpectrum(wxFrame* parent, float *magdB, int n_magdB, 
+                 float min_mag_db=MIN_MAG_DB, float max_mag_db=MAX_MAG_DB, bool clickTune=true);
         ~PlotSpectrum();
         void setRxFreq(float rxFreq) { m_rxFreq = rxFreq; }
 
@@ -47,7 +48,8 @@ class PlotSpectrum : public PlotPanel
         float       m_max_mag_db;
         float       m_min_mag_db;
         float      *m_magdB;
-        int         m_n_magdB;   
+        int         m_n_magdB;  
+        bool        m_clickTune;
 
         DECLARE_EVENT_TABLE()
 };

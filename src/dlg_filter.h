@@ -43,7 +43,6 @@ typedef struct {
     float     Q;
 
     float     maxFreqHz;
-    
 } EQ;
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
@@ -53,7 +52,7 @@ class FilterDlg : public wxDialog
 {
     public:
         FilterDlg( wxWindow* parent, bool running, wxWindowID id = wxID_ANY, const wxString& title = _("Filter"), 
-                   const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 800, 700 ), 
+                   const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 1000, 700 ), 
                    long style = wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER );
         ~FilterDlg();
 
@@ -72,7 +71,13 @@ class FilterDlg : public wxDialog
         void    OnEnable(wxScrollEvent& event);
         void    OnBassBoost(wxScrollEvent& event);
 
-        void    OnMicInBassFreqScroll(wxScrollEvent& event);
+        void    OnMicInBassFreqScroll(wxScrollEvent& event) { sliderToFreq(&m_MicInBass, true); }
+        void    OnMicInBassGainScroll(wxScrollEvent& event) { sliderToGain(&m_MicInBass, true); }
+        void    OnMicInTrebleFreqScroll(wxScrollEvent& event) { sliderToFreq(&m_MicInTreble, true); }
+        void    OnMicInTrebleGainScroll(wxScrollEvent& event) { sliderToGain(&m_MicInTreble, true); }
+        void    OnMicInMidFreqScroll(wxScrollEvent& event) { sliderToFreq(&m_MicInMid, true); }
+        void    OnMicInMidGainScroll(wxScrollEvent& event) { sliderToGain(&m_MicInMid, true); }
+        void    OnMicInMidQScroll(wxScrollEvent& event) { sliderToQ(&m_MicInMid, true); }
 
         wxStaticText* m_staticText8;
         wxCheckBox*   m_codec2LPCPostFilterEnable;
@@ -108,8 +113,14 @@ class FilterDlg : public wxDialog
         void          newLPCPFControl(wxSlider **slider, wxStaticText **stValue, wxSizer *sbs, wxString controlName);
         wxAuiNotebook *m_auiNotebook;
         void          setFreq(EQ *eq);
-        void          sliderToFreq(EQ *eq);
-        void          calcFilterSpectrum(EQ *eq, float magdB[]);
+        void          setGain(EQ *eq);
+        void          setQ(EQ *eq);
+        void          sliderToFreq(EQ *eq, bool micIn);
+        void          sliderToGain(EQ *eq, bool micIn);
+        void          sliderToQ(EQ *eq, bool micIn);
+        void          plotFilterSpectrum(EQ *eqBass, EQ *eqMid, EQ* eqTreble, PlotSpectrum* freqRespPlot, float *magdB);
+        void          calcFilterSpectrum(float magdB[], int arc, char *argv[]);
+        void          plotMicInFilterSpectrum(void);
 
         EQ            m_MicInBass;
         EQ            m_MicInMid;

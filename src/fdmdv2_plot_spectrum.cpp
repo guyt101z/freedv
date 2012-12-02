@@ -45,7 +45,8 @@ END_EVENT_TABLE()
 // @brief
 //
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
-PlotSpectrum::PlotSpectrum(wxFrame* parent, float *magdB, int n_magdB, float min_mag_db, float max_mag_db): PlotPanel(parent)
+PlotSpectrum::PlotSpectrum(wxFrame* parent, float *magdB, int n_magdB, 
+                           float min_mag_db, float max_mag_db, bool clickTune): PlotPanel(parent)
 {
     m_greyscale     = 0;
     m_Bufsz         = GetMaxClientSize();
@@ -59,6 +60,7 @@ PlotSpectrum::PlotSpectrum(wxFrame* parent, float *magdB, int n_magdB, float min
     m_max_mag_db    = max_mag_db;
     m_min_mag_db    = min_mag_db;
     m_rxFreq        = 0.0;
+    m_clickTune     = clickTune;
 }
 
 //----------------------------------------------------------------
@@ -134,9 +136,9 @@ void PlotSpectrum::draw(wxAutoBufferedPaintDC& dc)
 	mag_dB_to_py = (float)m_rGrid.GetHeight()/(m_max_mag_db - m_min_mag_db);
         int last_index = ((float)MAX_F_HZ/(float)FDMDV_MAX_F_HZ)*FDMDV_NSPEC;
 
-	prev_x = PLOT_BORDER + XLEFT_OFFSET;
-	prev_y = PLOT_BORDER;
-        for(index = 0; index < last_index; index++)
+	//prev_x = PLOT_BORDER + XLEFT_OFFSET;
+	//prev_y = PLOT_BORDER;
+        for(index = 0; index < m_n_magdB; index++)
         {
             x = index*index_to_px;
 	    mag = m_magdB[index];
@@ -147,7 +149,8 @@ void PlotSpectrum::draw(wxAutoBufferedPaintDC& dc)
 	    x += PLOT_BORDER + XLEFT_OFFSET;
 	    y += PLOT_BORDER;
 
-	    dc.DrawLine(x, y, prev_x, prev_y);
+	    if (index)
+                dc.DrawLine(x, y, prev_x, prev_y);
 	    prev_x = x; prev_y = y;
         }
     }
@@ -245,7 +248,7 @@ void PlotSpectrum::OnMouseLeftDown(wxMouseEvent& event)
     pt.y -= PLOT_BORDER;
 
     // valid click if inside of plot
-    if ((pt.x >= 0) && (pt.x <= m_rGrid.GetWidth()) && (pt.y >=0)) {
+    if ((pt.x >= 0) && (pt.x <= m_rGrid.GetWidth()) && (pt.y >=0) && m_clickTune) {
         float freq_hz_to_px = (float)m_rGrid.GetWidth()/(MAX_F_HZ-MIN_F_HZ);
         float clickFreq = (float)pt.x/freq_hz_to_px;
 

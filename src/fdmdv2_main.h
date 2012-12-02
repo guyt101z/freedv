@@ -154,7 +154,14 @@ class MainApp : public wxApp
         
         // Mic In Equaliser
         float               m_MicInBassFreqHz;
+        float               m_MicInBassGaindB;
+        float               m_MicInTrebleFreqHz;
+        float               m_MicInTrebleGaindB;
+        float               m_MicInMidFreqHz;
+        float               m_MicInMidGaindB;
+        float               m_MicInMidQ;
 
+        // Flags for displaying windows
         int                 m_show_wf;
         int                 m_show_spect;
         int                 m_show_scatter;
