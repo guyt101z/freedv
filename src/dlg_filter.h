@@ -62,9 +62,9 @@ class FilterDlg : public wxDialog
         // Handlers for events.
         void    OnCancel(wxCommandEvent& event);
         void    OnOK(wxCommandEvent& event);
-        void    OnDefault(wxCommandEvent& event);
         void    OnClose(wxCloseEvent& event);
         void    OnInitDialog(wxInitDialogEvent& event);
+        void    OnLPCPostFilterDefault(wxCommandEvent& event);
 
         void    OnBetaScroll(wxScrollEvent& event);
         void    OnGammaScroll(wxScrollEvent& event);
@@ -78,6 +78,8 @@ class FilterDlg : public wxDialog
         void    OnMicInMidFreqScroll(wxScrollEvent& event) { sliderToFreq(&m_MicInMid, true); }
         void    OnMicInMidGainScroll(wxScrollEvent& event) { sliderToGain(&m_MicInMid, true); }
         void    OnMicInMidQScroll(wxScrollEvent& event) { sliderToQ(&m_MicInMid, true); }
+        void    OnMicInEnable(wxScrollEvent& event);
+        void    OnMicInDefault(wxCommandEvent& event);
 
         void    OnSpkOutBassFreqScroll(wxScrollEvent& event) { sliderToFreq(&m_SpkOutBass, false); }
         void    OnSpkOutBassGainScroll(wxScrollEvent& event) { sliderToGain(&m_SpkOutBass, false); }
@@ -86,6 +88,8 @@ class FilterDlg : public wxDialog
         void    OnSpkOutMidFreqScroll(wxScrollEvent& event) { sliderToFreq(&m_SpkOutMid, false); }
         void    OnSpkOutMidGainScroll(wxScrollEvent& event) { sliderToGain(&m_SpkOutMid, false); }
         void    OnSpkOutMidQScroll(wxScrollEvent& event) { sliderToQ(&m_SpkOutMid, false); }
+        void    OnSpkOutEnable(wxScrollEvent& event);
+        void    OnSpkOutDefault(wxCommandEvent& event);
 
         wxStaticText* m_staticText8;
         wxCheckBox*   m_codec2LPCPostFilterEnable;
@@ -97,14 +101,19 @@ class FilterDlg : public wxDialog
         wxStaticText* m_staticText911;
         wxSlider*     m_codec2LPCPostFilterGamma;
         wxStaticText* m_staticTextGamma;
+        wxButton*     m_LPCPostFilterDefault;
 
         wxStdDialogButtonSizer* m_sdbSizer5;
         wxButton*     m_sdbSizer5OK;
-        wxButton*     m_sdbSizer5Default;
         wxButton*     m_sdbSizer5Cancel;
         PlotSpectrum* m_MicInFreqRespPlot;
         PlotSpectrum* m_SpkOutFreqRespPlot;
-    
+        
+        wxCheckBox*   m_MicInEnable;
+        wxButton*     m_MicInDefault;
+        wxCheckBox*   m_SpkOutEnable;
+        wxButton*     m_SpkOutDefault;
+
         float        *m_MicInMagdB;
         float        *m_SpkOutMagdB;
 
@@ -112,6 +121,7 @@ class FilterDlg : public wxDialog
         bool          m_running;
         float         m_beta;
         float         m_gamma;
+
         void          setBeta(void);  // sets slider and static text from m_beta
         void          setGamma(void); // sets slider and static text from m_gamma
         void          setCodec2(void);

@@ -338,6 +338,8 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     wxGetApp().m_MicInMidGaindB = (float)pConfig->Read(wxT("/Filter/MicInMidGaindB"),    (long)0)/10.0;
     wxGetApp().m_MicInMidQ = (float)pConfig->Read(wxT("/Filter/MicInMidQ"),    (long)100)/100.0;
 
+    wxGetApp().m_MicInEnable = (float)pConfig->Read(wxT("/Filter/MicInEnable"), t);
+
     wxGetApp().m_SpkOutBassFreqHz = (float)pConfig->Read(wxT("/Filter/SpkOutBassFreqHz"),    1);
     wxGetApp().m_SpkOutBassGaindB = (float)pConfig->Read(wxT("/Filter/SpkOutBassGaindB"),    (long)0)/10.0;
     wxGetApp().m_SpkOutTrebleFreqHz = (float)pConfig->Read(wxT("/Filter/SpkOutTrebleFreqHz"),    1);
@@ -345,6 +347,8 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     wxGetApp().m_SpkOutMidFreqHz = (float)pConfig->Read(wxT("/Filter/SpkOutMidFreqHz"),    1);
     wxGetApp().m_SpkOutMidGaindB = (float)pConfig->Read(wxT("/Filter/SpkOutMidGaindB"),    (long)0)/10.0;
     wxGetApp().m_SpkOutMidQ = (float)pConfig->Read(wxT("/Filter/SpkOutMidQ"),    (long)100)/100.0;
+
+    wxGetApp().m_SpkOutEnable = (float)pConfig->Read(wxT("/Filter/SpkOutEnable"), t);
 
     wxGetApp().m_callSign = pConfig->Read("/Data/CallSign", wxT(""));
 
@@ -490,7 +494,10 @@ MainFrame::~MainFrame()
         pConfig->Write(wxT("/Audio/snrSlow"), wxGetApp().m_snrSlow);
 
         pConfig->Write(wxT("/Data/CallSign"), wxGetApp().m_callSign);
-   }
+ 
+        pConfig->Write(wxT("/Filter/MicInEnable"), wxGetApp().m_MicInEnable);
+        pConfig->Write(wxT("/Filter/SpkOutEnable"), wxGetApp().m_SpkOutEnable);
+    }
 
     //m_togRxID->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnRxIDUI), NULL, this);
     m_togTxID->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnTxIDUI), NULL, this);
