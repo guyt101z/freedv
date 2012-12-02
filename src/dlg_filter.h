@@ -79,6 +79,14 @@ class FilterDlg : public wxDialog
         void    OnMicInMidGainScroll(wxScrollEvent& event) { sliderToGain(&m_MicInMid, true); }
         void    OnMicInMidQScroll(wxScrollEvent& event) { sliderToQ(&m_MicInMid, true); }
 
+        void    OnSpkOutBassFreqScroll(wxScrollEvent& event) { sliderToFreq(&m_SpkOutBass, false); }
+        void    OnSpkOutBassGainScroll(wxScrollEvent& event) { sliderToGain(&m_SpkOutBass, false); }
+        void    OnSpkOutTrebleFreqScroll(wxScrollEvent& event) { sliderToFreq(&m_SpkOutTreble, false); }
+        void    OnSpkOutTrebleGainScroll(wxScrollEvent& event) { sliderToGain(&m_SpkOutTreble, false); }
+        void    OnSpkOutMidFreqScroll(wxScrollEvent& event) { sliderToFreq(&m_SpkOutMid, false); }
+        void    OnSpkOutMidGainScroll(wxScrollEvent& event) { sliderToGain(&m_SpkOutMid, false); }
+        void    OnSpkOutMidQScroll(wxScrollEvent& event) { sliderToQ(&m_SpkOutMid, false); }
+
         wxStaticText* m_staticText8;
         wxCheckBox*   m_codec2LPCPostFilterEnable;
         wxStaticText* m_staticText9;
@@ -121,6 +129,7 @@ class FilterDlg : public wxDialog
         void          plotFilterSpectrum(EQ *eqBass, EQ *eqMid, EQ* eqTreble, PlotSpectrum* freqRespPlot, float *magdB);
         void          calcFilterSpectrum(float magdB[], int arc, char *argv[]);
         void          plotMicInFilterSpectrum(void);
+        void          plotSpkOutFilterSpectrum(void);
 
         EQ            m_MicInBass;
         EQ            m_MicInMid;

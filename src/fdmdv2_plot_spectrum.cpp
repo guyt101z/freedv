@@ -136,8 +136,8 @@ void PlotSpectrum::draw(wxAutoBufferedPaintDC& dc)
 	mag_dB_to_py = (float)m_rGrid.GetHeight()/(m_max_mag_db - m_min_mag_db);
         int last_index = ((float)MAX_F_HZ/(float)FDMDV_MAX_F_HZ)*FDMDV_NSPEC;
 
-	//prev_x = PLOT_BORDER + XLEFT_OFFSET;
-	//prev_y = PLOT_BORDER;
+	prev_x = PLOT_BORDER + XLEFT_OFFSET;
+	prev_y = PLOT_BORDER;
         for(index = 0; index < m_n_magdB; index++)
         {
             x = index*index_to_px;

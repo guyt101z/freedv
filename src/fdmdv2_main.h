@@ -161,6 +161,15 @@ class MainApp : public wxApp
         float               m_MicInMidGaindB;
         float               m_MicInMidQ;
 
+        // Spk Out Equaliser
+        float               m_SpkOutBassFreqHz;
+        float               m_SpkOutBassGaindB;
+        float               m_SpkOutTrebleFreqHz;
+        float               m_SpkOutTrebleGaindB;
+        float               m_SpkOutMidFreqHz;
+        float               m_SpkOutMidGaindB;
+        float               m_SpkOutMidQ;
+
         // Flags for displaying windows
         int                 m_show_wf;
         int                 m_show_spect;

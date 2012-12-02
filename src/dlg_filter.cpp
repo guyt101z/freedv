@@ -92,7 +92,7 @@ FilterDlg::FilterDlg(wxWindow* parent, bool running, wxWindowID id, const wxStri
 
     newLPCPFControl(&m_codec2LPCPostFilterBeta, &m_staticTextBeta, right, "Beta");
     newLPCPFControl(&m_codec2LPCPostFilterGamma, &m_staticTextGamma, right, "Gamma");
-    lpcpfs->Add(right, 0, wxALL|wxBOTTOM, 5);
+    lpcpfs->Add(right, 0, wxALL, 5);
 #endif
 
     bSizer30->Add(lpcpfs, 0, wxALL, 0);
@@ -177,6 +177,14 @@ FilterDlg::FilterDlg(wxWindow* parent, bool running, wxWindowID id, const wxStri
     m_MicInMid.sliderGain->Connect(wxEVT_SCROLL_CHANGED, wxScrollEventHandler(FilterDlg::OnMicInMidGainScroll), NULL, this);
     m_MicInMid.sliderQ->Connect(wxEVT_SCROLL_CHANGED, wxScrollEventHandler(FilterDlg::OnMicInMidQScroll), NULL, this);
 
+    m_SpkOutBass.sliderFreq->Connect(wxEVT_SCROLL_CHANGED, wxScrollEventHandler(FilterDlg::OnSpkOutBassFreqScroll), NULL, this);
+    m_SpkOutBass.sliderGain->Connect(wxEVT_SCROLL_CHANGED, wxScrollEventHandler(FilterDlg::OnSpkOutBassGainScroll), NULL, this);
+    m_SpkOutTreble.sliderFreq->Connect(wxEVT_SCROLL_CHANGED, wxScrollEventHandler(FilterDlg::OnSpkOutTrebleFreqScroll), NULL, this);
+    m_SpkOutTreble.sliderGain->Connect(wxEVT_SCROLL_CHANGED, wxScrollEventHandler(FilterDlg::OnSpkOutTrebleGainScroll), NULL, this);
+    m_SpkOutMid.sliderFreq->Connect(wxEVT_SCROLL_CHANGED, wxScrollEventHandler(FilterDlg::OnSpkOutMidFreqScroll), NULL, this);
+    m_SpkOutMid.sliderGain->Connect(wxEVT_SCROLL_CHANGED, wxScrollEventHandler(FilterDlg::OnSpkOutMidGainScroll), NULL, this);
+    m_SpkOutMid.sliderQ->Connect(wxEVT_SCROLL_CHANGED, wxScrollEventHandler(FilterDlg::OnSpkOutMidQScroll), NULL, this);
+
     m_sdbSizer5Cancel->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(FilterDlg::OnCancel), NULL, this);
     m_sdbSizer5Default->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(FilterDlg::OnDefault), NULL, this);
     m_sdbSizer5OK->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(FilterDlg::OnOK), NULL, this);
@@ -209,6 +217,14 @@ FilterDlg::~FilterDlg()
     m_MicInMid.sliderFreq->Disconnect(wxEVT_SCROLL_CHANGED, wxScrollEventHandler(FilterDlg::OnMicInMidFreqScroll), NULL, this);
     m_MicInMid.sliderGain->Disconnect(wxEVT_SCROLL_CHANGED, wxScrollEventHandler(FilterDlg::OnMicInMidGainScroll), NULL, this);
     m_MicInMid.sliderQ->Disconnect(wxEVT_SCROLL_CHANGED, wxScrollEventHandler(FilterDlg::OnMicInMidQScroll), NULL, this);
+
+    m_SpkOutBass.sliderFreq->Disconnect(wxEVT_SCROLL_CHANGED, wxScrollEventHandler(FilterDlg::OnSpkOutBassFreqScroll), NULL, this);
+    m_SpkOutBass.sliderGain->Disconnect(wxEVT_SCROLL_CHANGED, wxScrollEventHandler(FilterDlg::OnSpkOutBassGainScroll), NULL, this);
+    m_SpkOutTreble.sliderFreq->Disconnect(wxEVT_SCROLL_CHANGED, wxScrollEventHandler(FilterDlg::OnSpkOutTrebleFreqScroll), NULL, this);
+    m_SpkOutTreble.sliderGain->Disconnect(wxEVT_SCROLL_CHANGED, wxScrollEventHandler(FilterDlg::OnSpkOutTrebleGainScroll), NULL, this);
+    m_SpkOutMid.sliderFreq->Disconnect(wxEVT_SCROLL_CHANGED, wxScrollEventHandler(FilterDlg::OnSpkOutMidFreqScroll), NULL, this);
+    m_SpkOutMid.sliderGain->Disconnect(wxEVT_SCROLL_CHANGED, wxScrollEventHandler(FilterDlg::OnSpkOutMidGainScroll), NULL, this);
+    m_SpkOutMid.sliderQ->Disconnect(wxEVT_SCROLL_CHANGED, wxScrollEventHandler(FilterDlg::OnSpkOutMidQScroll), NULL, this);
 
     m_sdbSizer5Cancel->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(FilterDlg::OnCancel), NULL, this);
     m_sdbSizer5Default->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(FilterDlg::OnDefault), NULL, this);
@@ -299,6 +315,27 @@ void FilterDlg::ExchangeData(int inout)
         m_MicInMid.Q = limit(m_MicInMid.Q, pow(10.0,MIN_LOG10_Q), pow(10.0, MAX_LOG10_Q));
 
         setFreq(&m_MicInBass); setGain(&m_MicInBass); plotMicInFilterSpectrum();
+ 
+        // Spk Out Equaliser
+
+        m_SpkOutBass.freqHz = wxGetApp().m_SpkOutBassFreqHz; setFreq(&m_SpkOutBass);
+        m_SpkOutBass.freqHz = limit(m_SpkOutBass.freqHz, 1.0, MAX_FREQ_BASS);
+        m_SpkOutBass.gaindB = wxGetApp().m_SpkOutBassGaindB; setGain(&m_SpkOutBass);
+        m_SpkOutBass.gaindB = limit(m_SpkOutBass.gaindB, MIN_GAIN, MAX_GAIN);
+
+        m_SpkOutTreble.freqHz = wxGetApp().m_SpkOutTrebleFreqHz; setFreq(&m_SpkOutTreble);
+        m_SpkOutTreble.freqHz = limit(m_SpkOutTreble.freqHz, 1.0, MAX_FREQ_TREBLE);
+        m_SpkOutTreble.gaindB = wxGetApp().m_SpkOutTrebleGaindB; setGain(&m_SpkOutTreble);
+        m_SpkOutTreble.gaindB = limit(m_SpkOutTreble.gaindB, MIN_GAIN, MAX_GAIN);
+
+        m_SpkOutMid.freqHz = wxGetApp().m_SpkOutMidFreqHz; setFreq(&m_SpkOutMid);
+        m_SpkOutMid.freqHz = limit(m_SpkOutMid.freqHz, 1.0, MAX_FREQ_TREBLE);
+        m_SpkOutMid.gaindB = wxGetApp().m_SpkOutMidGaindB; setGain(&m_SpkOutMid);
+        m_SpkOutMid.gaindB = limit(m_SpkOutMid.gaindB, MIN_GAIN, MAX_GAIN);
+        m_SpkOutMid.Q = wxGetApp().m_SpkOutMidQ; setQ(&m_SpkOutMid);
+        m_SpkOutMid.Q = limit(m_SpkOutMid.Q, pow(10.0,MIN_LOG10_Q), pow(10.0, MAX_LOG10_Q));
+
+        setFreq(&m_SpkOutBass); setGain(&m_SpkOutBass); plotSpkOutFilterSpectrum();
     }
     if(inout == EXCHANGE_DATA_OUT)
     {
@@ -332,6 +369,25 @@ void FilterDlg::ExchangeData(int inout)
         pConfig->Write(wxT("/Filter/MicInMidGaindB"), (int)(10.0*m_MicInMid.gaindB));
         wxGetApp().m_MicInMidQ = m_MicInMid.Q;
         pConfig->Write(wxT("/Filter/MicInMidQ"), (int)(100.0*m_MicInMid.Q));
+
+        // Spk Out Equaliser
+
+        wxGetApp().m_SpkOutBassFreqHz = m_SpkOutBass.freqHz;
+        pConfig->Write(wxT("/Filter/SpkOutBassFreqHz"), (int)m_SpkOutBass.freqHz);
+        wxGetApp().m_SpkOutBassGaindB = m_SpkOutBass.gaindB;
+        pConfig->Write(wxT("/Filter/SpkOutBassGaindB"), (int)(10.0*m_SpkOutBass.gaindB));
+
+        wxGetApp().m_SpkOutTrebleFreqHz = m_SpkOutTreble.freqHz;
+        pConfig->Write(wxT("/Filter/SpkOutTrebleFreqHz"), (int)m_SpkOutTreble.freqHz);
+        wxGetApp().m_SpkOutTrebleGaindB = m_SpkOutTreble.gaindB;
+        pConfig->Write(wxT("/Filter/SpkOutTrebleGaindB"), (int)(10.0*m_SpkOutTreble.gaindB));
+
+        wxGetApp().m_SpkOutMidFreqHz = m_SpkOutMid.freqHz;
+        pConfig->Write(wxT("/Filter/SpkOutMidFreqHz"), (int)m_SpkOutMid.freqHz);
+        wxGetApp().m_SpkOutMidGaindB = m_SpkOutMid.gaindB;
+        pConfig->Write(wxT("/Filter/SpkOutMidGaindB"), (int)(10.0*m_SpkOutMid.gaindB));
+        wxGetApp().m_SpkOutMidQ = m_SpkOutMid.Q;
+        pConfig->Write(wxT("/Filter/SpkOutMidQ"), (int)(100.0*m_SpkOutMid.Q));
 
         pConfig->Flush();
     }
@@ -374,6 +430,19 @@ void FilterDlg::OnDefault(wxCommandEvent& event)
     m_MicInMid.gaindB = 0.0;
     m_MicInMid.Q = 1.0;
     setFreq(&m_MicInMid); setGain(&m_MicInMid); setQ(&m_MicInMid); 
+
+    m_SpkOutBass.freqHz = 100.0;
+    m_SpkOutBass.gaindB = 0.0;
+    setFreq(&m_SpkOutBass); setGain(&m_SpkOutBass); 
+
+    m_SpkOutTreble.freqHz = 3000.0;
+    m_SpkOutTreble.gaindB = 0.0;
+    setFreq(&m_SpkOutTreble); setGain(&m_SpkOutTreble); 
+
+    m_SpkOutMid.freqHz = 1500.0;
+    m_SpkOutMid.gaindB = 0.0;
+    m_SpkOutMid.Q = 1.0;
+    setFreq(&m_SpkOutMid); setGain(&m_SpkOutMid); setQ(&m_SpkOutMid); 
 
     plotMicInFilterSpectrum();    
 }
@@ -468,6 +537,8 @@ void FilterDlg::sliderToFreq(EQ *eq, bool micIn)
     setFreq(eq);
     if (micIn)
         plotMicInFilterSpectrum();
+    else
+        plotSpkOutFilterSpectrum();
 }
 
 void FilterDlg::setGain(EQ *eq)
@@ -488,6 +559,8 @@ void FilterDlg::sliderToGain(EQ *eq, bool micIn)
     setGain(eq);
     if (micIn)
         plotMicInFilterSpectrum();
+    else
+        plotSpkOutFilterSpectrum();
 }
 
 void FilterDlg::setQ(EQ *eq)
@@ -509,14 +582,20 @@ void FilterDlg::sliderToQ(EQ *eq, bool micIn)
     float sliderNorm = (float)eq->sliderQ->GetValue()/SLIDER_MAX;
     float log10Q =  MIN_LOG10_Q + sliderNorm*(log10_range);
     eq->Q = pow(10.0, log10Q);
-    printf("log10Q: %f eq->Q: %f\n", log10Q, eq->Q);
+    //printf("log10Q: %f eq->Q: %f\n", log10Q, eq->Q);
     setQ(eq);
     if (micIn)
         plotMicInFilterSpectrum();
+    else
+        plotSpkOutFilterSpectrum();
 }
 
 void FilterDlg::plotMicInFilterSpectrum(void) {
     plotFilterSpectrum(&m_MicInBass, &m_MicInMid, &m_MicInTreble, m_MicInFreqRespPlot, m_MicInMagdB);
+}
+
+void FilterDlg::plotSpkOutFilterSpectrum(void) {
+    plotFilterSpectrum(&m_SpkOutBass, &m_SpkOutMid, &m_SpkOutTreble, m_SpkOutFreqRespPlot, m_SpkOutMagdB);
 }
 
 void FilterDlg::plotFilterSpectrum(EQ *eqBass, EQ *eqMid, EQ *eqTreble, PlotSpectrum* freqRespPlot, float *magdB) {
