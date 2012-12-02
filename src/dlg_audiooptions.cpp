@@ -275,10 +275,12 @@ AudioOptsDialog::AudioOptsDialog(wxWindow* parent, wxWindowID id, const wxString
     m_panel1->Layout();
     bSizer4->Fit(m_panel1);
     mainSizer->Add(m_panel1, 1, wxEXPAND | wxALL, 1);
+
     wxBoxSizer* bSizer6;
     bSizer6 = new wxBoxSizer(wxHORIZONTAL);
     m_btnRefresh = new wxButton(this, wxID_ANY, _("Refresh"), wxDefaultPosition, wxDefaultSize, 0);
     bSizer6->Add(m_btnRefresh, 0, wxALIGN_CENTER|wxALL, 2);
+
     m_sdbSizer1 = new wxStdDialogButtonSizer();
     m_sdbSizer1OK = new wxButton(this, wxID_OK);
     m_sdbSizer1->AddButton(m_sdbSizer1OK);
@@ -287,6 +289,7 @@ AudioOptsDialog::AudioOptsDialog(wxWindow* parent, wxWindowID id, const wxString
     m_sdbSizer1Cancel = new wxButton(this, wxID_CANCEL);
     m_sdbSizer1->AddButton(m_sdbSizer1Cancel);
     m_sdbSizer1->Realize();
+
     bSizer6->Add(m_sdbSizer1, 1, wxALIGN_CENTER_VERTICAL, 2);
     mainSizer->Add(bSizer6, 0, wxEXPAND, 2);
     this->SetSizer(mainSizer);

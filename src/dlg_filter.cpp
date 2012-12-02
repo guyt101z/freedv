@@ -62,7 +62,7 @@ FilterDlg::FilterDlg(wxWindow* parent, bool running, wxWindowID id, const wxStri
 
     wxStaticBoxSizer* lpcpfs = new wxStaticBoxSizer(new wxStaticBox(this, wxID_ANY, _("LPC Post Filter")), wxHORIZONTAL);
 
-#define GRID
+    //#define GRID
 #ifdef GRID
    wxGridSizer* gs = new wxGridSizer(2,2,0,0);
 
@@ -79,7 +79,7 @@ FilterDlg::FilterDlg(wxWindow* parent, bool running, wxWindowID id, const wxStri
     lpcpfs->Add(gs, 0, wxALL, 0);
 
 #else
-   wxBoxSizer* left = new wxBoxSizer(wxVERTICAL);
+    wxBoxSizer* left = new wxBoxSizer(wxVERTICAL);
 
     m_codec2LPCPostFilterEnable = new wxCheckBox(this, wxID_ANY, _("Enable"), wxDefaultPosition,wxDefaultSize, wxCHK_2STATE);
     left->Add(m_codec2LPCPostFilterEnable);
@@ -92,7 +92,7 @@ FilterDlg::FilterDlg(wxWindow* parent, bool running, wxWindowID id, const wxStri
 
     newLPCPFControl(&m_codec2LPCPostFilterBeta, &m_staticTextBeta, right, "Beta");
     newLPCPFControl(&m_codec2LPCPostFilterGamma, &m_staticTextGamma, right, "Gamma");
-    lpcpfs->Add(right, 0, wxALL, 5);
+    lpcpfs->Add(right, 0, wxALL|wxBOTTOM, 5);
 #endif
 
     bSizer30->Add(lpcpfs, 0, wxALL, 0);
@@ -142,15 +142,16 @@ FilterDlg::FilterDlg(wxWindow* parent, bool running, wxWindowID id, const wxStri
     m_SpkOutFreqRespPlot = new PlotSpectrum((wxFrame*)m_auiNotebook, m_SpkOutMagdB, F_MAG_N, FILTER_MIN_MAG_DB, FILTER_MAX_MAG_DB);
     m_auiNotebook->AddPage(m_SpkOutFreqRespPlot, _("Speaker Out Equaliser"));
 
-    // OK - Cancel - Default Buttons at the bottom --------------------------
+    // Default - Cancel - OK   Buttons at the bottom --------------------------
 
     wxBoxSizer* bSizer31 = new wxBoxSizer(wxHORIZONTAL);
-    m_sdbSizer5OK = new wxButton(this, wxID_OK);
-    bSizer31->Add(m_sdbSizer5OK, 0, wxALL, 2);
     m_sdbSizer5Default = new wxButton(this, wxID_ANY, wxT("Default"));
     bSizer31->Add(m_sdbSizer5Default, 0, wxALL, 2);
+
     m_sdbSizer5Cancel = new wxButton(this, wxID_CANCEL);
     bSizer31->Add(m_sdbSizer5Cancel, 0, wxALL, 2);
+    m_sdbSizer5OK = new wxButton(this, wxID_OK);
+    bSizer31->Add(m_sdbSizer5OK, 0, wxALL, 2);
 
     bSizer30->Add(bSizer31, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 0);
 
@@ -371,7 +372,8 @@ void FilterDlg::OnDefault(wxCommandEvent& event)
 
     m_MicInMid.freqHz = 1500.0;
     m_MicInMid.gaindB = 0.0;
-    setFreq(&m_MicInMid); setGain(&m_MicInMid); 
+    m_MicInMid.Q = 1.0;
+    setFreq(&m_MicInMid); setGain(&m_MicInMid); setQ(&m_MicInMid); 
 
     plotMicInFilterSpectrum();    
 }
@@ -471,7 +473,7 @@ void FilterDlg::sliderToFreq(EQ *eq, bool micIn)
 void FilterDlg::setGain(EQ *eq)
 {
     wxString buf;
-    buf.Printf(wxT("%3.0f"), eq->gaindB);
+    buf.Printf(wxT("%3.1f"), eq->gaindB);
     eq->valueGain->SetLabel(buf);
     int slider = (int)(((eq->gaindB-MIN_GAIN)/(MAX_GAIN-MIN_GAIN))*SLIDER_MAX + 0.5);
     eq->sliderGain->SetValue(slider);
@@ -491,7 +493,7 @@ void FilterDlg::sliderToGain(EQ *eq, bool micIn)
 void FilterDlg::setQ(EQ *eq)
 {
     wxString buf;
-    buf.Printf(wxT("%3.0f"), eq->Q);
+    buf.Printf(wxT("%2.1f"), eq->Q);
     eq->valueQ->SetLabel(buf);
 
     float log10_range = MAX_LOG10_Q - MIN_LOG10_Q;
@@ -588,7 +590,7 @@ void FilterDlg::calcFilterSpectrum(float magdB[], int argc, char *argv[]) {
     // doing this from basic principles rather than FFT for no good reason
 
     for(f=0,i=0; f<MAX_F_HZ; f+=F_STEP_DFT,i++) {
-        w = M_PI*f/MAX_F_HZ;
+        w = M_PI*f/(FS/2);
         X[i].real = 0.0; X[i].imag = 0.0;
         for(k=0; k<NIMP; k++) {
             X[i].real += ((float)out[k]/IMP_AMP) * cos(w*k);
