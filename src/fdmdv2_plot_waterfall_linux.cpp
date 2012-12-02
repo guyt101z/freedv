@@ -246,6 +246,14 @@ void PlotWaterfall::drawGraticule(wxAutoBufferedPaintDC& dc)
     // lower RH coords of plot area are (PLOT_BORDER + XLEFT_OFFSET + m_rGrid.GetWidth(), 
     //                                   PLOT_BORDER + m_rGrid.GetHeight())
 
+    // Check if small screen size means text will overlap
+
+    int textXStep = STEP_F_HZ*freq_hz_to_px;
+    int textYStep = WATERFALL_SECS_STEP*time_s_to_py;
+    sprintf(buf, "%4.0fHz", (float)MAX_F_HZ - STEP_F_HZ);
+    GetTextExtent(buf, &text_w, &text_h);
+    int overlappedText = (text_w > textXStep) || (text_h > textYStep);
+
     // Major Vertical gridlines and legend
     //dc.SetPen(m_penShortDash);
     for(f=STEP_F_HZ; f<MAX_F_HZ; f+=STEP_F_HZ) 
@@ -260,7 +268,8 @@ void PlotWaterfall::drawGraticule(wxAutoBufferedPaintDC& dc)
             
         sprintf(buf, "%4.0fHz", f);
         GetTextExtent(buf, &text_w, &text_h);
-        dc.DrawText(buf, x - text_w/2, m_rGrid.GetHeight() + PLOT_BORDER + YBOTTOM_TEXT_OFFSET);
+        if (!overlappedText)
+            dc.DrawText(buf, x - text_w/2, m_rGrid.GetHeight() + PLOT_BORDER + YBOTTOM_TEXT_OFFSET);
     }
 
     for(f=STEP_MINOR_F_HZ; f<MAX_F_HZ; f+=STEP_MINOR_F_HZ) 
@@ -281,7 +290,8 @@ void PlotWaterfall::drawGraticule(wxAutoBufferedPaintDC& dc)
                         (m_rGrid.GetWidth() + PLOT_BORDER + XLEFT_OFFSET), y);
         sprintf(buf, "%3.0fs", time);
 	GetTextExtent(buf, &text_w, &text_h);
-        dc.DrawText(buf, PLOT_BORDER + XLEFT_OFFSET - text_w - XLEFT_TEXT_OFFSET, y-text_h/2);
+        if (!overlappedText)
+            dc.DrawText(buf, PLOT_BORDER + XLEFT_OFFSET - text_w - XLEFT_TEXT_OFFSET, y-text_h/2);
    }
 
     // red rx tuning line

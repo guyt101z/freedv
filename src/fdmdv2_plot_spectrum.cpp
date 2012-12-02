@@ -119,40 +119,37 @@ void PlotSpectrum::draw(wxAutoBufferedPaintDC& dc)
 
     // draw spectrum
 
-    if(m_newdata)
+    int   x, y, prev_x, prev_y, index;
+    float index_to_px, mag_dB_to_py, mag;
+
+    m_newdata = false;
+
+    wxPen pen;
+    pen.SetColour(DARK_GREEN_COLOR);
+    pen.SetWidth(1);
+    dc.SetPen(pen);
+
+    //index_to_px = ((float)FDMDV_MAX_F_HZ/(float)MAX_F_HZ)*(float)m_rGrid.GetWidth()/FDMDV_NSPEC;
+    index_to_px = (float)m_rGrid.GetWidth()/m_n_magdB;
+    mag_dB_to_py = (float)m_rGrid.GetHeight()/(m_max_mag_db - m_min_mag_db);
+    //int last_index = ((float)MAX_F_HZ/(float)FDMDV_MAX_F_HZ)*FDMDV_NSPEC;
+
+    prev_x = PLOT_BORDER + XLEFT_OFFSET;
+    prev_y = PLOT_BORDER;
+    for(index = 0; index < m_n_magdB; index++)
     {
-	int   x, y, prev_x, prev_y, index;
-	float index_to_px, mag_dB_to_py, mag;
+        x = index*index_to_px;
+        mag = m_magdB[index];
+        if (mag > m_max_mag_db) mag = m_max_mag_db;
+        if (mag < m_min_mag_db) mag = m_min_mag_db;
+        y = -(mag - m_max_mag_db) * mag_dB_to_py;
 
-        m_newdata = false;
+        x += PLOT_BORDER + XLEFT_OFFSET;
+        y += PLOT_BORDER;
 
-        wxPen pen;
-        pen.SetColour(DARK_GREEN_COLOR);
-        pen.SetWidth(1);
-        dc.SetPen(pen);
-
-        //index_to_px = ((float)FDMDV_MAX_F_HZ/(float)MAX_F_HZ)*(float)m_rGrid.GetWidth()/FDMDV_NSPEC;
-        index_to_px = (float)m_rGrid.GetWidth()/m_n_magdB;
-	mag_dB_to_py = (float)m_rGrid.GetHeight()/(m_max_mag_db - m_min_mag_db);
-        int last_index = ((float)MAX_F_HZ/(float)FDMDV_MAX_F_HZ)*FDMDV_NSPEC;
-
-	prev_x = PLOT_BORDER + XLEFT_OFFSET;
-	prev_y = PLOT_BORDER;
-        for(index = 0; index < m_n_magdB; index++)
-        {
-            x = index*index_to_px;
-	    mag = m_magdB[index];
-	    if (mag > m_max_mag_db) mag = m_max_mag_db;
-	    if (mag < m_min_mag_db) mag = m_min_mag_db;
-	    y = -(mag - m_max_mag_db) * mag_dB_to_py;
-
-	    x += PLOT_BORDER + XLEFT_OFFSET;
-	    y += PLOT_BORDER;
-
-	    if (index)
-                dc.DrawLine(x, y, prev_x, prev_y);
-	    prev_x = x; prev_y = y;
-        }
+        if (index)
+            dc.DrawLine(x, y, prev_x, prev_y);
+        prev_x = x; prev_y = y;
     }
 
     // and finally draw Graticule
@@ -184,6 +181,16 @@ void PlotSpectrum::drawGraticule(wxAutoBufferedPaintDC&  dc)
     // lower RH coords of plot area are (PLOT_BORDER + XLEFT_OFFSET + m_rGrid.GetWidth(), 
     //                                   PLOT_BORDER + m_rGrid.GetHeight())
 
+    // Check if small screen size means text will overlap
+
+    int textXStep = STEP_F_HZ*freq_hz_to_px;
+    int textYStep = STEP_MAG_DB*mag_dB_to_py;
+    sprintf(buf, "%4.0fHz", (float)MAX_F_HZ - STEP_F_HZ);
+    GetTextExtent(buf, &text_w, &text_h);
+    int overlappedText = (text_w > textXStep) || (text_h > textYStep);
+    //printf("text_w: %d textXStep: %d text_h: %d textYStep: %d  overlappedText: %d\n", text_w, textXStep, 
+    //      text_h, textYStep, overlappedText);
+
     // Vertical gridlines
 
     for(f=STEP_F_HZ; f<MAX_F_HZ; f+=STEP_F_HZ) {
@@ -197,7 +204,8 @@ void PlotSpectrum::drawGraticule(wxAutoBufferedPaintDC&  dc)
 
         sprintf(buf, "%4.0fHz", f);
 	GetTextExtent(buf, &text_w, &text_h);
-        dc.DrawText(buf, x - text_w/2, m_rGrid.GetHeight() + PLOT_BORDER + YBOTTOM_TEXT_OFFSET);
+        if (!overlappedText)
+            dc.DrawText(buf, x - text_w/2, m_rGrid.GetHeight() + PLOT_BORDER + YBOTTOM_TEXT_OFFSET);
     }
 
     dc.SetPen(wxPen(BLACK_COLOR, 1));
@@ -218,7 +226,8 @@ void PlotSpectrum::drawGraticule(wxAutoBufferedPaintDC&  dc)
 		    (m_rGrid.GetWidth() + PLOT_BORDER + XLEFT_OFFSET), y);
         sprintf(buf, "%3.0fdB", mag);
 	GetTextExtent(buf, &text_w, &text_h);
-        dc.DrawText(buf, PLOT_BORDER + XLEFT_OFFSET - text_w - XLEFT_TEXT_OFFSET, y-text_h/2);
+        if (!overlappedText)
+            dc.DrawText(buf, PLOT_BORDER + XLEFT_OFFSET - text_w - XLEFT_TEXT_OFFSET, y-text_h/2);
     }
 
     // red rx tuning line

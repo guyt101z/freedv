@@ -153,7 +153,7 @@ FilterDlg::FilterDlg(wxWindow* parent, bool running, wxWindowID id, const wxStri
     m_sdbSizer5OK = new wxButton(this, wxID_OK);
     bSizer31->Add(m_sdbSizer5OK, 0, wxALL, 2);
 
-    bSizer30->Add(bSizer31, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 0);
+    bSizer30->Add(bSizer31, 0, wxALIGN_RIGHT|wxALL, 0);
 
     this->SetSizer(bSizer30);
     this->Layout();
