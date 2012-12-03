@@ -1607,7 +1607,6 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
         codec2_destroy(g_pCodec2);
 
         m_newMicInFilter = m_newSpkOutFilter = true;
-        deleteEQFilters(g_rxUserdata);
 
         m_togBtnSplit->Disable();
         m_togRxID->Disable();
@@ -1644,6 +1643,7 @@ void MainFrame::stopRxStream()
         delete m_rxPa;
         destroy_fifos();
         destroy_src();
+        deleteEQFilters(g_rxUserdata);
         delete g_rxUserdata;
     }
 }
@@ -1843,6 +1843,7 @@ void MainFrame::startRxStream()
             delete m_txPa;
             destroy_fifos();
             destroy_src();
+            deleteEQFilters(g_rxUserdata);
             delete g_rxUserdata;
             m_RxRunning = false;
             return;
@@ -1855,6 +1856,7 @@ void MainFrame::startRxStream()
             delete m_txPa;
             destroy_fifos();
             destroy_src();
+            deleteEQFilters(g_rxUserdata);
             delete g_rxUserdata;
             m_RxRunning = false;
             return;
@@ -1881,6 +1883,7 @@ void MainFrame::startRxStream()
                 delete m_txPa;
                 destroy_fifos();
                 destroy_src();
+                deleteEQFilters(g_rxUserdata);
                 delete g_rxUserdata;
                 m_RxRunning = false;
                 return;
@@ -1894,6 +1897,7 @@ void MainFrame::startRxStream()
                 delete m_txPa;
                 destroy_fifos();
                 destroy_src();
+                deleteEQFilters(g_rxUserdata);
                 delete g_rxUserdata;
                 m_RxRunning = false;
                 return;
