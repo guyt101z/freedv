@@ -69,6 +69,7 @@
 #include "dlg_audiooptions.h"
 #include "dlg_filter.h"
 #include "varicode.h"
+#include "sox_biquad.h"
 
 #define _USE_TIMER              1
 #define _USE_ONIDLE             1
@@ -160,7 +161,7 @@ class MainApp : public wxApp
         float               m_MicInMidFreqHz;
         float               m_MicInMidGaindB;
         float               m_MicInMidQ;
-        bool                m_MicInEnable;
+        bool                m_MicInEQEnable;
 
         // Spk Out Equaliser
         float               m_SpkOutBassFreqHz;
@@ -170,7 +171,7 @@ class MainApp : public wxApp
         float               m_SpkOutMidFreqHz;
         float               m_SpkOutMidGaindB;
         float               m_SpkOutMidQ;
-        bool                m_SpkOutEnable;
+        bool                m_SpkOutEQEnable;
 
         // Flags for displaying windows
         int                 m_show_wf;
@@ -181,6 +182,9 @@ class MainApp : public wxApp
         int                 m_show_speech_in;
         int                 m_show_speech_out;
         int                 m_show_demod_in;
+
+        // notebook display after tx->rxtransition
+        int                 m_rxNbookCtrl;
 
         wxRect              m_rTopWindow;
 
@@ -223,6 +227,19 @@ typedef struct
     struct FIFO    *rxoutfifo;
 
     int             inputChannels1, inputChannels2;
+
+    // EQ filter states
+
+    void           *sbqMicInBass;
+    void           *sbqMicInTreble;
+    void           *sbqMicInMid;
+    void           *sbqSpkOutBass;
+    void           *sbqSpkOutTreble;
+    void           *sbqSpkOutMid;
+
+    bool            micInEQEnable;
+    bool            spkOutEQEnable;
+
 } paCallBackData;
 
 // panel with custom loop checkbox for play file dialog
@@ -396,6 +413,16 @@ class MainFrame : public TopFrame
 
         // level Gauge
         float       m_maxLevel;
+ 
+        // flags to indicate when new EQ filters need to be designed
+
+        bool        m_newMicInFilter;
+        bool        m_newSpkOutFilter;
+
+        void*       designAnEQFilter(const char filterType[], float freqHz, float gaindB, float Q = 0.0);
+        void        designEQFilters(paCallBackData *cb);
+        void        deleteEQFilters(paCallBackData *cb);
+
 };
 
 void resample_for_plot(struct FIFO *plotFifo, short buf[], int length);

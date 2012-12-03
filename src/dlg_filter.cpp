@@ -19,7 +19,6 @@
 //
 //==========================================================================
 #include "dlg_filter.h"
-#include "sox_biquad.h"
 
 #define SLIDER_MAX 100
 #define SLIDER_LENGTH 155
@@ -49,9 +48,12 @@ extern struct CODEC2      *g_pCodec2;
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 // Class FilterDlg
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
-FilterDlg::FilterDlg(wxWindow* parent, bool running, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style) : wxDialog(parent, id, title, pos, size, style)
+FilterDlg::FilterDlg(wxWindow* parent, bool running, bool *newMicInFilter, bool *newSpkOutFilter,
+                     wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style) : wxDialog(parent, id, title, pos, size, style)
 {
     m_running = running;
+    m_newMicInFilter = newMicInFilter;
+    m_newSpkOutFilter = newSpkOutFilter;
 
     this->SetSizeHints(wxDefaultSize, wxDefaultSize);
 
@@ -206,7 +208,6 @@ FilterDlg::FilterDlg(wxWindow* parent, bool running, wxWindowID id, const wxStri
     m_sdbSizer5Cancel->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(FilterDlg::OnCancel), NULL, this);
     m_sdbSizer5OK->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(FilterDlg::OnOK), NULL, this);
 
-    sox_biquad_start();
 }
 
 //-------------------------------------------------------------------------
@@ -216,7 +217,6 @@ FilterDlg::~FilterDlg()
 {
     delete m_MicInMagdB;
     delete m_SpkOutMagdB;
-    sox_biquad_finish();
 
     // Disconnect Events
 
@@ -304,7 +304,7 @@ EQ FilterDlg::newEQ(wxSizer *bs, wxString eqName, float maxFreqHz, bool enableQ)
 //-------------------------------------------------------------------------
 // ExchangeData()
 //-------------------------------------------------------------------------
-void FilterDlg::ExchangeData(int inout)
+void FilterDlg::ExchangeData(int inout, bool storePersistent)
 {
     wxConfigBase *pConfig = wxConfigBase::Get();
     if(inout == EXCHANGE_DATA_IN)
@@ -335,7 +335,7 @@ void FilterDlg::ExchangeData(int inout)
         m_MicInMid.Q = wxGetApp().m_MicInMidQ; setQ(&m_MicInMid);
         m_MicInMid.Q = limit(m_MicInMid.Q, pow(10.0,MIN_LOG10_Q), pow(10.0, MAX_LOG10_Q));
 
-        m_MicInEnable->SetValue(wxGetApp().m_MicInEnable);
+        m_MicInEnable->SetValue(wxGetApp().m_MicInEQEnable);
 
         setFreq(&m_MicInBass); setGain(&m_MicInBass); plotMicInFilterSpectrum();
  
@@ -358,7 +358,7 @@ void FilterDlg::ExchangeData(int inout)
         m_SpkOutMid.Q = wxGetApp().m_SpkOutMidQ; setQ(&m_SpkOutMid);
         m_SpkOutMid.Q = limit(m_SpkOutMid.Q, pow(10.0,MIN_LOG10_Q), pow(10.0, MAX_LOG10_Q));
 
-        m_SpkOutEnable->SetValue(wxGetApp().m_SpkOutEnable);
+        m_SpkOutEnable->SetValue(wxGetApp().m_SpkOutEQEnable);
 
         setFreq(&m_SpkOutBass); setGain(&m_SpkOutBass); plotSpkOutFilterSpectrum();
     }
@@ -371,50 +371,54 @@ void FilterDlg::ExchangeData(int inout)
         wxGetApp().m_codec2LPCPostFilterBeta       = m_beta;
         wxGetApp().m_codec2LPCPostFilterGamma      = m_gamma;
 
-        pConfig->Write(wxT("/Filter/codec2LPCPostFilterEnable"),     wxGetApp().m_codec2LPCPostFilterEnable);
-        pConfig->Write(wxT("/Filter/codec2LPCPostFilterBassBoost"),  wxGetApp().m_codec2LPCPostFilterBassBoost);
-        pConfig->Write(wxT("/Filter/codec2LPCPostFilterBeta"),       (int)(m_beta*100.0));
-        pConfig->Write(wxT("/Filter/codec2LPCPostFilterGamma"),      (int)(m_gamma*100.0));
-
         // Mic In Equaliser
 
         wxGetApp().m_MicInBassFreqHz = m_MicInBass.freqHz;
-        pConfig->Write(wxT("/Filter/MicInBassFreqHz"), (int)m_MicInBass.freqHz);
         wxGetApp().m_MicInBassGaindB = m_MicInBass.gaindB;
-        pConfig->Write(wxT("/Filter/MicInBassGaindB"), (int)(10.0*m_MicInBass.gaindB));
 
         wxGetApp().m_MicInTrebleFreqHz = m_MicInTreble.freqHz;
-        pConfig->Write(wxT("/Filter/MicInTrebleFreqHz"), (int)m_MicInTreble.freqHz);
         wxGetApp().m_MicInTrebleGaindB = m_MicInTreble.gaindB;
-        pConfig->Write(wxT("/Filter/MicInTrebleGaindB"), (int)(10.0*m_MicInTreble.gaindB));
 
         wxGetApp().m_MicInMidFreqHz = m_MicInMid.freqHz;
-        pConfig->Write(wxT("/Filter/MicInMidFreqHz"), (int)m_MicInMid.freqHz);
         wxGetApp().m_MicInMidGaindB = m_MicInMid.gaindB;
-        pConfig->Write(wxT("/Filter/MicInMidGaindB"), (int)(10.0*m_MicInMid.gaindB));
         wxGetApp().m_MicInMidQ = m_MicInMid.Q;
-        pConfig->Write(wxT("/Filter/MicInMidQ"), (int)(100.0*m_MicInMid.Q));
 
         // Spk Out Equaliser
 
         wxGetApp().m_SpkOutBassFreqHz = m_SpkOutBass.freqHz;
-        pConfig->Write(wxT("/Filter/SpkOutBassFreqHz"), (int)m_SpkOutBass.freqHz);
         wxGetApp().m_SpkOutBassGaindB = m_SpkOutBass.gaindB;
-        pConfig->Write(wxT("/Filter/SpkOutBassGaindB"), (int)(10.0*m_SpkOutBass.gaindB));
 
         wxGetApp().m_SpkOutTrebleFreqHz = m_SpkOutTreble.freqHz;
-        pConfig->Write(wxT("/Filter/SpkOutTrebleFreqHz"), (int)m_SpkOutTreble.freqHz);
         wxGetApp().m_SpkOutTrebleGaindB = m_SpkOutTreble.gaindB;
-        pConfig->Write(wxT("/Filter/SpkOutTrebleGaindB"), (int)(10.0*m_SpkOutTreble.gaindB));
 
         wxGetApp().m_SpkOutMidFreqHz = m_SpkOutMid.freqHz;
-        pConfig->Write(wxT("/Filter/SpkOutMidFreqHz"), (int)m_SpkOutMid.freqHz);
         wxGetApp().m_SpkOutMidGaindB = m_SpkOutMid.gaindB;
-        pConfig->Write(wxT("/Filter/SpkOutMidGaindB"), (int)(10.0*m_SpkOutMid.gaindB));
         wxGetApp().m_SpkOutMidQ = m_SpkOutMid.Q;
-        pConfig->Write(wxT("/Filter/SpkOutMidQ"), (int)(100.0*m_SpkOutMid.Q));
 
-        pConfig->Flush();
+        if (storePersistent) {
+            pConfig->Write(wxT("/Filter/codec2LPCPostFilterEnable"),     wxGetApp().m_codec2LPCPostFilterEnable);
+            pConfig->Write(wxT("/Filter/codec2LPCPostFilterBassBoost"),  wxGetApp().m_codec2LPCPostFilterBassBoost);
+            pConfig->Write(wxT("/Filter/codec2LPCPostFilterBeta"),       (int)(m_beta*100.0));
+            pConfig->Write(wxT("/Filter/codec2LPCPostFilterGamma"),      (int)(m_gamma*100.0));
+
+            pConfig->Write(wxT("/Filter/MicInBassFreqHz"), (int)m_MicInBass.freqHz);
+            pConfig->Write(wxT("/Filter/MicInBassGaindB"), (int)(10.0*m_MicInBass.gaindB));
+            pConfig->Write(wxT("/Filter/MicInTrebleFreqHz"), (int)m_MicInTreble.freqHz);
+            pConfig->Write(wxT("/Filter/MicInTrebleGaindB"), (int)(10.0*m_MicInTreble.gaindB));
+            pConfig->Write(wxT("/Filter/MicInMidFreqHz"), (int)m_MicInMid.freqHz);
+            pConfig->Write(wxT("/Filter/MicInMidGaindB"), (int)(10.0*m_MicInMid.gaindB));
+            pConfig->Write(wxT("/Filter/MicInMidQ"), (int)(100.0*m_MicInMid.Q));
+
+            pConfig->Write(wxT("/Filter/SpkOutBassFreqHz"), (int)m_SpkOutBass.freqHz);
+            pConfig->Write(wxT("/Filter/SpkOutBassGaindB"), (int)(10.0*m_SpkOutBass.gaindB));
+            pConfig->Write(wxT("/Filter/SpkOutTrebleFreqHz"), (int)m_SpkOutTreble.freqHz);
+            pConfig->Write(wxT("/Filter/SpkOutTrebleGaindB"), (int)(10.0*m_SpkOutTreble.gaindB));
+            pConfig->Write(wxT("/Filter/SpkOutMidQ"), (int)(100.0*m_SpkOutMid.Q));
+            pConfig->Write(wxT("/Filter/SpkOutMidFreqHz"), (int)m_SpkOutMid.freqHz);
+            pConfig->Write(wxT("/Filter/SpkOutMidGaindB"), (int)(10.0*m_SpkOutMid.gaindB));
+
+            pConfig->Flush();
+        }
     }
     delete wxConfigBase::Set((wxConfigBase *) NULL);
 }
@@ -487,7 +491,7 @@ void FilterDlg::OnSpkOutDefault(wxCommandEvent& event)
 void FilterDlg::OnOK(wxCommandEvent& event)
 {
     //printf("FilterDlg::OnOK\n");
-    ExchangeData(EXCHANGE_DATA_OUT);
+    ExchangeData(EXCHANGE_DATA_OUT, true);
     this->EndModal(wxID_OK);
 }
 
@@ -505,7 +509,7 @@ void FilterDlg::OnClose(wxCloseEvent& event)
 void FilterDlg::OnInitDialog(wxInitDialogEvent& event)
 {
     //printf("FilterDlg::OnInitDialog\n");
-    ExchangeData(EXCHANGE_DATA_IN);
+    ExchangeData(EXCHANGE_DATA_IN, false);
     //printf("m_beta: %f\n", m_beta);
 }
 
@@ -555,13 +559,14 @@ void FilterDlg::OnGammaScroll(wxScrollEvent& event) {
     setCodec2();
 }
 
-// immediately change rather using ExchangeData() so we can switch on and off at run time
+// immediately change enable flags rather using ExchangeData() so we can switch on and off at run time
+
 void FilterDlg::OnMicInEnable(wxScrollEvent& event) {
-    wxGetApp().m_MicInEnable = m_MicInEnable->GetValue();
+    wxGetApp().m_MicInEQEnable = m_MicInEnable->GetValue();
 }
 
 void FilterDlg::OnSpkOutEnable(wxScrollEvent& event) {
-    wxGetApp().m_SpkOutEnable = m_SpkOutEnable->GetValue();
+    wxGetApp().m_SpkOutEQEnable = m_SpkOutEnable->GetValue();
 }
 
 void FilterDlg::setFreq(EQ *eq)
@@ -635,10 +640,26 @@ void FilterDlg::sliderToQ(EQ *eq, bool micIn)
 
 void FilterDlg::plotMicInFilterSpectrum(void) {
     plotFilterSpectrum(&m_MicInBass, &m_MicInMid, &m_MicInTreble, m_MicInFreqRespPlot, m_MicInMagdB);
+    
+    // signal an adjustment in running filter coeffs
+
+    if (m_running) {
+        ExchangeData(EXCHANGE_DATA_OUT, false);
+        *m_newMicInFilter = true;
+    }
+        
 }
 
 void FilterDlg::plotSpkOutFilterSpectrum(void) {
     plotFilterSpectrum(&m_SpkOutBass, &m_SpkOutMid, &m_SpkOutTreble, m_SpkOutFreqRespPlot, m_SpkOutMagdB);
+
+    // signal an adjustment in running filter coeffs
+
+    if (m_running) {
+        ExchangeData(EXCHANGE_DATA_OUT, false);
+        *m_newSpkOutFilter = true;
+    }
+        
 }
 
 void FilterDlg::plotFilterSpectrum(EQ *eqBass, EQ *eqMid, EQ *eqTreble, PlotSpectrum* freqRespPlot, float *magdB) {
@@ -709,7 +730,7 @@ void FilterDlg::calcFilterSpectrum(float magdB[], int argc, char *argv[]) {
     //out[0] = IMP_AMP;
 
     // calculate discrete time continous frequency Fourer transform
-    // doing this from basic principles rather than FFT for no good reason
+    // doing this from first principles rather than FFT for no good reason
 
     for(f=0,i=0; f<MAX_F_HZ; f+=F_STEP_DFT,i++) {
         w = M_PI*f/(FS/2);

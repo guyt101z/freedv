@@ -218,6 +218,8 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     wxGetApp().m_show_speech_out    = pConfig->Read(wxT("/MainFrame/show_speech_out"),    1);
     wxGetApp().m_show_demod_in      = pConfig->Read(wxT("/MainFrame/show_demod_in"),    1);
 
+    wxGetApp().m_rxNbookCtrl        = pConfig->Read(wxT("/MainFrame/rxNbookCtrl"),    (long)0);
+
     g_SquelchActive = pConfig->Read(wxT("/Audio/SquelchActive"), 1);
     g_SquelchLevel = pConfig->Read(wxT("/Audio/SquelchLevel"), (int)(SQ_DEFAULT_SNR*2));
     g_SquelchLevel /= 2.0;
@@ -338,7 +340,8 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     wxGetApp().m_MicInMidGaindB = (float)pConfig->Read(wxT("/Filter/MicInMidGaindB"),    (long)0)/10.0;
     wxGetApp().m_MicInMidQ = (float)pConfig->Read(wxT("/Filter/MicInMidQ"),    (long)100)/100.0;
 
-    wxGetApp().m_MicInEnable = (float)pConfig->Read(wxT("/Filter/MicInEnable"), t);
+    bool f = false;
+    wxGetApp().m_MicInEQEnable = (float)pConfig->Read(wxT("/Filter/MicInEQEnable"), f);
 
     wxGetApp().m_SpkOutBassFreqHz = (float)pConfig->Read(wxT("/Filter/SpkOutBassFreqHz"),    1);
     wxGetApp().m_SpkOutBassGaindB = (float)pConfig->Read(wxT("/Filter/SpkOutBassGaindB"),    (long)0)/10.0;
@@ -348,7 +351,7 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     wxGetApp().m_SpkOutMidGaindB = (float)pConfig->Read(wxT("/Filter/SpkOutMidGaindB"),    (long)0)/10.0;
     wxGetApp().m_SpkOutMidQ = (float)pConfig->Read(wxT("/Filter/SpkOutMidQ"),    (long)100)/100.0;
 
-    wxGetApp().m_SpkOutEnable = (float)pConfig->Read(wxT("/Filter/SpkOutEnable"), t);
+    wxGetApp().m_SpkOutEQEnable = (float)pConfig->Read(wxT("/Filter/SpkOutEQEnable"), f);
 
     wxGetApp().m_callSign = pConfig->Read("/Data/CallSign", wxT(""));
 
@@ -430,6 +433,9 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     g_txDataInFifo = fifo_create(MAX_CALLSIGN*VARICODE_MAX_BITS);   
     g_rxDataOutFifo = fifo_create(MAX_CALLSIGN*VARICODE_MAX_BITS);   
     varicode_decode_init(&g_varicode_dec_states);
+
+    sox_biquad_start();
+
 }
 
 //-------------------------------------------------------------------------
@@ -460,6 +466,8 @@ MainFrame::~MainFrame()
         pConfig->Write(wxT("/MainFrame/show_speech_in"),    wxGetApp().m_show_speech_in);
         pConfig->Write(wxT("/MainFrame/show_speech_out"),   wxGetApp().m_show_speech_out);
         pConfig->Write(wxT("/MainFrame/show_demod_in"),     wxGetApp().m_show_demod_in);
+
+        pConfig->Write(wxT("/MainFrame/rxNbookCtrl"), wxGetApp().m_rxNbookCtrl);
 
         pConfig->Write(wxT("/Audio/SquelchActive"),         g_SquelchActive);
         pConfig->Write(wxT("/Audio/SquelchLevel"),          (int)(g_SquelchLevel*2.0));
@@ -495,8 +503,8 @@ MainFrame::~MainFrame()
 
         pConfig->Write(wxT("/Data/CallSign"), wxGetApp().m_callSign);
  
-        pConfig->Write(wxT("/Filter/MicInEnable"), wxGetApp().m_MicInEnable);
-        pConfig->Write(wxT("/Filter/SpkOutEnable"), wxGetApp().m_SpkOutEnable);
+        pConfig->Write(wxT("/Filter/MicInEQEnable"), wxGetApp().m_MicInEQEnable);
+        pConfig->Write(wxT("/Filter/SpkOutEQEnable"), wxGetApp().m_SpkOutEQEnable);
     }
 
     //m_togRxID->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnRxIDUI), NULL, this);
@@ -508,6 +516,7 @@ MainFrame::~MainFrame()
     m_btnTogPTT->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnTXClickUI), NULL, this);
     
     CloseSerialPort();
+    sox_biquad_finish();
     
     if (m_RxRunning)
     {
@@ -660,7 +669,7 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
 
     m_maxLevel *= LEVEL_BETA;
 
-    // sync LED (Colours don't work on Windows)
+    // sync LED (Colours don't work on Windows) ------------------------
 
     if (g_State) {
         m_rbSync->SetForegroundColour( wxColour( 0, 255, 0 ) ); // green
@@ -671,7 +680,7 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
         m_rbSync->SetValue(false);
     }
 
-    // send Callsign
+    // send Callsign ----------------------------------------------------
 
     if (fifo_used(g_txDataInFifo) == 0) {
         char callsign[MAX_CALLSIGN];
@@ -688,7 +697,7 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
         //printf("Callsign sending: %s nout: %d\n", callsign, nout);
     }
 
-    // See if any callsign info received
+    // See if any Callsign info received --------------------------------
 
     short ashort;
     while (fifo_read(g_rxDataOutFifo, &ashort, 1) == 0) {            
@@ -705,7 +714,20 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
         }
     }
 
+    // Run time upodate of EQ filters -----------------------------------
+
+    if (m_newMicInFilter || m_newSpkOutFilter) {
+        printf("new filter...\n");
+        g_mutexProtectingCallbackData.Lock();
+        deleteEQFilters(g_rxUserdata);
+        designEQFilters(g_rxUserdata);        
+        g_mutexProtectingCallbackData.Unlock();
+        g_rxUserdata->micInEQEnable = wxGetApp().m_MicInEQEnable;
+        g_rxUserdata->spkOutEQEnable = wxGetApp().m_SpkOutEQEnable;
+        m_newMicInFilter = m_newSpkOutFilter = false;
+    }
 }
+
 #endif
 
 #ifdef _USE_ONIDLE
@@ -868,15 +890,19 @@ void MainFrame::OnTogBtnTXClick(wxCommandEvent& event)
 {
     if (g_tx) 
     {
-        // tx-> rx transition, swap to Waterfall
-        m_auiNbookCtrl->ChangeSelection(0); 
+        // tx-> rx transition, swap to the page we were on for last rx
+        m_auiNbookCtrl->ChangeSelection(wxGetApp().m_rxNbookCtrl); 
     }
     else 
     {
         // rx-> tx transition, swap to Mic In page to monitor speech
+
+        wxGetApp().m_rxNbookCtrl = m_auiNbookCtrl->GetSelection();
         m_auiNbookCtrl->ChangeSelection(4); // is there a way to avoid hard coding this?
+        
     }
     g_tx = m_btnTogPTT->GetValue();
+
     // The following sets and clears may be exactly inverted.  
     // I don't know and I'm not set up to tell yet.
     // If so, one just needs to invert the polarity selection
@@ -931,7 +957,7 @@ void MainFrame::OnTogBtnTXClick(wxCommandEvent& event)
             }
         }
     } 
-    
+
     // reset level gauge
     m_maxLevel = 0;
     m_textLevel->SetLabel(wxT(""));
@@ -1355,7 +1381,7 @@ void MainFrame::OnToolsAudio(wxCommandEvent& event)
 void MainFrame::OnToolsFilter(wxCommandEvent& event)
 {
     wxUnusedVar(event);
-    FilterDlg *dlg = new FilterDlg(NULL, m_RxRunning);
+    FilterDlg *dlg = new FilterDlg(NULL, m_RxRunning, &m_newMicInFilter, &m_newSpkOutFilter);
     dlg->ShowModal();
     delete dlg;
 }
@@ -1476,7 +1502,7 @@ void MainFrame::OnHelpAbout(wxCommandEvent& event)
             //printf("In OK\n");
             wxStringOutputStream html_stream(&htmldata);
             in->Read(html_stream);
-            wxLogDebug(htmldata);
+            //wxLogDebug(htmldata);
  
             wxString s("<h2>freetel - Revision ");
             int startIndex = htmldata.find(s) + s.Length();
@@ -1511,6 +1537,10 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
 
     if (startStop.IsSameAs("Start")) 
     {
+        // 
+        // Start Running -------------------------------------------------
+        //
+
         m_togBtnSplit->Enable();
         //m_togRxID->Enable();
         //m_togTxID->Enable();
@@ -1560,6 +1590,10 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
     // Stop was pressed or start up failed 
 
     if (startStop.IsSameAs("Stop") || !m_RxRunning ) {
+
+        // 
+        // Stop Running -------------------------------------------------
+        //
 
         #ifdef _USE_TIMER
         m_plotTimer.Stop();
@@ -1626,34 +1660,6 @@ void MainFrame::destroy_src(void)
     src_delete(g_rxUserdata->outsrc1);
     src_delete(g_rxUserdata->insrc2);
     src_delete(g_rxUserdata->outsrc2);
-}
-
-void MainFrame::autoDetectSoundCards(PortAudioWrap *pa)
-{
-    const   PaDeviceInfo *deviceInfo;
-    int     i;
-
-    // trap zero sound devices
-
-    if (pa->getDeviceCount() == 0) {
-        wxMessageBox(wxT("No sound devices found"), wxT("Error"), wxOK);
-        return;
-    }
-
-    for(i=0; i<pa->getDeviceCount(); i++) {
-        deviceInfo = Pa_GetDeviceInfo( i );
-
-    // supports full duplex and 44800 and 44100
-    // is there something unique so we know it's a hw device?
-    // does this work on Linux & Windows?
-
-    printf( "--------------------------------------- device #%d\n", i );
-        printf( "Name                        = %s\n", deviceInfo->name );
-        printf( "Host API                    = %s\n",  Pa_GetHostApiInfo( deviceInfo->hostApi )->name );
-        printf( "Max inputs = %d", deviceInfo->maxInputChannels  );
-        printf( ", Max outputs = %d\n", deviceInfo->maxOutputChannels  );
-        printf( "Default sample rate         = %8.2f\n", deviceInfo->defaultSampleRate );
-    }
 }
 
 void  MainFrame::initPortAudioDevice(PortAudioWrap *pa, int inDevice, int outDevice, 
@@ -1812,6 +1818,12 @@ void MainFrame::startRxStream()
         g_rxUserdata->rxinfifo = fifo_create(3 * FDMDV_NOM_SAMPLES_PER_FRAME);
         g_rxUserdata->rxoutfifo = fifo_create(2 * codec2_samples_per_frame(g_pCodec2));
         
+        // Init Equaliser Filters ------------------------------------------------------
+
+        designEQFilters(g_rxUserdata);
+        g_rxUserdata->micInEQEnable = wxGetApp().m_MicInEQEnable;
+        g_rxUserdata->spkOutEQEnable = wxGetApp().m_SpkOutEQEnable;
+
         // Start sound card 1 ----------------------------------------------------------
 
         m_rxPa->setUserData(g_rxUserdata);
@@ -1897,10 +1909,87 @@ void MainFrame::startRxStream()
         {
             wxLogError(wxT("Can't start thread!"));
         }
-   }
+    }
  
 }
 
+
+#define SBQ_MAX_ARGS 4
+
+void *MainFrame::designAnEQFilter(const char filterType[], float freqHz, float gaindB, float Q)
+{
+    char  *arg[SBQ_MAX_ARGS];
+    char   argstorage[SBQ_MAX_ARGS][80];
+    void  *sbq;
+    int    i, argc;
+
+    assert((strcmp(filterType, "bass") == 0)   || 
+           (strcmp(filterType, "treble") == 0) ||
+           (strcmp(filterType, "equalizer") == 0));
+
+    for(i=0; i<SBQ_MAX_ARGS; i++) {
+        arg[i] = &argstorage[i][0];
+        arg[i] = &argstorage[i][0];
+        arg[i] = &argstorage[i][0];
+    }
+
+    argc = 0;
+
+    if ((strcmp(filterType, "bass") == 0) || (strcmp(filterType, "treble") == 0)) {
+        sprintf(arg[argc++], "%s", filterType);                
+        sprintf(arg[argc++], "%f", gaindB+1E-6);
+        sprintf(arg[argc++], "%f", freqHz);      
+    }
+
+    if (strcmp(filterType, "equalizer") == 0) {
+        sprintf(arg[argc++], "%s", filterType);                
+        sprintf(arg[argc++], "%f", freqHz);      
+        sprintf(arg[argc++], "%f", Q);      
+        sprintf(arg[argc++], "%f", gaindB+1E-6);
+    }
+
+    assert(argc <= SBQ_MAX_ARGS);
+
+    sbq = sox_biquad_create(argc-1, (const char **)arg);
+
+    return sbq;
+}
+
+void  MainFrame::designEQFilters(paCallBackData *cb)
+{
+    // init Mic In Equaliser Filters
+
+    if (m_newMicInFilter) {
+        printf("designing new Min In filters\n");
+        cb->sbqMicInBass   = designAnEQFilter("bass", wxGetApp().m_MicInBassFreqHz, wxGetApp().m_MicInBassGaindB);
+        cb->sbqMicInTreble = designAnEQFilter("treble", wxGetApp().m_MicInTrebleFreqHz, wxGetApp().m_MicInTrebleGaindB);
+        cb->sbqMicInMid    = designAnEQFilter("equalizer", wxGetApp().m_MicInMidFreqHz, wxGetApp().m_MicInMidGaindB, wxGetApp().m_MicInMidQ);
+    }
+
+    // init Spk Out Equaliser Filters
+
+    if (m_newSpkOutFilter) {
+        printf("designing new Spk Out filters\n");
+        cb->sbqSpkOutBass   = designAnEQFilter("bass", wxGetApp().m_SpkOutBassFreqHz, wxGetApp().m_SpkOutBassGaindB);
+        cb->sbqSpkOutTreble = designAnEQFilter("treble", wxGetApp().m_SpkOutTrebleFreqHz, wxGetApp().m_SpkOutTrebleGaindB);
+        cb->sbqSpkOutMid    = designAnEQFilter("equalizer", wxGetApp().m_SpkOutMidFreqHz, wxGetApp().m_SpkOutMidGaindB, wxGetApp().m_SpkOutMidQ);
+    }
+
+}
+
+void  MainFrame::deleteEQFilters(paCallBackData *cb)
+{
+    if (m_newMicInFilter) {
+        sox_biquad_destroy(cb->sbqMicInBass);
+        sox_biquad_destroy(cb->sbqMicInTreble);
+        sox_biquad_destroy(cb->sbqMicInMid);
+    }
+    if (m_newSpkOutFilter) {
+        sox_biquad_destroy(cb->sbqSpkOutBass);
+        sox_biquad_destroy(cb->sbqSpkOutTreble);
+        sox_biquad_destroy(cb->sbqSpkOutMid);
+    }
+}
 
 // returns number of output samples generated by resampling
 
@@ -2030,7 +2119,7 @@ void txRxProcessing()
 
         g_mutexProtectingCallbackData.Lock();
         if (g_playFileFromRadio && (g_sfPlayFileFromRadio != NULL)) {
-            int n = sf_read_short(g_sfPlayFileFromRadio, in8k_short, N8);
+            int n = sf_read_short(g_sfPlayFileFromRadio, in8k_short, n8k);
             if (n != N8) {
                 if (g_loopPlayFileFromRadio)
                     sf_seek(g_sfPlayFileFromRadio, 0, SEEK_SET);
@@ -2043,7 +2132,7 @@ void txRxProcessing()
             }
         }
         g_mutexProtectingCallbackData.Unlock();
-
+        
         fifo_write(cbData->rxinfifo, in8k_short, n8k);
         resample_for_plot(g_plotDemodInFifo, in8k_short, n8k);
 
@@ -2059,6 +2148,15 @@ void txRxProcessing()
             fifo_read(cbData->rxoutfifo, out8k_short, N8);
         }
         
+        // Opional Spk Out EQ Filtering, need mutex as filter can change at run time
+        g_mutexProtectingCallbackData.Lock();
+        if (cbData->spkOutEQEnable) {
+            sox_biquad_filter(cbData->sbqSpkOutBass,   out8k_short, out8k_short, N8);
+            sox_biquad_filter(cbData->sbqSpkOutTreble, out8k_short, out8k_short, N8);
+            sox_biquad_filter(cbData->sbqSpkOutMid,    out8k_short, out8k_short, N8);
+        }
+        g_mutexProtectingCallbackData.Unlock();
+
         if (g_SquelchActive && (g_SquelchLevel > g_snr)) {
             //printf("g_SquelchLevel: %f g_snr: %f\n", g_SquelchLevel, g_snr);
             memset(out8k_short, 0, sizeof(short)*N8);
@@ -2113,8 +2211,8 @@ void txRxProcessing()
             // optionally use file for mic input signal
             g_mutexProtectingCallbackData.Lock();
             if (g_playFileToMicIn && (g_sfPlayFile != NULL)) {
-                int n = sf_read_short(g_sfPlayFile, in8k_short, 2*N8);
-                if (n != 2*N8) {
+                int n = sf_read_short(g_sfPlayFile, in8k_short, nout);
+                if (n != nout) {
                     if (g_loopPlayFileToMicIn)
                         sf_seek(g_sfPlayFile, 0, SEEK_SET);
                     else {
@@ -2123,6 +2221,15 @@ void txRxProcessing()
                         g_parent->GetEventHandler()->AddPendingEvent( event );
                     }
                 }
+            }
+            g_mutexProtectingCallbackData.Unlock();
+
+            // Opional Mic In EQ Filtering, need mutex as filter can change at run time
+            g_mutexProtectingCallbackData.Lock();
+            if (cbData->micInEQEnable) {
+                sox_biquad_filter(cbData->sbqMicInBass, in8k_short, in8k_short, nout);
+                sox_biquad_filter(cbData->sbqMicInTreble, in8k_short, in8k_short, nout);
+                sox_biquad_filter(cbData->sbqMicInMid, in8k_short, in8k_short, nout);
             }
             g_mutexProtectingCallbackData.Unlock();
 

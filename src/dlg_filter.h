@@ -51,12 +51,13 @@ typedef struct {
 class FilterDlg : public wxDialog
 {
     public:
-        FilterDlg( wxWindow* parent, bool running, wxWindowID id = wxID_ANY, const wxString& title = _("Filter"), 
-                   const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 1000, 700 ), 
-                   long style = wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER );
+    FilterDlg( wxWindow* parent, bool running, bool *newMicInFilter, bool *newSpkOutFilter,
+               wxWindowID id = wxID_ANY, const wxString& title = _("Filter"), 
+               const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 1000, 700 ), 
+               long style = wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER );
         ~FilterDlg();
 
-        void    ExchangeData(int inout);
+        void    ExchangeData(int inout, bool storePersistent);
 
     protected:
         // Handlers for events.
@@ -150,6 +151,9 @@ class FilterDlg : public wxDialog
         EQ            m_SpkOutTreble;
 
         float         limit(float value, float min, float max);
+ 
+        bool          *m_newMicInFilter;
+        bool          *m_newSpkOutFilter;
 
 };
 
