@@ -141,6 +141,8 @@ class FilterDlg : public wxDialog
         void          calcFilterSpectrum(float magdB[], int arc, char *argv[]);
         void          plotMicInFilterSpectrum(void);
         void          plotSpkOutFilterSpectrum(void);
+        void          adjRunTimeMicInFilter(void);
+        void          adjRunTimeSpkOutFilter(void);
 
         EQ            m_MicInBass;
         EQ            m_MicInMid;

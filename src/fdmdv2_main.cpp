@@ -722,10 +722,10 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
         deleteEQFilters(g_rxUserdata);
         designEQFilters(g_rxUserdata);        
         g_mutexProtectingCallbackData.Unlock();
-        g_rxUserdata->micInEQEnable = wxGetApp().m_MicInEQEnable;
-        g_rxUserdata->spkOutEQEnable = wxGetApp().m_SpkOutEQEnable;
         m_newMicInFilter = m_newSpkOutFilter = false;
     }
+    g_rxUserdata->micInEQEnable = wxGetApp().m_MicInEQEnable;
+    g_rxUserdata->spkOutEQEnable = wxGetApp().m_SpkOutEQEnable;
 }
 
 #endif
@@ -1381,9 +1381,11 @@ void MainFrame::OnToolsAudio(wxCommandEvent& event)
 void MainFrame::OnToolsFilter(wxCommandEvent& event)
 {
     wxUnusedVar(event);
+    printf("OnToolsFilter Start: wxGetApp().m_SpkOutBassFreqHz: %f\n",wxGetApp().m_SpkOutBassFreqHz);
     FilterDlg *dlg = new FilterDlg(NULL, m_RxRunning, &m_newMicInFilter, &m_newSpkOutFilter);
     dlg->ShowModal();
     delete dlg;
+    printf("OnToolsFilter End: wxGetApp().m_SpkOutBassFreqHz: %f\n",wxGetApp().m_SpkOutBassFreqHz);
 }
 
 //-------------------------------------------------------------------------
@@ -1515,7 +1517,7 @@ void MainFrame::OnHelpAbout(wxCommandEvent& event)
 
     wxString msg;
     msg.Printf( wxT("FreeDV: Open Source Narrow Band Digital Voice over Radio\n\n")
-                wxT("http://freedv.org\n\n")
+                wxT("For Help and Support visit: http://freedv.org\n\n")
                 wxT("GNU Public License V2.1\n\n")
                 wxT("Copyright (c) David Witten KD0EAG and David Rowe VK5DGR\n\n")
                 wxT("svn revision: %s\n") + svnLatestRev, SVN_REVISION);
@@ -1603,6 +1605,9 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
 
         fdmdv_destroy(g_pFDMDV);
         codec2_destroy(g_pCodec2);
+
+        m_newMicInFilter = m_newSpkOutFilter = true;
+        deleteEQFilters(g_rxUserdata);
 
         m_togBtnSplit->Disable();
         m_togRxID->Disable();
@@ -1820,6 +1825,7 @@ void MainFrame::startRxStream()
         
         // Init Equaliser Filters ------------------------------------------------------
 
+        m_newMicInFilter = m_newSpkOutFilter = true;
         designEQFilters(g_rxUserdata);
         g_rxUserdata->micInEQEnable = wxGetApp().m_MicInEQEnable;
         g_rxUserdata->spkOutEQEnable = wxGetApp().m_SpkOutEQEnable;
@@ -1960,7 +1966,7 @@ void  MainFrame::designEQFilters(paCallBackData *cb)
     // init Mic In Equaliser Filters
 
     if (m_newMicInFilter) {
-        printf("designing new Min In filters\n");
+        //printf("designing new Min In filters\n");
         cb->sbqMicInBass   = designAnEQFilter("bass", wxGetApp().m_MicInBassFreqHz, wxGetApp().m_MicInBassGaindB);
         cb->sbqMicInTreble = designAnEQFilter("treble", wxGetApp().m_MicInTrebleFreqHz, wxGetApp().m_MicInTrebleGaindB);
         cb->sbqMicInMid    = designAnEQFilter("equalizer", wxGetApp().m_MicInMidFreqHz, wxGetApp().m_MicInMidGaindB, wxGetApp().m_MicInMidQ);
@@ -1969,7 +1975,8 @@ void  MainFrame::designEQFilters(paCallBackData *cb)
     // init Spk Out Equaliser Filters
 
     if (m_newSpkOutFilter) {
-        printf("designing new Spk Out filters\n");
+        //printf("designing new Spk Out filters\n");
+        //printf("designEQFilters: wxGetApp().m_SpkOutBassFreqHz: %f\n",wxGetApp().m_SpkOutBassFreqHz);
         cb->sbqSpkOutBass   = designAnEQFilter("bass", wxGetApp().m_SpkOutBassFreqHz, wxGetApp().m_SpkOutBassGaindB);
         cb->sbqSpkOutTreble = designAnEQFilter("treble", wxGetApp().m_SpkOutTrebleFreqHz, wxGetApp().m_SpkOutTrebleGaindB);
         cb->sbqSpkOutMid    = designAnEQFilter("equalizer", wxGetApp().m_SpkOutMidFreqHz, wxGetApp().m_SpkOutMidGaindB, wxGetApp().m_SpkOutMidQ);
