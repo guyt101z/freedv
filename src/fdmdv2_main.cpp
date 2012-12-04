@@ -359,7 +359,7 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
 
 //    this->Connect(m_menuItemHelpUpdates->GetId(), wxEVT_UPDATE_UI, wxUpdateUIEventHandler(TopFrame::OnHelpCheckUpdatesUI));
     //m_togRxID->Connect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnRxIDUI), NULL, this);
-    m_togTxID->Connect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnTxIDUI), NULL, this);
+    //m_togTxID->Connect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnTxIDUI), NULL, this);
     m_togBtnOnOff->Connect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnOnOffUI), NULL, this);
     m_togBtnSplit->Connect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnSplitClickUI), NULL, this);
     m_togBtnAnalog->Connect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnAnalogClickUI), NULL, this);
@@ -367,8 +367,8 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     m_btnTogPTT->Connect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnTXClickUI), NULL, this);
 
     m_togBtnSplit->Disable();
-    m_togRxID->Disable();
-    m_togTxID->Disable();
+    //m_togRxID->Disable();
+    //m_togTxID->Disable();
     m_togBtnAnalog->Disable();
     //m_togBtnALC->Disable();
 
@@ -508,7 +508,7 @@ MainFrame::~MainFrame()
     }
 
     //m_togRxID->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnRxIDUI), NULL, this);
-    m_togTxID->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnTxIDUI), NULL, this);
+    //m_togTxID->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnTxIDUI), NULL, this);
     m_togBtnOnOff->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnOnOffUI), NULL, this);
     m_togBtnSplit->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnSplitClickUI), NULL, this);
     m_togBtnAnalog->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnAnalogClickUI), NULL, this);
@@ -717,7 +717,6 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
     // Run time upodate of EQ filters -----------------------------------
 
     if (m_newMicInFilter || m_newSpkOutFilter) {
-        printf("new filter...\n");
         g_mutexProtectingCallbackData.Lock();
         deleteEQFilters(g_rxUserdata);
         designEQFilters(g_rxUserdata);        
@@ -1338,8 +1337,8 @@ void MainFrame::OnExit(wxCommandEvent& event)
         stopRxStream();
     }
     m_togBtnSplit->Disable();
-    m_togRxID->Disable();
-    m_togTxID->Disable();
+    //m_togRxID->Disable();
+    //m_togTxID->Disable();
     m_togBtnAnalog->Disable();
     //m_togBtnALC->Disable();
     //m_btnTogPTT->Disable();
@@ -1378,11 +1377,9 @@ void MainFrame::OnToolsAudio(wxCommandEvent& event)
 void MainFrame::OnToolsFilter(wxCommandEvent& event)
 {
     wxUnusedVar(event);
-    printf("OnToolsFilter Start: wxGetApp().m_SpkOutBassFreqHz: %f\n",wxGetApp().m_SpkOutBassFreqHz);
     FilterDlg *dlg = new FilterDlg(NULL, m_RxRunning, &m_newMicInFilter, &m_newSpkOutFilter);
     dlg->ShowModal();
     delete dlg;
-    printf("OnToolsFilter End: wxGetApp().m_SpkOutBassFreqHz: %f\n",wxGetApp().m_SpkOutBassFreqHz);
 }
 
 //-------------------------------------------------------------------------
@@ -1608,8 +1605,8 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
         m_newMicInFilter = m_newSpkOutFilter = true;
 
         m_togBtnSplit->Disable();
-        m_togRxID->Disable();
-        m_togTxID->Disable();
+        //m_togRxID->Disable();
+        //m_togTxID->Disable();
         m_togBtnAnalog->Disable();
         //m_btnTogPTT->Disable();
         m_togBtnOnOff->SetLabel(wxT("Start"));

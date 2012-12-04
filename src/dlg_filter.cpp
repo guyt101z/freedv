@@ -564,7 +564,7 @@ void FilterDlg::OnMicInEnable(wxScrollEvent& event) {
 
 void FilterDlg::OnSpkOutEnable(wxScrollEvent& event) {
     wxGetApp().m_SpkOutEQEnable = m_SpkOutEnable->GetValue();
-    printf("wxGetApp().m_SpkOutEQEnable: %d\n", wxGetApp().m_SpkOutEQEnable);
+    //printf("wxGetApp().m_SpkOutEQEnable: %d\n", wxGetApp().m_SpkOutEQEnable);
 }
 
 void FilterDlg::setFreq(EQ *eq)
