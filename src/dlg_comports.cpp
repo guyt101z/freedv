@@ -45,10 +45,14 @@ ComPortsDlg::ComPortsDlg(wxWindow* parent, wxWindowID id, const wxString& title,
     wxStaticBoxSizer* staticBoxSizer31 = new wxStaticBoxSizer( new wxStaticBox(this, wxID_ANY, _("PTT Port")), wxVERTICAL);
     staticBoxSizer17->Add(staticBoxSizer31, 1, wxEXPAND, 5);
 
+//    m_ckUseSerialPTT = new wxCheckBox(this, wxID_ANY, _("Use Serial Port PTT"), wxDefaultPosition, wxSize(-1,-1), 0);
+//    m_ckUseSerialPTT->SetValue(false);
+//    staticBoxSizer31->Add(m_ckUseSerialPTT, 0, wxALIGN_LEFT, 20);
+#ifdef __WXMSW__
     m_ckUseSerialPTT = new wxCheckBox(this, wxID_ANY, _("Use Serial Port PTT"), wxDefaultPosition, wxSize(-1,-1), 0);
     m_ckUseSerialPTT->SetValue(false);
     staticBoxSizer31->Add(m_ckUseSerialPTT, 0, wxALIGN_LEFT, 20);
-#ifdef __WXMSW__
+
     wxArrayString m_listCtrlPortsArr;
     m_listCtrlPorts = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxSize(-1,45), m_listCtrlPortsArr, wxLB_SINGLE);
     staticBoxSizer31->Add(m_listCtrlPorts, 1, wxALIGN_CENTER, 0);
@@ -56,11 +60,25 @@ ComPortsDlg::ComPortsDlg(wxWindow* parent, wxWindowID id, const wxString& title,
 #ifdef __WXGTK__
     wxBoxSizer* bSizer83;
     bSizer83 = new wxBoxSizer(wxHORIZONTAL);
-    m_staticText12 = new wxStaticText(this, wxID_ANY, _("Device:"), wxDefaultPosition, wxDefaultSize, 0);
+
+    wxGridSizer* gridSizer200 = new wxGridSizer(1, 3, 0, 0);
+    
+    m_ckUseSerialPTT = new wxCheckBox(this, wxID_ANY, _("Use Serial Port PTT"), wxDefaultPosition, wxSize(-1,-1), 0);
+    m_ckUseSerialPTT->SetValue(false);
+    gridSizer200->Add(m_ckUseSerialPTT, 1, wxALIGN_CENTER|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL, 2);
+
+    m_staticText12 = new wxStaticText(this, wxID_ANY, _("Device:  "), wxDefaultPosition, wxDefaultSize, 0);
     m_staticText12->Wrap(-1);
-    staticBoxSizer31->Add(m_staticText12, 0, wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT|wxALL, 5);
+    gridSizer200->Add(m_staticText12, 1,wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL, 2);
+//    gridSizer200->Add(m_staticText12, 1, wxEXPAND|wxALIGN_CENTER|wxALIGN_RIGHT, 2);
+
     m_txtCtlDevicePath = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0);
-    staticBoxSizer31->Add(m_txtCtlDevicePath, 1, wxALIGN_CENTER_VERTICAL|wxALL, 1);
+//    gridSizer200->Add(m_txtCtlDevicePath, 1, wxALIGN_CENTER|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL, 2);
+    gridSizer200->Add(m_txtCtlDevicePath, 1, wxEXPAND|wxALIGN_CENTER|wxALIGN_RIGHT, 2);
+    
+    bSizer83->Add(gridSizer200, 0, wxALIGN_CENTER_VERTICAL | wxALIGN_LEFT | wxALL, 2);
+    staticBoxSizer31->Add(bSizer83, 1, wxALIGN_CENTER_VERTICAL|wxALL, 1);
+
 #endif
     wxBoxSizer* boxSizer19 = new wxBoxSizer(wxVERTICAL);
     staticBoxSizer17->Add(boxSizer19, 1, wxEXPAND, 5);

@@ -39,7 +39,7 @@
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 class ComPortsDlg : public wxDialog
 {
-    public:
+     public:
         ComPortsDlg(wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("Hardware PTT"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize(450,300), long style = wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER);
         virtual ~ComPortsDlg();
         void    ExchangeData(int inout);
