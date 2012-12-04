@@ -582,7 +582,6 @@ int AudioOptsDialog::ExchangeData(int inout)
         // we have to be soundcard oriented at run time rather than
         // Tx/Rx oriented as in this dialog.
         // ---------------------------------------------------------------
-
         g_nSoundCards = 0;
         g_soundCard1InDeviceNum = g_soundCard1OutDeviceNum = g_soundCard2InDeviceNum = g_soundCard2OutDeviceNum = -1;
 
@@ -629,19 +628,6 @@ int AudioOptsDialog::ExchangeData(int inout)
 
     return 0;
 }
-
-/*
-//-------------------------------------------------------------------------
-// OnDeviceSelect()
-//-------------------------------------------------------------------------
-void AudioOptsDialog::OnDeviceSelect(wxListEvent& event)
-{
-    wxListItem  info;
-    long item;
-    item = m_listCtrlRxInDevices->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
-    wxMessageBox(m_listCtrlRxInDevices->GetItemText(item, 2), wxT("Item"), wxOK);
-}
-*/
 
 //-------------------------------------------------------------------------
 // buildListOfSupportedSampleRates()

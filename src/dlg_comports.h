@@ -48,6 +48,7 @@ class ComPortsDlg : public wxDialog
         wxCheckBox* m_ckUsePTTRtChan;
         wxListBox* m_listCtrlPorts;
         wxCheckBox* m_ckUseSerialPTT;
+        wxTextCtrl *m_txtCtlDevicePath;
         wxRadioButton* m_rbUseDTR;
         wxCheckBox* m_ckRTSPos;
         wxRadioButton* m_rbUseRTS;
@@ -56,7 +57,9 @@ class ComPortsDlg : public wxDialog
         wxButton* m_buttonCancel;
         wxButton* m_buttonApply;
 
-    protected:
+protected:
+        void ListAllPorts();
+
         void populatePortList(void);
         void PTTAudioClick(wxCommandEvent& event);
 //        void PTTPortSlelcted(wxCommandEvent& event);

@@ -157,7 +157,7 @@ FilterDlg::FilterDlg(wxWindow* parent, bool running, bool *newMicInFilter, bool 
     this->Layout();
 
     this->Centre(wxBOTH);
-
+ 
     // Connect Events -------------------------------------------------------
 
     this->Connect(wxEVT_INIT_DIALOG, wxInitDialogEventHandler(FilterDlg::OnInitDialog));

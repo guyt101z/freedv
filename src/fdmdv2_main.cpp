@@ -312,7 +312,7 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     wxGetApp().m_strRigCtrlStopbits = pConfig->Read(wxT("/Rig/StopBits"),       wxT("1"));
     wxGetApp().m_strRigCtrlParity   = pConfig->Read(wxT("/Rig/Parity"),         wxT("n"));
     wxGetApp().m_boolUseTonePTT     = pConfig->ReadBool(wxT("/Rig/UseTonePTT"),     false);
-    wxGetApp().m_boolUseSerialPTT   = pConfig->ReadBool(wxT("/Rig/UseSerialPTT"),   true);
+    wxGetApp().m_boolUseSerialPTT   = pConfig->ReadBool(wxT("/Rig/UseSerialPTT"),   false);
     wxGetApp().m_boolUseRTS         = pConfig->ReadBool(wxT("/Rig/UseRTS"),         true);
     wxGetApp().m_boolRTSPos         = pConfig->ReadBool(wxT("/Rig/RTSPolarity"),    false);
     wxGetApp().m_boolUseDTR         = pConfig->ReadBool(wxT("/Rig/UseDTR"),         false);
@@ -371,9 +371,9 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     m_togTxID->Disable();
     m_togBtnAnalog->Disable();
     //m_togBtnALC->Disable();
-   
-    SetupSerialPort();
 
+    SetupSerialPort();
+    
     // squelch settings
     char sqsnr[15];
     m_sliderSQ->SetValue((int)(g_SquelchLevel*2.0));
@@ -736,7 +736,6 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
 //----------------------------------------------------------------
 void MainFrame::OnIdle(wxIdleEvent& event)
 {
-
 }
 #endif // _USE_TIMER
 
@@ -902,62 +901,60 @@ void MainFrame::OnTogBtnTXClick(wxCommandEvent& event)
         
     }
     g_tx = m_btnTogPTT->GetValue();
-
-    // The following sets and clears may be exactly inverted.  
-    // I don't know and I'm not set up to tell yet.
-    // If so, one just needs to invert the polarity selection
-    // on the Tools>PTT configuration page.
-    if(event.IsChecked()) 
+    // Tortured and tortuous logic, it seems to me...
+    if(wxGetApp().m_boolUseSerialPTT && m_serialPort != NULL)
     {
-        if(wxGetApp().m_boolUseRTS)     // Use RTS
+        if(event.IsChecked()) 
         {
-            if(wxGetApp().m_boolRTSPos) // RTS asserted HIGH
+            if(wxGetApp().m_boolUseRTS)     // Use RTS
             {
-                m_serialPort->SetLineState(ctb::LinestateRts);
+                if(wxGetApp().m_boolRTSPos) // RTS asserted HIGH
+                {
+                    m_serialPort->SetLineState(ctb::LinestateRts);
+                }
+                else                        // RTS asserted LOW
+                {
+                    m_serialPort->ClrLineState(ctb::LinestateRts);
+                }
             }
-            else                        // RTS asserted LOW
+            else                            // Use DTR
             {
-                m_serialPort->ClrLineState(ctb::LinestateRts);
+                if(wxGetApp().m_boolDTRPos) // DTR asserted HIGH
+                {
+                    m_serialPort->SetLineState(ctb::LinestateDtr);
+                }
+                else                        // DTR asserted LOW
+                {
+                    m_serialPort->ClrLineState(ctb::LinestateDtr);
+                }
             }
-        }
-        else                            // Use DTR
+        } 
+        else  // !isChecked() - so Clear
         {
-            if(wxGetApp().m_boolDTRPos) // DTR asserted HIGH
+            if(wxGetApp().m_boolUseRTS)     // Use RTS
             {
-                m_serialPort->SetLineState(ctb::LinestateDtr);
+                if(wxGetApp().m_boolRTSPos) // RTS cleared LOW
+                {
+                    m_serialPort->ClrLineState(ctb::LinestateRts);
+                }
+                else                        // RTS cleared HIGH
+                {
+                    m_serialPort->SetLineState(ctb::LinestateRts);
+                }
             }
-            else                        // DTR asserted LOW
+            else                            // Use DTR
             {
-                m_serialPort->ClrLineState(ctb::LinestateDtr);
+                if(wxGetApp().m_boolDTRPos) // DTR cleared LOW
+                {
+                    m_serialPort->ClrLineState(ctb::LinestateDtr);
+                }
+                else                        // DTR cleared HIGH
+                {
+                    m_serialPort->SetLineState(ctb::LinestateDtr);
+                }
             }
-        }
-    } 
-    else  // !isChecked() - so Clear
-    {
-        if(wxGetApp().m_boolUseRTS)     // Use RTS
-        {
-            if(wxGetApp().m_boolRTSPos) // RTS cleared LOW
-            {
-                m_serialPort->ClrLineState(ctb::LinestateRts);
-            }
-            else                        // RTS cleared HIGH
-            {
-                m_serialPort->SetLineState(ctb::LinestateRts);
-            }
-        }
-        else                            // Use DTR
-        {
-            if(wxGetApp().m_boolDTRPos) // DTR cleared LOW
-            {
-                m_serialPort->ClrLineState(ctb::LinestateDtr);
-            }
-            else                        // DTR cleared HIGH
-            {
-                m_serialPort->SetLineState(ctb::LinestateDtr);
-            }
-        }
-    } 
-
+        } 
+    }
     // reset level gauge
     m_maxLevel = 0;
     m_textLevel->SetLabel(wxT(""));
@@ -1345,7 +1342,7 @@ void MainFrame::OnExit(wxCommandEvent& event)
     m_togTxID->Disable();
     m_togBtnAnalog->Disable();
     //m_togBtnALC->Disable();
-    m_btnTogPTT->Disable();
+    //m_btnTogPTT->Disable();
     CloseSerialPort();
     Pa_Terminate();
     Destroy();
@@ -1547,10 +1544,12 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
         //m_togRxID->Enable();
         //m_togTxID->Enable();
         m_togBtnAnalog->Enable();
+/*        
         if(m_serialPort != NULL)
         {
             m_btnTogPTT->Enable();
         }
+*/
         m_togBtnOnOff->SetLabel(wxT("Stop"));
 
         // init modem and codec states
@@ -1612,7 +1611,7 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
         m_togRxID->Disable();
         m_togTxID->Disable();
         m_togBtnAnalog->Disable();
-        m_btnTogPTT->Disable();
+        //m_btnTogPTT->Disable();
         m_togBtnOnOff->SetLabel(wxT("Start"));
     }
 }
@@ -2669,7 +2668,7 @@ void MainFrame::SetupSerialPort(void)
     wxGetApp().m_strRigCtrlBaud.ToLong(&baudrate, 10);
     if(!wxGetApp().m_strRigCtrlPort.IsEmpty())
     {
-        wxString protocol = wxGetApp().m_strRigCtrlDatabits + wxGetApp().m_strRigCtrlParity + wxGetApp().m_strRigCtrlStopbits;  //"8N1";
+        wxString protocol = wxGetApp().m_strRigCtrlDatabits + wxGetApp().m_strRigCtrlParity + wxGetApp().m_strRigCtrlStopbits;
         m_serialPort = new ctb::SerialPort();
         if(m_serialPort->Open(wxGetApp().m_strRigCtrlPort.c_str(), baudrate, protocol.c_str(), ctb::SerialPort::NoFlowControl ) >= 0 ) 
         {
@@ -2691,14 +2690,14 @@ void MainFrame::SetupSerialPort(void)
             {
                 m_serialPort->SetLineState(ctb::LinestateDtr);
             }
-            m_btnTogPTT->Enable(true);
+            //m_btnTogPTT->Enable(true);
             m_btnTogPTT->SetValue(false);
         }
         else
         {
             m_serialPort = NULL;
             m_device     = NULL;
-            m_btnTogPTT->Disable();
+            //m_btnTogPTT->Disable();
         }
     }
 /*    

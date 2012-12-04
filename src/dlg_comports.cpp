@@ -21,21 +21,14 @@
 //==========================================================================
 #include "dlg_comports.h"
 #include "fdmdv2_main.h"
+#include <wx/msw/registry.h>
+#include <sstream>
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 // Class ComPortsDlg
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 ComPortsDlg::ComPortsDlg(wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style) : wxDialog(parent, id, title, pos, size, style)
 {
-/*
-    if(!bBitmapLoaded) 
-    {
-        // We need to initialise the default bitmap handler
-        wxXmlResource::Get()->AddHandler(new wxBitmapXmlHandler);
-        wxC9ED9InitBitmapResources();
-        bBitmapLoaded = true;
-    }
-*/
     wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
     this->SetSizer(mainSizer);
     
@@ -55,11 +48,20 @@ ComPortsDlg::ComPortsDlg(wxWindow* parent, wxWindowID id, const wxString& title,
     m_ckUseSerialPTT = new wxCheckBox(this, wxID_ANY, _("Use Serial Port PTT"), wxDefaultPosition, wxSize(-1,-1), 0);
     m_ckUseSerialPTT->SetValue(false);
     staticBoxSizer31->Add(m_ckUseSerialPTT, 0, wxALIGN_LEFT, 20);
-
+#ifdef __WXMSW__
     wxArrayString m_listCtrlPortsArr;
     m_listCtrlPorts = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxSize(-1,45), m_listCtrlPortsArr, wxLB_SINGLE);
     staticBoxSizer31->Add(m_listCtrlPorts, 1, wxALIGN_CENTER, 0);
-
+#endif
+#ifdef __WXGTK__
+    wxBoxSizer* bSizer83;
+    bSizer83 = new wxBoxSizer(wxHORIZONTAL);
+    m_staticText12 = new wxStaticText(this, wxID_ANY, _("Device:"), wxDefaultPosition, wxDefaultSize, 0);
+    m_staticText12->Wrap(-1);
+    staticBoxSizer31->Add(m_staticText12, 0, wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT|wxALL, 5);
+    m_txtCtlDevicePath = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0);
+    staticBoxSizer31->Add(m_txtCtlDevicePath, 1, wxALIGN_CENTER_VERTICAL|wxALL, 1);
+#endif
     wxBoxSizer* boxSizer19 = new wxBoxSizer(wxVERTICAL);
     staticBoxSizer17->Add(boxSizer19, 1, wxEXPAND, 5);
     wxStaticBoxSizer* staticBoxSizer16 = new wxStaticBoxSizer( new wxStaticBox(this, wxID_ANY, _("Signal polarity")), wxHORIZONTAL);
@@ -161,20 +163,48 @@ void ComPortsDlg::OnInitDialog(wxInitDialogEvent& event)
 //-------------------------------------------------------------------------
 void ComPortsDlg::populatePortList()
 {
-    int i = 0;
-    wxListItem inf;
-    wxString buf;
-    
+#ifdef __WXMSW__
     m_listCtrlPorts->Clear();
-    std::vector<std::string>result;
     wxArrayString aStr;
-
-    ctb::GetAvailablePorts(result, false);
-    for(int i = 0; i < result.size(); i++) 
+    wxRegKey key(wxRegKey::HKLM, _T("HARDWARE\\DEVICEMAP\\SERIALCOMM"));
+    if(!key.Exists())
     {
-        aStr.Add(result[i], 1);
+        return;
+    }
+    else
+    {
+        // Get the number of subkeys and enumerate them.
+        if(!key.Open(wxRegKey::Read))
+        {
+            return;
+        }    
+        size_t subkeys;
+        size_t values;
+        if(!key.GetKeyInfo(&subkeys, NULL, &values, NULL))
+        {
+            return;
+        }
+        if(!key.HasValues())
+        {
+            return;
+        }
+        wxString key_name;
+        long el = 1;
+        key.GetFirstValue(key_name, el);
+        wxString valType;
+        wxString key_data;
+        for(unsigned int i = 0; i < values; i++)
+        {
+            key.QueryValue(key_name, key_data);
+            wxPrintf("Value:  %s Data: %s\n", key_name, key_data);
+            aStr.Add(key_data, 1);
+            key.GetNextValue(key_name, el);
+        }
     }
     m_listCtrlPorts->Append(aStr);
+#endif
+#ifdef __WXGTK__
+#endif
 }
 
 //-------------------------------------------------------------------------
@@ -184,15 +214,18 @@ void ComPortsDlg::ExchangeData(int inout)
 {
     wxConfigBase *pConfig = wxConfigBase::Get();
     wxString str;
-    long l;
-    int i;
     
     if(inout == EXCHANGE_DATA_IN)
     {
 //        m_ckUsePTTRtChan->SetValue(wxGetApp().m_boolUseTonePTT);
         m_ckUseSerialPTT->SetValue(wxGetApp().m_boolUseSerialPTT);
         str = wxGetApp().m_strRigCtrlPort;
+#ifdef __WXMSW__
         m_listCtrlPorts->SetStringSelection(str);
+#endif
+#ifdef __WXGTK__
+        m_txtCtlDevicePath->SetValue(str);
+#endif
         str = wxGetApp().m_strRigCtrlBaud;
 
 //        m_listCtrlBaudrates->SetStringSelection(str);
@@ -209,7 +242,12 @@ void ComPortsDlg::ExchangeData(int inout)
     {
         wxGetApp().m_boolUseSerialPTT           = m_ckUseSerialPTT->IsChecked();
 //        wxGetApp().m_boolUseTonePTT             = m_ckUsePTTRtChan->IsChecked();
+#ifdef __WXMSW__
         wxGetApp().m_strRigCtrlPort             = m_listCtrlPorts->GetStringSelection();
+#endif
+#ifdef __WXGTK__
+        wxGetApp().m_strRigCtrlPort             = m_txtCtlDevicePath->GetValue();
+#endif
         wxGetApp().m_boolUseRTS                 = m_rbUseRTS->GetValue();
         wxGetApp().m_boolRTSPos                 = m_ckRTSPos->IsChecked();
         wxGetApp().m_boolUseDTR                 = m_rbUseDTR->GetValue();
@@ -232,8 +270,7 @@ void ComPortsDlg::ExchangeData(int inout)
 //        pConfig->Write(wxT("/Rig/DataBits"),    wxGetApp().m_strRigCtrlDatabits);
 //        pConfig->Write(wxT("/Rig/StopBits"),    wxGetApp().m_strRigCtrlStopbits);
 //        pConfig->Write(wxT("/Rig/Parity"),      wxGetApp().m_strRigCtrlParity);
-        //m_textRigCtrlFlowControl
-        pConfig->Flush();
+       pConfig->Flush();
     }
     delete wxConfigBase::Set((wxConfigBase *) NULL);
 }
@@ -243,7 +280,6 @@ void ComPortsDlg::ExchangeData(int inout)
 //-------------------------------------------------------------------------
 void ComPortsDlg::DTRVPlusClicked(wxCommandEvent& event)
 {
-    //wxMessageBox(wxT("DTRVPlusClicked"));
 }
 
 //-------------------------------------------------------------------------

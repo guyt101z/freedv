@@ -54,9 +54,7 @@ $ mingw32-make -f makefile.gcc DEBUG=0 GPIB=0
 $ wget http://sourceforge.net/projects/sox/files/sox/14.4.0/sox-14.4.0.tar.gz/
 download
 $ tar xvzf sox-14.4.0.tar.gz
-$ ./configure --enable-shared=no --without-id3tag --without-png --disable-gomp
- --with-oggvorbis=no --with-oss=no --with-flac=no --disable-dl-sndfile --with-
-waveaudio=no
+$ ./configure --enable-shared=no --without-id3tag --without-png --disable-gomp --with-oggvorbis=no --with-oss=no --with-flac=no --disable-dl-sndfile --with-waveaudio=no
 $ make && make install
 
 I couldn't find an install command line that worked, so manually copied the libs and include files.
