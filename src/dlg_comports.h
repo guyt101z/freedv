@@ -48,6 +48,7 @@ class ComPortsDlg : public wxDialog
         wxCheckBox* m_ckUsePTTRtChan;
         wxListBox* m_listCtrlPorts;
         wxCheckBox* m_ckUseSerialPTT;
+        wxStaticText* m_staticText12;
         wxTextCtrl *m_txtCtlDevicePath;
         wxRadioButton* m_rbUseDTR;
         wxCheckBox* m_ckRTSPos;
