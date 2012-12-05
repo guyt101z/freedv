@@ -1411,7 +1411,7 @@ void MainFrame::OnToolsComCfg(wxCommandEvent& event)
     int rv = 0;
     int  iLineState  = 0;
     //bool bPTTEnabled = m_btnTogPTT->IsEnabled();
-    bool bPTTState   = m_btnTogPTT->GetValue();
+    //bool bPTTState   = m_btnTogPTT->GetValue();
 
     if(m_serialPort != NULL)
     {
@@ -1447,7 +1447,7 @@ void MainFrame::OnToolsComCfg(wxCommandEvent& event)
                 m_serialPort->ClrLineState(ctb::LinestateDtr);
             }
         // m_btnTogPTT->Enable(bPTTEnabled);
-            m_btnTogPTT->SetValue(bPTTState);
+        // m_btnTogPTT->SetValue(bPTTState);
         }
  }
     delete dlg;
@@ -2716,6 +2716,6 @@ void MainFrame::CloseSerialPort(void)
         m_serialPort = NULL;
         m_device     = NULL; 
         //m_btnTogPTT->SetLabel(wxT("PTT"));
-        m_btnTogPTT->Enable(false);
+        //m_btnTogPTT->Enable(false);
     }
 }

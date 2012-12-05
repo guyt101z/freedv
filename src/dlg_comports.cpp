@@ -54,7 +54,7 @@ ComPortsDlg::ComPortsDlg(wxWindow* parent, wxWindowID id, const wxString& title,
     staticBoxSizer31->Add(m_ckUseSerialPTT, 0, wxALIGN_LEFT, 20);
 
     wxArrayString m_listCtrlPortsArr;
-    m_listCtrlPorts = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxSize(-1,45), m_listCtrlPortsArr, wxLB_SINGLE);
+    m_listCtrlPorts = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxSize(-1,45), m_listCtrlPortsArr, wxLB_SINGLE | wxLB_SORT);
     staticBoxSizer31->Add(m_listCtrlPorts, 1, wxALIGN_CENTER, 0);
 #endif
 #ifdef __WXGTK__
