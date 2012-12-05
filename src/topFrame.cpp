@@ -42,7 +42,7 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     file = new wxMenu();
 
     wxMenuItem* m_menuItemOnTop;
-    m_menuItemOnTop = new wxMenuItem(file, ID_EXIT, wxString(_("On Top")) , _("Always Top Window"), wxITEM_NORMAL);
+    m_menuItemOnTop = new wxMenuItem(file, wxID_ANY, wxString(_("On Top")) , _("Always Top Window"), wxITEM_NORMAL);
     file->Append(m_menuItemOnTop);
 
     wxMenuItem* m_menuItemExit;
