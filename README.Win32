@@ -59,7 +59,12 @@ $ make && make install
 
 I couldn't find an install command line that worked, so manually copied the libs and include files.
 
-9. svn co fdmdv2
+9. Codec 2
+   $ wget https://freetel.svn.sourceforge.net/svnroot/freetel/codec2-dev
+   $ cd codec2-dev
+   $ ./configure && make
+
+10. svn co fdmdv2
    cd fdmdv2/src
    make -f Makefile.Win32
 
