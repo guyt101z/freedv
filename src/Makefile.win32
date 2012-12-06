@@ -12,10 +12,11 @@ WX_CONFIG=wx-config
 WX_CPPFLAGS = $(shell $(WX_CONFIG) --cxxflags) -D__WXDEBUG__
 WX_LIBS = $(shell $(WX_CONFIG) --libs core, base, aui, adv, net)
 SVN_REVISION=$(shell svnversion)
+FREEDV_VERSION=$(shell cat ../version.txt)
 CODEC2_INC=$(CODEC2_PATH)/src 
 CODEC2_LIB=$(CODEC2_PATH)/src/.libs/libcodec2.a
 
-CPP_FLAGS = -I$(INCLUDE_PATH) $(WX_CPPFLAGS) -I$(CODEC2_INC) -I../extern/include -g -Wall -DSVN_REVISION=\"$(SVN_REVISION)\"
+CPP_FLAGS = -I$(INCLUDE_PATH) $(WX_CPPFLAGS) -I$(CODEC2_INC) -I../extern/include -g -Wall -DSVN_REVISION=\"$(SVN_REVISION)\" -DFREEDV_VERSION="\"$(FREEDV_VERSION)"\"
 LIBS = $(WX_LIBS) $(CODEC2_LIB) -lm -lportaudiocpp -lportaudio -lpthread -lsndfile -lsamplerate -lctb-0.16 -lsox
 
 OBJS = topFrame.o \

@@ -13,11 +13,12 @@ WX_CONFIG=$(WX_GTK_PATH)/wx-config
 WX_CPPFLAGS = $(shell $(WX_CONFIG) --cxxflags)
 WX_LIBS = $(shell $(WX_CONFIG) --libs core, base, aui, adv, net)
 SVN_REVISION=$(shell svnversion)
+FREEDV_VERSION=$(shell cat ../version.txt)
 CODEC2_INC=-I$(CODEC2_PATH)/src
 CODEC2_LIB=$(CODEC2_PATH)/src/.libs/libcodec2.a
 SOX_LIB=$(SOX_LIB_PATH)/libsox.a
 
-CPP_FLAGS = $(WX_CPPFLAGS) $(CODEC2_INC) -I. -g -Wall -O3 -DSVN_REVISION=\"$(SVN_REVISION)\"
+CPP_FLAGS = $(WX_CPPFLAGS) $(CODEC2_INC) -I. -g -Wall -O3 -DSVN_REVISION=\"$(SVN_REVISION)\" -DFREEDV_VERSION="\"$(FREEDV_VERSION)"\"
 LIBS = $(WX_LIBS) $(CODEC2_LIB) -lm -lportaudiocpp -lpthread -lsndfile /usr/lib/libsamplerate.so.0 -lctb-0.16 $(SOX_LIB)
 
 OBJS = topFrame.o \

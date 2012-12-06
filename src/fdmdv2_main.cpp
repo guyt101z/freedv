@@ -207,7 +207,7 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     int h = pConfig->Read(wxT("/MainFrame/height"),    400);
 
     // note: run DebugView program to see this message under windows
-    wxLogDebug("x = %d y = %d w = %d h = %d\n", x,y,w,h);
+    //wxLogDebug("x = %d y = %d w = %d h = %d\n", x,y,w,h);
 
     wxGetApp().m_show_wf            = pConfig->Read(wxT("/MainFrame/show_wf"),      1);
     wxGetApp().m_show_spect         = pConfig->Read(wxT("/MainFrame/show_spect"),   1);
@@ -453,7 +453,7 @@ MainFrame::~MainFrame()
     {
         GetClientSize(&w, &h);
         GetPosition(&x, &y);
-        wxLogDebug("x = %d y = %d w = %d h = %d\n", x,y,w,h);
+        //wxLogDebug("x = %d y = %d w = %d h = %d\n", x,y,w,h);
         pConfig->Write(wxT("/MainFrame/top"),               (long) x);
         pConfig->Write(wxT("/MainFrame/left"),              (long) y);
         pConfig->Write(wxT("/MainFrame/width"),             (long) w);
@@ -1510,11 +1510,12 @@ void MainFrame::OnHelpAbout(wxCommandEvent& event)
     }
 
     wxString msg;
-    msg.Printf( wxT("FreeDV: Open Source Narrow Band Digital Voice over Radio\n\n")
+    msg.Printf( wxT("FreeDV %s\n\n")
+                wxT("Open Source Narrow Band Digital Voice over Radio\n\n")
                 wxT("For Help and Support visit: http://freedv.org\n\n")
                 wxT("GNU Public License V2.1\n\n")
                 wxT("Copyright (c) David Witten KD0EAG and David Rowe VK5DGR\n\n")
-                wxT("svn revision: %s\n") + svnLatestRev, SVN_REVISION);
+                wxT("svn revision: %s\n") + svnLatestRev, FREEDV_VERSION, SVN_REVISION);
 
     wxMessageBox(msg, wxT("About"), wxOK | wxICON_INFORMATION, this);
 
