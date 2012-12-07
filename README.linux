@@ -5,14 +5,34 @@ Oct 14 2012
 Linux usage Notes
 =================
 
-1. Config is stored in ~/.FMDV2, rm this file to restore defaults
+1. Config is stored in ~/.FreeDV, rm this file to restore defaults
 
 
-BUILDING fdmdv2 for Linux
+BUILDING FreeDV for Linux
 =========================
 
-Build wxWidgets
----------------
+1  FreeDV was developed on Ubuntu 9.1 and 10.04 systems.  I installed the
+   Ubuntu packages:
+
+     libsamplerate, libsamplerate-dev
+     libsndfile1, libsndfile1-dev
+
+2. Some people have also reported needing libasound (and -lasound in
+   the linker line of Makefile.linux)
+
+3. Then build the other libraries below from source. At present the
+   way each package is built and installed is not consistent.  Some
+   are installed with "make install", others are pointed too via
+   Makefile variables.  
+
+4. You may need to edit the Makefile.linux variables for your system:
+
+   WX_GTK_PATH
+   CODEC2_PATH
+   SOX_LIB_PATH
+
+wxWidgets
+---------
 
 1. Download wxWidgets 2.9.4 or later and untar
 
@@ -30,8 +50,8 @@ Build wxWidgets
    really want to), it can be used by fdmdv2 out of the directory you
    build it in.
 
-Build portaudio
----------------
+Portaudio
+---------
 
 1. Make sure ALSA development support (libasound and headers) is
    present.  Portaudio will work with OSS but I found I couldn't
@@ -41,7 +61,7 @@ Build portaudio
      sudo apt-get install libasound-dev
 
    Note I had problems with the ALSA development library on Ubuntu
-   9.10, so used OSS andput up with not being able to adjust the mic
+   9.10, so used OSS and put up with not being able to adjust the mic
    gain.
 
 2. Download and untar pa_stable_V19
@@ -73,9 +93,8 @@ Build portaudio
    possible to build fdmdv2 without "make install", by passing
    --prefix to the ./configure stage.
 
-<<<<<<< .mine
-Build libsox
-------------
+libsox
+------
 
 We use some of the internal sox functions for the equaliser feature.
 
@@ -90,9 +109,8 @@ sox-14.4.0$ ./configure --enable-shared=no --without-id3tag --without-png --disa
 
 sox-14.4.0$ make
 
-=======
-Build libctb (Communications Toolbox)
--------------------------------------
+libctb (Communications Toolbox)
+-------------------------------
 
 $ wget https://iftools.com/download/ctb/0.16/libctb-0.16.tar.gz
 $ tar xvzf libctb-0.16.tar.gz
@@ -105,14 +123,13 @@ I found the "sudo make DEBUG=0 GPIB=0 install" didn't install the kbhit.h file:
 build$ sudo cp ../include/ctb-0.16/kbhit.h /usr/local/include/ctb-0.16
 build$ sudo ldconfig
 
->>>>>>> .r1094
-Build codec2-dev
-----------------
+codec2-dev
+----------
 
 1. See codec2-dev/README. No need to "make install"
 
-Build fdmdv2
-------------
+fdmdv2
+------
 
 1. svn co fdmdv2
 
@@ -141,20 +158,8 @@ TODO
     + level gauge?
 
 [ ] release clean up
-    [X] remove anything that doesn't work (menus, buttons) from GUI
-    [X] about
-    [X] src file credits
-    [X] decide on web site
-        + need edit by at least three of us
-    [X] if you press start and headphones unplugged (ie one sound card missing), it
-        shouldn't crash
-    [X] hook up squelch
-    [X] version number on GUI?  How to connect SVN verev to version?
-    [X] click tune and split
-    [X] rm loopback buttons
-
-    [ ] bug in record file on Win32
-    [ ] svn version tag?
+    [X] bug in record file on Win32
+    [X] svn version tag?
         + i.e. 1.0 etc rather than number
     [ ] waterfall
         + is graticule useful
@@ -163,22 +168,16 @@ TODO
     [ ] record/play dialogs layout
     [ ] remove/comment out debug printfs
     [ ] Credits: Mel, Tapr, Bruce,  Peter M, cesco, Dave W
-    [ ] rig control
-    [ ] data feature
-    [ ] always on top option
     [ ] linux version
-
     [ ] help about with URL (hyperlink?) to web site
     [ ] do we keep/put effort into getting working ./configure && Makefile?
-    [-] test with simulated AWGN/burst error channels
+    [ ] test with simulated AWGN/burst error channels
         + see if sync needs tuning to not fall over too quickly
         + nasty noises
     [ ] buffer sizes, maybe make a config number
     [ ] read comments and make sure they are still valid
     [ ] tool tip help for audio config dialog
     [ ] something sensible with disabling rx when tx button is pressed?        
-    [ ] wire up level guage
-        + I think it has relevance for analog speech, demod can handle wide input ranges
     [ ] tx/rx muting for half duplex
         + dont want funny sounds during tx
     [ ] setup doc

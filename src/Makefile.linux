@@ -5,9 +5,13 @@
 #
 # $ make -f Makefile.linux
 
-WX_GTK_PATH=/home/david/Desktop/wxWidgets-2.9.4/build_gtk
-CODEC2_PATH=/home/david/codec2-dev
-SOX_LIB_PATH=/home/david/tmp/sox-14.4.0/src/.libs
+# EDIT THESE FOR YOUR SYSTEM ----------------------------
+
+WX_GTK_PATH=$(HOME)/wxWidgets-2.9.4/build_gtk
+CODEC2_PATH=$(HOME)/codec2-dev
+SOX_LIB_PATH=$(HOME)/sox-14.4.0/src/.libs
+
+# END EDITS ---------------------------------------------
 
 WX_CONFIG=$(WX_GTK_PATH)/wx-config
 WX_CPPFLAGS = $(shell $(WX_CONFIG) --cxxflags)
@@ -19,7 +23,7 @@ CODEC2_LIB=$(CODEC2_PATH)/src/.libs/libcodec2.a
 SOX_LIB=$(SOX_LIB_PATH)/libsox.a
 
 CPP_FLAGS = $(WX_CPPFLAGS) $(CODEC2_INC) -I. -g -Wall -O3 -DSVN_REVISION=\"$(SVN_REVISION)\" -DFREEDV_VERSION="\"$(FREEDV_VERSION)"\"
-LIBS = $(WX_LIBS) $(CODEC2_LIB) -lm -lportaudiocpp -lpthread -lsndfile /usr/lib/libsamplerate.so.0 -lctb-0.16 $(SOX_LIB)
+LIBS = $(WX_LIBS) $(CODEC2_LIB) -lm -lportaudiocpp -lpthread -lsndfile -lsamplerate -Wl,-Bstatic -lctb-0.16 -Wl,-Bdynamic $(SOX_LIB) 
 
 OBJS = topFrame.o \
 fdmdv2_main.o \
@@ -43,7 +47,7 @@ all: freedv
 freedv: $(OBJS) 
 	g++ -o freedv $(OBJS) $(CPP_FLAGS) $(LIBS)
 
-%.o: %.cpp $(HDRS) Makefile.linux
+%.o: %.cpp $(HDRS)
 	g++ $(CPP_FLAGS) -c $< -o $@
 
 clean:

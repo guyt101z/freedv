@@ -340,16 +340,21 @@ void PlotWaterfall::plotPixelData()
     // update min and max amplitude estimates
 
     float max_mag = MIN_MAG_DB;
-    for(int i=0; i<FDMDV_NSPEC; i++) {
+
+    int min_fft_bin=((float)200/FDMDV_MAX_F_HZ)*FDMDV_NSPEC;
+    int max_fft_bin=((float)2800/FDMDV_MAX_F_HZ)*FDMDV_NSPEC;
+
+    for(int i=min_fft_bin; i<max_fft_bin; i++) {
         if (g_avmag[i] > max_mag)
             max_mag = g_avmag[i];
     }
+
     m_max_mag = BETA*m_max_mag + (1 - BETA)*max_mag;
     m_min_mag = max_mag - 20.0;
     //printf("max_mag: %f m_max_mag: %f\n", max_mag, m_max_mag);
     //intensity_per_dB  = (float)256 /(MAX_MAG_DB - MIN_MAG_DB);
     intensity_per_dB  = (float)256 /(m_max_mag - m_min_mag);
-    spec_index_per_px = ((float)MAX_F_HZ/(float)FDMDV_MAX_F_HZ)*(float)FDMDV_NSPEC / (float) m_rGrid.GetWidth();
+    spec_index_per_px = ((float)(MAX_F_HZ)/(float)FDMDV_MAX_F_HZ)*(float)FDMDV_NSPEC / (float) m_rGrid.GetWidth();
 
     /*
     printf("h %d w %d px_per_sec %d dy %d dy_blocks %d spec_index_per_px: %f\n", 
@@ -422,17 +427,13 @@ void PlotWaterfall::plotPixelData()
                 p.Blue() = intensity;       
                 break;
             case 2:
-                if (intensity > 250) {
-                    p.Red() = intensity;
-                    p.Green() = intensity;
-                    p.Blue() = intensity;
-                }
-                else {
-                    p.Red() = 0;
-                    p.Green() = 0;
-                    p.Blue() = intensity;
-                }
-                    
+                p.Red() = intensity;
+                p.Green() = intensity;
+                if (intensity < 127)
+                    p.Blue() = intensity*2;
+                else
+                    p.Blue() = 255;
+                        
                 break;
             }
             ++p;

@@ -2099,9 +2099,9 @@ void txRxProcessing()
 
         n8k = resample(cbData->insrc1, in8k_short, in48k_short, FS, g_soundCard1SampleRate, N8, nsam);
 
-        // optionally save signal from radio (demod input to file).
-        // Really useful for testing and development as it allows to
-        // develop using off air signals
+        // optionally save "from radio" signal (write demod input to file)
+        // Really useful for testing and development as it allows us
+        // to repeat tests using off air signals
 
         g_mutexProtectingCallbackData.Lock();
         if (g_recFileFromRadio && (g_sfRecFile != NULL)) {
@@ -2121,9 +2121,7 @@ void txRxProcessing()
         }
         g_mutexProtectingCallbackData.Unlock();
 
-        // optionally read signal from radio (file to demod input).
-        // Really useful for testing and development as it allows to
-        // develop using off air signals
+        // optionally read "from radio" signal from file (read demod input from file)
 
         g_mutexProtectingCallbackData.Lock();
         if (g_playFileFromRadio && (g_sfPlayFileFromRadio != NULL)) {
@@ -2146,12 +2144,16 @@ void txRxProcessing()
 
         per_frame_rx_processing(cbData->rxoutfifo, g_CodecBits, cbData->rxinfifo, &g_nRxIn, &g_State, g_pCodec2);
 
-        // if demod out of sync or we are in analog mode just pass thru
-        // audio so we can hear SSB radio output as an aid to tuning
+        // Get some audio to send to headphones/speaker.  If out of
+        // sync or in analog mode we pass thru the "from radio" audio
+        // to the headphones/speaker.  When out of sync it's useful to
+        // hear the audio from the channel, e.g. as a tuning aid
 
-        if ((g_State == 0) || g_analog)
+        if ((g_State == 0) || g_analog) {
             memcpy(out8k_short, in8k_short, sizeof(short)*n8k);
+        }
         else {
+            // we are in sync so use decoded audio 
             memset(out8k_short, 0, sizeof(short)*N8);
             fifo_read(cbData->rxoutfifo, out8k_short, N8);
         }
@@ -2165,7 +2167,9 @@ void txRxProcessing()
         }
         g_mutexProtectingCallbackData.Unlock();
 
-        if (g_SquelchActive && (g_SquelchLevel > g_snr)) {
+        // note squelch automatically disabled in analog mode
+
+        if (g_SquelchActive && (g_SquelchLevel > g_snr) && !g_analog) {
             //printf("g_SquelchLevel: %f g_snr: %f\n", g_SquelchLevel, g_snr);
             memset(out8k_short, 0, sizeof(short)*N8);
         }
@@ -2190,9 +2194,9 @@ void txRxProcessing()
 
     if (g_nSoundCards == 2 ) {
 
-        // Make sure we have at least 2 frames of modulator output
-        // samples.  This locks the modulator to the sample
-        // rate of sound card 1.  We want to make sure that modulator
+        // Make sure we have at least 6 frames of modulator output
+        // samples.  This also locks the modulator to the sample rate
+        // of sound card 1.  We want to make sure that modulator
         // samples are uninterrupted by differences in sample rate
         // between this sound card and sound card 2.
 
@@ -2217,6 +2221,7 @@ void txRxProcessing()
             nout = resample(cbData->insrc2, in8k_short, in48k_short, FS, g_soundCard2SampleRate, 2*N8, nsam);
 
             // optionally use file for mic input signal
+
             g_mutexProtectingCallbackData.Lock();
             if (g_playFileToMicIn && (g_sfPlayFile != NULL)) {
                 int n = sf_read_short(g_sfPlayFile, in8k_short, nout);
@@ -2232,7 +2237,8 @@ void txRxProcessing()
             }
             g_mutexProtectingCallbackData.Unlock();
 
-            // Opional Mic In EQ Filtering, need mutex as filter can change at run time
+            // Optional Mic In EQ Filtering, need mutex as filter can change at run time
+
             g_mutexProtectingCallbackData.Lock();
             if (cbData->micInEQEnable) {
                 sox_biquad_filter(cbData->sbqMicInBass, in8k_short, in8k_short, nout);
@@ -2243,8 +2249,24 @@ void txRxProcessing()
 
             resample_for_plot(g_plotSpeechInFifo, in8k_short, nout);
 
-            if (g_analog)
-                memcpy(out8k_short, in8k_short,  2*N8*sizeof(short));
+            if (g_analog) {
+
+                // Boost the "from mic" -> "to radio" audio in analog
+                // mode.  The need for the gain was found by
+                // experiment - analog SSB sounded too quiet compared
+                // to digital. With digital voice we generally drive
+                // the "to radio" (SSB radio mic input) at about 25%
+                // of the peak level for normal SSB voice. So we
+                // introduce 6dB gain to make analog SSB sound the
+                // same level as the digital.  Watch out for clipping.
+
+                for(int i=0; i<2*N8; i++) {
+                    float out = (float)in8k_short[i]*2.0;
+                    if (out > 32767) out = 32767.0;
+                    if (out < -32767) out = -32767.0;
+                    out8k_short[i] = out;
+                }
+            }
             else
                 per_frame_tx_processing(out8k_short, in8k_short, g_pCodec2);
  
