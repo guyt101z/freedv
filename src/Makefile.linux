@@ -38,7 +38,6 @@ dlg_filter.o \
 varicode.o \
 sox_biquad.o
 
-
 HDRS = ../version.h dlg_about.h dlg_audiooptions.h dlg_comports.h dlg_filter.h fdmdv2_main.h fdmdv2_defines.h fdmdv2_plot.h fdmdv2_plot_scalar.h fdmdv2_plot_waterfall_linux.h fdmdv2_plot_scatter.h fdmdv2_plot_spectrum.h fdmdv2_pa_wrapper.h topFrame.h varicode.h
 
 all: freedv
@@ -48,7 +47,7 @@ freedv: $(OBJS)
 
 %.o: %.cpp $(HDRS)
 	g++ $(CPP_FLAGS) -c $< -o $@
-
+        
 clean:
 	rm -f *.o fdmdv2
 

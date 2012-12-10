@@ -22,7 +22,7 @@ BUILDING FreeDV for Linux
 
 3. Then build the other libraries below from source. At present the
    way each package is built and installed is not consistent.  Some
-   are installed with "make install", others are pointed too via
+   are installed with "make install", others are pointed to via
    Makefile variables.  
 
 4. You may need to edit the Makefile.linux variables for your system:
@@ -131,7 +131,7 @@ codec2-dev
 fdmdv2
 ------
 
-1. svn co fdmdv2
+1. svn co https://freetel.svn.sourceforge.net/svnroot/freetel/fdmdv2
 
 2. Modify the paths at the top of src/Makefile.linux for wxWidgets and codec2-dev
 
