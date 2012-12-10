@@ -136,14 +136,14 @@ class TopFrame : public wxFrame
         virtual void OnTogBtnSplitClick( wxCommandEvent& event ) { event.Skip(); }
         virtual void OnTogBtnAnalogClick( wxCommandEvent& event ) { event.Skip(); }
         virtual void OnTogBtnALCClick( wxCommandEvent& event ) { event.Skip(); }
-        virtual void OnTogBtnTXClick( wxCommandEvent& event ) { event.Skip(); }
+        virtual void OnTogBtnPTT( wxCommandEvent& event ) { event.Skip(); }
 
         virtual void OnTogBtnSplitClickUI(wxUpdateUIEvent& event) { event.Skip(); }
         virtual void OnTogBtnAnalogClickUI(wxUpdateUIEvent& event) { event.Skip(); }
         virtual void OnTogBtnALCClickUI(wxUpdateUIEvent& event) { event.Skip(); }
         virtual void OnTogBtnRxIDUI(wxUpdateUIEvent& event ) { event.Skip(); }
         virtual void OnTogBtnTxIDUI(wxUpdateUIEvent& event ) { event.Skip(); }
-        virtual void OnTogBtnTXClickUI(wxUpdateUIEvent& event ) { event.Skip(); }
+        virtual void OnTogBtnPTT_UI(wxUpdateUIEvent& event ) { event.Skip(); }
         virtual void OnTogBtnOnOffUI(wxUpdateUIEvent& event ) { event.Skip(); }
 
     public:

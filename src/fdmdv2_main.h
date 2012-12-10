@@ -391,7 +391,7 @@ class MainFrame : public TopFrame
         void OnTogBtnAnalogClick(wxCommandEvent& event);
         void OnTogBtnRxID( wxCommandEvent& event );
         void OnTogBtnTxID( wxCommandEvent& event );
-        void OnTogBtnTXClick( wxCommandEvent& event );
+        void OnTogBtnPTT( wxCommandEvent& event );
         void OnTogBtnOnOff( wxCommandEvent& event );
 
         //System Events

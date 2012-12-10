@@ -1845,7 +1845,7 @@
                                                 <event name="OnRightUp"></event>
                                                 <event name="OnSetFocus"></event>
                                                 <event name="OnSize"></event>
-                                                <event name="OnToggleButton">OnTogBtnTXClick</event>
+                                                <event name="OnToggleButton">OnTogBtnPTT</event>
                                                 <event name="OnUpdateUI"></event>
                                             </object>
                                         </object>

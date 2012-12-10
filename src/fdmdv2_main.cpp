@@ -366,7 +366,7 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     m_togBtnSplit->Connect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnSplitClickUI), NULL, this);
     m_togBtnAnalog->Connect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnAnalogClickUI), NULL, this);
     //m_togBtnALC->Connect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnALCClickUI), NULL, this);
-    m_btnTogPTT->Connect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnTXClickUI), NULL, this);
+   // m_btnTogPTT->Connect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnPTT_UI), NULL, this);
 
     m_togBtnSplit->Disable();
     //m_togRxID->Disable();
@@ -516,7 +516,7 @@ MainFrame::~MainFrame()
     m_togBtnSplit->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnSplitClickUI), NULL, this);
     m_togBtnAnalog->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnAnalogClickUI), NULL, this);
     //m_togBtnALC->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnALCClickUI), NULL, this);
-    m_btnTogPTT->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnTXClickUI), NULL, this);
+    //m_btnTogPTT->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnPTT_UI), NULL, this);
     
     CloseSerialPort();
     sox_biquad_finish();
@@ -885,9 +885,9 @@ void MainFrame::OnCheckSNRClick(wxCommandEvent& event)
 }
 
 //-------------------------------------------------------------------------
-// OnTogBtnTXClick()
+// OnTogBtnPTT ()
 //-------------------------------------------------------------------------
-void MainFrame::OnTogBtnTXClick(wxCommandEvent& event)
+void MainFrame::OnTogBtnPTT (wxCommandEvent& event)
 {
     if (g_tx) 
     {
