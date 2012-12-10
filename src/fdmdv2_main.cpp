@@ -48,6 +48,7 @@ int   g_analog;
 int   g_split;
 int   g_tx;
 float g_snr;
+bool  g_half_duplex;
 
 // sending and receiving Call Sign data
 struct FIFO         *g_txDataInFifo;
@@ -312,6 +313,7 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     wxGetApp().m_strRigCtrlStopbits = pConfig->Read(wxT("/Rig/StopBits"),       wxT("1"));
     wxGetApp().m_strRigCtrlParity   = pConfig->Read(wxT("/Rig/Parity"),         wxT("n"));
     wxGetApp().m_boolUseTonePTT     = pConfig->ReadBool(wxT("/Rig/UseTonePTT"),     false);
+    wxGetApp().m_boolHalfDuplex     = pConfig->ReadBool(wxT("/Rig/HalfDuplex"),     true);
     wxGetApp().m_boolUseSerialPTT   = pConfig->ReadBool(wxT("/Rig/UseSerialPTT"),   false);
     wxGetApp().m_boolUseRTS         = pConfig->ReadBool(wxT("/Rig/UseRTS"),         true);
     wxGetApp().m_boolRTSPos         = pConfig->ReadBool(wxT("/Rig/RTSPolarity"),    false);
@@ -493,6 +495,7 @@ MainFrame::~MainFrame()
         pConfig->Write(wxT("/Rig/DTRPolarity"),             wxGetApp().m_boolDTRPos);
         pConfig->Write(wxT("/Rig/UseTonePTT"),              wxGetApp().m_boolUseTonePTT);
         pConfig->Write(wxT("/Rig/UseSerialPTT"),            wxGetApp().m_boolUseSerialPTT);
+        pConfig->Write(wxT("/Rig/HalfDuplex"),              wxGetApp().m_boolHalfDuplex);
 
         pConfig->Write(wxT("/File/playFileToMicInPath"),    wxGetApp().m_playFileToMicInPath);
         pConfig->Write(wxT("/File/recFileFromRadioPath"),   wxGetApp().m_recFileFromRadioPath);
@@ -1583,6 +1586,7 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
 
         g_State = 0;
         g_snr = 0.0;
+        g_half_duplex = wxGetApp().m_boolHalfDuplex;
 
         m_pcallsign = m_callsign;
 
@@ -2210,7 +2214,7 @@ void txRxProcessing()
     //  TX side processing --------------------------------------------
     //
 
-    if (g_nSoundCards == 2 ) {
+    if ((g_nSoundCards == 2) && ((g_half_duplex && g_tx) || !g_half_duplex)) {
 
         // Make sure we have at least 6 frames of modulator output
         // samples.  This also locks the modulator to the sample rate

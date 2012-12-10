@@ -1,7 +1,7 @@
 //==========================================================================
-// Name:            dlg_options.h
-// Purpose:         Subclasses dialog GUI for general program options.
-//                  (DlgOptions from topFrame.h)
+// Name:            dlg_comports.h
+// Purpose:         Subclasses dialog GUI for PTT Config.
+//                  
 // Created:         May. 11, 2012
 // Authors:         David Rowe, David Witten
 // 
@@ -40,11 +40,12 @@
 class ComPortsDlg : public wxDialog
 {
      public:
-        ComPortsDlg(wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("Hardware PTT"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize(450,300), long style = wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER);
+        ComPortsDlg(wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("PTT Config"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize(450,300), long style = wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER);
         virtual ~ComPortsDlg();
         void    ExchangeData(int inout);
 
     protected:
+        wxCheckBox* m_ckHalfDuplex;
         wxCheckBox* m_ckUsePTTRtChan;
         wxListBox* m_listCtrlPorts;
         wxCheckBox* m_ckUseSerialPTT;

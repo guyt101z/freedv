@@ -133,6 +133,7 @@ class MainApp : public wxApp
         wxString            m_strRigCtrlDatabits;
         wxString            m_strRigCtrlStopbits;
         wxString            m_strRigCtrlParity;
+        bool                m_boolHalfDuplex;
         bool                m_boolUseSerialPTT;
         bool                m_boolUseTonePTT;
         bool                m_boolUseRTS;

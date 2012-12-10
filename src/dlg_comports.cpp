@@ -1,7 +1,7 @@
 //==========================================================================
 // Name:            dlg_comports.cpp
-// Purpose:         Creates simple wxWidgets dialog GUI to select
-//                  real/virtual Comm ports.
+// Purpose:         Subclasses dialog GUI for PTT Config. Creates simple 
+//                  wxWidgets dialog GUI to select real/virtual Comm ports.
 // Date:            May 11 2012
 // Authors:         David Rowe, David Witten
 // 
@@ -32,6 +32,12 @@ ComPortsDlg::ComPortsDlg(wxWindow* parent, wxWindowID id, const wxString& title,
     wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
     this->SetSizer(mainSizer);
     
+    wxStaticBoxSizer* staticBoxSizer28 = new wxStaticBoxSizer( new wxStaticBox(this, wxID_ANY, _("VOX PTT Settings")), wxVERTICAL);
+    m_ckHalfDuplex = new wxCheckBox(this, wxID_ANY, _("Half Duplex"), wxDefaultPosition, wxSize(-1,-1), 0);
+    m_ckHalfDuplex->SetToolTip(_("Should be checked for VOX operated Tx/Rx switching"));
+    staticBoxSizer28->Add(m_ckHalfDuplex, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL, 5);
+    mainSizer->Add(staticBoxSizer28, 0, wxEXPAND, 5);
+
 /*    
     wxStaticBoxSizer* staticBoxSizer28 = new wxStaticBoxSizer( new wxStaticBox(this, wxID_ANY, _("Audio Tone")), wxVERTICAL);
     mainSizer->Add(staticBoxSizer28, 1, wxEXPAND|wxALIGN_CENTER_VERTICAL, 5);
@@ -236,6 +242,7 @@ void ComPortsDlg::ExchangeData(int inout)
     if(inout == EXCHANGE_DATA_IN)
     {
 //        m_ckUsePTTRtChan->SetValue(wxGetApp().m_boolUseTonePTT);
+        m_ckHalfDuplex->SetValue(wxGetApp().m_boolHalfDuplex);
         m_ckUseSerialPTT->SetValue(wxGetApp().m_boolUseSerialPTT);
         str = wxGetApp().m_strRigCtrlPort;
 #ifdef __WXMSW__
@@ -258,6 +265,7 @@ void ComPortsDlg::ExchangeData(int inout)
     }
     if(inout == EXCHANGE_DATA_OUT)
     {
+        wxGetApp().m_boolHalfDuplex             = m_ckHalfDuplex->GetValue();
         wxGetApp().m_boolUseSerialPTT           = m_ckUseSerialPTT->IsChecked();
 //        wxGetApp().m_boolUseTonePTT             = m_ckUsePTTRtChan->IsChecked();
 #ifdef __WXMSW__
