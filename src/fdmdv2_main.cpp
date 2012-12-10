@@ -894,10 +894,16 @@ void MainFrame::OnTogBtnTXClick(wxCommandEvent& event)
     else 
     {
         // rx-> tx transition, swap to Mic In page to monitor speech
-
         wxGetApp().m_rxNbookCtrl = m_auiNbookCtrl->GetSelection();
-        m_auiNbookCtrl->ChangeSelection(4); // is there a way to avoid hard coding this?
-        
+//        m_auiNbookCtrl->ChangeSelection(4); // is there a way to avoid hard coding this?
+//
+// David: I think int GetPageIndex (wxWindow *page_wnd) const
+// might help. Something like:
+//  size_t idx = GetPageIndex(wxWindow *page_wnd);
+//  m_auiNbookCtrl->ChangeSelection(m_auiNbookCtrl->GetPageIndex((wxWindow *)m_panelSpeechIn));
+// -- dmw
+//
+        m_auiNbookCtrl->ChangeSelection(m_auiNbookCtrl->GetPageIndex((wxWindow *)m_panelSpeechIn));
     }
     g_tx = m_btnTogPTT->GetValue();
     // Tortured and tortuous logic, it seems to me...
@@ -1483,6 +1489,17 @@ void MainFrame::OnHelpCheckUpdatesUI(wxUpdateUIEvent& event)
 //-------------------------------------------------------------------------
 void MainFrame::OnHelpAbout(wxCommandEvent& event)
 {
+    wxUnusedVar(event);
+#ifdef _USE_ABOUT_DIALOG
+    int rv = 0;
+    AboutDlg *dlg = new AboutDlg(NULL);
+    rv = dlg->ShowModal();
+    if(rv == wxID_OK)
+    {
+        dlg->ExchangeData(EXCHANGE_DATA_OUT);
+    }
+    delete dlg;
+#else
     wxString svnLatestRev("Can't determine latest SVN revision.");
 
     // Try to determine current SVN revision from the Internet
@@ -1519,9 +1536,10 @@ void MainFrame::OnHelpAbout(wxCommandEvent& event)
 
     wxMessageBox(msg, wxT("About"), wxOK | wxICON_INFORMATION, this);
 
-
+#endif // _USE_ABOUT_DIALOG
 }
 
+//bool wxLaunchDefaultBrowser(http:("http://freedv.org/");
 
 //-------------------------------------------------------------------------
 // OnTogBtnOnOff()

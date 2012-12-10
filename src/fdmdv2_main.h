@@ -22,11 +22,12 @@
 #ifndef __FDMDV2_MAIN__
 #define __FDMDV2_MAIN__
 
+#include "../version.h"
 #include <wx/wx.h>
 
 #include <wx/tglbtn.h>
 #include <wx/app.h>
-#include <wx/aboutdlg.h>
+//#include <wx/aboutdlg.h>
 #include "wx/rawbmp.h"
 #include "wx/file.h"
 #include "wx/filename.h"
@@ -68,6 +69,7 @@
 #include "portaudio.h"
 #include "dlg_audiooptions.h"
 #include "dlg_filter.h"
+#include "dlg_about.h"
 #include "varicode.h"
 #include "sox_biquad.h"
 
@@ -76,6 +78,7 @@
 #define _DUMMY_DATA             1
 //#define _AUDIO_PASSTHROUGH    1
 #define _REFRESH_TIMER_PERIOD   (DT*1000)
+//#define _USE_ABOUT_DIALOG       1
 
 enum {
         ID_START = wxID_HIGHEST,

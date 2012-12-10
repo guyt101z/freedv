@@ -17,7 +17,7 @@ BUILDING FreeDV for Linux
      libsamplerate, libsamplerate-dev
      libsndfile1, libsndfile1-dev
 
-2. Some people have also reported needing libasound (and -lasound in
+2. Some people have also reported needing libasound and libasound_dev (and -lasound in
    the linker line of Makefile.linux)
 
 3. Then build the other libraries below from source. At present the

@@ -1,22 +1,27 @@
 # src/Makefile.linux
-# David Rowe 10 Oct 2012
+# David Witten 06 Dec 2012
 #
-# Makefile for Linux to help David R get up to speed
 #
-# $ make -f Makefile.linux
+# $ make -f Makefile.linux.dmw
+
+
+# EDIT THESE FOR YOUR SYSTEM ----------------------------
 
 WX_GTK_PATH=/home/wittend/Projects/wxWidgets-2.9.4/build_gtk
 CODEC2_PATH=/home/wittend/Projects/codec2-dev
+# SOX_LIB_PATH=$(HOME)/sox-14.4.0/src/.libs - not required because I installed soxlib from the repo.
+
+# END EDITS ---------------------------------------------
 
 WX_CONFIG=$(WX_GTK_PATH)/wx-config
 WX_CPPFLAGS = $(shell $(WX_CONFIG) --cxxflags)
 WX_LIBS = $(shell $(WX_CONFIG) --libs core, base, aui)
 SVN_REVISION=$(shell svnversion)
+FREEDV_VERSION=$(shell cat ../version.txt)
 CODEC2_INC=-I$(CODEC2_PATH)/src
 CODEC2_LIB=$(CODEC2_PATH)/src/.libs/libcodec2.a
 
-#CPP_FLAGS = $(WX_CPPFLAGS) $(CODEC2_INC) -I../extern/include -g -Wall
-CPP_FLAGS = $(WX_CPPFLAGS) $(CODEC2_INC) -I. -g -Wall -O3 -DSVN_REV=\"$(SVN_REVISION)\"
+CPP_FLAGS = $(WX_CPPFLAGS) $(CODEC2_INC) -I. -g -Wall -O3 -DSVN_REV=\"$(SVN_REVISION)\" -DFREEDV_VERSION="\"$(FREEDV_VERSION)"\"
 LIBS = $(WX_LIBS) $(CODEC2_LIB) -lm -lportaudiocpp -lpthread -lsndfile -lsamplerate
 
 OBJS = topFrame.o \
@@ -27,17 +32,19 @@ fdmdv2_plot_scatter.o \
 fdmdv2_plot_spectrum.o \
 fdmdv2_plot_waterfall_linux.o \
 fdmdv2_pa_wrapper.o \
-dlg_about.o \
 dlg_audiooptions.o \
 dlg_comports.o \
-dlg_options.o
+dlg_filter.o \
+varicode.o \
+sox_biquad.o
+
 
 all: fdmdv2
 
 fdmdv2: $(OBJS) fdmdv2_main.h
 	g++ -o fdmdv2 $(OBJS) $(CPP_FLAGS) $(LIBS)
 
-fdmdv2_main.h: fdmdv2_defines.h fdmdv2_plot.h fdmdv2_plot_scalar.h fdmdv2_plot_waterfall_linux.h fdmdv2_plot_scatter.h fdmdv2_plot_spectrum.h fdmdv2_pa_wrapper.h dlg_about.h dlg_audiooptions.h dlg_comports.h dlg_options.h
+fdmdv2_main.h: ../version.h fdmdv2_defines.h fdmdv2_plot.h fdmdv2_plot_scalar.h fdmdv2_plot_waterfall_linux.h fdmdv2_plot_scatter.h fdmdv2_plot_spectrum.h fdmdv2_pa_wrapper.h dlg_about.h dlg_audiooptions.h dlg_comports.h dlg_options.h
 
 %.o: %.cpp
 	g++ $(CPP_FLAGS) -c $< -o $@

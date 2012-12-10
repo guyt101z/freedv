@@ -1,12 +1,22 @@
 # src/Makefile.win32
 # David Witten Nov 31 2012
 #
-# Makefile for Win32 on msys/Mingw to help David
 #
 # $ make -f Makefile.Win32.dmw
 
+# EDIT THESE FOR YOUR SYSTEM ----------------------------
+
 CODEC2_PATH=D:/Projects/Radio/codec2-dev
 INCLUDE_PATH=d:/bin/MinGW-4.6.1/msys/1.0/local/lib
+
+# not required because I installed soxlib in my:
+#    D:\bin\MinGW-4.6.1\msys\1.0\local\lib folder
+# which is the equivalent from the Msys command line to 
+# /usr/local/lib under Linux/Unix/BSD type OS's and therefore
+# in the default linker path
+# SOX_LIB_PATH=$(HOME)/sox-14.4.0/src/.libs 
+
+# END EDITS ---------------------------------------------
 
 WX_CONFIG=wx-config
 WX_CPPFLAGS = $(shell $(WX_CONFIG) --cxxflags) -D__WXDEBUG__
@@ -15,7 +25,7 @@ SVN_REVISION=$(shell svnversion -c /fdmdv2)
 CODEC2_INC=$(CODEC2_PATH)/src 
 CODEC2_LIB=$(CODEC2_PATH)/src/.libs/libcodec2.a
 
-CPP_FLAGS = -I$(INCLUDE_PATH) $(WX_CPPFLAGS) -I$(CODEC2_INC) -I../extern/include -g -Wall -DSVN_REV=\"$(SVN_REVISION)\"
+CPP_FLAGS = -I$(INCLUDE_PATH) $(WX_CPPFLAGS) -I$(CODEC2_INC) -I../extern/include -g -Wall -DSVN_REV=\"$(SVN_REVISION)\" -DFREEDV_VERSION="\"$(FREEDV_VERSION)"\"
 LIBS = $(WX_LIBS) $(CODEC2_LIB) -lm -lportaudiocpp -lportaudio -lpthread -lsndfile -lsamplerate
 
 OBJS = topFrame.o \
@@ -26,12 +36,14 @@ fdmdv2_plot_scatter.o \
 fdmdv2_plot_spectrum.o \
 fdmdv2_plot_waterfall_linux.o \
 fdmdv2_pa_wrapper.o \
-dlg_about.o \
 dlg_audiooptions.o \
 dlg_comports.o \
-dlg_options.o
+dlg_filter.o \
+varicode.o \
+sox_biquad.o
 
-HDRS = fdmdv2_main.h fdmdv2_defines.h fdmdv2_plot.h fdmdv2_plot_scalar.h fdmdv2_plot_waterfall_linux.h fdmdv2_plot_scatter.h fdmdv2_plot_spectrum.h fdmdv2_pa_wrapper.h topFrame.h dlg_audiooptions.h
+
+HDRS = ../version.h fdmdv2_main.h fdmdv2_defines.h fdmdv2_plot.h fdmdv2_plot_scalar.h fdmdv2_plot_waterfall_linux.h fdmdv2_plot_scatter.h fdmdv2_plot_spectrum.h fdmdv2_pa_wrapper.h topFrame.h dlg_audiooptions.h
 
 all: freedv
 
@@ -42,5 +54,5 @@ freedv: $(OBJS)
 	g++ $(CPP_FLAGS) -c $< -o $@
 
 clean:
-	rm -f *.o fdmdv2
+	rm -f *.o FreeDV.exe
 
