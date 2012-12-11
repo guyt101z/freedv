@@ -2351,7 +2351,7 @@ int MainFrame::rxCallback(
         indata[i] = *rptr;
     }
     if (fifo_write(cbData->infifo1, indata, framesPerBuffer)) {
-        wxLogDebug("infifo1 full\n");
+        //wxLogDebug("infifo1 full\n");
     }
 
     // OK now set up output samples for this callback
@@ -2367,7 +2367,7 @@ int MainFrame::rxCallback(
     }
     else
     {
-        wxLogDebug("outfifo1 empty\n");
+        //wxLogDebug("outfifo1 empty\n");
         // zero output if no data available
         for(i = 0; i < framesPerBuffer; i++, wptr += 2)
         {
