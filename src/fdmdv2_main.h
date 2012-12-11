@@ -22,7 +22,7 @@
 #ifndef __FDMDV2_MAIN__
 #define __FDMDV2_MAIN__
 
-#include "../version.h"
+#include "version.h"
 #include <wx/wx.h>
 
 #include <wx/tglbtn.h>

@@ -22,11 +22,7 @@
 #ifndef __TOPFRAME_H__
 #define __TOPFRAME_H__
 
-//#ifdef DMW
-//    #define SVN_REV SVN_REVISION
-//#endif
-
-#include "../version.h"
+#include "version.h"
 #include <wx/artprov.h>
 #include <wx/xrc/xmlres.h>
 #include <wx/intl.h>
