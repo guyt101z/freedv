@@ -67,9 +67,9 @@ protected:
 //        void PTTPortSlelcted(wxCommandEvent& event);
         void PTTUseSerialClicked(wxCommandEvent& event);
         void UseDTRCliched(wxCommandEvent& event);
-        void DTRVPlusClicked(wxCommandEvent& event);
+        //void DTRVPlusClicked(wxCommandEvent& event);
         void UseRTSClicked(wxCommandEvent& event);
-        void RTSVPlusClicked(wxCommandEvent& event);
+        //void RTSVPlusClicked(wxCommandEvent& event);
         void OnOK(wxCommandEvent& event);
         void OnCancel(wxCommandEvent& event);
         void OnApply(wxCommandEvent& event);

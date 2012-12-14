@@ -146,9 +146,9 @@ ComPortsDlg::ComPortsDlg(wxWindow* parent, wxWindowID id, const wxString& title,
 //    m_listCtrlPorts->Connect(wxEVT_COMMAND_LISTBOX_SELECTED, wxCommandEventHandler(ComPortsDlg::PTTPortSlelcted), NULL, this);
     m_ckUseSerialPTT->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(ComPortsDlg::PTTUseSerialClicked), NULL, this);
     m_rbUseDTR->Connect(wxEVT_COMMAND_RADIOBUTTON_SELECTED, wxCommandEventHandler(ComPortsDlg::UseDTRCliched), NULL, this);
-    m_ckRTSPos->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(ComPortsDlg::DTRVPlusClicked), NULL, this);
     m_rbUseRTS->Connect(wxEVT_COMMAND_RADIOBUTTON_SELECTED, wxCommandEventHandler(ComPortsDlg::UseRTSClicked), NULL, this);
-    m_ckDTRPos->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(ComPortsDlg::RTSVPlusClicked), NULL, this);
+//    m_ckRTSPos->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(ComPortsDlg::DTRVPlusClicked), NULL, this);
+//    m_ckDTRPos->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(ComPortsDlg::RTSVPlusClicked), NULL, this);
     m_buttonOK->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(ComPortsDlg::OnOK), NULL, this);
     m_buttonCancel->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(ComPortsDlg::OnCancel), NULL, this);
     m_buttonApply->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(ComPortsDlg::OnApply), NULL, this);
@@ -165,9 +165,9 @@ ComPortsDlg::~ComPortsDlg()
 //    m_listCtrlPorts->Disconnect(wxEVT_COMMAND_LISTBOX_SELECTED, wxCommandEventHandler(ComPortsDlg::PTTPortSlelcted), NULL, this);
     m_ckUseSerialPTT->Disconnect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(ComPortsDlg::PTTUseSerialClicked), NULL, this);
     m_rbUseDTR->Disconnect(wxEVT_COMMAND_RADIOBUTTON_SELECTED, wxCommandEventHandler(ComPortsDlg::UseDTRCliched), NULL, this);
-    m_ckRTSPos->Disconnect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(ComPortsDlg::DTRVPlusClicked), NULL, this);
     m_rbUseRTS->Disconnect(wxEVT_COMMAND_RADIOBUTTON_SELECTED, wxCommandEventHandler(ComPortsDlg::UseRTSClicked), NULL, this);
-    m_ckDTRPos->Disconnect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(ComPortsDlg::RTSVPlusClicked), NULL, this);
+//    m_ckRTSPos->Disconnect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(ComPortsDlg::DTRVPlusClicked), NULL, this);
+//    m_ckDTRPos->Disconnect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(ComPortsDlg::RTSVPlusClicked), NULL, this);
     m_buttonOK->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(ComPortsDlg::OnOK), NULL, this);
     m_buttonCancel->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(ComPortsDlg::OnCancel), NULL, this);
     m_buttonApply->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(ComPortsDlg::OnApply), NULL, this);
@@ -302,13 +302,6 @@ void ComPortsDlg::ExchangeData(int inout)
 }
 
 //-------------------------------------------------------------------------
-// DTRVPlusClicked()
-//-------------------------------------------------------------------------
-void ComPortsDlg::DTRVPlusClicked(wxCommandEvent& event)
-{
-}
-
-//-------------------------------------------------------------------------
 // PTTAudioClick()
 //-------------------------------------------------------------------------
 void ComPortsDlg::PTTAudioClick(wxCommandEvent& event)
@@ -321,6 +314,13 @@ void ComPortsDlg::PTTAudioClick(wxCommandEvent& event)
 void ComPortsDlg::PTTUseSerialClicked(wxCommandEvent& event)
 {
 }
+/*
+//-------------------------------------------------------------------------
+// DTRVPlusClicked()
+//-------------------------------------------------------------------------
+void ComPortsDlg::DTRVPlusClicked(wxCommandEvent& event)
+{
+}
 
 //-------------------------------------------------------------------------
 // RTSVPlusClicked()
@@ -328,6 +328,7 @@ void ComPortsDlg::PTTUseSerialClicked(wxCommandEvent& event)
 void ComPortsDlg::RTSVPlusClicked(wxCommandEvent& event)
 {
 }
+*/
 
 //-------------------------------------------------------------------------
 // OnCancel()
