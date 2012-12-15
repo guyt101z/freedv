@@ -1,28 +1,50 @@
 # src/Makefile.linux
 # David Rowe 10 Oct 2012
 #
-# Makefile for Linux to help David R get up to speed
+# Makefile for Linux - buils the less common libraries locally and
+# doesn't install them.
 #
 # $ make -f Makefile.linux
 
-# EDIT THESE FOR YOUR SYSTEM ----------------------------
+SVN_REVISION=$(shell svnversion)
 
-WX_GTK_PATH=$(HOME)/wxWidgets-2.9.4/build_gtk
-CODEC2_PATH=$(HOME)/codec2-dev
-SOX_LIB_PATH=$(HOME)/sox-14.4.0/src/.libs
+# wxWidgets ---------------------------------------------
 
-# END EDITS ---------------------------------------------
-
+WXWIDGETS=wxWidgets-2.9.4
+WX_GTK_PATH=$(WXWIDGETS)/build_gtk
 WX_CONFIG=$(WX_GTK_PATH)/wx-config
 WX_CPPFLAGS = $(shell $(WX_CONFIG) --cxxflags)
 WX_LIBS = $(shell $(WX_CONFIG) --libs core, base, aui, adv, net)
-SVN_REVISION=$(shell svnversion)
-CODEC2_INC=-I$(CODEC2_PATH)/src
-CODEC2_LIB=$(CODEC2_PATH)/src/.libs/libcodec2.a
-SOX_LIB=$(SOX_LIB_PATH)/libsox.a
 
-CPP_FLAGS = $(WX_CPPFLAGS) $(CODEC2_INC) -I. -g -Wall -O3 -DSVN_REVISION=\"$(SVN_REVISION)\"
-LIBS = $(WX_LIBS) $(CODEC2_LIB) -lm -lportaudiocpp -lpthread -lsndfile -lsamplerate -Wl,-Bstatic -lctb-0.16 -Wl,-Bdynamic $(SOX_LIB) 
+# Portaudio ---------------------------------------------
+
+PORTAUDIO=portaudio
+PORTAUDIO_TARBALL=pa_stable_v19_20111121
+PORTAUDIO_INC=-I$(PORTAUDIO)/include
+PORTAUDIO_LIB=$(PORTAUDIO)/lib/.libs/libportaudio.a
+
+# Codec 2 -----------------------------------------------
+
+CODEC2=codec2-dev
+CODEC2_INC=-I$(CODEC2)/src
+CODEC2_LIB=$(CODEC2)/src/.libs/libcodec2.a
+
+# Sox ---------------------------------------------------
+
+SOX=sox-14.4.0
+SOX_INC=-I$(SOX)/src/
+SOX_LIB=$(SOX)/src/.libs/libsox.a
+
+# CTB ---------------------------------------------------
+
+CTB=libctb-0.16
+CTB_INC=-I$(CTB)/include/$(CTB)
+CTB_LIB=$(CTB)/lib/libctb-0.16.a
+
+# FreeDV ------------------------------------------------
+
+CPP_FLAGS = $(WX_CPPFLAGS) $(PORTAUDIO_INC) $(CODEC2_INC) $(SOX_INC) $(CTB_INC) -I. -g -Wall -O3 -DSVN_REVISION=\"$(SVN_REVISION)\"
+FREEDV_LIBS = $(WX_LIBS) $(PORTAUDIO_LIB) $(CODEC2_LIB) $(SOX_LIB) $(CTB_LIB) -lm -lpthread -lsndfile -lsamplerate
 
 OBJS = topFrame.o \
 fdmdv2_main.o \
@@ -40,14 +62,71 @@ sox_biquad.o
 
 HDRS = ../version.h dlg_about.h dlg_audiooptions.h dlg_comports.h dlg_filter.h fdmdv2_main.h fdmdv2_defines.h fdmdv2_plot.h fdmdv2_plot_scalar.h fdmdv2_plot_waterfall_linux.h fdmdv2_plot_scatter.h fdmdv2_plot_spectrum.h fdmdv2_pa_wrapper.h topFrame.h varicode.h
 
-all: freedv
+all: $(WXWIDGETS)/.built $(PORTAUDIO)/.built $(CODEC2)/.built $(SOX)/.built $(CTB)/.built freedv
 
 freedv: $(OBJS) 
-	g++ -o freedv $(OBJS) $(CPP_FLAGS) $(LIBS)
+	g++ -o freedv $(OBJS) $(CPP_FLAGS) $(FREEDV_LIBS)
 
 %.o: %.cpp $(HDRS)
 	g++ $(CPP_FLAGS) -c $< -o $@
         
 clean:
-	rm -f *.o fdmdv2
+	rm -f *.o fdmdv2 
 
+clean-lib:
+	rm -Rf $(WXWIDGETS) $(PORTAUDIO) $(CODEC2) $(SOX) $(CTB)  
+	rm -f *.o fdmdv2 
+
+# wxWidgets ---------------------------------------------------------
+
+$(WXWIDGETS)/.built: $(WXWIDGETS)
+	cd $(WXWIDGETS) && mkdir -p build_gtk && cd build_gtk && ../configure && make && touch ../.built
+     
+$(WXWIDGETS): $(WXWIDGETS).tar.bz2
+	tar xvjf $(WXWIDGETS).tar.bz2
+
+$(WXWIDGETS).tar.bz2:
+	cd $(DL); wget "http://downloads.sourceforge.net/project/wxwindows/2.9.4/wxWidgets-2.9.4.tar.bz2?r=http%3A%2F%2Fwww.wxwidgets.org%2Fdownloads%2F&ts=1355191094&use_mirror=aarnet"
+ 
+# Portaudio ---------------------------------------------------------
+
+$(PORTAUDIO)/.built: $(PORTAUDIO)
+	cd $(PORTAUDIO) && ./configure --enable-cxx && make && touch .built
+     
+$(PORTAUDIO): $(PORTAUDIO_TARBALL).tgz
+	tar xvzf $(PORTAUDIO_TARBALL).tgz
+
+$(PORTAUDIO_TARBALL).tgz:
+	wget http://www.portaudio.com/archives/$(PORTAUDIO_TARBALL).tgz
+ 
+# Codec 2 ----------------------------------------------------------
+
+$(CODEC2)/.built: $(CODEC2)
+	cd $(CODEC2) && ./configure && make && touch .built
+
+$(CODEC2):
+	svn co https://freetel.svn.sourceforge.net/svnroot/freetel/codec2-dev
+        
+# sox -------------------------------------------------------------
+
+$(SOX)/.built: $(SOX)
+	cd $(SOX) && \
+	./configure --enable-shared=no --without-id3tag --without-png --disable-gomp --with-oggvorbis=no --with-oss=no --with-flac=no --disable-dl-sndfile --with-pulseaudio=no \
+	&& make && touch .built
+               
+$(SOX) : $(SOX).tar.bz2
+	tar xvjf $(SOX).tar.bz2
+       
+$(SOX).tar.bz2:
+	wget "http://downloads.sourceforge.net/project/sox/sox/14.4.0/sox-14.4.0.tar.bz2?r=http%3A%2F%2Fsourceforge.net%2Fprojects%2Fsox%2F&ts=1355193307&use_mirror=aarnet"
+
+# CTB -------------------------------------------------------------
+
+$(CTB)/.built: $(CTB)
+	cd $(CTB)/build && make && touch .built
+               
+$(CTB) : $(CTB).tar.gz
+	tar xvzf $(CTB).tar.gz
+       
+$(CTB).tar.gz:
+	wget https://iftools.com/download/ctb/0.16/libctb-0.16.tar.gz
