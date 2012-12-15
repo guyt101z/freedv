@@ -38,13 +38,13 @@ SOX_LIB=$(SOX)/src/.libs/libsox.a
 # CTB ---------------------------------------------------
 
 CTB=libctb-0.16
-CTB_INC=-I$(CTB)/include/$(CTB)
+CTB_INC=-I$(CTB)/include
 CTB_LIB=$(CTB)/lib/libctb-0.16.a
 
 # FreeDV ------------------------------------------------
 
 CPP_FLAGS = $(WX_CPPFLAGS) $(PORTAUDIO_INC) $(CODEC2_INC) $(SOX_INC) $(CTB_INC) -I. -g -Wall -O3 -DSVN_REVISION=\"$(SVN_REVISION)\"
-FREEDV_LIBS = $(WX_LIBS) $(PORTAUDIO_LIB) $(CODEC2_LIB) $(SOX_LIB) $(CTB_LIB) -lm -lpthread -lsndfile -lsamplerate
+FREEDV_LIBS = $(WX_LIBS) $(PORTAUDIO_LIB) $(CODEC2_LIB) $(SOX_LIB) $(CTB_LIB) -lm -lpthread -lsndfile -lsamplerate -lasound
 
 OBJS = topFrame.o \
 fdmdv2_main.o \
@@ -86,7 +86,7 @@ $(WXWIDGETS): $(WXWIDGETS).tar.bz2
 	tar xvjf $(WXWIDGETS).tar.bz2
 
 $(WXWIDGETS).tar.bz2:
-	cd $(DL); wget "http://downloads.sourceforge.net/project/wxwindows/2.9.4/wxWidgets-2.9.4.tar.bz2?r=http%3A%2F%2Fwww.wxwidgets.org%2Fdownloads%2F&ts=1355191094&use_mirror=aarnet"
+	wget http://downloads.sourceforge.net/project/wxwindows/2.9.4/wxWidgets-2.9.4.tar.bz2
  
 # Portaudio ---------------------------------------------------------
 
@@ -118,12 +118,12 @@ $(SOX) : $(SOX).tar.bz2
 	tar xvjf $(SOX).tar.bz2
        
 $(SOX).tar.bz2:
-	wget "http://downloads.sourceforge.net/project/sox/sox/14.4.0/sox-14.4.0.tar.bz2?r=http%3A%2F%2Fsourceforge.net%2Fprojects%2Fsox%2F&ts=1355193307&use_mirror=aarnet"
+	wget http://downloads.sourceforge.net/project/sox/sox/14.4.0/sox-14.4.0.tar.bz2
 
 # CTB -------------------------------------------------------------
 
 $(CTB)/.built: $(CTB)
-	cd $(CTB)/build && make && touch .built
+	cd $(CTB)/build && make && touch ../.built
                
 $(CTB) : $(CTB).tar.gz
 	tar xvzf $(CTB).tar.gz
