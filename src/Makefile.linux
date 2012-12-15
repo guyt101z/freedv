@@ -41,10 +41,16 @@ CTB=libctb-0.16
 CTB_INC=-I$(CTB)/include
 CTB_LIB=$(CTB)/lib/libctb-0.16.a
 
+# if libasound is available, PortAudio will be using it, so we will
+# need to add it to freedv link line.  To test if it is present, we try
+# to link a small C program with -lasound
+
+LIBASOUND=$(shell echo "int main(void) {return 0;}" | gcc -xc - -lasound 2>/dev/null ; if [ $$? -eq 0 ] ; then echo "-lasound" ; fi )
+
 # FreeDV ------------------------------------------------
 
 CPP_FLAGS = $(WX_CPPFLAGS) $(PORTAUDIO_INC) $(CODEC2_INC) $(SOX_INC) $(CTB_INC) -I. -g -Wall -O3 -DSVN_REVISION=\"$(SVN_REVISION)\"
-FREEDV_LIBS = $(WX_LIBS) $(PORTAUDIO_LIB) $(CODEC2_LIB) $(SOX_LIB) $(CTB_LIB) -lm -lpthread -lsndfile -lsamplerate -lasound
+FREEDV_LIBS = $(WX_LIBS) $(PORTAUDIO_LIB) $(CODEC2_LIB) $(SOX_LIB) $(CTB_LIB) -lm -lpthread -lsndfile -lsamplerate $(LIBASOUND)
 
 OBJS = topFrame.o \
 fdmdv2_main.o \
@@ -66,7 +72,7 @@ all: $(WXWIDGETS)/.built $(PORTAUDIO)/.built $(CODEC2)/.built $(SOX)/.built $(CT
 
 freedv: $(OBJS) 
 	g++ -o freedv $(OBJS) $(CPP_FLAGS) $(FREEDV_LIBS)
-
+	
 %.o: %.cpp $(HDRS)
 	g++ $(CPP_FLAGS) -c $< -o $@
         

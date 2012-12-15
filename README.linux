@@ -11,131 +11,23 @@ Linux usage Notes
 BUILDING FreeDV for Linux
 =========================
 
-1  FreeDV was developed on Ubuntu 9.1 and 10.04 systems.  I installed the
-   Ubuntu packages:
+1. FreeDV was developed on Ubuntu 9.1 and 10.04 systems. It has been
+   tested on OSS (Ubuntu 9.1) and ALSA (Ubuntu 10.04) sound systems.
+
+2. A typical ALSA installation (e.g., Ubuntu 10.04) first install the
+   following packages:
 
      libsamplerate, libsamplerate-dev
      libsndfile1, libsndfile1-dev
+     libasound, libasound_dev
 
-2. Some people have also reported needing libasound and libasound_dev (and -lasound in
-   the linker line of Makefile.linux)
+3. If you would like to use OSS rather than ALSA do not install
+   libasound & libasound_dev.
 
-3. Then build the other libraries below from source. At present the
-   way each package is built and installed is not consistent.  Some
-   are installed with "make install", others are pointed to via
-   Makefile variables.  
+4. Makefile.linux will download the libraries you need, configure and
+   build them, then build FreeDV.  Makefile.linux will not install
+   any of the libraries you build ob your system.
 
-4. You may need to edit the Makefile.linux variables for your system:
-
-   WX_GTK_PATH
-   CODEC2_PATH
-   SOX_LIB_PATH
-
-wxWidgets
----------
-
-1. Download wxWidgets 2.9.4 or later and untar
-
-2. Install GTK development files (e.g. on Ubuntu libgtk2.0-dev)
-
-3. Build the gtk version:
-
-   $ cd wxWidgets-2.9.4
-   $ mkdir build_gtk
-   $ cd build_gtk
-   $ ../configure
-   $ make
-
-4. You don't actually have to "make install" wxWidgets (unless you
-   really want to), it can be used by fdmdv2 out of the directory you
-   build it in.
-
-Portaudio
----------
-
-1. Make sure ALSA development support (libasound and headers) is
-   present.  Portaudio will work with OSS but I found I couldn't
-   adjust the mic gain using OSS.  On a modern version of Ubuntu the
-   ALSA libs can be installed with:
-
-     sudo apt-get install libasound-dev
-
-   Note I had problems with the ALSA development library on Ubuntu
-   9.10, so used OSS and put up with not being able to adjust the mic
-   gain.
-
-2. Download and untar pa_stable_V19
-
-3. Configure with C++ enabled:
-
-   $ ./configure --enable-cxx
-
-   <snip>:
-
-   Configuration summary:
-
-       Target ...................... i686-pc-linux-gnu
-       C++ bindings ................ yes
-       Debug output ................ no
-
-       ALSA ........................ yes
-       ASIHPI ...................... no
-
-       OSS ......................... yes
-       JACK ........................ no
-
-4. $ make
-
-5. You can test Portaudio with bin/pa_devs & bin/patest_sine8.
-
-6. I used a "sudo make install", and removed the default Unbuntu
-   portaudio libs as they were an earlier version.  It's probably
-   possible to build fdmdv2 without "make install", by passing
-   --prefix to the ./configure stage.
-
-libsox
-------
-
-We use some of the internal sox functions for the equaliser feature.
-
-wget http://sourceforge.net/projects/sox/files/sox/14.4.0/sox-14.4.0.tar.gz/download
-tar xvzf sox-14.4.0.tar.gz
-cd sox-14.4.0
-
-Now we only want to use a few internal functions of sox.  This
-configure line mkes sure we don't build in unneeded depednancies:
-
-sox-14.4.0$ ./configure --enable-shared=no --without-id3tag --without-png --disable-gomp --with-oggvorbis=no --with-oss=no --with-flac=no --disable-dl-sndfile
-
-sox-14.4.0$ make
-
-libctb (Communications Toolbox)
--------------------------------
-
-$ wget https://iftools.com/download/ctb/0.16/libctb-0.16.tar.gz
-$ tar xvzf libctb-0.16.tar.gz
-$ cd libctb-0.16/build
-build$ make
-build$ sudo make install
-
-I found the "sudo make DEBUG=0 GPIB=0 install" didn't install the kbhit.h file:
-
-build$ sudo cp ../include/ctb-0.16/kbhit.h /usr/local/include/ctb-0.16
-build$ sudo ldconfig
-
-codec2-dev
-----------
-
-1. See codec2-dev/README. No need to "make install"
-
-fdmdv2
-------
-
-1. svn co https://freetel.svn.sourceforge.net/svnroot/freetel/fdmdv2
-
-2. Modify the paths at the top of src/Makefile.linux for wxWidgets and codec2-dev
-
-3. 
    cd fdmdv2/src 
    make -f Makefile.linux
 
