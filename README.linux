@@ -17,14 +17,13 @@ BUILDING FreeDV for Linux
 2. A typical ALSA installation (e.g., Ubuntu 10.04) first install the
    following packages:
 
-   $ sudo apt-get install libgtk2.0-dev libsamplerate0-dev libsndfile1-dev libasound_dev
+   $ sudo apt-get install libgtk2.0-dev libsamplerate0-dev libsndfile1-dev libasound2-dev
 
-3. If you would like to use OSS rather than ALSA do not install
-   libasound & libasound_dev.
+3. If you would like to use OSS rather than ALSA do not install libasound2-dev.
 
 4. Makefile.linux will download the libraries you need, configure and
-   build them, then build FreeDV.  Makefile.linux will not install
-   any of the libraries you build ob your system.
+   build them, then build FreeDV.  Makefile.linux will _not_ install
+   any of the libraries you built for FreeDV on your system.
 
    cd fdmdv2/src 
    make -f Makefile.linux
