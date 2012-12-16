@@ -30,6 +30,7 @@ CODEC2_INC=-I$(CODEC2)/src
 CODEC2_LIB=$(CODEC2)/src/.libs/libcodec2.a
 
 # Sox ---------------------------------------------------
+# (libmagic is rqd or later versions of Ubuntu)
 
 SOX=sox-14.4.0
 SOX_INC=-I$(SOX)/src/
@@ -117,7 +118,7 @@ $(CODEC2):
 
 $(SOX)/.built: $(SOX)
 	cd $(SOX) && \
-	./configure --enable-shared=no --without-id3tag --without-png --disable-gomp --with-oggvorbis=no --with-oss=no --with-flac=no --disable-dl-sndfile --with-pulseaudio=no \
+	./configure --enable-shared=no --without-id3tag --without-png --disable-gomp --with-oggvorbis=no --with-oss=no --with-flac=no --disable-dl-sndfile --with-pulseaudio=no --without-magic \
 	&& make && touch .built
                
 $(SOX) : $(SOX).tar.bz2

@@ -17,9 +17,7 @@ BUILDING FreeDV for Linux
 2. A typical ALSA installation (e.g., Ubuntu 10.04) first install the
    following packages:
 
-     libsamplerate, libsamplerate-dev
-     libsndfile1, libsndfile1-dev
-     libasound, libasound_dev
+   $ sudo apt-get install libgtk2.0-dev libsamplerate0-dev libsndfile1-dev libasound_dev
 
 3. If you would like to use OSS rather than ALSA do not install
    libasound & libasound_dev.
