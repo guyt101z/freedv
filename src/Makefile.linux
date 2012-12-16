@@ -98,7 +98,7 @@ $(WXWIDGETS).tar.bz2:
 # Portaudio ---------------------------------------------------------
 
 $(PORTAUDIO)/.built: $(PORTAUDIO)
-	cd $(PORTAUDIO) && ./configure --enable-cxx && make && touch .built
+	cd $(PORTAUDIO) && ./configure --enable-cxx --without-jack && make && touch .built
      
 $(PORTAUDIO): $(PORTAUDIO_TARBALL).tgz
 	tar xvzf $(PORTAUDIO_TARBALL).tgz
