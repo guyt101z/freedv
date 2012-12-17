@@ -111,33 +111,6 @@ wxMutex g_mutexProtectingCallbackData;
 // WxWidgets - initialize the application
 IMPLEMENT_APP(MainApp);
 
-// ----------------------------------------------------------------------------
-// experimental tx/rx processing thread
-// ----------------------------------------------------------------------------
-
-class txRxThread : public wxThread
-{
-public:
-    txRxThread(void) : wxThread(wxTHREAD_JOINABLE) { m_run = 1; }
-
-    // thread execution starts here
-    void *Entry() {
-        while (m_run) {
-            txRxProcessing();        
-            wxThread::Sleep(20);
-        }
-
-        return NULL;
-    }
-
-    // called when the thread exits - whether it terminates normally or is
-    // stopped with Delete() (but not when it is Kill()ed!)
-    void OnExit() { }
-
-public:
-    bool  m_run;
-};
-
 //-------------------------------------------------------------------------
 // OnInit()
 //-------------------------------------------------------------------------
@@ -200,6 +173,7 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     tools->Append(m_menuItemToolsConfigDelete);
 
     wxConfigBase *pConfig = wxConfigBase::Get();
+    //MainApp theApp = wxGetApp();
 
     // restore frame position and size
     int x = pConfig->Read(wxT("/MainFrame/top"),       50);
@@ -209,15 +183,14 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
 
     // note: run DebugView program to see this message under windows
     //wxLogDebug("x = %d y = %d w = %d h = %d\n", x,y,w,h);
-
-    wxGetApp().m_show_wf            = pConfig->Read(wxT("/MainFrame/show_wf"),      1);
-    wxGetApp().m_show_spect         = pConfig->Read(wxT("/MainFrame/show_spect"),   1);
-    wxGetApp().m_show_scatter       = pConfig->Read(wxT("/MainFrame/show_scatter"), 1);
-    wxGetApp().m_show_timing        = pConfig->Read(wxT("/MainFrame/show_timing"),  1);
-    wxGetApp().m_show_freq          = pConfig->Read(wxT("/MainFrame/show_freq"),    1);
+    wxGetApp().m_show_wf            = pConfig->Read(wxT("/MainFrame/show_wf"),           1);
+    wxGetApp().m_show_spect         = pConfig->Read(wxT("/MainFrame/show_spect"),        1);
+    wxGetApp().m_show_scatter       = pConfig->Read(wxT("/MainFrame/show_scatter"),      1);
+    wxGetApp().m_show_timing        = pConfig->Read(wxT("/MainFrame/show_timing"),       1);
+    wxGetApp().m_show_freq          = pConfig->Read(wxT("/MainFrame/show_freq"),         1);
     wxGetApp().m_show_speech_in     = pConfig->Read(wxT("/MainFrame/show_speech_in"),    1);
-    wxGetApp().m_show_speech_out    = pConfig->Read(wxT("/MainFrame/show_speech_out"),    1);
-    wxGetApp().m_show_demod_in      = pConfig->Read(wxT("/MainFrame/show_demod_in"),    1);
+    wxGetApp().m_show_speech_out    = pConfig->Read(wxT("/MainFrame/show_speech_out"),   1);
+    wxGetApp().m_show_demod_in      = pConfig->Read(wxT("/MainFrame/show_demod_in"),     1);
 
     wxGetApp().m_rxNbookCtrl        = pConfig->Read(wxT("/MainFrame/rxNbookCtrl"),    (long)0);
 
@@ -231,7 +204,6 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     if(wxGetApp().m_show_wf)
     {
         // Add Waterfall Plot window
-
         m_panelWaterfall = new PlotWaterfall((wxFrame*) m_auiNbookCtrl, false, 0);
         m_panelWaterfall->SetToolTip(_("Left click to tune, Right click to toggle mono/colour"));
         m_auiNbookCtrl->AddPage(m_panelWaterfall, _("Waterfall"), true, wxNullBitmap);
@@ -253,7 +225,6 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     if(wxGetApp().m_show_demod_in)
     {
         // Add Demod Input window
-
         m_panelDemodIn = new PlotScalar((wxFrame*) m_auiNbookCtrl, WAVEFORM_PLOT_TIME, 1.0/WAVEFORM_PLOT_FS, -1, 1, 1, 0.2, "%2.1f", 0);
         m_auiNbookCtrl->AddPage(m_panelDemodIn, _("Frm Radio"), true, wxNullBitmap);
         g_plotDemodInFifo = fifo_create(2*WAVEFORM_PLOT_BUF);
@@ -262,7 +233,6 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     if(wxGetApp().m_show_speech_in)
     {
         // Add Speech Input window
-
         m_panelSpeechIn = new PlotScalar((wxFrame*) m_auiNbookCtrl, WAVEFORM_PLOT_TIME, 1.0/WAVEFORM_PLOT_FS, -1, 1, 1, 0.2, "%2.1f", 0);
         m_auiNbookCtrl->AddPage(m_panelSpeechIn, _("Frm Mic"), true, wxNullBitmap);
         g_plotSpeechInFifo = fifo_create(2*WAVEFORM_PLOT_BUF);
@@ -271,7 +241,6 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     if(wxGetApp().m_show_speech_out)
     {
         // Add Speech Output window
-
         m_panelSpeechOut = new PlotScalar((wxFrame*) m_auiNbookCtrl, WAVEFORM_PLOT_TIME, 1.0/WAVEFORM_PLOT_FS, -1, 1, 1, 0.2, "%2.1f", 0);
         m_auiNbookCtrl->AddPage(m_panelSpeechOut, _("To Spkr/Hdphns"), true, wxNullBitmap);
         g_plotSpeechOutFifo = fifo_create(2*WAVEFORM_PLOT_BUF);
@@ -307,11 +276,11 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
             g_nSoundCards = 2;
     }
 
-    wxGetApp().m_strRigCtrlPort     = pConfig->Read(wxT("/Rig/Port"),           wxT("COM3"));
-    wxGetApp().m_strRigCtrlBaud     = pConfig->Read(wxT("/Rig/Baud"),           wxT("9600"));
-    wxGetApp().m_strRigCtrlDatabits = pConfig->Read(wxT("/Rig/DataBits"),       wxT("8"));
-    wxGetApp().m_strRigCtrlStopbits = pConfig->Read(wxT("/Rig/StopBits"),       wxT("1"));
-    wxGetApp().m_strRigCtrlParity   = pConfig->Read(wxT("/Rig/Parity"),         wxT("n"));
+    wxGetApp().m_strRigCtrlPort     = pConfig->Read(wxT("/Rig/Port"),               wxT("COM3"));
+    wxGetApp().m_strRigCtrlBaud     = pConfig->Read(wxT("/Rig/Baud"),               wxT("9600"));
+    wxGetApp().m_strRigCtrlDatabits = pConfig->Read(wxT("/Rig/DataBits"),           wxT("8"));
+    wxGetApp().m_strRigCtrlStopbits = pConfig->Read(wxT("/Rig/StopBits"),           wxT("1"));
+    wxGetApp().m_strRigCtrlParity   = pConfig->Read(wxT("/Rig/Parity"),             wxT("n"));
     wxGetApp().m_boolUseTonePTT     = pConfig->ReadBool(wxT("/Rig/UseTonePTT"),     false);
     wxGetApp().m_boolHalfDuplex     = pConfig->ReadBool(wxT("/Rig/HalfDuplex"),     true);
     wxGetApp().m_boolUseSerialPTT   = pConfig->ReadBool(wxT("/Rig/UseSerialPTT"),   false);
@@ -319,7 +288,7 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     wxGetApp().m_boolRTSPos         = pConfig->ReadBool(wxT("/Rig/RTSPolarity"),    false);
     wxGetApp().m_boolUseDTR         = pConfig->ReadBool(wxT("/Rig/UseDTR"),         false);
     wxGetApp().m_boolDTRPos         = pConfig->ReadBool(wxT("/Rig/DTRPolarity"),    false);
-    wxGetApp().m_playFileToMicInPath = pConfig->Read("/File/playFileToMicInPath", wxT(""));
+    wxGetApp().m_playFileToMicInPath = pConfig->Read("/File/playFileToMicInPath",   wxT(""));
     wxGetApp().m_recFileFromRadioPath = pConfig->Read("/File/recFileFromRadioPath", wxT(""));
     wxGetApp().m_recFileFromRadioSecs = pConfig->Read("/File/recFileFromRadioSecs", 30);
     wxGetApp().m_playFileFromRadioPath = pConfig->Read("/File/playFileFromRadioPath", wxT(""));
@@ -340,7 +309,7 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     wxGetApp().m_MicInTrebleGaindB = (float)pConfig->Read(wxT("/Filter/MicInTrebleGaindB"),    (long)0)/10.0;
     wxGetApp().m_MicInMidFreqHz = (float)pConfig->Read(wxT("/Filter/MicInMidFreqHz"),    1);
     wxGetApp().m_MicInMidGaindB = (float)pConfig->Read(wxT("/Filter/MicInMidGaindB"),    (long)0)/10.0;
-    wxGetApp().m_MicInMidQ = (float)pConfig->Read(wxT("/Filter/MicInMidQ"),    (long)100)/100.0;
+    wxGetApp().m_MicInMidQ = (float)pConfig->Read(wxT("/Filter/MicInMidQ"),              (long)100)/100.0;
 
     bool f = false;
     wxGetApp().m_MicInEQEnable = (float)pConfig->Read(wxT("/Filter/MicInEQEnable"), f);
@@ -351,7 +320,7 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     wxGetApp().m_SpkOutTrebleGaindB = (float)pConfig->Read(wxT("/Filter/SpkOutTrebleGaindB"),    (long)0)/10.0;
     wxGetApp().m_SpkOutMidFreqHz = (float)pConfig->Read(wxT("/Filter/SpkOutMidFreqHz"),    1);
     wxGetApp().m_SpkOutMidGaindB = (float)pConfig->Read(wxT("/Filter/SpkOutMidGaindB"),    (long)0)/10.0;
-    wxGetApp().m_SpkOutMidQ = (float)pConfig->Read(wxT("/Filter/SpkOutMidQ"),    (long)100)/100.0;
+    wxGetApp().m_SpkOutMidQ = (float)pConfig->Read(wxT("/Filter/SpkOutMidQ"),                (long)100)/100.0;
 
     wxGetApp().m_SpkOutEQEnable = (float)pConfig->Read(wxT("/Filter/SpkOutEQEnable"), f);
 
@@ -450,6 +419,7 @@ MainFrame::~MainFrame()
     int w;
     int h;
 
+    //MainApp *pApp = wxGetApp();
     wxConfigBase *pConfig = wxConfigBase::Get();
     if(pConfig)
     {
@@ -500,7 +470,7 @@ MainFrame::~MainFrame()
         pConfig->Write(wxT("/File/playFileToMicInPath"),    wxGetApp().m_playFileToMicInPath);
         pConfig->Write(wxT("/File/recFileFromRadioPath"),   wxGetApp().m_recFileFromRadioPath);
         pConfig->Write(wxT("/File/recFileFromRadioSecs"),   wxGetApp().m_recFileFromRadioSecs);
-        pConfig->Write(wxT("/File/playFileFromRadioPath"),wxGetApp().m_playFileFromRadioPath);
+        pConfig->Write(wxT("/File/playFileFromRadioPath"),  wxGetApp().m_playFileFromRadioPath);
 
         pConfig->Write(wxT("/Audio/snrSlow"), wxGetApp().m_snrSlow);
 
@@ -553,12 +523,11 @@ MainFrame::~MainFrame()
 #ifdef _USE_TIMER
 //----------------------------------------------------------------
 // OnTimer()
-//----------------------------------------------------------------
-
+//
 // when the timer fires every DT seconds we update the GUI displays.
 // the tabs only the plot that is visible actually gets updated, this
 // keeps CPU load reasonable
-
+//----------------------------------------------------------------
 void MainFrame::OnTimer(wxTimerEvent &evt)
 {
     if (m_panelWaterfall->checkDT()) {
@@ -575,7 +544,6 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
     m_panelScatter->Refresh();
 
     // Oscilliscope type speech plots -------------------------------------------------------
-
     short speechInPlotSamples[WAVEFORM_PLOT_BUF];
     if (fifo_read(g_plotSpeechInFifo, speechInPlotSamples, WAVEFORM_PLOT_BUF))
         memset(speechInPlotSamples, 0, WAVEFORM_PLOT_BUF*sizeof(short));
@@ -630,7 +598,8 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
     // Level Gauge -----------------------------------------------------------------------
 
     float tooHighThresh;
-    if (!g_tx && m_RxRunning) {
+    if (!g_tx && m_RxRunning) 
+    {
         // receive mode - display From Radio peaks
 
         // peak from this DT sampling period
@@ -644,8 +613,9 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
             m_maxLevel = maxDemodIn;
 
         tooHighThresh = FROM_RADIO_MAX;
-   }
-    else {
+    }
+    else 
+    {
         // transmit mode - display From Mic peaks
 
         // peak from this DT sampling period
@@ -662,7 +632,6 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
     }
     
     // Peak Readng meter: updates peaks immediately, then slowly decays
-
     int maxScaled = (int)(100.0 * ((float)m_maxLevel/32767.0));
     m_gaugeLevel->SetValue(maxScaled);
     if (((float)maxScaled/100) > tooHighThresh)
@@ -709,7 +678,8 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
             *m_pcallsign = 0;
             m_pcallsign = m_callsign;
         }
-        else {
+        else 
+        {
             *m_pcallsign++ = (char)ashort;
             wxString s;
             s.Printf("%s", m_callsign);
@@ -718,7 +688,6 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
     }
 
     // Run time upodate of EQ filters -----------------------------------
-
     if (m_newMicInFilter || m_newSpkOutFilter) {
         g_mutexProtectingCallbackData.Lock();
         deleteEQFilters(g_rxUserdata);
@@ -767,10 +736,12 @@ void MainFrame::OnTop(wxCommandEvent& event)
 {
     int style = GetWindowStyle();
 
-    if (style & wxSTAY_ON_TOP) {
+    if (style & wxSTAY_ON_TOP) 
+    {
         style &= ~wxSTAY_ON_TOP;
     }
-    else {
+    else 
+    {
         style |= wxSTAY_ON_TOP;
     }
     SetWindowStyle(style);
@@ -820,30 +791,6 @@ void MainFrame::OnCmdSliderScroll(wxScrollEvent& event)
     wxString sqsnr_string(sqsnr);
     m_textSQ->SetLabel(sqsnr_string);
 
-    event.Skip();
-}
-
-//-------------------------------------------------------------------------
-// OnCmdSliderScrollChanged()
-//-------------------------------------------------------------------------
-void MainFrame::OnCmdSliderScrollChanged(wxScrollEvent& event)
-{
-    event.Skip();
-}
-
-//-------------------------------------------------------------------------
-// OnSliderScrollTop()
-//-------------------------------------------------------------------------
-void MainFrame::OnSliderScrollTop(wxScrollEvent& event)
-{
-    event.Skip();
-}
-
-//-------------------------------------------------------------------------
-// OnSliderScrollBottom()
-//-------------------------------------------------------------------------
-void MainFrame::OnSliderScrollBottom(wxScrollEvent& event)
-{
     event.Skip();
 }
 
@@ -898,14 +845,6 @@ void MainFrame::OnTogBtnPTT (wxCommandEvent& event)
     {
         // rx-> tx transition, swap to Mic In page to monitor speech
         wxGetApp().m_rxNbookCtrl = m_auiNbookCtrl->GetSelection();
-//        m_auiNbookCtrl->ChangeSelection(4); // is there a way to avoid hard coding this?
-//
-// David: I think int GetPageIndex (wxWindow *page_wnd) const
-// might help. Something like:
-//  size_t idx = GetPageIndex(wxWindow *page_wnd);
-//  m_auiNbookCtrl->ChangeSelection(m_auiNbookCtrl->GetPageIndex((wxWindow *)m_panelSpeechIn));
-// -- dmw
-//
         m_auiNbookCtrl->ChangeSelection(m_auiNbookCtrl->GetPageIndex((wxWindow *)m_panelSpeechIn));
     }
     g_tx = m_btnTogPTT->GetValue();
@@ -1048,15 +987,16 @@ void MainFrame::OnPlayFileToMicIn(wxCommandEvent& event)
 {
     wxUnusedVar(event);
 
-    if (g_playFileToMicIn) {
+    if(g_playFileToMicIn) 
+    {
         g_mutexProtectingCallbackData.Lock();
         g_playFileToMicIn = false;
         sf_close(g_sfPlayFile);
         SetStatusText(wxT(""));
         g_mutexProtectingCallbackData.Unlock();
     }
-    else {
-
+    else 
+    {
         wxString    soundFile;
         SF_INFO     sfInfo;
 
@@ -1114,17 +1054,16 @@ void MainFrame::OnPlayFileToMicIn(wxCommandEvent& event)
 
 //-------------------------------------------------------------------------
 // OnPlayFileFromRadio()
-//-------------------------------------------------------------------------
-
 // This puppy "plays" a recorded file into the denmonulator input, allowing us
 // to replay off air signals.
-
+//-------------------------------------------------------------------------
 void MainFrame::OnPlayFileFromRadio(wxCommandEvent& event)
 {
     wxUnusedVar(event);
 
     printf("OnPlayFileFromRadio:: %d\n", (int)g_playFileFromRadio);
-    if (g_playFileFromRadio) {
+    if (g_playFileFromRadio) 
+    {
         printf("OnPlayFileFromRadio:: Stop\n");
         g_mutexProtectingCallbackData.Lock();
         g_playFileFromRadio = false;
@@ -1132,8 +1071,8 @@ void MainFrame::OnPlayFileFromRadio(wxCommandEvent& event)
         SetStatusText(wxT(""));
         g_mutexProtectingCallbackData.Unlock();
     }
-    else {
-
+    else 
+    {
         wxString    soundFile;
         SF_INFO     sfInfo;
 
@@ -1279,10 +1218,10 @@ void MainFrame::OnRecFileFromRadio(wxCommandEvent& event)
         }
 
         // Bug: on Win32 I cant read m_recFileFromRadioSecs, so have hard coded it
-        #ifdef __WIN32__
+#ifdef __WIN32__
         long secs = wxGetApp().m_recFileFromRadioSecs;
         g_recFromRadioSamples = FS*(unsigned int)secs;
-        #else
+#else
         // work out number of samples to record
 
         wxWindow * const ctrl = openFileDialog.GetExtraControl();
@@ -1300,7 +1239,7 @@ void MainFrame::OnRecFileFromRadio(wxCommandEvent& event)
             wxMessageBox(wxT("Invalid number of Seconds"), wxT("Record File From Radio"), wxOK);
             return;
         }
-        #endif
+#endif
 
         g_sfRecFile = sf_open(soundFile, SFM_WRITE, &sfInfo);
         if(g_sfRecFile == NULL)
@@ -1322,12 +1261,6 @@ void MainFrame::OnRecFileFromRadio(wxCommandEvent& event)
 void MainFrame::OnExit(wxCommandEvent& event)
 {
     wxUnusedVar(event);
-/*    
-    if(m_RxRunning)
-    {
-        stopRxStream();
-    }
-*/    
 #ifdef _USE_TIMER
     m_plotTimer.Stop();
 #endif // _USE_TIMER
@@ -1458,7 +1391,7 @@ void MainFrame::OnToolsComCfg(wxCommandEvent& event)
         // m_btnTogPTT->Enable(bPTTEnabled);
         // m_btnTogPTT->SetValue(bPTTState);
         }
- }
+    }
     delete dlg;
 }
 
@@ -1602,23 +1535,22 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
 
         if (m_RxRunning) 
         {
-    #ifdef _USE_TIMER
+#ifdef _USE_TIMER
             m_plotTimer.Start(_REFRESH_TIMER_PERIOD, wxTIMER_CONTINUOUS);
-    #endif // _USE_TIMER
+#endif // _USE_TIMER
         }
     }
    
     // Stop was pressed or start up failed 
-
     if (startStop.IsSameAs("Stop") || !m_RxRunning ) {
 
         // 
         // Stop Running -------------------------------------------------
         //
 
-        #ifdef _USE_TIMER
+#ifdef _USE_TIMER
         m_plotTimer.Stop();
-        #endif // _USE_TIMER
+#endif // _USE_TIMER
 
         stopRxStream();
 
@@ -1666,7 +1598,6 @@ void MainFrame::stopRxStream()
         delete g_rxUserdata;
     }
 }
-
 
 void MainFrame::destroy_fifos(void)
 {
@@ -1717,7 +1648,6 @@ void  MainFrame::initPortAudioDevice(PortAudioWrap *pa, int inDevice, int outDev
        equal PA_PFB, for example when I set PA_FPB to 960 I got
        framesPerBuffer = 1024.
     */
-
     pa->setFramesPerBuffer(wxGetApp().m_framesPerBuffer);
     pa->setSampleRate(sampleRate);
     pa->setStreamFlags(paClipOff);
@@ -1939,9 +1869,7 @@ void MainFrame::startRxStream()
             wxLogError(wxT("Can't start thread!"));
         }
     }
- 
 }
-
 
 #define SBQ_MAX_ARGS 4
 
@@ -2004,7 +1932,6 @@ void  MainFrame::designEQFilters(paCallBackData *cb)
         cb->sbqSpkOutTreble = designAnEQFilter("treble", wxGetApp().m_SpkOutTrebleFreqHz, wxGetApp().m_SpkOutTrebleGaindB);
         cb->sbqSpkOutMid    = designAnEQFilter("equalizer", wxGetApp().m_SpkOutMidFreqHz, wxGetApp().m_SpkOutMidGaindB, wxGetApp().m_SpkOutMidQ);
     }
-
 }
 
 void  MainFrame::deleteEQFilters(paCallBackData *cb)
@@ -2022,7 +1949,6 @@ void  MainFrame::deleteEQFilters(paCallBackData *cb)
 }
 
 // returns number of output samples generated by resampling
-
 int resample(SRC_STATE *src,
             short      output_short[],
             short      input_short[],
@@ -2062,7 +1988,6 @@ int resample(SRC_STATE *src,
 // speech signals at a low sample rate.  We want a low sample rate so
 // we don't hammer the graphics system too hard.  Saves decimated data
 // to a fifo for plotting on screen.
-
 void resample_for_plot(struct FIFO *plotFifo, short buf[], int length)
 {
     int decimation = FS/WAVEFORM_PLOT_FS;
@@ -2074,18 +1999,19 @@ void resample_for_plot(struct FIFO *plotFifo, short buf[], int length)
 
     nSamples = length/decimation;
 
-    for(sample=0; sample<nSamples; sample+=2) {
+    for(sample = 0; sample < nSamples; sample += 2) 
+    {
         st = decimation*sample;
         en = decimation*(sample+2);
         max = min = 0;
-        for(i=st; i<en; i++ ) {
+        for(i=st; i<en; i++ ) 
+        {
             if (max < buf[i]) max = buf[i];
             if (min > buf[i]) min = buf[i];
         }
         dec_samples[sample] = max;
         dec_samples[sample+1] = min;
     }
-
     fifo_write(plotFifo, dec_samples, nSamples);
 }
 
@@ -2223,7 +2149,8 @@ void txRxProcessing()
         // between this sound card and sound card 2.
 
         g_mutexProtectingCallbackData.Lock();
-        while((unsigned)fifo_used(cbData->outfifo1) < 6*N48) {
+        while((unsigned)fifo_used(cbData->outfifo1) < 6*N48) 
+        {
             g_mutexProtectingCallbackData.Unlock();
 
             int   nsam = g_soundCard2SampleRate * (float)codec2_samples_per_frame(g_pCodec2)/FS;
@@ -2236,7 +2163,6 @@ void txRxProcessing()
             // again in the decoded audio at the other end.
 
             // zero speech input just in case infifo2 underflows
-
             memset(in48k_short, 0, nsam*sizeof(short));
             fifo_read(cbData->infifo2, in48k_short, nsam);
            
@@ -2260,7 +2186,6 @@ void txRxProcessing()
             g_mutexProtectingCallbackData.Unlock();
 
             // Optional Mic In EQ Filtering, need mutex as filter can change at run time
-
             g_mutexProtectingCallbackData.Lock();
             if (cbData->micInEQEnable) {
                 sox_biquad_filter(cbData->sbqMicInBass, in8k_short, in8k_short, nout);
@@ -2281,7 +2206,6 @@ void txRxProcessing()
                 // of the peak level for normal SSB voice. So we
                 // introduce 6dB gain to make analog SSB sound the
                 // same level as the digital.  Watch out for clipping.
-
                 for(int i=0; i<2*N8; i++) {
                     float out = (float)in8k_short[i]*2.0;
                     if (out > 32767) out = 32767.0;
@@ -2293,22 +2217,18 @@ void txRxProcessing()
                 per_frame_tx_processing(out8k_short, in8k_short, g_pCodec2);
  
             // output 40ms of modem tone
-
             nout = resample(cbData->outsrc1, out48k_short, out8k_short, g_soundCard1SampleRate, FS, 2*N48, 2*N8);
             g_mutexProtectingCallbackData.Lock();
             fifo_write(cbData->outfifo1, out48k_short, nout);
         }
         g_mutexProtectingCallbackData.Unlock();
     }
-
     //wxLogDebug("  end infifo1: %5d outfifo1: %5d\n", fifo_n(cbData->infifo1), fifo_n(cbData->outfifo1));
-
 }
 
 //-------------------------------------------------------------------------
 // rxCallback()
 //-------------------------------------------------------------------------
-
 int MainFrame::rxCallback(
                             const void      *inputBuffer,
                             void            *outputBuffer,

@@ -246,7 +246,9 @@ typedef struct
 
 } paCallBackData;
 
+//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 // panel with custom loop checkbox for play file dialog
+//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 class MyExtraPlayFilePanel : public wxPanel
 {
 public:
@@ -257,7 +259,9 @@ private:
     wxCheckBox *m_cb;
 };
 
+//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 // panel with custom Seconds-to-record control for record file dialog
+//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 class MyExtraRecFilePanel : public wxPanel
 {
 public:
@@ -380,9 +384,9 @@ class MainFrame : public TopFrame
         void OnHelpCheckUpdatesUI( wxUpdateUIEvent& event );
         void OnHelpAbout( wxCommandEvent& event );
         void OnCmdSliderScroll( wxScrollEvent& event );
-        void OnSliderScrollBottom( wxScrollEvent& event );
-        void OnCmdSliderScrollChanged( wxScrollEvent& event );
-        void OnSliderScrollTop( wxScrollEvent& event );
+//        void OnSliderScrollBottom( wxScrollEvent& event );
+//        void OnCmdSliderScrollChanged( wxScrollEvent& event );
+//        void OnSliderScrollTop( wxScrollEvent& event );
         void OnCheckSQClick( wxCommandEvent& event );
         void OnCheckSNRClick( wxCommandEvent& event );
 
@@ -429,7 +433,37 @@ class MainFrame : public TopFrame
 
 };
 
+void txRxProcessing();
+
+//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
+// class txRxThread - experimental tx/rx processing thread
+//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
+class txRxThread : public wxThread
+{
+public:
+    txRxThread(void) : wxThread(wxTHREAD_JOINABLE) { m_run = 1; }
+
+    // thread execution starts here
+    void *Entry() 
+    {
+        while (m_run) 
+        {
+            txRxProcessing();        
+            wxThread::Sleep(20);
+        }
+        return NULL;
+    }
+
+    // called when the thread exits - whether it terminates normally or is
+    // stopped with Delete() (but not when it is Kill()ed!)
+    void OnExit() { }
+
+public:
+    bool  m_run;
+};
+
 void resample_for_plot(struct FIFO *plotFifo, short buf[], int length);
+
 int resample(SRC_STATE *src,
              short      output_short[],
              short      input_short[],
