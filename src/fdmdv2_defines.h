@@ -22,7 +22,7 @@
 #define __FDMDV2_DEFINES__
 
 #include "wx/wx.h"
-#include "fdmdv.h"
+#include "codec2_fdmdv.h"
 
 // Spectrogram and Waterfall
 

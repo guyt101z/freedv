@@ -33,7 +33,7 @@
 #include "pa_asio.h"
 #endif
 #endif
-#include "fifo.h"
+#include "codec2_fifo.h"
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 // AudioInfoDisplay

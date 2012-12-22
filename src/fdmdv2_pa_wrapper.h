@@ -21,7 +21,7 @@
 #include <stdio.h>
 #include <math.h>
 #include "fdmdv2_defines.h"
-#include "fdmdv.h"
+#include "codec2_fdmdv.h"
 #include "codec2.h"
 #include "portaudio.h"
 

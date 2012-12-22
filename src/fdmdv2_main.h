@@ -49,8 +49,8 @@
 #include <samplerate.h>
 
 #include "codec2.h"
-#include "fdmdv.h"
-#include "fifo.h"
+#include "codec2_fdmdv.h"
+#include "codec2_fifo.h"
 
 #include "ctb-0.16/ctb.h"
 #include "ctb-0.16/portscan.h"
