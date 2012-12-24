@@ -50,7 +50,7 @@ LIBASOUND=$(shell echo "int main(void) {return 0;}" | gcc -xc - -lasound 2>/dev/
 
 # FreeDV ------------------------------------------------
 
-CPP_FLAGS = $(WX_CPPFLAGS) $(PORTAUDIO_INC) $(CODEC2_INC) $(SOX_INC) $(CTB_INC) -I. -g -Wall -O3 -DSVN_REVISION=\"$(SVN_REVISION)\"
+CPP_FLAGS = -D_NO_AUTOTOOLS_ $(WX_CPPFLAGS) $(PORTAUDIO_INC) $(CODEC2_INC) $(SOX_INC) $(CTB_INC) -I. -g -Wall -O3 -DSVN_REVISION=\"$(SVN_REVISION)\"
 FREEDV_LIBS = $(WX_LIBS) $(PORTAUDIO_LIB) $(CODEC2_LIB) $(SOX_LIB) $(CTB_LIB) -lm -lpthread -lsndfile -lsamplerate $(LIBASOUND)
 
 OBJS = topFrame.o \

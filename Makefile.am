@@ -1,6 +1,3 @@
-AM_CFLAGS = -Isrc -fPIC -Wall -O3 -lm
-AUTOMAKE_OPTS = gnu
-NAME = fdmdv2
-AM_CPPFLAGS = $(AM_CFLAGS)
-SUBDIRS = src
-CONFIG_CLEAN_FILES = *.o *.exe
+AUTOMAKE_OPTIONS=foreign
+
+SUBDIRS=src

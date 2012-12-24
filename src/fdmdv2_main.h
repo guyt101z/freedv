@@ -23,6 +23,9 @@
 #define __FDMDV2_MAIN__
 
 #include "version.h"
+#ifndef _NO_AUTOTOOLS_
+#include "../config.h"
+#endif
 #include <wx/wx.h>
 
 #include <wx/tglbtn.h>
