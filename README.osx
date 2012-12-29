@@ -1,0 +1,801 @@
+README.osx
+David Witten 29 Dec 2012
+==========================
+
+Received today:
+
+Mooneer Salem 
+Re: [digitalvoice] Re: Mac build for fdmdv2
+
+Yep. I'm attaching a patch to this email with the modifications I had to make to get FreeDV to build on OSX. I develop on 10.8.2, but it should work with 10.5-10.7 I think. Unfortunately it's 32-bit only due to a dependency on Carbon, which Apple deprecated.
+
+Directions (requires MacPorts to build dependencies):
+
+1. Apply patch.
+2. $ sudo port install wxWidgets30 +aui +universal portaudio +universal sox +universal libsndfile +universal libsamplerate +universal
+3. $ cd src && make -f Makefile.osx
+
+This will create a folder named FreeDV.app in the src folder (shows up as a single file in Finder) that when double-clicked, starts the application. I'll probably need to figure out how to include dependencies in the .app folder so that people won't need to install MacPorts just to run FreeDV ;)
+
+The patch also includes the change away from libctb. It compiles on POSIX compliant platforms, but I'm not sure about the Windows implementation due to not having a Windows development setup here at home.
+
+...
+-Mooneer KG6AOV
+
+Mooneer's patch is included as /freedv_osx_port.patch.gz in the SVN checkout or just snip & run the following --
+Patch:<cut here->
+
+Index: src/Makefile.linux
+===================================================================
+--- src/Makefile.linux	(revision 1152)
++++ src/Makefile.linux	(working copy)
+@@ -36,12 +36,6 @@
+ SOX_INC=-I$(SOX)/src/
+ SOX_LIB=$(SOX)/src/.libs/libsox.a
+ 
+-# CTB ---------------------------------------------------
+-
+-CTB=libctb-0.16
+-CTB_INC=-I$(CTB)/include
+-CTB_LIB=$(CTB)/lib/libctb-0.16.a
+-
+ # if libasound is available, PortAudio will be using it, so we will
+ # need to add it to freedv link line.  To test if it is present, we try
+ # to link a small C program with -lasound
+@@ -50,8 +44,8 @@
+ 
+ # FreeDV ------------------------------------------------
+ 
+-CPP_FLAGS = -D_NO_AUTOTOOLS_ $(WX_CPPFLAGS) $(PORTAUDIO_INC) $(CODEC2_INC) $(SOX_INC) $(CTB_INC) -I. -g -Wall -O3 -DSVN_REVISION=\"$(SVN_REVISION)\"
+-FREEDV_LIBS = $(WX_LIBS) $(PORTAUDIO_LIB) $(CODEC2_LIB) $(SOX_LIB) $(CTB_LIB) -lm -lpthread -lsndfile -lsamplerate $(LIBASOUND)
++CPP_FLAGS = -D_NO_AUTOTOOLS_ $(WX_CPPFLAGS) $(PORTAUDIO_INC) $(CODEC2_INC) $(SOX_INC) -I. -g -Wall -O3 -DSVN_REVISION=\"$(SVN_REVISION)\"
++FREEDV_LIBS = $(WX_LIBS) $(PORTAUDIO_LIB) $(CODEC2_LIB) $(SOX_LIB) -lm -lpthread -lsndfile -lsamplerate $(LIBASOUND)
+ 
+ OBJS = topFrame.o \
+ fdmdv2_main.o \
+@@ -65,11 +59,12 @@
+ dlg_comports.o \
+ dlg_filter.o \
+ varicode.o \
+-sox_biquad.o
++sox_biquad.o \
++serialport.o
+ 
+-HDRS = ../version.h dlg_about.h dlg_audiooptions.h dlg_comports.h dlg_filter.h fdmdv2_main.h fdmdv2_defines.h fdmdv2_plot.h fdmdv2_plot_scalar.h fdmdv2_plot_waterfall_linux.h fdmdv2_plot_scatter.h fdmdv2_plot_spectrum.h fdmdv2_pa_wrapper.h topFrame.h varicode.h
++HDRS = ../version.h dlg_about.h dlg_audiooptions.h dlg_comports.h dlg_filter.h fdmdv2_main.h fdmdv2_defines.h fdmdv2_plot.h fdmdv2_plot_scalar.h fdmdv2_plot_waterfall_linux.h fdmdv2_plot_scatter.h fdmdv2_plot_spectrum.h fdmdv2_pa_wrapper.h topFrame.h varicode.h serialport.h
+ 
+-all: $(WXWIDGETS)/.built $(PORTAUDIO)/.built $(CODEC2)/.built $(SOX)/.built $(CTB)/.built freedv
++all: $(WXWIDGETS)/.built $(PORTAUDIO)/.built $(CODEC2)/.built $(SOX)/.built freedv
+ 
+ freedv: $(OBJS) 
+ 	g++ -o freedv $(OBJS) $(CPP_FLAGS) $(FREEDV_LIBS)
+@@ -81,7 +76,7 @@
+ 	rm -f *.o fdmdv2 
+ 
+ clean-lib:
+-	rm -Rf $(WXWIDGETS) $(PORTAUDIO) $(CODEC2) $(SOX) $(CTB)  
++	rm -Rf $(WXWIDGETS) $(PORTAUDIO) $(CODEC2) $(SOX) 
+ 	rm -f *.o fdmdv2 
+ 
+ # wxWidgets ---------------------------------------------------------
+@@ -126,14 +121,3 @@
+        
+ $(SOX).tar.bz2:
+ 	wget http://downloads.sourceforge.net/project/sox/sox/14.4.0/sox-14.4.0.tar.bz2
+-
+-# CTB -------------------------------------------------------------
+-
+-$(CTB)/.built: $(CTB)
+-	cd $(CTB)/build && make && touch ../.built
+-               
+-$(CTB) : $(CTB).tar.gz
+-	tar xvzf $(CTB).tar.gz
+-       
+-$(CTB).tar.gz:
+-	wget https://iftools.com/download/ctb/0.16/libctb-0.16.tar.gz
+Index: src/Makefile.linux.dmw
+===================================================================
+--- src/Makefile.linux.dmw	(revision 1152)
++++ src/Makefile.linux.dmw	(working copy)
+@@ -36,7 +36,8 @@
+ dlg_comports.o \
+ dlg_filter.o \
+ varicode.o \
+-sox_biquad.o
++sox_biquad.o \
++serialport.o
+ 
+ 
+ all: fdmdv2
+@@ -44,7 +45,7 @@
+ fdmdv2: $(OBJS) fdmdv2_main.h
+ 	g++ -o fdmdv2 $(OBJS) $(CPP_FLAGS) $(LIBS)
+ 
+-fdmdv2_main.h: ../version.h fdmdv2_defines.h fdmdv2_plot.h fdmdv2_plot_scalar.h fdmdv2_plot_waterfall_linux.h fdmdv2_plot_scatter.h fdmdv2_plot_spectrum.h fdmdv2_pa_wrapper.h dlg_about.h dlg_audiooptions.h dlg_comports.h dlg_options.h
++fdmdv2_main.h: ../version.h fdmdv2_defines.h fdmdv2_plot.h fdmdv2_plot_scalar.h fdmdv2_plot_waterfall_linux.h fdmdv2_plot_scatter.h fdmdv2_plot_spectrum.h fdmdv2_pa_wrapper.h dlg_about.h dlg_audiooptions.h dlg_comports.h dlg_options.h serialport.h
+ 
+ %.o: %.cpp
+ 	g++ $(CPP_FLAGS) -c $< -o $@
+Index: src/Makefile.osx
+===================================================================
+--- src/Makefile.osx	(revision 0)
++++ src/Makefile.osx	(working copy)
+@@ -0,0 +1,76 @@
++# src/Makefile.osx
++# Mooneer Salem 28 Dec 2012
++#
++# Makefile for OSX - assumes MacPorts for some libraries and builds the others locally.
++# Note: dependencies must be installed with universal binary support due to the use of Carbon by portaudio and others.
++#       (Carbon is officially deprecated by Apple and does not have 64-bit support.)
++#
++# $ sudo port install wxWidgets30 +aui +universal portaudio +universal sox +universal libsndfile +universal libsamplerate +universal
++# $ make -f Makefile.osx
++
++SVN_REVISION=$(shell svnversion)
++MACPORTS_FOLDER=/opt/local
++
++# Codec 2 -----------------------------------------------
++
++CODEC2=codec2-dev
++CODEC2_INC=-I$(CODEC2)/src
++CODEC2_LIB=$(CODEC2)/src/.libs/libcodec2.a
++
++# FreeDV ------------------------------------------------
++
++CPP_FLAGS = -D_NO_AUTOTOOLS_ -I$(MACPORTS_FOLDER)/include -arch i386 `wx-config --cppflags` $(CODEC2_INC) -I. -g -Wall -O3 -DSVN_REVISION=\"$(SVN_REVISION)\"
++FREEDV_LIBS = -arch i386 -L$(MACPORTS_FOLDER)/lib `wx-config --libs all` -lportaudio $(CODEC2_LIB) -lm -lpthread -lsndfile -lsamplerate -lsox
++
++OBJS = topFrame.o \
++fdmdv2_main.o \
++fdmdv2_plot.o \
++fdmdv2_plot_scalar.o \
++fdmdv2_plot_scatter.o \
++fdmdv2_plot_spectrum.o \
++fdmdv2_plot_waterfall_linux.o \
++fdmdv2_pa_wrapper.o \
++dlg_audiooptions.o \
++dlg_comports.o \
++dlg_filter.o \
++varicode.o \
++sox_biquad.o \
++serialport.o
++
++HDRS = ../version.h dlg_about.h dlg_audiooptions.h dlg_comports.h dlg_filter.h fdmdv2_main.h fdmdv2_defines.h fdmdv2_plot.h fdmdv2_plot_scalar.h fdmdv2_plot_waterfall_linux.h fdmdv2_plot_scatter.h fdmdv2_plot_spectrum.h fdmdv2_pa_wrapper.h topFrame.h varicode.h serialport.h
++
++all: $(CODEC2)/.built freedv FreeDV.app
++
++freedv: $(OBJS)
++	g++ -o freedv $(OBJS) $(CPP_FLAGS) $(FREEDV_LIBS)
++
++FreeDV.app: info.plist freedv
++	-mkdir -p $@/Contents/MacOS
++	-mkdir -p $@/Contents/Resources/English.lproj
++	cp info.plist $@/Contents
++	echo -n "APPL????" > $@/Contents/PkgInfo
++	cp freedv $@/Contents/MacOS/FreeDV
++	
++%.o: %.cpp $(HDRS)
++	g++ $(CPP_FLAGS) -c $< -o $@
++
++sox_biquad.o: sox_biquad.c
++	gcc $(CPP_FLAGS) -c sox_biquad.c -o sox_biquad.o
++
++varicode.o: varicode.c
++	cc $(CPP_FLAGS) -c varicode.c -o varicode.o
++
++clean:
++	rm -f *.o fdmdv2 
++	rm -rf FreeDV.app/
++	
++clean-lib: clean
++	rm -Rf $(CODEC2)
++ 
++# Codec 2 ----------------------------------------------------------
++
++$(CODEC2)/.built: $(CODEC2)
++	cd $(CODEC2) && CPPFLAGS="-arch i386" LDFLAGS="-arch i386" ./configure && make && touch .built
++
++$(CODEC2):
++	svn co https://freetel.svn.sourceforge.net/svnroot/freetel/codec2-dev
+\ No newline at end of file
+Index: src/Makefile.win32
+===================================================================
+--- src/Makefile.win32	(revision 1152)
++++ src/Makefile.win32	(working copy)
+@@ -16,7 +16,7 @@
+ CODEC2_LIB=$(CODEC2_PATH)/src/.libs/libcodec2.a
+ 
+ CPP_FLAGS = -D_NO_AUTOTOOLS_ -I$(INCLUDE_PATH) $(WX_CPPFLAGS) -I$(CODEC2_INC) -I../extern/include -g -Wall -DSVN_REVISION=\"$(SVN_REVISION)\"
+-LIBS = $(WX_LIBS) $(CODEC2_LIB) -lm -lportaudiocpp -lportaudio -lpthread -lsndfile -lsamplerate -lctb-0.16 -lsox
++LIBS = $(WX_LIBS) $(CODEC2_LIB) -lm -lportaudiocpp -lportaudio -lpthread -lsndfile -lsamplerate -lsox
+ 
+ OBJS = topFrame.o \
+ fdmdv2_main.o \
+@@ -30,9 +30,10 @@
+ dlg_comports.o \
+ dlg_filter.o \
+ varicode.o \
+-sox_biquad.o
++sox_biquad.o \
++serialport.o
+ 
+-HDRS = ../version.h dlg_audiooptions.h dlg_comports.h dlg_filter.h fdmdv2_main.h fdmdv2_defines.h fdmdv2_plot.h fdmdv2_plot_scalar.h fdmdv2_plot_waterfall_linux.h fdmdv2_plot_scatter.h fdmdv2_plot_spectrum.h fdmdv2_pa_wrapper.h topFrame.h dlg_audiooptions.h topFrame.h varicode.h
++HDRS = ../version.h dlg_audiooptions.h dlg_comports.h dlg_filter.h fdmdv2_main.h fdmdv2_defines.h fdmdv2_plot.h fdmdv2_plot_scalar.h fdmdv2_plot_waterfall_linux.h fdmdv2_plot_scatter.h fdmdv2_plot_spectrum.h fdmdv2_pa_wrapper.h topFrame.h dlg_audiooptions.h topFrame.h varicode.h serialport.h
+ 
+ all: freedv
+ 
+Index: src/Makefile.win32.dmw
+===================================================================
+--- src/Makefile.win32.dmw	(revision 1152)
++++ src/Makefile.win32.dmw	(working copy)
+@@ -40,10 +40,11 @@
+ dlg_comports.o \
+ dlg_filter.o \
+ varicode.o \
+-sox_biquad.o
++sox_biquad.o \
++serialport.o
+ 
+ 
+-HDRS = ../version.h fdmdv2_main.h fdmdv2_defines.h fdmdv2_plot.h fdmdv2_plot_scalar.h fdmdv2_plot_waterfall_linux.h fdmdv2_plot_scatter.h fdmdv2_plot_spectrum.h fdmdv2_pa_wrapper.h topFrame.h dlg_audiooptions.h
++HDRS = ../version.h fdmdv2_main.h fdmdv2_defines.h fdmdv2_plot.h fdmdv2_plot_scalar.h fdmdv2_plot_waterfall_linux.h fdmdv2_plot_scatter.h fdmdv2_plot_spectrum.h fdmdv2_pa_wrapper.h topFrame.h dlg_audiooptions.h serialport.h
+ 
+ all: freedv
+ 
+Index: src/dlg_comports.cpp
+===================================================================
+--- src/dlg_comports.cpp	(revision 1152)
++++ src/dlg_comports.cpp	(working copy)
+@@ -21,7 +21,6 @@
+ //==========================================================================
+ #include "dlg_comports.h"
+ #include "fdmdv2_main.h"
+-#include <wx/msw/registry.h>
+ #include <sstream>
+ 
+ //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
+@@ -62,8 +61,9 @@
+     wxArrayString m_listCtrlPortsArr;
+     m_listCtrlPorts = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxSize(-1,45), m_listCtrlPortsArr, wxLB_SINGLE | wxLB_SORT);
+     staticBoxSizer31->Add(m_listCtrlPorts, 1, wxALIGN_CENTER, 0);
+-#endif
+-#ifdef __WXGTK__
++#else
++/*#endif
++#ifdef __WXGTK__*/
+     wxBoxSizer* bSizer83;
+     bSizer83 = new wxBoxSizer(wxHORIZONTAL);
+ 
+Index: src/fdmdv2_main.cpp
+===================================================================
+--- src/fdmdv2_main.cpp	(revision 1152)
++++ src/fdmdv2_main.cpp	(working copy)
+@@ -163,7 +163,6 @@
+ {
+     m_zoom              = 1.;
+     m_serialPort        = NULL;
+-    m_device            = NULL;
+     
+     tools->AppendSeparator();
+     wxMenuItem* m_menuItemToolsConfigDelete;
+@@ -857,22 +856,22 @@
+             {
+                 if(wxGetApp().m_boolRTSPos) // RTS asserted HIGH
+                 {
+-                    m_serialPort->SetLineState(ctb::LinestateRts);
++                    m_serialPort->setRTS(true);
+                 }
+                 else                        // RTS asserted LOW
+                 {
+-                    m_serialPort->ClrLineState(ctb::LinestateRts);
++                    m_serialPort->setRTS(false);
+                 }
+             }
+             else                            // Use DTR
+             {
+                 if(wxGetApp().m_boolDTRPos) // DTR asserted HIGH
+                 {
+-                    m_serialPort->SetLineState(ctb::LinestateDtr);
++                    m_serialPort->setDTR(true);
+                 }
+                 else                        // DTR asserted LOW
+                 {
+-                    m_serialPort->ClrLineState(ctb::LinestateDtr);
++                    m_serialPort->setDTR(false);
+                 }
+             }
+         } 
+@@ -882,22 +881,22 @@
+             {
+                 if(wxGetApp().m_boolRTSPos) // RTS cleared LOW
+                 {
+-                    m_serialPort->ClrLineState(ctb::LinestateRts);
++                    m_serialPort->setRTS(false);
+                 }
+                 else                        // RTS cleared HIGH
+                 {
+-                    m_serialPort->SetLineState(ctb::LinestateRts);
++                    m_serialPort->setRTS(true);
+                 }
+             }
+             else                            // Use DTR
+             {
+                 if(wxGetApp().m_boolDTRPos) // DTR cleared LOW
+                 {
+-                    m_serialPort->ClrLineState(ctb::LinestateDtr);
++                    m_serialPort->setDTR(false);
+                 }
+                 else                        // DTR cleared HIGH
+                 {
+-                    m_serialPort->SetLineState(ctb::LinestateDtr);
++                    m_serialPort->setDTR(true);
+                 }
+             }
+         } 
+@@ -1351,13 +1350,15 @@
+ {
+     wxUnusedVar(event);
+     int rv = 0;
+-    int  iLineState  = 0;
++    bool rtsEnabled = false;
++    bool dtrEnabled = false;
+     //bool bPTTEnabled = m_btnTogPTT->IsEnabled();
+     //bool bPTTState   = m_btnTogPTT->GetValue();
+ 
+     if(m_serialPort != NULL)
+     {
+-        int iLineState   = m_serialPort->GetLineState();
++        rtsEnabled = m_serialPort->getRTS();
++        dtrEnabled = m_serialPort->getDTR();
+         CloseSerialPort();
+     }
+     ComPortsDlg *dlg = new ComPortsDlg(NULL);
+@@ -1372,21 +1373,21 @@
+         SetupSerialPort();
+         if(m_serialPort != NULL)
+         {
+-            if(iLineState | ctb::LinestateRts)
++            if(rtsEnabled)
+             {
+-                m_serialPort->SetLineState(ctb::LinestateRts);
++                m_serialPort->setRTS(true);
+             }
+             else
+             {
+-                m_serialPort->ClrLineState(ctb::LinestateRts);
++                m_serialPort->setRTS(false);
+             }
+-            if(iLineState | ctb::LinestateDtr)
++            if(dtrEnabled)
+             {
+-                m_serialPort->SetLineState(ctb::LinestateDtr);
++                m_serialPort->setDTR(true);
+             }
+             else
+             {
+-                m_serialPort->ClrLineState(ctb::LinestateDtr);
++                m_serialPort->setDTR(false);
+             }
+         // m_btnTogPTT->Enable(bPTTEnabled);
+         // m_btnTogPTT->SetValue(bPTTState);
+@@ -2631,26 +2632,25 @@
+     if(!wxGetApp().m_strRigCtrlPort.IsEmpty())
+     {
+         wxString protocol = wxGetApp().m_strRigCtrlDatabits + wxGetApp().m_strRigCtrlParity + wxGetApp().m_strRigCtrlStopbits;
+-        m_serialPort = new ctb::SerialPort();
+-        if(m_serialPort->Open(wxGetApp().m_strRigCtrlPort.c_str(), baudrate, protocol.c_str(), ctb::SerialPort::NoFlowControl ) >= 0 ) 
++        m_serialPort = new SerialPort(wxGetApp().m_strRigCtrlPort.ToAscii().data());
++        if(m_serialPort->open(/*baudrate, protocol.c_str()*/ ) >= 0 ) 
+         {
+-            m_device = m_serialPort;
+             //  always start with PTT cleared
+             if(wxGetApp().m_boolRTSPos) // RTS cleared LOW
+             {
+-                m_serialPort->ClrLineState(ctb::LinestateRts);
++                m_serialPort->setRTS(false);
+             }
+             else                        // RTS cleared HIGH
+             {
+-                m_serialPort->SetLineState(ctb::LinestateRts);
++                m_serialPort->setRTS(true);
+             }
+             if(wxGetApp().m_boolDTRPos) // DTR cleared LOW
+             {
+-                m_serialPort->ClrLineState(ctb::LinestateDtr);
++                m_serialPort->setDTR(false);
+             }
+             else                        // DTR cleared HIGH
+             {
+-                m_serialPort->SetLineState(ctb::LinestateDtr);
++                m_serialPort->setDTR(true);
+             }
+             //m_btnTogPTT->Enable(true);
+             m_btnTogPTT->SetValue(false);
+@@ -2658,7 +2658,6 @@
+         else
+         {
+             m_serialPort = NULL;
+-            m_device     = NULL;
+             //m_btnTogPTT->Disable();
+         }
+     }
+@@ -2675,11 +2674,10 @@
+ //----------------------------------------------------------------
+ void MainFrame::CloseSerialPort(void)
+ {
+-    if((m_serialPort != NULL) && m_serialPort->IsOpen())
++    if((m_serialPort != NULL) && m_serialPort->isOpen())
+     {
+-        m_serialPort->Close();
++        m_serialPort->close();
+         m_serialPort = NULL;
+-        m_device     = NULL; 
+         //m_btnTogPTT->SetLabel(wxT("PTT"));
+         //m_btnTogPTT->Enable(false);
+     }
+Index: src/fdmdv2_main.h
+===================================================================
+--- src/fdmdv2_main.h	(revision 1152)
++++ src/fdmdv2_main.h	(working copy)
+@@ -55,10 +55,7 @@
+ #include "codec2_fdmdv.h"
+ #include "codec2_fifo.h"
+ 
+-#include "ctb-0.16/ctb.h"
+-#include "ctb-0.16/portscan.h"
+-#include "ctb-0.16/serportx.h"
+-#include "ctb-0.16/serport.h"
++#include "serialport.h"
+ 
+ #include "topFrame.h"
+ #include "dlg_comports.h"
+@@ -353,8 +350,7 @@
+ 
+     protected:
+ 
+-        ctb::IOBase*            m_device;
+-        ctb::SerialPort*        m_serialPort;
++        SerialPort*             m_serialPort;
+ 
+         void setsnrBeta(bool snrSlow);
+ 
+Index: src/info.plist
+===================================================================
+--- src/info.plist	(revision 0)
++++ src/info.plist	(working copy)
+@@ -0,0 +1,34 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
++<plist version="1.0">
++<dict>
++	<key>CFBundleDevelopmentRegion</key>
++	<string>en</string>
++	<key>CFBundleExecutable</key>
++	<string>freedv</string>
++	<key>CFBundleIconFile</key>
++	<string></string>
++	<key>CFBundleIdentifier</key>
++	<string>org.freedv.freedv</string>
++	<key>CFBundleInfoDictionaryVersion</key>
++	<string>6.0</string>
++	<key>CFBundleName</key>
++	<string>FreeDV</string>
++	<key>CFBundlePackageType</key>
++	<string>APPL</string>
++	<key>CFBundleShortVersionString</key>
++	<string>1.0</string>
++	<key>CFBundleSignature</key>
++	<string>????</string>
++	<key>CFBundleVersion</key>
++	<string>1</string>
++	<key>LSMinimumSystemVersion</key>
++	<string>10.5</string>
++	<key>NSHumanReadableCopyright</key>
++	<string>Copyright © 2012 FreeDV. All rights reserved.</string>
++	<!--<key>NSMainNibFile</key>
++	<string>MainMenu</string>-->
++	<key>NSPrincipalClass</key>
++	<string>NSApplication</string>
++</dict>
++</plist>
+\ No newline at end of file
+Index: src/serialport.cpp
+===================================================================
+--- src/serialport.cpp	(revision 0)
++++ src/serialport.cpp	(working copy)
+@@ -0,0 +1,207 @@
++//==========================================================================
++// Name:            serialport.cpp
++//
++// Purpose:         Serial port management.
++// Created:         Dec. 28, 2012
++// Authors:         Mooneer Salem
++// 
++// License:
++//
++//  This program is free software; you can redistribute it and/or modify
++//  it under the terms of the GNU General License version 2.1,
++//  as published by the Free Software Foundation.  This program is
++//  distributed in the hope that it will be useful, but WITHOUT ANY
++//  WARRANTY; without even the implied warranty of MERCHANTABILITY or
++//  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
++//  License for more details.
++//
++//  You should have received a copy of the GNU General License
++//  along with this program; if not, see <http://www.gnu.org/licenses/>.
++//
++//==========================================================================
++
++#ifndef WIN32
++#include <fcntl.h>
++#include <termios.h>
++#include <unistd.h>
++#include <sys/ioctl.h>
++#endif // !WIN32
++
++#include "serialport.h"
++
++#define ERROR_CONDITION (-1)
++#ifdef WIN32
++#define INVALID_FILE_DESCRIPTOR (INVALID_HANDLE_VALUE)
++#else
++#define INVALID_FILE_DESCRIPTOR (-1)
++#endif // WIN32
++
++SerialPort::SerialPort(const std::string &portName)
++    : _portName(portName)
++    , _fileDescriptor(INVALID_FILE_DESCRIPTOR)
++#ifdef WIN32
++    , _rtsEnabled(false)
++    , _dtrEnabled(false)
++#endif // WIN32
++{
++    // No action here until open() is called.
++}
++
++SerialPort::~SerialPort()
++{
++    // Close serial port if needed.
++    if (isOpen())
++    {
++        close();
++    }
++}
++
++#ifndef WIN32
++static int posixGetModemControlBits(const int fileDescriptor)
++{
++    int modemControlBits = 0;
++    
++    if (ioctl(fileDescriptor, TIOCMGET, &modemControlBits) == 0)
++    {
++        return modemControlBits;
++    }
++    else
++    {
++        return ERROR_CONDITION;
++    }
++}
++
++static int posixSetModemControlBits(const int fileDescriptor, int modemControlBits)
++{
++    if (ioctl(fileDescriptor, TIOCMSET, &modemControlBits) == 0)
++    {
++        return modemControlBits;
++    }
++    else
++    {
++        return ERROR_CONDITION;
++    }
++}
++#endif // !WIN32
++
++bool SerialPort::getRTS() const
++{
++#ifdef WIN32
++    // No way to get DTR/RTS directly from Windows, so we have to
++    // grab what the caller put in during a previous set*() call.
++    return _rtsEnabled;
++#else
++    int tmpbits = posixGetModemControlBits(_fileDescriptor);
++    if (tmpbits != ERROR_CONDITION)
++    {
++        return tmpbits & TIOCM_RTS;
++    }
++    else
++    {
++        return ERROR_CONDITION;
++    }
++#endif // WIN32
++}
++
++void SerialPort::setRTS(const bool newRTS)
++{
++#ifdef WIN32
++    if (newRTS)
++    {
++        EscapeCommFunction(_fileDescriptor, SETRTS);
++    }
++    else
++    {
++        EscapeCommFunction(_fileDescriptor, CLRRTS);
++    }
++    _rtsEnabled = newRTS;
++#else
++    int tmpbits = posixGetModemControlBits(_fileDescriptor);
++    if (tmpbits != ERROR_CONDITION)
++    {
++        if (newRTS) tmpbits |= TIOCM_RTS;
++        else tmpbits &= ~TIOCM_RTS;
++        posixSetModemControlBits(_fileDescriptor, tmpbits);
++    }
++#endif // WIN32
++}
++    
++bool SerialPort::getDTR() const
++{
++#ifdef WIN32
++    // No way to get DTR/RTS directly from Windows, so we have to
++    // grab what the caller put in during a previous set*() call.
++    return _dtrEnabled;
++#else
++    int tmpbits = posixGetModemControlBits(_fileDescriptor);
++    if (tmpbits != ERROR_CONDITION)
++    {
++        return tmpbits & TIOCM_DTR;
++    }
++    else
++    {
++        return ERROR_CONDITION;
++    }
++#endif // WIN32
++}
++
++void SerialPort::setDTR(const bool newDTR)
++{
++#ifdef WIN32
++    if (newDTR)
++    {
++        EscapeCommFunction(_fileDescriptor, SETDTR);
++    }
++    else
++    {
++        EscapeCommFunction(_fileDescriptor, CLRDTR);
++    }
++    _dtrEnabled = newDTR;
++#else
++    int tmpbits = posixGetModemControlBits(_fileDescriptor);
++    if (tmpbits != ERROR_CONDITION)
++    {
++        if (newDTR) tmpbits |= TIOCM_DTR;
++        else tmpbits &= ~TIOCM_DTR;
++        posixSetModemControlBits(_fileDescriptor, tmpbits);
++    }
++#endif // WIN32
++}
++    
++int SerialPort::open()
++{
++#ifdef WIN32
++    TCHAR portName[32];
++    _stprintf_s(portName, sizeof(portName)/sizeof(TCHAR), _T("\\\\.\\%s"), _portName.c_str());
++    
++    _fileDescriptor = CreateFile(
++        portName, 
++        GENERIC_READ | GENERIC_WRITE,
++        0, 
++        0, 
++        OPEN_EXISTING, 
++        FILE_FLAG_OVERLAPPED, 
++        0);
++#else
++    _fileDescriptor = ::open(_portName.c_str(), O_RDWR);
++#endif // WIN32
++
++    return (int)_fileDescriptor;
++}
++
++int SerialPort::close()
++{
++#ifdef WIN32
++    int rv = CloseHandle(_fileDescriptor);
++#else
++    int rv = ::close(_fileDescriptor);
++#endif // WIN32
++
++    _fileDescriptor = INVALID_FILE_DESCRIPTOR;
++    return rv;
++}
++    
++bool SerialPort::isOpen() const
++{
++    return _fileDescriptor != INVALID_FILE_DESCRIPTOR;
++}
+\ No newline at end of file
+Index: src/serialport.h
+===================================================================
+--- src/serialport.h	(revision 0)
++++ src/serialport.h	(working copy)
+@@ -0,0 +1,81 @@
++//==========================================================================
++// Name:            serialport.h
++//
++// Purpose:         Serial port management.
++// Created:         Dec. 28, 2012
++// Authors:         Mooneer Salem
++// 
++// License:
++//
++//  This program is free software; you can redistribute it and/or modify
++//  it under the terms of the GNU General License version 2.1,
++//  as published by the Free Software Foundation.  This program is
++//  distributed in the hope that it will be useful, but WITHOUT ANY
++//  WARRANTY; without even the implied warranty of MERCHANTABILITY or
++//  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
++//  License for more details.
++//
++//  You should have received a copy of the GNU General License
++//  along with this program; if not, see <http://www.gnu.org/licenses/>.
++//
++//==========================================================================
++
++#ifndef SERIAL_PORT_H
++#define SERIAL_PORT_H
++
++#ifdef WIN32
++#include <windows.h>
++#endif // WIN32
++
++#include <string>
++
++enum SerialPortParity
++{
++    NONE,
++    EVEN,
++    ODD
++};
++
++// Quick and dirty serial port class that supports the minimum necessary to
++// do PTT (for now). Can be extended later (send/receive data for CAT control, 
++// for example).
++class SerialPort
++{
++public:
++    // portName is a path to the serial port, in one of the following formats:
++    // OSX: /dev/tty.*
++    // Linux: /dev/ttyS*
++    // Windows: COM*:
++    SerialPort(const std::string &portName);
++    virtual ~SerialPort();
++    
++    bool getRTS() const;
++    void setRTS(const bool newRTS);
++    
++    bool getDTR() const;
++    void setDTR(const bool newDTR);
++    
++    int open();
++    int close();
++    
++    bool isOpen() const;
++    
++private:
++    const std::string _portName;
++    
++#ifdef WIN32
++    HANDLE _fileDescriptor;
++    
++    bool _rtsEnabled;
++    bool _dtrEnabled;
++#else
++    int _fileDescriptor;
++#endif // WIN32
++        
++    // Object should not be copied since there can be only one handle open
++    // per serial port. An attempt to use the copy constructor here, even
++    // implicitly, will result in a compile error due to the declaration below.
++    SerialPort(const SerialPort&);
++};
++
++#endif // SERIAL_PORT_H
+\ No newline at end of file
