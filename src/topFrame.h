@@ -152,13 +152,11 @@ class TopFrame : public wxFrame
         wxToggleButton* m_btnTogPTT;
         wxToggleButton* m_togBtnLoopRx;
         wxToggleButton* m_togBtnLoopTx;
-
         wxAuiNotebook* m_auiNbookCtrl;
 
         TopFrame( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("FreeDV ") + _(FREEDV_VERSION), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 761,500 ), long style = wxDEFAULT_FRAME_STYLE|wxRESIZE_BORDER|wxTAB_TRAVERSAL );
 
         ~TopFrame();
-
 };
 
 #endif //__TOPFRAME_H__

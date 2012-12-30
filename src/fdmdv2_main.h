@@ -154,7 +154,6 @@ class MainApp : public wxApp
         bool                m_snrSlow;
 
         // LPC Post Filter
-
         bool                m_codec2LPCPostFilterEnable;
         bool                m_codec2LPCPostFilterBassBoost;
         float               m_codec2LPCPostFilterGamma;
@@ -224,19 +223,16 @@ typedef struct
     struct FIFO    *outfifo1;
 
     // FIFOs attached to second sound card
-
     struct FIFO    *infifo2;
     struct FIFO    *outfifo2;
 
     // FIFOs for rx process
-
     struct FIFO    *rxinfifo;
     struct FIFO    *rxoutfifo;
 
     int             inputChannels1, inputChannels2;
 
     // EQ filter states
-
     void           *sbqMicInBass;
     void           *sbqMicInTreble;
     void           *sbqMicInMid;
@@ -269,11 +265,13 @@ class MyExtraRecFilePanel : public wxPanel
 {
 public:
     MyExtraRecFilePanel(wxWindow *parent);
-    ~MyExtraRecFilePanel() {
+    ~MyExtraRecFilePanel() 
+    {
         wxLogDebug("Destructor\n");
     }
     void setSecondsToRecord(wxString value) { m_secondsToRecord->SetValue(value); }
-    wxString getSecondsToRecord(void) { 
+    wxString getSecondsToRecord(void) 
+    { 
         wxLogDebug("getSecondsToRecord: %s\n",m_secondsToRecord->GetValue());
         return m_secondsToRecord->GetValue(); 
     }

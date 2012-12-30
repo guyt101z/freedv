@@ -338,15 +338,17 @@ void PlotWaterfall::plotPixelData()
     dy_blocks = m_rGrid.GetHeight()/ dy;
 
     // update min and max amplitude estimates
-
     float max_mag = MIN_MAG_DB;
 
     int min_fft_bin=((float)200/FDMDV_MAX_F_HZ)*FDMDV_NSPEC;
     int max_fft_bin=((float)2800/FDMDV_MAX_F_HZ)*FDMDV_NSPEC;
 
-    for(int i=min_fft_bin; i<max_fft_bin; i++) {
+    for(int i=min_fft_bin; i<max_fft_bin; i++) 
+    {
         if (g_avmag[i] > max_mag)
+        {
             max_mag = g_avmag[i];
+        }
     }
 
     m_max_mag = BETA*m_max_mag + (1 - BETA)*max_mag;
@@ -363,7 +365,6 @@ void PlotWaterfall::plotPixelData()
     */
 
     // Shift previous bit map up one row of blocks ----------------------------
-
     wxNativePixelData data(*m_pBmp);
     assert(data != NULL);
     wxNativePixelData::Iterator bitMapStart(data);

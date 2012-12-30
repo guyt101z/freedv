@@ -718,16 +718,6 @@ void MainFrame::OnCloseFrame(wxCloseEvent& event)
     Pa_Terminate();
     Destroy();
 }
-/*
-//-------------------------------------------------------------------------
-// OnExitClick()
-//-------------------------------------------------------------------------
-void MainFrame::OnExitClick(wxCommandEvent& event)
-{
-    Pa_Terminate();
-    Destroy();
-}
-*/
 
 //-------------------------------------------------------------------------
 // OnTop()
@@ -906,7 +896,6 @@ void MainFrame::OnTogBtnPTT (wxCommandEvent& event)
     m_maxLevel = 0;
     m_textLevel->SetLabel(wxT(""));
     m_gaugeLevel->SetValue(0);
-
     event.Skip();
 }
 
