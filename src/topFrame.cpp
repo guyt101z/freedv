@@ -243,7 +243,6 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     // Squelch Toggle Checkbox
     //------------------------------
     m_ckboxSQ = new wxCheckBox(this, wxID_ANY, _(""), wxDefaultPosition, wxDefaultSize, wxCHK_2STATE);
-    m_ckboxSQ->SetToolTip(_("Activate/Deactivate Squelch"));
 
     sbSizer3->Add(m_ckboxSQ, 0, wxALIGN_CENTER_HORIZONTAL, 0);
     rightSizer->Add(sbSizer3, 2, wxALIGN_CENTER_HORIZONTAL|wxEXPAND, 0);
@@ -259,6 +258,27 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     sbSizer3_33->Add(m_rbSync, 0, wxALIGN_CENTER|wxALL, 1);
 
     rightSizer->Add(sbSizer3_33,0, wxALIGN_CENTER_HORIZONTAL|wxALL|wxEXPAND, 3);
+
+    /* new --- */
+
+    //------------------------------
+    // Mode box
+    //------------------------------
+    wxStaticBoxSizer* sbSizer_mode;
+    sbSizer_mode = new wxStaticBoxSizer(new wxStaticBox(this, wxID_ANY, _("Mode")), wxVERTICAL);
+
+    m_rb1400old = new wxRadioButton( this, wxID_ANY, wxT("1400 V0.91"), wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
+    sbSizer_mode->Add(m_rb1400old, 0, wxALIGN_LEFT|wxALL, 1);
+    m_rb1400 = new wxRadioButton( this, wxID_ANY, wxT("1400"), wxDefaultPosition, wxDefaultSize, 0);
+    sbSizer_mode->Add(m_rb1400, 0, wxALIGN_LEFT|wxALL, 1);
+    m_rb1600 = new wxRadioButton( this, wxID_ANY, wxT("1600"), wxDefaultPosition, wxDefaultSize, 0);
+    sbSizer_mode->Add(m_rb1600, 0, wxALIGN_LEFT|wxALL, 1);
+    m_rb2000 = new wxRadioButton( this, wxID_ANY, wxT("2000"), wxDefaultPosition, wxDefaultSize, 0);
+    sbSizer_mode->Add(m_rb2000, 0, wxALIGN_LEFT|wxALL, 1);
+
+    rightSizer->Add(sbSizer_mode,0, wxALIGN_CENTER_HORIZONTAL|wxALL|wxEXPAND, 3);
+
+    /* new --- */
 
     //=====================================================
     // Control Toggles box

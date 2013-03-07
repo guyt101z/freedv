@@ -1,7 +1,7 @@
 //==========================================================================
 // Name:            fdmdv2_main.cpp
 //
-// Purpose:         Implements simple wxWidgets application with GUI.
+// Purpose:         FreeDV main()
 // Created:         Apr. 9, 2012
 // Authors:         David Rowe, David Witten
 // 
