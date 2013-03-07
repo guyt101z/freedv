@@ -2470,22 +2470,24 @@ void per_frame_rx_processing(
                     // FEC Decoding  --------------------------------------------------------------
 
                     if (g_mode == MODE_2000) {
+                        int recd_codeword, codeword1, codeword2;
+
                         /* decode first codeword */
 
                         recd_codeword = 0;
                         for(i=0; i<12; i++) {
                             recd_codeword <<= 1;
-                            recd_codeword |= unpacked_input_bits[i];
+                            recd_codeword |= codec_bits[i];
                         }
-                        for(i=bits_per_output_frame; i<bits_per_output_frame+11; i++) {
+                        for(i=bits_per_codec_frame; i<bits_per_codec_frame+11; i++) {
                             recd_codeword <<= 1;
-                            recd_codeword |= unpacked_input_bits[i];
+                            recd_codeword |= codec_bits[i];
                         }
                         codeword1 = golay23_decode(recd_codeword);
                         //fprintf(stderr, "received codeword1: 0x%x  decoded codeword1: 0x%x\n", recd_codeword, codeword1);
 
                         for(i=0; i<12; i++) {
-                            unpacked_output_bits[i] = codeword1 >> (22-i);
+                            codec_bits[i] = codeword1 >> (22-i);
                         }
 
                         /* decode second codeword */
@@ -2493,21 +2495,21 @@ void per_frame_rx_processing(
                         recd_codeword = 0;
                         for(i=12; i<24; i++) {
                             recd_codeword <<= 1;
-                            recd_codeword |= unpacked_input_bits[i];
+                            recd_codeword |= codec_bits[i];
                         }
-                        for(i=bits_per_output_frame+11; i<bits_per_output_frame+11+11; i++) {
+                        for(i=bits_per_codec_frame+11; i<bits_per_codec_frame+11+11; i++) {
                             recd_codeword <<= 1;
-                            recd_codeword |= unpacked_input_bits[i];
+                            recd_codeword |= codec_bits[i];
                         }
                         codeword2 = golay23_decode(recd_codeword);
                         //fprintf(stderr, "received codeword2: 0x%x  decoded codeword2: 0x%x\n", recd_codeword, codeword2);
 
                         for(i=0; i<12; i++) {
-                            unpacked_output_bits[12+i] = codeword2 >> (22-i);
+                            codec_bits[12+i] = codeword2 >> (22-i);
                         }
-                   }
+                    }
 
-                   // extract data bit ------------------------------------------------------------
+                    // extract data bit ------------------------------------------------------------
 
                     data_flag_index = codec2_get_spare_bit_index(c2);
                     printf("data_flag_index: %d\n", data_flag_index);
