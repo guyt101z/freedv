@@ -38,13 +38,28 @@ PlotScatter::PlotScatter(wxFrame* parent) : PlotPanel(parent)
 {
     int i;
 
-    for(i=0; i < SCATTER_MEM_SYMS; i++)
+    for(i=0; i < SCATTER_MEM_SYMS_MAX; i++)
     {
         m_mem[i].real = 0.0;
         m_mem[i].imag = 0.0;
     }
 
     m_filter_max_xy = 0.1;
+
+    // defaults so we start off with something sensible
+
+    Nsym = 14+1;
+    scatterMemSyms = ((int)(SCATTER_MEM_SECS*(Nsym/DT)));
+    assert(scatterMemSyms <= SCATTER_MEM_SYMS_MAX);
+        
+}
+
+// changing number of carriers changes number of symoles to plot
+void PlotScatter::setNc(int Nc) {
+    Nsym = Nc+1;
+    assert(Nsym <= (FDMDV_NC_MAX+1));
+    scatterMemSyms = ((int)(SCATTER_MEM_SECS*(Nsym/DT)));
+    assert(scatterMemSyms <= SCATTER_MEM_SYMS_MAX);
 }
 
 //----------------------------------------------------------------
@@ -78,14 +93,14 @@ void PlotScatter::draw(wxAutoBufferedPaintDC& dc)
 
     // shift memory
 
-    for(i = 0; i < SCATTER_MEM_SYMS-FDMDV_NSYM; i++)
+    for(i = 0; i < scatterMemSyms - Nsym; i++)
     {
-        m_mem[i] = m_mem[i+FDMDV_NSYM];
+        m_mem[i] = m_mem[i+Nsym];
     }
 
     // new samples
 
-    for(j=0; i < SCATTER_MEM_SYMS; i++,j++)
+    for(j=0; i < scatterMemSyms; i++,j++)
     {
         m_mem[i] = m_new_samples[j];
     }
@@ -94,7 +109,7 @@ void PlotScatter::draw(wxAutoBufferedPaintDC& dc)
 
     float max_xy = 1E-12;
     float real,imag;
-    for(i=0; i< SCATTER_MEM_SYMS; i++) {
+    for(i=0; i< scatterMemSyms; i++) {
         real = fabs(m_mem[i].real);
         imag = fabs(m_mem[i].imag);
         if (real > max_xy)
@@ -112,7 +127,7 @@ void PlotScatter::draw(wxAutoBufferedPaintDC& dc)
 
     // draw all samples
 
-    for(i = 0; i < SCATTER_MEM_SYMS; i++)
+    for(i = 0; i < scatterMemSyms; i++)
     {
         x = x_scale * m_mem[i].real + m_rGrid.GetWidth()/2;
         y = y_scale * m_mem[i].imag + m_rGrid.GetHeight()/2;
@@ -129,7 +144,7 @@ void PlotScatter::add_new_samples(COMP samples[])
 {
     int i;
 
-    for(i = 0; i < FDMDV_NSYM; i++)
+    for(i = 0; i < Nsym; i++)
     {
         m_new_samples[i] = samples[i];
     }

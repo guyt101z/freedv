@@ -44,7 +44,7 @@
 #define SCATTER_MEM_SECS    2
 // (symbols/frame)/(graphics update period) = symbols/s sent to scatter memory
 // memory (symbols) = secs of memory * symbols/sec
-#define SCATTER_MEM_SYMS    ((int)(SCATTER_MEM_SECS*(FDMDV_NSYM/DT)))
+#define SCATTER_MEM_SYMS_MAX    ((int)(SCATTER_MEM_SECS*((FDMDV_NC_MAX+1)/DT)))
 
 // Waveform plotting constants
 
@@ -62,8 +62,9 @@
 #define N48                 (N8*FDMDV_OS)                  // processing buffer size at 48 kHz
 #define NUM_CHANNELS        2                              // I think most sound cards prefer stereo we will convert to mono
 
-#define BITS_PER_CODEC_FRAME  (2 * FDMDV_BITS_PER_FRAME)
-#define BYTES_PER_CODEC_FRAME (BITS_PER_CODEC_FRAME / 8)
+#define MAX_BITS_PER_CODEC_FRAME 64                            // 1600 bit/s mode
+#define MAX_BYTES_PER_CODEC_FRAME (MAX_BITS_PER_CODEC_FRAME/8)
+#define MAX_BITS_PER_FDMDV_FRAME 40                            // 2000 bit/s mode
 
 // Squelch
 #define SQ_DEFAULT_SNR      4.0
@@ -91,5 +92,12 @@ enum
 
 #define CODEC2_LPC_PF_GAMMA 0.5
 #define CODEC2_LPC_PF_BETA  0.2
+
+// FreeDV modes
+
+#define MODE_1400_V0_91  0   // Legacy 1400 from Dec 2012 V0.91 release with incorrect QPSK mapping
+#define MODE_1400        1   // 1400 bit/s codec, no FEC
+#define MODE_1600        2   // 1600 bit/s codec, no FEC
+#define MODE_2000        3   // 1400 bit/s codec, 600 bit/s FEC on most sensitive bits, 2000 bit/s total
 
 #endif  //__FDMDV2_DEFINES__

@@ -34,6 +34,7 @@
 // ------------------------------------------------------------------
 
 // Global Codec2 & modem states - just one reqd for tx & rx
+int                 g_mode;
 struct CODEC2      *g_pCodec2;
 struct FDMDV       *g_pFDMDV;
 struct FDMDV_STATS  g_stats;
@@ -57,7 +58,7 @@ struct FIFO         *g_rxDataOutFifo;
 
 // tx/rx processing states
 int                 g_nRxIn = FDMDV_NOM_SAMPLES_PER_FRAME;
-int                 g_CodecBits[2 * FDMDV_BITS_PER_FRAME];
+int                 g_CodecBits[MAX_BITS_PER_CODEC_FRAME];
 int                 g_State;
 paCallBackData     *g_rxUserdata;
 
@@ -1481,6 +1482,8 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
         // Start Running -------------------------------------------------
         //
 
+        // modify some button states when running
+
         m_togBtnSplit->Enable();
         //m_togRxID->Enable();
         //m_togTxID->Enable();
@@ -1493,10 +1496,47 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
 */
         m_togBtnOnOff->SetLabel(wxT("Stop"));
 
+        m_rb1400old->Disable();
+        m_rb1400->Disable();
+        m_rb1600->Disable();
+        m_rb2000->Disable();
+
+        // determine what mode we are using
+
+        int Nc, codec2_mode;
+        if (m_rb1400old->GetValue()) {
+            g_mode = MODE_1400_V0_91;
+            Nc = 14;
+            codec2_mode = CODEC2_MODE_1400;
+        }
+        if (m_rb1400->GetValue()) {
+            g_mode = MODE_1400;
+            Nc = 14;
+            codec2_mode = CODEC2_MODE_1400;
+        }
+        if (m_rb1600->GetValue()) {
+            g_mode = MODE_1600;
+            Nc = 16;
+            codec2_mode = CODEC2_MODE_1600;
+        }
+        if (m_rb2000->GetValue()) {
+            g_mode = MODE_2000;
+            Nc = 20;
+            codec2_mode = CODEC2_MODE_1400;
+        }
+        printf("g_mode: %d  Nc: %d  codec2_mode: %d\n", g_mode, Nc, codec2_mode);
+
         // init modem and codec states
 
-        g_pFDMDV  = fdmdv_create();
-        g_pCodec2 = codec2_create(CODEC2_MODE_1400);
+        g_pFDMDV  = fdmdv_create(Nc);
+        g_pCodec2 = codec2_create(codec2_mode);
+
+        if (g_mode == MODE_1400_V0_91)
+            fdmdv_use_old_qpsk_mapping(g_pFDMDV);
+
+        // adjust scatter diagram for Number of FDM carriers
+
+        m_panelScatter->setNc(Nc);
 
         // init Codec 2 LPC Post Filter
 
@@ -1554,6 +1594,10 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
         m_togBtnAnalog->Disable();
         //m_btnTogPTT->Disable();
         m_togBtnOnOff->SetLabel(wxT("Start"));
+        m_rb1400old->Enable();
+        m_rb1400->Enable();
+        m_rb1600->Enable();
+        m_rb2000->Enable();
     }
 }
 
@@ -2305,14 +2349,24 @@ void per_frame_rx_processing(
     short               output_buf[N8*2];
     COMP                rx_fdm[FDMDV_MAX_SAMPLES_PER_FRAME];
     COMP                rx_fdm_offset[FDMDV_MAX_SAMPLES_PER_FRAME];
-    int                 rx_bits[FDMDV_BITS_PER_FRAME];
-    unsigned char       packed_bits[BYTES_PER_CODEC_FRAME];
+    int                 rx_bits[MAX_BITS_PER_FDMDV_FRAME];
+    unsigned char       packed_bits[MAX_BYTES_PER_CODEC_FRAME];
     float               rx_spec[FDMDV_NSPEC];
     int                 i;
     int                 nin_prev;
     int                 bit;
     int                 byte;
     int                 next_state;
+    int                 bits_per_fdmdv_frame, bits_per_codec_frame, bytes_per_codec_frame;
+
+    bits_per_fdmdv_frame = fdmdv_bits_per_frame(g_pFDMDV);
+    printf(" bits_per_fdmdv_frame: %d\n", bits_per_fdmdv_frame);
+    assert(bits_per_fdmdv_frame <= MAX_BITS_PER_FDMDV_FRAME);
+    bits_per_codec_frame = codec2_bits_per_frame(c2);
+    assert(bits_per_codec_frame <= MAX_BITS_PER_CODEC_FRAME);
+    assert((bits_per_codec_frame % 8) == 0);
+    bytes_per_codec_frame = bits_per_codec_frame/8;
+    assert(bytes_per_codec_frame <= MAX_BYTES_PER_CODEC_FRAME);
 
     //
     //  This while loop will run the demod 0, 1 (nominal) or 2 times:
@@ -2380,7 +2434,7 @@ void per_frame_rx_processing(
                 {
                     next_state = 1;
                 }
-        //printf("sync state: %d\n", *state);
+                //printf("sync state: %d\n", *state);
                 break;
 
             case 1:
@@ -2388,7 +2442,7 @@ void per_frame_rx_processing(
                 {
                     next_state = 2;
                     // first half of frame of codec bits
-                    memcpy(codec_bits, rx_bits, FDMDV_BITS_PER_FRAME * sizeof(int));
+                    memcpy(codec_bits, rx_bits, bits_per_fdmdv_frame * sizeof(int));
                 }
                 else
                 {
@@ -2408,14 +2462,15 @@ void per_frame_rx_processing(
                 }
                 if(sync_bit == 1)
                 {
-                    int  data_flag_index;
+                    int  data_flag_index, valid;
 
                     // second half of frame of codec bits
-                    memcpy(&codec_bits[FDMDV_BITS_PER_FRAME], rx_bits, FDMDV_BITS_PER_FRAME*sizeof(int));
+                    memcpy(&codec_bits[bits_per_fdmdv_frame], rx_bits, bits_per_fdmdv_frame *sizeof(int));
 
                     // extract data bit
 
                     data_flag_index = codec2_get_spare_bit_index(c2);
+                    printf("data_flag_index: %d\n", data_flag_index);
                     assert(data_flag_index != -1); // not supported for all rates
                     
                     short abit = codec_bits[data_flag_index];
@@ -2430,14 +2485,15 @@ void per_frame_rx_processing(
 
                     // reconstruct missing bit we steal for data bit and decode speech
                         
-                    codec2_rebuild_spare_bit(c2, codec_bits);
+                    valid = codec2_rebuild_spare_bit(c2, codec_bits);
+                    assert(valid != -1);
 
                     // pack bits, MSB received first
 
                     bit  = 7;
                     byte = 0;
-                    memset(packed_bits, 0, BYTES_PER_CODEC_FRAME);
-                    for(i = 0; i < BITS_PER_CODEC_FRAME; i++)
+                    memset(packed_bits, 0,  bytes_per_codec_frame);
+                    for(i = 0; i < bits_per_codec_frame; i++)
                     {
                         packed_bits[byte] |= (codec_bits[i] << bit);
                         bit--;
@@ -2447,7 +2503,7 @@ void per_frame_rx_processing(
                             byte++;
                         }
                     }
-                    assert(byte == BYTES_PER_CODEC_FRAME);
+                    assert(byte ==  bytes_per_codec_frame);
 
                     // add decoded speech to end of output buffer
 
@@ -2468,20 +2524,29 @@ void per_frame_tx_processing(
                                             CODEC2  *c2             // Codec 2 states
                                         )
 {
-    unsigned char  packed_bits[BYTES_PER_CODEC_FRAME];
-    int            bits[BITS_PER_CODEC_FRAME];
+    unsigned char  packed_bits[MAX_BYTES_PER_CODEC_FRAME];
+    int            bits[MAX_BITS_PER_CODEC_FRAME];
     COMP           tx_fdm[2*FDMDV_NOM_SAMPLES_PER_FRAME];
     COMP           tx_fdm_offset[2*FDMDV_NOM_SAMPLES_PER_FRAME];
     int            sync_bit;
     int            i, bit, byte, data_flag_index;
     short          abit;
+    int            bits_per_fdmdv_frame, bits_per_codec_frame, bytes_per_codec_frame;
+
+    bits_per_fdmdv_frame = fdmdv_bits_per_frame(g_pFDMDV);
+    assert(bits_per_fdmdv_frame <= MAX_BITS_PER_FDMDV_FRAME);
+    bits_per_codec_frame = codec2_bits_per_frame(c2);
+    assert(bits_per_codec_frame <= MAX_BITS_PER_CODEC_FRAME);
+    assert((bits_per_codec_frame % 8) == 0);
+    bytes_per_codec_frame = bits_per_codec_frame/8;
+    assert(bytes_per_codec_frame <= MAX_BYTES_PER_CODEC_FRAME);
 
     codec2_encode(c2, packed_bits, input_buf);
 
     /* unpack bits, MSB first */
 
     bit = 7; byte = 0;
-    for(i=0; i<BITS_PER_CODEC_FRAME; i++) {
+    for(i=0; i<bits_per_codec_frame; i++) {
         bits[i] = (packed_bits[byte] >> bit) & 0x1;
         bit--;
         if (bit < 0) {
@@ -2489,7 +2554,7 @@ void per_frame_tx_processing(
             byte++;
         }
     }
-    assert(byte == BYTES_PER_CODEC_FRAME);
+    assert(byte == bytes_per_codec_frame);
 
     // voice/data flag is a spare bit in 1400 bit/s frame that
     // codec defines.  Use this 1 bit/frame to send call sign data
@@ -2507,7 +2572,7 @@ void per_frame_tx_processing(
     fdmdv_mod(g_pFDMDV, tx_fdm, bits, &sync_bit);
     assert(sync_bit == 1);
 
-    fdmdv_mod(g_pFDMDV, &tx_fdm[FDMDV_NOM_SAMPLES_PER_FRAME], &bits[FDMDV_BITS_PER_FRAME], &sync_bit);
+    fdmdv_mod(g_pFDMDV, &tx_fdm[FDMDV_NOM_SAMPLES_PER_FRAME], &bits[bits_per_fdmdv_frame], &sync_bit);
     assert(sync_bit == 0);
 
     fdmdv_freq_shift(tx_fdm_offset, tx_fdm, g_TxFreqOffsetHz, &g_TxFreqOffsetPhaseRect, &g_TxFreqOffsetFreqRect, 2*FDMDV_NOM_SAMPLES_PER_FRAME);

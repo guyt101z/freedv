@@ -34,10 +34,11 @@ class PlotScatter : public PlotPanel
         PlotScatter(wxFrame* parent);
         ~PlotScatter(){};
 	void add_new_samples(COMP samples[]);
+	void setNc(int Nc);
 
     protected:
-        COMP m_mem[SCATTER_MEM_SYMS];
-        COMP m_new_samples[FDMDV_NSYM];
+        COMP m_mem[SCATTER_MEM_SYMS_MAX];
+        COMP m_new_samples[FDMDV_NC_MAX+1];
 
         void draw(wxAutoBufferedPaintDC&  dc);
         void OnPaint(wxPaintEvent& event);
@@ -47,6 +48,8 @@ class PlotScatter : public PlotPanel
         DECLARE_EVENT_TABLE()
 
     private:
+        int   Nsym;
+        int   scatterMemSyms;
         float m_filter_max_xy;
 };
 
