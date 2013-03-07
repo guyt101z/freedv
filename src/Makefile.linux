@@ -65,9 +65,10 @@ dlg_audiooptions.o \
 dlg_comports.o \
 dlg_filter.o \
 varicode.o \
-sox_biquad.o
+sox_biquad.o \
+codec2-dev/src/golay23.c
 
-HDRS = ../version.h dlg_about.h dlg_audiooptions.h dlg_comports.h dlg_filter.h fdmdv2_main.h fdmdv2_defines.h fdmdv2_plot.h fdmdv2_plot_scalar.h fdmdv2_plot_waterfall_linux.h fdmdv2_plot_scatter.h fdmdv2_plot_spectrum.h fdmdv2_pa_wrapper.h topFrame.h varicode.h
+HDRS = ../version.h dlg_about.h dlg_audiooptions.h dlg_comports.h dlg_filter.h fdmdv2_main.h fdmdv2_defines.h fdmdv2_plot.h fdmdv2_plot_scalar.h fdmdv2_plot_waterfall_linux.h fdmdv2_plot_scatter.h fdmdv2_plot_spectrum.h fdmdv2_pa_wrapper.h topFrame.h varicode.h codec2-dev/src/golay23.h
 
 all: $(WXWIDGETS)/.built $(PORTAUDIO)/.built $(CODEC2)/.built $(SOX)/.built $(CTB)/.built freedv
 

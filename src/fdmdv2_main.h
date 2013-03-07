@@ -54,6 +54,7 @@
 #include "codec2.h"
 #include "codec2_fdmdv.h"
 #include "codec2_fifo.h"
+#include "golay23.h"
 
 #include "ctb-0.16/ctb.h"
 #include "ctb-0.16/portscan.h"
