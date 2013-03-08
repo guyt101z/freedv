@@ -39,6 +39,7 @@ int                 g_mode;
 struct CODEC2      *g_pCodec2;
 struct FDMDV       *g_pFDMDV;
 struct FDMDV_STATS  g_stats;
+float               g_pwr_scale;
 
 // test Frames
 int                 g_testFrames;
@@ -1611,6 +1612,11 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
 
         m_panelScatter->setNc(g_Nc);
 
+        // scale factor for to normalise ouput power across modes
+        // note: PAPR will still be worse for higher Nc, especially in frame test mode
+
+        g_pwr_scale = sqrt((14.0+4.0)/(g_Nc+4.0));
+
         // init Codec 2 LPC Post Filter
 
         codec2_set_lpc_post_filter(g_pCodec2, 
@@ -2779,10 +2785,12 @@ void per_frame_tx_processing(
 
     fdmdv_freq_shift(tx_fdm_offset, tx_fdm, g_TxFreqOffsetHz, &g_TxFreqOffsetPhaseRect, &g_TxFreqOffsetFreqRect, 2*FDMDV_NOM_SAMPLES_PER_FRAME);
 
-    /* scale and convert shorts, normalise depeding on Nc so all modes have same tx pwr */
+    /* compute scale factor to normalise tx power for all modes */
+
+    /* scale and convert shorts */
 
     for(i=0; i<2*FDMDV_NOM_SAMPLES_PER_FRAME; i++)
-        tx_fdm_scaled[i] = FDMDV_SCALE * ((float)FDMDV_NC/g_stats.Nc)*tx_fdm_offset[i].real;
+        tx_fdm_scaled[i] = FDMDV_SCALE * g_pwr_scale * tx_fdm_offset[i].real;
 
 }
 
