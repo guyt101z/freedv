@@ -34,6 +34,7 @@
 // ------------------------------------------------------------------
 
 // Global Codec2 & modem states - just one reqd for tx & rx
+int                 g_Nc;
 int                 g_mode;
 struct CODEC2      *g_pCodec2;
 struct FDMDV       *g_pFDMDV;
@@ -44,6 +45,9 @@ int                 g_testFrames;
 int                 g_test_frame_sync;
 int                 g_total_bits;
 int                 g_total_bit_errors;
+int                 g_sz_error_pattern;
+short              *g_error_pattern;
+struct FIFO        *g_errorFifo;
 
 // time averaged magnitude spectrum used for waterfall and spectrum display
 float               g_avmag[FDMDV_NSPEC];
@@ -198,6 +202,7 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     wxGetApp().m_show_speech_in     = pConfig->Read(wxT("/MainFrame/show_speech_in"),    1);
     wxGetApp().m_show_speech_out    = pConfig->Read(wxT("/MainFrame/show_speech_out"),   1);
     wxGetApp().m_show_demod_in      = pConfig->Read(wxT("/MainFrame/show_demod_in"),     1);
+    wxGetApp().m_show_test_frame_errors = pConfig->Read(wxT("/MainFrame/show_test_frame_errors"),     1);
 
     wxGetApp().m_rxNbookCtrl        = pConfig->Read(wxT("/MainFrame/rxNbookCtrl"),    (long)0);
 
@@ -264,6 +269,13 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
         // Add Frequency Offset window
         m_panelFreqOffset = new PlotScalar((wxFrame*) m_auiNbookCtrl, 1, 5.0, DT, -200, 200, 1, 50, "%3.0fHz", 0);
         m_auiNbookCtrl->AddPage(m_panelFreqOffset, L"Frequency \u0394", true, wxNullBitmap);
+    }
+
+    if(wxGetApp().m_show_test_frame_errors)
+    {
+        // Add Test Frame Errors window
+        m_panelTestFrameErrors = new PlotScalar((wxFrame*) m_auiNbookCtrl, 2*FDMDV_NC_MAX, 30.0, DT, 0, 2*FDMDV_NC_MAX+2, 1, 1, "", 1);
+        m_auiNbookCtrl->AddPage(m_panelTestFrameErrors, L"Test Frame Errors", true, wxNullBitmap);
     }
 
     wxGetApp().m_framesPerBuffer = pConfig->Read(wxT("/Audio/framesPerBuffer"), PA_FPB);
@@ -450,6 +462,7 @@ MainFrame::~MainFrame()
         pConfig->Write(wxT("/MainFrame/show_speech_in"),    wxGetApp().m_show_speech_in);
         pConfig->Write(wxT("/MainFrame/show_speech_out"),   wxGetApp().m_show_speech_out);
         pConfig->Write(wxT("/MainFrame/show_demod_in"),     wxGetApp().m_show_demod_in);
+        pConfig->Write(wxT("/MainFrame/show_test_frame_errors"), wxGetApp().m_show_test_frame_errors);
 
         pConfig->Write(wxT("/MainFrame/rxNbookCtrl"), wxGetApp().m_rxNbookCtrl);
 
@@ -556,6 +569,7 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
     m_panelScatter->Refresh();
 
     // Oscilliscope type speech plots -------------------------------------------------------
+
     short speechInPlotSamples[WAVEFORM_PLOT_BUF];
     if (fifo_read(g_plotSpeechInFifo, speechInPlotSamples, WAVEFORM_PLOT_BUF))
         memset(speechInPlotSamples, 0, WAVEFORM_PLOT_BUF*sizeof(short));
@@ -710,6 +724,8 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
     g_rxUserdata->micInEQEnable = wxGetApp().m_MicInEQEnable;
     g_rxUserdata->spkOutEQEnable = wxGetApp().m_SpkOutEQEnable;
 
+    // Test Frame Bit Error Updates ------------------------------------
+
     // Toggle test frame mode at run time
 
     if (!g_testFrames && m_ckboxTestFrame->GetValue()) {
@@ -724,11 +740,29 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
     if (g_State && g_testFrames) {
         char bits[80], errors[80], ber[80];
 
+        // update stats on main page
+
         sprintf(bits, "Bits...: %d", g_total_bits); wxString bits_string(bits); m_textBits->SetLabel(bits_string);
         sprintf(errors, "Errors: %d", g_total_bit_errors); wxString errors_string(errors); m_textErrors->SetLabel(errors_string);
         float b = (float)g_total_bit_errors/(1E-6+g_total_bits);
         sprintf(ber, "BER...: %4.3f", b); wxString ber_string(ber); m_textBER->SetLabel(ber_string);
         
+        // update error plots
+        
+        short *error_pattern = new short[g_sz_error_pattern];
+
+        if (fifo_read(g_errorFifo, error_pattern, g_sz_error_pattern) == 0) {
+            int i,b;
+            for(b=0; b<g_Nc*2; b++) {
+                for(i=b; i<g_sz_error_pattern; i+= 2*g_Nc)
+                    m_panelTestFrameErrors->add_new_sample(b, b + 0.8*error_pattern[i]);
+            }
+                
+            m_panelTestFrameErrors->Refresh();
+       }
+
+
+        delete error_pattern;
     }
        
 }
@@ -1536,32 +1570,38 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
 
         // determine what mode we are using
 
-        int Nc, codec2_mode;
+        int codec2_mode;
         if (m_rb1400old->GetValue()) {
             g_mode = MODE_1400_V0_91;
-            Nc = 14;
+            g_Nc = 14;
             codec2_mode = CODEC2_MODE_1400;
         }
         if (m_rb1400->GetValue()) {
             g_mode = MODE_1400;
-            Nc = 14;
+            g_Nc = 14;
             codec2_mode = CODEC2_MODE_1400;
         }
         if (m_rb1600->GetValue()) {
             g_mode = MODE_1600;
-            Nc = 16;
+            g_Nc = 16;
             codec2_mode = CODEC2_MODE_1600;
         }
         if (m_rb2000->GetValue()) {
             g_mode = MODE_2000;
-            Nc = 20;
+            g_Nc = 20;
             codec2_mode = CODEC2_MODE_1400;
         }
-        printf("g_mode: %d  Nc: %d  codec2_mode: %d\n", g_mode, Nc, codec2_mode);
+        printf("g_mode: %d  Nc: %d  codec2_mode: %d\n", g_mode, g_Nc, codec2_mode);
 
         // init modem and codec states
 
-        g_pFDMDV  = fdmdv_create(Nc);
+        g_pFDMDV  = fdmdv_create(g_Nc);
+        g_sz_error_pattern = fdmdv_error_pattern_size(g_pFDMDV);
+        g_error_pattern = (short*)malloc(g_sz_error_pattern*sizeof(short));
+        g_errorFifo = fifo_create(2*g_sz_error_pattern);
+
+        assert(g_error_pattern != NULL);
+
         g_pCodec2 = codec2_create(codec2_mode);
 
         if (g_mode == MODE_1400_V0_91)
@@ -1569,7 +1609,7 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
 
         // adjust scatter diagram for Number of FDM carriers
 
-        m_panelScatter->setNc(Nc);
+        m_panelScatter->setNc(g_Nc);
 
         // init Codec 2 LPC Post Filter
 
@@ -1616,6 +1656,8 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
 
         stopRxStream();
 
+        free(g_error_pattern);
+        fifo_destroy(g_errorFifo);
         fdmdv_destroy(g_pFDMDV);
         codec2_destroy(g_pCodec2);
 
@@ -2503,19 +2545,22 @@ void per_frame_rx_processing(
                     if (g_testFrames) {
                         int bit_errors, ntest_bits;
 
-                        // test frame processing 
+                        // test frame processing, g_test_frame_sync will be asserted when we detect a
+                        // valid test frame.
 
-                        fdmdv_put_test_bits(g_pFDMDV, &g_test_frame_sync, &bit_errors, &ntest_bits, codec_bits);
+                        fdmdv_put_test_bits(g_pFDMDV, &g_test_frame_sync, g_error_pattern, &bit_errors, &ntest_bits, codec_bits);
                         if (g_test_frame_sync == 1) {
                             //printf("bit_errors: %d ntest_bits: %d\n", bit_errors, ntest_bits);
                             g_total_bit_errors += bit_errors;
                             g_total_bits       += ntest_bits;
+                            fifo_write(g_errorFifo, g_error_pattern, g_sz_error_pattern);
                         }
-                        fdmdv_put_test_bits(g_pFDMDV, &g_test_frame_sync, &bit_errors, &ntest_bits, &codec_bits[bits_per_fdmdv_frame]);
+                        fdmdv_put_test_bits(g_pFDMDV, &g_test_frame_sync, g_error_pattern, &bit_errors, &ntest_bits, &codec_bits[bits_per_fdmdv_frame]);
                         if (g_test_frame_sync == 1) {
                             //printf("bit_errors: %d ntest_bits: %d\n", bit_errors, ntest_bits);
                             g_total_bit_errors += bit_errors;
                             g_total_bits       += ntest_bits;
+                            fifo_write(g_errorFifo, g_error_pattern, g_sz_error_pattern);
                         }
 
                         // silent audio

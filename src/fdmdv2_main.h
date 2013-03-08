@@ -189,6 +189,7 @@ class MainApp : public wxApp
         int                 m_show_speech_in;
         int                 m_show_speech_out;
         int                 m_show_demod_in;
+        int                 m_show_test_frame_errors;
 
         // notebook display after tx->rxtransition
         int                 m_rxNbookCtrl;
@@ -306,6 +307,7 @@ class MainFrame : public TopFrame
         PlotScalar*             m_panelSpeechIn;
         PlotScalar*             m_panelSpeechOut;
         PlotScalar*             m_panelDemodIn;
+        PlotScalar*             m_panelTestFrameErrors;
 
         bool                    m_RxRunning;
 
