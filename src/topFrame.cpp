@@ -248,16 +248,37 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     rightSizer->Add(sbSizer3, 2, wxALIGN_CENTER_HORIZONTAL|wxEXPAND, 0);
 
     //------------------------------
-    // Synch Indicator box
+    // Sync  Indicator box
     //------------------------------
     wxStaticBoxSizer* sbSizer3_33;
     sbSizer3_33 = new wxStaticBoxSizer(new wxStaticBox(this, wxID_ANY, _("Sync")), wxVERTICAL);
 
-    m_rbSync = new wxRadioButton( this, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, 0 );
+    m_rbSync = new wxRadioButton( this, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
     m_rbSync->SetForegroundColour( wxColour( 255, 0, 0 ) );
     sbSizer3_33->Add(m_rbSync, 0, wxALIGN_CENTER|wxALL, 1);
 
     rightSizer->Add(sbSizer3_33,0, wxALIGN_CENTER_HORIZONTAL|wxALL|wxEXPAND, 3);
+
+    /* new --- */
+
+    //------------------------------
+    // Test Frames box
+    //------------------------------
+
+    wxStaticBoxSizer* sbSizer_testFrames;
+    sbSizer_testFrames = new wxStaticBoxSizer(new wxStaticBox(this, wxID_ANY, _("Test Frames")), wxVERTICAL);
+
+    m_ckboxTestFrame = new wxCheckBox(this, wxID_ANY, _("Enable"), wxDefaultPosition, wxDefaultSize, wxCHK_2STATE);
+    sbSizer_testFrames->Add(m_ckboxTestFrame, 0, wxALIGN_LEFT, 0);
+
+    m_textBits = new wxStaticText(this, wxID_ANY, wxT("Bits...: 0"), wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
+    sbSizer_testFrames->Add(m_textBits, 0, wxALIGN_LEFT, 1);
+    m_textErrors = new wxStaticText(this, wxID_ANY, wxT("Errors: 0"), wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
+    sbSizer_testFrames->Add(m_textErrors, 0, wxALIGN_LEFT, 1);
+    m_textBER = new wxStaticText(this, wxID_ANY, wxT("BER...: 0.0"), wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
+    sbSizer_testFrames->Add(m_textBER, 0, wxALIGN_LEFT, 1);
+
+    rightSizer->Add(sbSizer_testFrames,0, wxALIGN_CENTER_HORIZONTAL|wxALL|wxEXPAND, 3);
 
     /* new --- */
 
@@ -277,8 +298,6 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     sbSizer_mode->Add(m_rb2000, 0, wxALIGN_LEFT|wxALL, 1);
 
     rightSizer->Add(sbSizer_mode,0, wxALIGN_CENTER_HORIZONTAL|wxALL|wxEXPAND, 3);
-
-    /* new --- */
 
     //=====================================================
     // Control Toggles box

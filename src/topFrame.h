@@ -92,6 +92,12 @@ class TopFrame : public wxFrame
         wxCheckBox* m_ckboxSQ;
         wxStaticText* m_textSQ;
         wxStatusBar* m_statusBar1;
+
+        wxCheckBox    *m_ckboxTestFrame;
+        wxStaticText  *m_textBits;
+        wxStaticText  *m_textErrors;
+        wxStaticText  *m_textBER;
+
         wxRadioButton *m_rbSync;
         wxRadioButton *m_rb1400old;
         wxRadioButton *m_rb1400;
