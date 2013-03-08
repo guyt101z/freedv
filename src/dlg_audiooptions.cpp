@@ -55,7 +55,7 @@ void AudioOptsDialog::buildTestControls(PlotScalar **plotScalar, wxButton **btnT
     wxBoxSizer* bSizer1 = new wxBoxSizer(wxVERTICAL);
 
     wxPanel *panel = new wxPanel(parentPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0);
-    *plotScalar = new PlotScalar((wxFrame*) panel, TEST_WAVEFORM_PLOT_TIME, 1.0/TEST_WAVEFORM_PLOT_FS, -1, 1, 1, 0.2, "", 1);
+    *plotScalar = new PlotScalar((wxFrame*) panel, 1, TEST_WAVEFORM_PLOT_TIME, 1.0/TEST_WAVEFORM_PLOT_FS, -1, 1, 1, 0.2, "", 1);
     (*plotScalar)->SetClientSize(wxSize(TEST_WAVEFORM_X,TEST_WAVEFORM_Y));
     bSizer1->Add(panel, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 8);
 
@@ -989,7 +989,7 @@ void AudioOptsDialog::plotDeviceInputForAFewSecs(int devNum, PlotScalar *plotSca
             short plotSamples[TEST_WAVEFORM_PLOT_BUF];
             if (fifo_read(fifo, plotSamples, TEST_WAVEFORM_PLOT_BUF))
                 memset(plotSamples, 0, TEST_WAVEFORM_PLOT_BUF*sizeof(short));
-            plotScalar->add_new_short_samples(plotSamples, TEST_WAVEFORM_PLOT_BUF, 32767);
+            plotScalar->add_new_short_samples(0, plotSamples, TEST_WAVEFORM_PLOT_BUF, 32767);
             plotScalar->Refresh();
        }
     }
@@ -1081,7 +1081,7 @@ void AudioOptsDialog::plotDeviceOutputForAFewSecs(int devNum, PlotScalar *plotSc
             short plotSamples[TEST_WAVEFORM_PLOT_BUF];
             if (fifo_read(fifo, plotSamples, TEST_WAVEFORM_PLOT_BUF))
                 memset(plotSamples, 0, TEST_WAVEFORM_PLOT_BUF*sizeof(short));
-            plotScalar->add_new_short_samples(plotSamples, TEST_WAVEFORM_PLOT_BUF, 32767);
+            plotScalar->add_new_short_samples(0, plotSamples, TEST_WAVEFORM_PLOT_BUF, 32767);
             plotScalar->Refresh();
        }
     }

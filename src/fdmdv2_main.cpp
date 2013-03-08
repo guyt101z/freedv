@@ -232,7 +232,7 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     if(wxGetApp().m_show_demod_in)
     {
         // Add Demod Input window
-        m_panelDemodIn = new PlotScalar((wxFrame*) m_auiNbookCtrl, WAVEFORM_PLOT_TIME, 1.0/WAVEFORM_PLOT_FS, -1, 1, 1, 0.2, "%2.1f", 0);
+        m_panelDemodIn = new PlotScalar((wxFrame*) m_auiNbookCtrl, 1, WAVEFORM_PLOT_TIME, 1.0/WAVEFORM_PLOT_FS, -1, 1, 1, 0.2, "%2.1f", 0);
         m_auiNbookCtrl->AddPage(m_panelDemodIn, _("Frm Radio"), true, wxNullBitmap);
         g_plotDemodInFifo = fifo_create(2*WAVEFORM_PLOT_BUF);
     }
@@ -240,7 +240,7 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     if(wxGetApp().m_show_speech_in)
     {
         // Add Speech Input window
-        m_panelSpeechIn = new PlotScalar((wxFrame*) m_auiNbookCtrl, WAVEFORM_PLOT_TIME, 1.0/WAVEFORM_PLOT_FS, -1, 1, 1, 0.2, "%2.1f", 0);
+        m_panelSpeechIn = new PlotScalar((wxFrame*) m_auiNbookCtrl, 1, WAVEFORM_PLOT_TIME, 1.0/WAVEFORM_PLOT_FS, -1, 1, 1, 0.2, "%2.1f", 0);
         m_auiNbookCtrl->AddPage(m_panelSpeechIn, _("Frm Mic"), true, wxNullBitmap);
         g_plotSpeechInFifo = fifo_create(2*WAVEFORM_PLOT_BUF);
     }
@@ -248,7 +248,7 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     if(wxGetApp().m_show_speech_out)
     {
         // Add Speech Output window
-        m_panelSpeechOut = new PlotScalar((wxFrame*) m_auiNbookCtrl, WAVEFORM_PLOT_TIME, 1.0/WAVEFORM_PLOT_FS, -1, 1, 1, 0.2, "%2.1f", 0);
+        m_panelSpeechOut = new PlotScalar((wxFrame*) m_auiNbookCtrl, 1, WAVEFORM_PLOT_TIME, 1.0/WAVEFORM_PLOT_FS, -1, 1, 1, 0.2, "%2.1f", 0);
         m_auiNbookCtrl->AddPage(m_panelSpeechOut, _("To Spkr/Hdphns"), true, wxNullBitmap);
         g_plotSpeechOutFifo = fifo_create(2*WAVEFORM_PLOT_BUF);
     }
@@ -256,13 +256,13 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     if(wxGetApp().m_show_timing)
     {
         // Add Timing Offset window
-        m_panelTimeOffset = new PlotScalar((wxFrame*) m_auiNbookCtrl, 5.0, DT, -0.5, 0.5, 1, 0.1, "%2.1f", 0);
+        m_panelTimeOffset = new PlotScalar((wxFrame*) m_auiNbookCtrl, 1, 5.0, DT, -0.5, 0.5, 1, 0.1, "%2.1f", 0);
         m_auiNbookCtrl->AddPage(m_panelTimeOffset, L"Timing \u0394", true, wxNullBitmap);
     }
     if(wxGetApp().m_show_freq)
     {
         // Add Frequency Offset window
-        m_panelFreqOffset = new PlotScalar((wxFrame*) m_auiNbookCtrl, 5.0, DT, -200, 200, 1, 50, "%3.0fHz", 0);
+        m_panelFreqOffset = new PlotScalar((wxFrame*) m_auiNbookCtrl, 1, 5.0, DT, -200, 200, 1, 50, "%3.0fHz", 0);
         m_auiNbookCtrl->AddPage(m_panelFreqOffset, L"Frequency \u0394", true, wxNullBitmap);
     }
 
@@ -559,27 +559,27 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
     short speechInPlotSamples[WAVEFORM_PLOT_BUF];
     if (fifo_read(g_plotSpeechInFifo, speechInPlotSamples, WAVEFORM_PLOT_BUF))
         memset(speechInPlotSamples, 0, WAVEFORM_PLOT_BUF*sizeof(short));
-    m_panelSpeechIn->add_new_short_samples(speechInPlotSamples, WAVEFORM_PLOT_BUF, 32767);
+    m_panelSpeechIn->add_new_short_samples(0, speechInPlotSamples, WAVEFORM_PLOT_BUF, 32767);
     m_panelSpeechIn->Refresh();
 
     short speechOutPlotSamples[WAVEFORM_PLOT_BUF];
     if (fifo_read(g_plotSpeechOutFifo, speechOutPlotSamples, WAVEFORM_PLOT_BUF))
         memset(speechOutPlotSamples, 0, WAVEFORM_PLOT_BUF*sizeof(short));
-    m_panelSpeechOut->add_new_short_samples(speechOutPlotSamples, WAVEFORM_PLOT_BUF, 32767);
+    m_panelSpeechOut->add_new_short_samples(0, speechOutPlotSamples, WAVEFORM_PLOT_BUF, 32767);
     m_panelSpeechOut->Refresh();
 
     short demodInPlotSamples[WAVEFORM_PLOT_BUF];
     if (fifo_read(g_plotDemodInFifo, demodInPlotSamples, WAVEFORM_PLOT_BUF))
         memset(demodInPlotSamples, 0, WAVEFORM_PLOT_BUF*sizeof(short));    
-    m_panelDemodIn->add_new_short_samples(demodInPlotSamples, WAVEFORM_PLOT_BUF, 32767);
+    m_panelDemodIn->add_new_short_samples(0,demodInPlotSamples, WAVEFORM_PLOT_BUF, 32767);
     m_panelDemodIn->Refresh();
 
     // Demod states -----------------------------------------------------------------------
 
-    m_panelTimeOffset->add_new_sample((float)g_stats.rx_timing/FDMDV_NOM_SAMPLES_PER_FRAME);
+    m_panelTimeOffset->add_new_sample(0, (float)g_stats.rx_timing/FDMDV_NOM_SAMPLES_PER_FRAME);
     m_panelTimeOffset->Refresh();
 
-    m_panelFreqOffset->add_new_sample(g_stats.foff);
+    m_panelFreqOffset->add_new_sample(0, g_stats.foff);
     m_panelFreqOffset->Refresh();
 
     // SNR text box and gauge ------------------------------------------------------------

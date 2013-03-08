@@ -36,6 +36,7 @@ END_EVENT_TABLE()
 // PlotScalar()
 //----------------------------------------------------------------
 PlotScalar::PlotScalar(wxFrame* parent, 
+                       int    channels,           // number on channel to plot
 		       float  t_secs,             // time covered by entire x axis in seconds
 		       float  sample_period_secs, // time between each sample in seconds
 		       float  a_min,              // min ampltude of samples being plotted
@@ -50,6 +51,7 @@ PlotScalar::PlotScalar(wxFrame* parent,
 
     m_rCtrl = GetClientRect();
 
+    m_channels = channels;
     m_t_secs = t_secs;
     m_sample_period_secs = sample_period_secs;
     m_a_min = a_min;
@@ -63,9 +65,9 @@ PlotScalar::PlotScalar(wxFrame* parent,
     // work out number of samples we will store and allocate storage
 
     m_samples = m_t_secs/m_sample_period_secs;
-    m_mem = new float[m_samples];
+    m_mem = new float[m_samples*m_channels];
 
-    for(i = 0; i < m_samples; i++)
+    for(i = 0; i < m_samples*m_channels; i++)
     {
         m_mem[i] = 0.0;
     }
@@ -82,28 +84,34 @@ PlotScalar::~PlotScalar()
 //----------------------------------------------------------------
 // add_new_sample()
 //----------------------------------------------------------------
-void PlotScalar::add_new_sample(float sample)
+void PlotScalar::add_new_sample(int channel, float sample)
 {
     int i;
+    int offset = channel*m_samples;
+
+    assert(channel < m_channels);
 
     for(i = 0; i < m_samples-1; i++)
     {
-        m_mem[i] = m_mem[i+1];
+        m_mem[offset+i] = m_mem[offset+i+1];
     }
-    m_mem[m_samples-1] = sample;
+    m_mem[offset+m_samples-1] = sample;
 }
 
 //----------------------------------------------------------------
 // add_new_samples()
 //----------------------------------------------------------------
-void  PlotScalar::add_new_short_samples(short samples[], int length, float scale_factor)
+void  PlotScalar::add_new_short_samples(int channel, short samples[], int length, float scale_factor)
 {
     int i;
+    int offset = channel*m_samples;
+
+    assert(channel < m_channels);
 
     for(i = 0; i < m_samples-length; i++)
-        m_mem[i] = m_mem[i+length];
+        m_mem[offset+i] = m_mem[offset+i+length];
     for(; i < m_samples; i++)
-	m_mem[i] = (float)*samples++/scale_factor;
+	m_mem[offset+i] = (float)*samples++/scale_factor;
 }
 
 //----------------------------------------------------------------
@@ -151,27 +159,32 @@ void PlotScalar::draw(wxAutoBufferedPaintDC&  dc)
 
     prev_x = prev_y = 0; // stop warning
 
-    for(i = 0; i < m_samples; i++)
-    {
-        x = index_to_px * i;
-	a = m_mem[i];
-	if (a < m_a_min) a = m_a_min;
-	if (a > m_a_max) a = m_a_max;
+    // plot each channel 
 
-	// invert y axis and offset by minimum
+    int offset;
+    for(offset=0; offset<m_channels*m_samples; offset+=m_samples) {
 
-        y = m_rGrid.GetHeight() - a_to_py * a + m_a_min*a_to_py;
+        for(i = 0; i < m_samples; i++) {
+            x = index_to_px * i;
+            a = m_mem[offset+i];
+            if (a < m_a_min) a = m_a_min;
+            if (a > m_a_max) a = m_a_max;
 
-	// put inside plot window
+            // invert y axis and offset by minimum
 
-	if (!m_mini) {
-            x += PLOT_BORDER + XLEFT_OFFSET;
-            y += PLOT_BORDER;
+            y = m_rGrid.GetHeight() - a_to_py * a + m_a_min*a_to_py;
+
+            // put inside plot window
+
+            if (!m_mini) {
+                x += PLOT_BORDER + XLEFT_OFFSET;
+                y += PLOT_BORDER;
+            }
+
+            if (i)
+                dc.DrawLine(x, y, prev_x, prev_y);
+            prev_x = x; prev_y = y;
         }
-
-	if (i)
-	    dc.DrawLine(x, y, prev_x, prev_y);
-	prev_x = x; prev_y = y;
     }
 
     drawGraticule(dc);
