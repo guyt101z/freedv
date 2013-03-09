@@ -40,6 +40,7 @@ struct CODEC2      *g_pCodec2;
 struct FDMDV       *g_pFDMDV;
 struct FDMDV_STATS  g_stats;
 float               g_pwr_scale;
+int                 g_clip;
 
 // test Frames
 int                 g_testFrames;
@@ -854,6 +855,19 @@ void MainFrame::OnCmdSliderScroll(wxScrollEvent& event)
 }
 
 //-------------------------------------------------------------------------
+// OnClipEnter()
+//-------------------------------------------------------------------------
+void MainFrame::OnClipEnter(wxCommandEvent& event)
+{
+    wxString clipStr = m_textCtrlClip->GetValue();
+    long value;
+    if(clipStr.ToLong(&value)) {
+        g_clip = (int)value;
+    }
+    printf("g_clip: %d\n", g_clip);
+}
+
+//-------------------------------------------------------------------------
 // OnCheckSQClick()
 //-------------------------------------------------------------------------
 void MainFrame::OnCheckSQClick(wxCommandEvent& event)
@@ -1616,7 +1630,13 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
         // note: PAPR will still be worse for higher Nc, especially in frame test mode
 
         g_pwr_scale = sqrt((14.0+4.0)/(g_Nc+4.0));
-
+        wxString clipStr = m_textCtrlClip->GetValue();
+        long value;
+        if(clipStr.ToLong(&value)) {
+            g_clip = (int)value;
+        }
+        printf("g_clip: %d\n", g_clip);
+        
         // init Codec 2 LPC Post Filter
 
         codec2_set_lpc_post_filter(g_pCodec2, 
@@ -2787,10 +2807,16 @@ void per_frame_tx_processing(
 
     /* compute scale factor to normalise tx power for all modes */
 
-    /* scale and convert shorts */
+    /* scale and convert to shorts */
 
-    for(i=0; i<2*FDMDV_NOM_SAMPLES_PER_FRAME; i++)
-        tx_fdm_scaled[i] = FDMDV_SCALE * g_pwr_scale * tx_fdm_offset[i].real;
+    for(i=0; i<2*FDMDV_NOM_SAMPLES_PER_FRAME; i++) {
+        float s =  tx_fdm_offset[i].real;
+        if (s > g_clip)
+            s = (float)g_clip;
+        if (s < -g_clip)
+            s = (float)g_clip;
+        tx_fdm_scaled[i] = FDMDV_SCALE * g_pwr_scale * s;
+    }
 
 }
 

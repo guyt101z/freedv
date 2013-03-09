@@ -97,6 +97,7 @@ class TopFrame : public wxFrame
         wxStaticText  *m_textBits;
         wxStaticText  *m_textErrors;
         wxStaticText  *m_textBER;
+        wxTextCtrl    *m_textCtrlClip;
 
         wxRadioButton *m_rbSync;
         wxRadioButton *m_rb1400old;
@@ -135,6 +136,8 @@ class TopFrame : public wxFrame
         virtual void OnSliderScrollTop( wxScrollEvent& event ) { event.Skip(); }
         virtual void OnCheckSQClick( wxCommandEvent& event ) { event.Skip(); }
         virtual void OnCheckSNRClick( wxCommandEvent& event ) { event.Skip(); }
+
+        virtual void OnClipEnter( wxCommandEvent& event ) { event.Skip(); }
 
         virtual void OnTogBtnLoopRx( wxCommandEvent& event ) { event.Skip(); }
         virtual void OnTogBtnLoopTx( wxCommandEvent& event ) { event.Skip(); }
