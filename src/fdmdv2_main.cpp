@@ -855,19 +855,6 @@ void MainFrame::OnCmdSliderScroll(wxScrollEvent& event)
 }
 
 //-------------------------------------------------------------------------
-// OnClipEnter()
-//-------------------------------------------------------------------------
-void MainFrame::OnClipEnter(wxCommandEvent& event)
-{
-    wxString clipStr = m_textCtrlClip->GetValue();
-    long value;
-    if(clipStr.ToLong(&value)) {
-        g_clip = (int)value;
-    }
-    printf("g_clip: %d\n", g_clip);
-}
-
-//-------------------------------------------------------------------------
 // OnCheckSQClick()
 //-------------------------------------------------------------------------
 void MainFrame::OnCheckSQClick(wxCommandEvent& event)
@@ -1599,7 +1586,7 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
         if (m_rb1600->GetValue()) {
             g_mode = MODE_1600;
             g_Nc = 16;
-            codec2_mode = CODEC2_MODE_1600;
+            codec2_mode = CODEC2_MODE_1300;
         }
         if (m_rb2000->GetValue()) {
             g_mode = MODE_2000;
@@ -1630,13 +1617,8 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
         // note: PAPR will still be worse for higher Nc, especially in frame test mode
 
         g_pwr_scale = sqrt((14.0+4.0)/(g_Nc+4.0));
-        wxString clipStr = m_textCtrlClip->GetValue();
-        long value;
-        if(clipStr.ToLong(&value)) {
-            g_clip = (int)value;
-        }
-        printf("g_clip: %d\n", g_clip);
-        
+        g_clip = 120;
+
         // init Codec 2 LPC Post Filter
 
         codec2_set_lpc_post_filter(g_pCodec2, 
@@ -2465,8 +2447,7 @@ void per_frame_rx_processing(
     assert(bits_per_fdmdv_frame <= MAX_BITS_PER_FDMDV_FRAME);
     bits_per_codec_frame = codec2_bits_per_frame(c2);
     assert(bits_per_codec_frame <= MAX_BITS_PER_CODEC_FRAME);
-    assert((bits_per_codec_frame % 8) == 0);
-    bytes_per_codec_frame = bits_per_codec_frame/8;
+    bytes_per_codec_frame = (bits_per_codec_frame+7)/8;
     assert(bytes_per_codec_frame <= MAX_BYTES_PER_CODEC_FRAME);
 
     //
@@ -2531,7 +2512,7 @@ void per_frame_rx_processing(
                     output_buf[i] = 0;
                 fifo_write(output_fifo, output_buf, N8);
 
-                if(g_stats.fest_coarse_fine == 1)
+                if(g_stats.sync == 1)
                 {
                     next_state = 1;
                 }
@@ -2549,7 +2530,7 @@ void per_frame_rx_processing(
                 {
                     next_state = 1;
                 }
-                if(g_stats.fest_coarse_fine == 0)
+                if(g_stats.sync == 0)
                 {
                     next_state = 0;
                 }
@@ -2557,7 +2538,7 @@ void per_frame_rx_processing(
 
             case 2:
                 next_state = 1;
-                if(g_stats.fest_coarse_fine == 0)
+                if(g_stats.sync == 0)
                 {
                     next_state = 0;
                 }
@@ -2640,6 +2621,34 @@ void per_frame_rx_processing(
                             }
                         }
 
+                        if (g_mode == MODE_1600) {
+                            int recd_codeword, codeword1, j;
+
+                            recd_codeword = 0;
+                            for(i=0; i<8; i++) {
+                                recd_codeword <<= 1;
+                                recd_codeword |= codec_bits[i];
+                            }
+                            for(i=11; i<15; i++) {
+                                recd_codeword <<= 1;
+                                recd_codeword |= codec_bits[i];
+                            }
+                            for(i=bits_per_codec_frame; i<bits_per_codec_frame+11; i++) {
+                                recd_codeword <<= 1;
+                                recd_codeword |= codec_bits[i];
+                            }
+                            codeword1 = golay23_decode(recd_codeword);
+                            //codeword1 = recd_codeword;
+                            //fprintf(stderr, "received codeword1: 0x%x  decoded codeword1: 0x%x\n", recd_codeword, codeword1);
+
+                            for(i=0; i<8; i++) {
+                                codec_bits[i] = (codeword1 >> (22-i)) & 0x1;
+                            }
+                            for(i=8,j=11; i<12; i++,j++) {
+                                codec_bits[j] = (codeword1 >> (22-i)) & 0x1;
+                            }
+                        }
+
                         // extract data bit ------------------------------------------------------------
 
                         data_flag_index = codec2_get_spare_bit_index(c2);
@@ -2676,7 +2685,6 @@ void per_frame_rx_processing(
                                         byte++;
                                     }
                             }
-                        assert(byte ==  bytes_per_codec_frame);
 
                         // add decoded speech to end of output buffer
 
@@ -2712,8 +2720,7 @@ void per_frame_tx_processing(
     assert(bits_per_fdmdv_frame <= MAX_BITS_PER_FDMDV_FRAME);
     bits_per_codec_frame = codec2_bits_per_frame(c2);
     assert(bits_per_codec_frame <= MAX_BITS_PER_CODEC_FRAME);
-    assert((bits_per_codec_frame % 8) == 0);
-    bytes_per_codec_frame = bits_per_codec_frame/8;
+    bytes_per_codec_frame = (bits_per_codec_frame+7)/8;
     assert(bytes_per_codec_frame <= MAX_BYTES_PER_CODEC_FRAME);
 
     codec2_encode(c2, packed_bits, input_buf);
@@ -2729,11 +2736,10 @@ void per_frame_tx_processing(
             byte++;
         }
     }
-    assert(byte == bytes_per_codec_frame);
 
     /* add data bit  ----------------------------------*/
 
-    // spare bit in 1400 bit/s frame that codec defines.  Use this 1
+    // spare bit in frame that codec defines.  Use this 1
     // bit/frame to send call sign data
 
     data_flag_index = codec2_get_spare_bit_index(c2);
@@ -2787,6 +2793,38 @@ void per_frame_tx_processing(
         }
         assert(i <= 2*bits_per_fdmdv_frame);
     }
+
+    if (g_mode == MODE_1600) {
+        int data, codeword1;
+
+        /* Protect first 12 out of first 16 excitation bits with (23,12) Golay Code:
+
+           0,1,2,3: v[0]..v[3]
+           4,5,6,7: MSB of pitch
+           11,12,13,14: MSB of energy
+
+        */
+
+        data = 0;
+        for(i=0; i<8; i++) {
+            data <<= 1;
+            data |= bits[i];
+        }
+        for(i=11; i<15; i++) {
+            data <<= 1;
+            data |= bits[i];
+        }
+        codeword1 = golay23_encode(data);
+
+        /* now pack output frame with parity bits at end to make them
+           as far apart as possible from the data they protect.  Parity
+           bits are LSB of the Golay codeword */
+
+        for(j=0,i=bits_per_codec_frame; i<bits_per_codec_frame+11; i++,j++) {
+            bits[i] = (codeword1 >> (10-j)) & 0x1;
+        }
+    }
+
 
     /* if in test frame mode replace codec payload data with test frames */
 

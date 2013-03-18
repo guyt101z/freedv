@@ -393,7 +393,6 @@ class MainFrame : public TopFrame
 //        void OnSliderScrollTop( wxScrollEvent& event );
         void OnCheckSQClick( wxCommandEvent& event );
         void OnCheckSNRClick( wxCommandEvent& event );
-        void OnClipEnter( wxCommandEvent& event );
 
         // Toggle Buttons
         void OnTogBtnSplitClick(wxCommandEvent& event);

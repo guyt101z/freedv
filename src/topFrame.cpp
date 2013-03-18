@@ -278,9 +278,6 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     m_textBER = new wxStaticText(this, wxID_ANY, wxT("BER...: 0.0"), wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
     sbSizer_testFrames->Add(m_textBER, 0, wxALIGN_LEFT, 1);
 
-    m_textCtrlClip = new wxTextCtrl(this, wxID_ANY, _("120"), wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
-    sbSizer_testFrames->Add(m_textCtrlClip, 1, wxALIGN_LEFT, 1);
-
     rightSizer->Add(sbSizer_testFrames,0, wxALIGN_CENTER_HORIZONTAL|wxALL|wxEXPAND, 3);
 
     /* new --- */
@@ -451,8 +448,6 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
 
     m_ckboxSNR->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(TopFrame::OnCheckSNRClick), NULL, this);
 
-    m_textCtrlClip->Connect(wxEVT_COMMAND_TEXT_ENTER, wxCommandEventHandler(TopFrame::OnClipEnter), NULL, this);
-
     m_togBtnOnOff->Connect(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler(TopFrame::OnTogBtnOnOff), NULL, this);
     m_togBtnSplit->Connect(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler(TopFrame::OnTogBtnSplitClick), NULL, this);
     m_togBtnAnalog->Connect(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler(TopFrame::OnTogBtnAnalogClick), NULL, this);
@@ -501,8 +496,6 @@ TopFrame::~TopFrame()
     m_sliderSQ->Disconnect(wxEVT_SCROLL_CHANGED, wxScrollEventHandler(TopFrame::OnCmdSliderScrollChanged), NULL, this);
     m_sliderSQ->Disconnect(wxEVT_SCROLL_TOP, wxScrollEventHandler(TopFrame::OnSliderScrollTop), NULL, this);
     m_ckboxSQ->Disconnect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(TopFrame::OnCheckSQClick), NULL, this);
-
-    m_textCtrlClip->Disconnect(wxEVT_COMMAND_TEXT_ENTER, wxCommandEventHandler(TopFrame::OnClipEnter), NULL, this);
 
     m_togBtnOnOff->Disconnect(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler(TopFrame::OnTogBtnOnOff), NULL, this);
     m_togBtnSplit->Disconnect(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler(TopFrame::OnTogBtnSplitClick), NULL, this);
