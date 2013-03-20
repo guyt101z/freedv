@@ -2427,7 +2427,7 @@ void per_frame_rx_processing(
                                             CODEC2  *c2             // Codec 2 states
                                         )
 {
-    int                 sync_bit;
+    int                 reliable_sync_bit;
     short               input_buf[FDMDV_MAX_SAMPLES_PER_FRAME];
     short               output_buf[N8*2];
     COMP                rx_fdm[FDMDV_MAX_SAMPLES_PER_FRAME];
@@ -2467,7 +2467,7 @@ void per_frame_rx_processing(
     //  no problem for the decoded audio.
     //
 
-    //printf("state: %d sync: %d nin %d fifo_n %d\n", *state, sync_bit, *nin, fifo_n(input_fifo));
+    //printf("state: %d sync: %d nin %d \n", *state, sync_bit, *nin);
     while (fifo_read(input_fifo, input_buf, *nin) == 0)
     {
         nin_prev = *nin;
@@ -2479,7 +2479,7 @@ void per_frame_rx_processing(
             rx_fdm[i].imag = 0.0;
         }
         fdmdv_freq_shift(rx_fdm_offset, rx_fdm, g_RxFreqOffsetHz, &g_RxFreqOffsetPhaseRect, &g_RxFreqOffsetFreqRect, *nin);
-        fdmdv_demod(g_pFDMDV, rx_bits, &sync_bit, rx_fdm_offset, nin);
+        fdmdv_demod(g_pFDMDV, rx_bits, &reliable_sync_bit, rx_fdm_offset, nin);
 
         // compute rx spectrum & get demod stats, and update GUI plot data
         fdmdv_get_rx_spectrum(g_pFDMDV, rx_spec, rx_fdm, nin_prev);
@@ -2514,26 +2514,25 @@ void per_frame_rx_processing(
 
                 if(g_stats.sync == 1)
                 {
-                    next_state = 1;
+                    next_state = 1;                   
                 }
                 //printf("sync state: %d\n", *state);
                 break;
 
             case 1:
-                if(sync_bit == 0)
-                {
-                    next_state = 2;
-                    // first half of frame of codec bits
-                    memcpy(codec_bits, rx_bits, bits_per_fdmdv_frame * sizeof(int));
-                }
-                else
-                {
-                    next_state = 1;
-                }
+                next_state = 2;
                 if(g_stats.sync == 0)
                 {
                     next_state = 0;
                 }
+                if (reliable_sync_bit)
+                {
+                    next_state = 1;
+                }
+
+                // first half of frame of codec bits
+                memcpy(codec_bits, rx_bits, bits_per_fdmdv_frame * sizeof(int));
+
                 break;
 
             case 2:
@@ -2542,161 +2541,166 @@ void per_frame_rx_processing(
                 {
                     next_state = 0;
                 }
-                if(sync_bit == 1)
-                {
-                    int  data_flag_index, valid;
 
-                    // second half of frame of codec bits
-                    memcpy(&codec_bits[bits_per_fdmdv_frame], rx_bits, bits_per_fdmdv_frame *sizeof(int));
+                int  data_flag_index, valid;
 
-                    if (g_testFrames) {
-                        int bit_errors, ntest_bits;
+                // second half of frame of codec bits
+                memcpy(&codec_bits[bits_per_fdmdv_frame], rx_bits, bits_per_fdmdv_frame *sizeof(int));
 
-                        // test frame processing, g_test_frame_sync will be asserted when we detect a
-                        // valid test frame.
+                if (g_testFrames) {
+                    int bit_errors, ntest_bits;
 
-                        fdmdv_put_test_bits(g_pFDMDV, &g_test_frame_sync, g_error_pattern, &bit_errors, &ntest_bits, codec_bits);
-                        if (g_test_frame_sync == 1) {
-                            //printf("bit_errors: %d ntest_bits: %d\n", bit_errors, ntest_bits);
-                            g_total_bit_errors += bit_errors;
-                            g_total_bits       += ntest_bits;
-                            fifo_write(g_errorFifo, g_error_pattern, g_sz_error_pattern);
-                        }
-                        fdmdv_put_test_bits(g_pFDMDV, &g_test_frame_sync, g_error_pattern, &bit_errors, &ntest_bits, &codec_bits[bits_per_fdmdv_frame]);
-                        if (g_test_frame_sync == 1) {
-                            //printf("bit_errors: %d ntest_bits: %d\n", bit_errors, ntest_bits);
-                            g_total_bit_errors += bit_errors;
-                            g_total_bits       += ntest_bits;
-                            fifo_write(g_errorFifo, g_error_pattern, g_sz_error_pattern);
-                        }
+                    // test frame processing, g_test_frame_sync will be asserted when we detect a
+                    // valid test frame.
 
-                        // silent audio
-
-                        for(i=0; i<2*N8; i++)
-                            output_buf[i] = 0;
-
+                    fdmdv_put_test_bits(g_pFDMDV, &g_test_frame_sync, g_error_pattern, &bit_errors, &ntest_bits, codec_bits);
+                    if (g_test_frame_sync == 1) {
+                        //printf("bit_errors: %d ntest_bits: %d\n", bit_errors, ntest_bits);
+                        g_total_bit_errors += bit_errors;
+                        g_total_bits       += ntest_bits;
+                        fifo_write(g_errorFifo, g_error_pattern, g_sz_error_pattern);
                     }
-                    else {
-                        // regular Codec 2 frame decode
-
-                        // FEC Decoding  --------------------------------------------------------------
-
-                        if (g_mode == MODE_2000) {
-                            int recd_codeword, codeword1, codeword2;
-
-                            /* decode first codeword */
-
-                            recd_codeword = 0;
-                            for(i=0; i<12; i++) {
-                                recd_codeword <<= 1;
-                                recd_codeword |= codec_bits[i];
-                            }
-                            for(i=bits_per_codec_frame; i<bits_per_codec_frame+11; i++) {
-                                recd_codeword <<= 1;
-                                recd_codeword |= codec_bits[i];
-                            }
-                            codeword1 = golay23_decode(recd_codeword);
-                            //fprintf(stderr, "received codeword1: 0x%x  decoded codeword1: 0x%x\n", recd_codeword, codeword1);
-
-                            for(i=0; i<12; i++) {
-                                codec_bits[i] = codeword1 >> (22-i);
-                            }
-
-                            /* decode second codeword */
-
-                            recd_codeword = 0;
-                            for(i=12; i<24; i++) {
-                                recd_codeword <<= 1;
-                                recd_codeword |= codec_bits[i];
-                            }
-                            for(i=bits_per_codec_frame+11; i<bits_per_codec_frame+11+11; i++) {
-                                recd_codeword <<= 1;
-                                recd_codeword |= codec_bits[i];
-                            }
-                            codeword2 = golay23_decode(recd_codeword);
-                            //fprintf(stderr, "received codeword2: 0x%x  decoded codeword2: 0x%x\n", recd_codeword, codeword2);
-
-                            for(i=0; i<12; i++) {
-                                codec_bits[12+i] = codeword2 >> (22-i);
-                            }
-                        }
-
-                        if (g_mode == MODE_1600) {
-                            int recd_codeword, codeword1, j;
-
-                            recd_codeword = 0;
-                            for(i=0; i<8; i++) {
-                                recd_codeword <<= 1;
-                                recd_codeword |= codec_bits[i];
-                            }
-                            for(i=11; i<15; i++) {
-                                recd_codeword <<= 1;
-                                recd_codeword |= codec_bits[i];
-                            }
-                            for(i=bits_per_codec_frame; i<bits_per_codec_frame+11; i++) {
-                                recd_codeword <<= 1;
-                                recd_codeword |= codec_bits[i];
-                            }
-                            codeword1 = golay23_decode(recd_codeword);
-                            //codeword1 = recd_codeword;
-                            //fprintf(stderr, "received codeword1: 0x%x  decoded codeword1: 0x%x\n", recd_codeword, codeword1);
-
-                            for(i=0; i<8; i++) {
-                                codec_bits[i] = (codeword1 >> (22-i)) & 0x1;
-                            }
-                            for(i=8,j=11; i<12; i++,j++) {
-                                codec_bits[j] = (codeword1 >> (22-i)) & 0x1;
-                            }
-                        }
-
-                        // extract data bit ------------------------------------------------------------
-
-                        data_flag_index = codec2_get_spare_bit_index(c2);
-                        //printf("data_flag_index: %d\n", data_flag_index);
-                        assert(data_flag_index != -1); // not supported for all rates
-                    
-                        short abit = codec_bits[data_flag_index];
-                        char  ascii_out;
-
-                        int n_ascii = varicode_decode(&g_varicode_dec_states, &ascii_out, &abit, 1, 1);
-                        assert((n_ascii == 0) || (n_ascii == 1));
-                        if (n_ascii) {
-                            short ashort = ascii_out;
-                            fifo_write(g_rxDataOutFifo, &ashort, 1);
-                        }
-
-                        // reconstruct missing bit we steal for data bit and decode speech
-                        
-                        valid = codec2_rebuild_spare_bit(c2, codec_bits);
-                        assert(valid != -1);
-
-                        // pack bits, MSB received first
-
-                        bit  = 7;
-                        byte = 0;
-                        memset(packed_bits, 0,  bytes_per_codec_frame);
-                        for(i = 0; i < bits_per_codec_frame; i++)
-                            {
-                                packed_bits[byte] |= (codec_bits[i] << bit);
-                                bit--;
-                                if(bit < 0)
-                                    {
-                                        bit = 7;
-                                        byte++;
-                                    }
-                            }
-
-                        // add decoded speech to end of output buffer
-
-                        assert(codec2_samples_per_frame(c2) == (2*N8));
-                        codec2_decode(c2, output_buf, packed_bits);
+                    fdmdv_put_test_bits(g_pFDMDV, &g_test_frame_sync, g_error_pattern, &bit_errors, &ntest_bits, &codec_bits[bits_per_fdmdv_frame]);
+                    if (g_test_frame_sync == 1) {
+                        //printf("bit_errors: %d ntest_bits: %d\n", bit_errors, ntest_bits);
+                        g_total_bit_errors += bit_errors;
+                        g_total_bits       += ntest_bits;
+                        fifo_write(g_errorFifo, g_error_pattern, g_sz_error_pattern);
                     }
-                    
-                    fifo_write(output_fifo, output_buf, codec2_samples_per_frame(c2));
+
+                    // silent audio
+
+                    for(i=0; i<2*N8; i++)
+                        output_buf[i] = 0;
 
                 }
+                else {
+                    // regular Codec 2 frame decode
+
+                    // FEC Decoding  --------------------------------------------------------------
+
+                    if (g_mode == MODE_2000) {
+                        int recd_codeword, codeword1, codeword2;
+
+                        /* decode first codeword */
+
+                        recd_codeword = 0;
+                        for(i=0; i<12; i++) {
+                            recd_codeword <<= 1;
+                            recd_codeword |= codec_bits[i];
+                        }
+                        for(i=bits_per_codec_frame; i<bits_per_codec_frame+11; i++) {
+                            recd_codeword <<= 1;
+                            recd_codeword |= codec_bits[i];
+                        }
+                        codeword1 = golay23_decode(recd_codeword);
+                        if (codeword1 != recd_codeword)
+                            printf("codeword1: 0x%x  recd_codeword: 0x%x\n", codeword1,recd_codeword );
+                        //fprintf(stderr, "received codeword1: 0x%x  decoded codeword1: 0x%x\n", recd_codeword, codeword1);
+
+                        for(i=0; i<12; i++) {
+                            codec_bits[i] = codeword1 >> (22-i);
+                        }
+
+                        /* decode second codeword */
+
+                        recd_codeword = 0;
+                        for(i=12; i<24; i++) {
+                            recd_codeword <<= 1;
+                            recd_codeword |= codec_bits[i];
+                        }
+                        for(i=bits_per_codec_frame+11; i<bits_per_codec_frame+11+11; i++) {
+                            recd_codeword <<= 1;
+                            recd_codeword |= codec_bits[i];
+                        }
+                        codeword2 = golay23_decode(recd_codeword);
+                        if (codeword2 != recd_codeword)
+                            printf("codeword2: 0x%x  recd_codeword: 0x%x\n", codeword2,recd_codeword );
+                        //fprintf(stderr, "received codeword2: 0x%x  decoded codeword2: 0x%x\n", recd_codeword, codeword2);
+
+                        for(i=0; i<12; i++) {
+                            codec_bits[12+i] = codeword2 >> (22-i);
+                        }
+                    }
+
+                    if (g_mode == MODE_1600) {
+                        int recd_codeword, codeword1, j;
+
+                        recd_codeword = 0;
+                        for(i=0; i<8; i++) {
+                            recd_codeword <<= 1;
+                            recd_codeword |= codec_bits[i];
+                        }
+                        for(i=11; i<15; i++) {
+                            recd_codeword <<= 1;
+                            recd_codeword |= codec_bits[i];
+                        }
+                        for(i=bits_per_codec_frame; i<bits_per_codec_frame+11; i++) {
+                            recd_codeword <<= 1;
+                            recd_codeword |= codec_bits[i];
+                        }
+                        codeword1 = golay23_decode(recd_codeword);
+                        //if (codeword1 != recd_codeword)
+                        //    printf("codeword1: 0x%x  recd_codeword: 0x%x\n", codeword1,recd_codeword );
+                        //codeword1 = recd_codeword;
+                        //fprintf(stderr, "received codeword1: 0x%x  decoded codeword1: 0x%x\n", recd_codeword, codeword1);
+
+                        for(i=0; i<8; i++) {
+                            codec_bits[i] = (codeword1 >> (22-i)) & 0x1;
+                        }
+                        for(i=8,j=11; i<12; i++,j++) {
+                            codec_bits[j] = (codeword1 >> (22-i)) & 0x1;
+                        }
+                    }
+
+                    // extract data bit ------------------------------------------------------------
+
+                    data_flag_index = codec2_get_spare_bit_index(c2);
+                    //printf("data_flag_index: %d\n", data_flag_index);
+                    assert(data_flag_index != -1); // not supported for all rates
+                    
+                    short abit = codec_bits[data_flag_index];
+                    char  ascii_out;
+
+                    int n_ascii = varicode_decode(&g_varicode_dec_states, &ascii_out, &abit, 1, 1);
+                    assert((n_ascii == 0) || (n_ascii == 1));
+                    if (n_ascii) {
+                        short ashort = ascii_out;
+                        fifo_write(g_rxDataOutFifo, &ashort, 1);
+                    }
+
+                    // reconstruct missing bit we steal for data bit and decode speech
+                        
+                    valid = codec2_rebuild_spare_bit(c2, codec_bits);
+                    assert(valid != -1);
+
+                    // pack bits, MSB received first
+
+                    bit  = 7;
+                    byte = 0;
+                    memset(packed_bits, 0,  bytes_per_codec_frame);
+                    for(i = 0; i < bits_per_codec_frame; i++)
+                        {
+                            packed_bits[byte] |= (codec_bits[i] << bit);
+                            bit--;
+                            if(bit < 0)
+                                {
+                                    bit = 7;
+                                    byte++;
+                                }
+                        }
+
+                    // add decoded speech to end of output buffer
+
+                    assert(codec2_samples_per_frame(c2) == (2*N8));
+                    codec2_decode(c2, output_buf, packed_bits);
+                }
+                    
+                fifo_write(output_fifo, output_buf, codec2_samples_per_frame(c2));
+ 
                 break;
         }
+        printf("state: %d next_state: %d reliable_sync_bit: %d\n", *state, next_state, reliable_sync_bit);
         *state = next_state;
     }
 }
@@ -2814,6 +2818,7 @@ void per_frame_tx_processing(
             data <<= 1;
             data |= bits[i];
         }
+        data = 
         codeword1 = golay23_encode(data);
 
         /* now pack output frame with parity bits at end to make them
@@ -2823,6 +2828,8 @@ void per_frame_tx_processing(
         for(j=0,i=bits_per_codec_frame; i<bits_per_codec_frame+11; i++,j++) {
             bits[i] = (codeword1 >> (10-j)) & 0x1;
         }
+
+        bits[i] = 0; /* spare bit */
     }
 
 
