@@ -44,7 +44,8 @@ int                 g_clip;
 
 // test Frames
 int                 g_testFrames;
-int                 g_test_frame_sync;
+int                 g_test_frame_sync_state;
+int                 g_test_frame_count;
 int                 g_total_bits;
 int                 g_total_bit_errors;
 int                 g_sz_error_pattern;
@@ -430,7 +431,7 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     golay23_init();
 
     g_testFrames = 0;
-    g_test_frame_sync = 0;
+    g_test_frame_sync_state = 0;
     g_total_bit_errors = 0;
     g_total_bits = 0;
 }
@@ -734,6 +735,7 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
         
         // reset stats on check box off to on transition
         
+        g_test_frame_sync_state = 0;
         g_total_bits = 0;
         g_total_bit_errors = 0;
     }
@@ -2548,24 +2550,47 @@ void per_frame_rx_processing(
                 memcpy(&codec_bits[bits_per_fdmdv_frame], rx_bits, bits_per_fdmdv_frame *sizeof(int));
 
                 if (g_testFrames) {
-                    int bit_errors, ntest_bits;
+                    int bit_errors, ntest_bits, test_frame_sync;
 
                     // test frame processing, g_test_frame_sync will be asserted when we detect a
                     // valid test frame.
 
-                    fdmdv_put_test_bits(g_pFDMDV, &g_test_frame_sync, g_error_pattern, &bit_errors, &ntest_bits, codec_bits);
-                    if (g_test_frame_sync == 1) {
-                        //printf("bit_errors: %d ntest_bits: %d\n", bit_errors, ntest_bits);
-                        g_total_bit_errors += bit_errors;
-                        g_total_bits       += ntest_bits;
-                        fifo_write(g_errorFifo, g_error_pattern, g_sz_error_pattern);
+                    fdmdv_put_test_bits(g_pFDMDV, &test_frame_sync, g_error_pattern, &bit_errors, &ntest_bits, codec_bits);
+
+                    if (test_frame_sync == 1) {
+                        g_test_frame_sync_state = 1;
+                        g_test_frame_count = 0;
                     }
-                    fdmdv_put_test_bits(g_pFDMDV, &g_test_frame_sync, g_error_pattern, &bit_errors, &ntest_bits, &codec_bits[bits_per_fdmdv_frame]);
-                    if (g_test_frame_sync == 1) {
-                        //printf("bit_errors: %d ntest_bits: %d\n", bit_errors, ntest_bits);
-                        g_total_bit_errors += bit_errors;
-                        g_total_bits       += ntest_bits;
-                        fifo_write(g_errorFifo, g_error_pattern, g_sz_error_pattern);
+
+                    if (g_test_frame_sync_state) {
+                        if (g_test_frame_count == 0) {
+                            //printf("bit_errors: %d ntest_bits: %d\n", bit_errors, ntest_bits);
+                            g_total_bit_errors += bit_errors;
+                            g_total_bits       += ntest_bits;
+                            fifo_write(g_errorFifo, g_error_pattern, g_sz_error_pattern);
+                        }
+                        g_test_frame_count++;
+                        if (g_test_frame_count == 4)
+                            g_test_frame_count = 0;
+                    }
+
+                    fdmdv_put_test_bits(g_pFDMDV, &test_frame_sync, g_error_pattern, &bit_errors, &ntest_bits, &codec_bits[bits_per_fdmdv_frame]);
+
+                    if (test_frame_sync == 1) {
+                        g_test_frame_sync_state = 1;
+                        g_test_frame_count = 0;
+                    }
+
+                    if (g_test_frame_sync_state) {
+                        if (g_test_frame_count == 0) {
+                            //printf("bit_errors: %d ntest_bits: %d\n", bit_errors, ntest_bits);
+                            g_total_bit_errors += bit_errors;
+                            g_total_bits       += ntest_bits;
+                            fifo_write(g_errorFifo, g_error_pattern, g_sz_error_pattern);
+                        }
+                        g_test_frame_count++;
+                        if (g_test_frame_count == 4)
+                            g_test_frame_count = 0;
                     }
 
                     // silent audio
@@ -2700,7 +2725,7 @@ void per_frame_rx_processing(
  
                 break;
         }
-        printf("state: %d next_state: %d reliable_sync_bit: %d\n", *state, next_state, reliable_sync_bit);
+        //printf("state: %d next_state: %d reliable_sync_bit: %d\n", *state, next_state, reliable_sync_bit);
         *state = next_state;
     }
 }
