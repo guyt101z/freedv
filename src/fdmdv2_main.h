@@ -402,6 +402,9 @@ class MainFrame : public TopFrame
         void OnTogBtnPTT( wxCommandEvent& event );
         void OnTogBtnOnOff( wxCommandEvent& event );
 
+        void OnCallSignReset( wxCommandEvent& event );
+        void OnBerReset( wxCommandEvent& event );
+
         //System Events
         void OnPaint(wxPaintEvent& event);
         void OnSize( wxSizeEvent& event );

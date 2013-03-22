@@ -87,13 +87,16 @@ class TopFrame : public wxFrame
         wxCheckBox* m_ckboxSNR;
         wxGauge* m_gaugeLevel;
         wxStaticText* m_textLevel;
-        wxTextCtrl* m_txtCtrlCallSign;
+        wxTextCtrl*   m_txtCtrlCallSign;
+        wxButton*     m_BtnCallSignReset;
         wxSlider* m_sliderSQ;
         wxCheckBox* m_ckboxSQ;
         wxStaticText* m_textSQ;
         wxStatusBar* m_statusBar1;
 
         wxCheckBox    *m_ckboxTestFrame;
+
+        wxButton*     m_BtnBerReset;
         wxStaticText  *m_textBits;
         wxStaticText  *m_textErrors;
         wxStaticText  *m_textBER;
@@ -151,6 +154,9 @@ class TopFrame : public wxFrame
         virtual void OnTogBtnTxIDUI(wxUpdateUIEvent& event ) { event.Skip(); }
         virtual void OnTogBtnPTT_UI(wxUpdateUIEvent& event ) { event.Skip(); }
         virtual void OnTogBtnOnOffUI(wxUpdateUIEvent& event ) { event.Skip(); }
+
+        virtual void OnCallSignReset( wxCommandEvent& event ) { event.Skip(); }
+        virtual void OnBerReset( wxCommandEvent& event ) { event.Skip(); }
 
     public:
         wxToggleButton* m_togRxID;

@@ -741,7 +741,7 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
     }
     g_testFrames = m_ckboxTestFrame->GetValue();
 
-    if (g_State && g_testFrames) {
+    if (g_State) {
         char bits[80], errors[80], ber[80];
 
         // update stats on main page
@@ -1009,6 +1009,21 @@ void MainFrame::OnTogBtnAnalogClick (wxCommandEvent& event)
         g_analog = 0;
        
     event.Skip();
+}
+
+void MainFrame::OnCallSignReset(wxCommandEvent& event)
+{
+    m_pcallsign = m_callsign;
+    memset(m_callsign, 0, MAX_CALLSIGN);
+    wxString s;
+    s.Printf("%s", m_callsign);
+    m_txtCtrlCallSign->SetValue(s);
+}
+
+void MainFrame::OnBerReset(wxCommandEvent& event)
+{
+    g_total_bits = 0;
+    g_total_bit_errors = 0;
 }
 
 #ifdef ALC
@@ -1568,10 +1583,11 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
         m_togBtnOnOff->SetLabel(wxT("Stop"));
 
         m_rb1400old->Disable();
-        m_rb1400->Disable();
         m_rb1600->Disable();
+#ifdef DISABLED_FEATURE
+        m_rb1400->Disable();
         m_rb2000->Disable();
-
+#endif
         // determine what mode we are using
 
         int codec2_mode;
@@ -1580,22 +1596,27 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
             g_Nc = 14;
             codec2_mode = CODEC2_MODE_1400;
         }
+       
+#ifdef DISABLED_FEATURE
         if (m_rb1400->GetValue()) {
             g_mode = MODE_1400;
             g_Nc = 14;
             codec2_mode = CODEC2_MODE_1400;
         }
+#endif
         if (m_rb1600->GetValue()) {
             g_mode = MODE_1600;
             g_Nc = 16;
             codec2_mode = CODEC2_MODE_1300;
         }
+#ifdef DISABLED_FEATURE
         if (m_rb2000->GetValue()) {
             g_mode = MODE_2000;
             g_Nc = 20;
             codec2_mode = CODEC2_MODE_1400;
         }
         printf("g_mode: %d  Nc: %d  codec2_mode: %d\n", g_mode, g_Nc, codec2_mode);
+#endif
 
         // init modem and codec states
 
@@ -1680,9 +1701,11 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
         //m_btnTogPTT->Disable();
         m_togBtnOnOff->SetLabel(wxT("Start"));
         m_rb1400old->Enable();
-        m_rb1400->Enable();
         m_rb1600->Enable();
+#ifdef DISABLED_FEATURE
+        m_rb1400->Enable();
         m_rb2000->Enable();
+#endif
     }
 }
 
@@ -2619,8 +2642,11 @@ void per_frame_rx_processing(
                             recd_codeword |= codec_bits[i];
                         }
                         codeword1 = golay23_decode(recd_codeword);
-                        if (codeword1 != recd_codeword)
-                            printf("codeword1: 0x%x  recd_codeword: 0x%x\n", codeword1,recd_codeword );
+                        g_total_bit_errors += golay23_count_errors(recd_codeword, codeword1);
+                        g_total_bits       += 23;
+
+                        //if (codeword1 != recd_codeword)
+                        //    printf("codeword1: 0x%x  recd_codeword: 0x%x\n", codeword1,recd_codeword );
                         //fprintf(stderr, "received codeword1: 0x%x  decoded codeword1: 0x%x\n", recd_codeword, codeword1);
 
                         for(i=0; i<12; i++) {
@@ -2639,8 +2665,11 @@ void per_frame_rx_processing(
                             recd_codeword |= codec_bits[i];
                         }
                         codeword2 = golay23_decode(recd_codeword);
-                        if (codeword2 != recd_codeword)
-                            printf("codeword2: 0x%x  recd_codeword: 0x%x\n", codeword2,recd_codeword );
+                        g_total_bit_errors += golay23_count_errors(recd_codeword, codeword2);
+                        g_total_bits       += 23;
+                        
+                        // if (codeword2 != recd_codeword)
+                        //    printf("codeword2: 0x%x  recd_codeword: 0x%x\n", codeword2,recd_codeword );
                         //fprintf(stderr, "received codeword2: 0x%x  decoded codeword2: 0x%x\n", recd_codeword, codeword2);
 
                         for(i=0; i<12; i++) {
@@ -2665,6 +2694,9 @@ void per_frame_rx_processing(
                             recd_codeword |= codec_bits[i];
                         }
                         codeword1 = golay23_decode(recd_codeword);
+                        g_total_bit_errors += golay23_count_errors(recd_codeword, codeword1);
+                        g_total_bits       += 23;
+
                         //if (codeword1 != recd_codeword)
                         //    printf("codeword1: 0x%x  recd_codeword: 0x%x\n", codeword1,recd_codeword );
                         //codeword1 = recd_codeword;

@@ -182,9 +182,13 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     wxBoxSizer* bSizer15;
     bSizer15 = new wxBoxSizer(wxVERTICAL);
 
+    m_BtnCallSignReset = new wxButton(this, wxID_ANY, _("Clear"), wxDefaultPosition, wxDefaultSize, 0);
+    lowerSizer->Add(m_BtnCallSignReset, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+
     m_txtCtrlCallSign = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_READONLY);
     m_txtCtrlCallSign->SetToolTip(_("Call Sign of transmitting station will appear here"));
     bSizer15->Add(m_txtCtrlCallSign, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL|wxEXPAND, 5);
+
     lowerSizer->Add(bSizer15, 1, wxEXPAND, 5);
 
     wxBoxSizer* bSizer141;
@@ -195,7 +199,7 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     //=====================================================
 
     // DR 4 Dec - taken off for screen for Beta release to avoid questions on their use until
-    // we implemen this feature
+    // we implement this feature
  #ifdef UNIMPLEMENTED
     // TxID
     //---------
@@ -271,14 +275,26 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     m_ckboxTestFrame = new wxCheckBox(this, wxID_ANY, _("Enable"), wxDefaultPosition, wxDefaultSize, wxCHK_2STATE);
     sbSizer_testFrames->Add(m_ckboxTestFrame, 0, wxALIGN_LEFT, 0);
 
-    m_textBits = new wxStaticText(this, wxID_ANY, wxT("Bits...: 0"), wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
-    sbSizer_testFrames->Add(m_textBits, 0, wxALIGN_LEFT, 1);
-    m_textErrors = new wxStaticText(this, wxID_ANY, wxT("Errors: 0"), wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
-    sbSizer_testFrames->Add(m_textErrors, 0, wxALIGN_LEFT, 1);
-    m_textBER = new wxStaticText(this, wxID_ANY, wxT("BER...: 0.0"), wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
-    sbSizer_testFrames->Add(m_textBER, 0, wxALIGN_LEFT, 1);
-
     rightSizer->Add(sbSizer_testFrames,0, wxALIGN_CENTER_HORIZONTAL|wxALL|wxEXPAND, 3);
+
+    //------------------------------
+    // BER Frames box
+    //------------------------------
+
+    wxStaticBoxSizer* sbSizer_ber;
+    sbSizer_ber = new wxStaticBoxSizer(new wxStaticBox(this, wxID_ANY, _("Bit Error Rate")), wxVERTICAL);
+
+    m_BtnBerReset = new wxButton(this, wxID_ANY, _("Reset"), wxDefaultPosition, wxDefaultSize, 0);
+    sbSizer_ber->Add(m_BtnBerReset, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+
+    m_textBits = new wxStaticText(this, wxID_ANY, wxT("Bits...: 0"), wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
+    sbSizer_ber->Add(m_textBits, 0, wxALIGN_LEFT, 1);
+    m_textErrors = new wxStaticText(this, wxID_ANY, wxT("Errors: 0"), wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
+    sbSizer_ber->Add(m_textErrors, 0, wxALIGN_LEFT, 1);
+    m_textBER = new wxStaticText(this, wxID_ANY, wxT("BER...: 0.0"), wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
+    sbSizer_ber->Add(m_textBER, 0, wxALIGN_LEFT, 1);
+
+    rightSizer->Add(sbSizer_ber,0, wxALIGN_CENTER_HORIZONTAL|wxALL|wxEXPAND, 3);
 
     /* new --- */
 
@@ -290,12 +306,16 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
 
     m_rb1400old = new wxRadioButton( this, wxID_ANY, wxT("1400 V0.91"), wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
     sbSizer_mode->Add(m_rb1400old, 0, wxALIGN_LEFT|wxALL, 1);
+#ifdef DISABLED_FEATURE
     m_rb1400 = new wxRadioButton( this, wxID_ANY, wxT("1400"), wxDefaultPosition, wxDefaultSize, 0);
     sbSizer_mode->Add(m_rb1400, 0, wxALIGN_LEFT|wxALL, 1);
+#endif
     m_rb1600 = new wxRadioButton( this, wxID_ANY, wxT("1600"), wxDefaultPosition, wxDefaultSize, 0);
     sbSizer_mode->Add(m_rb1600, 0, wxALIGN_LEFT|wxALL, 1);
+#ifdef DISABLED_FEATURE
     m_rb2000 = new wxRadioButton( this, wxID_ANY, wxT("2000"), wxDefaultPosition, wxDefaultSize, 0);
     sbSizer_mode->Add(m_rb2000, 0, wxALIGN_LEFT|wxALL, 1);
+#endif
 
     rightSizer->Add(sbSizer_mode,0, wxALIGN_CENTER_HORIZONTAL|wxALL|wxEXPAND, 3);
 
@@ -455,6 +475,9 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     m_togBtnALC->Connect(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler(TopFrame::OnTogBtnALCClick), NULL, this);
 #endif
     m_btnTogPTT->Connect(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler(TopFrame::OnTogBtnPTT), NULL, this);
+
+    m_BtnCallSignReset->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(TopFrame::OnCallSignReset), NULL, this);
+    m_BtnBerReset->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(TopFrame::OnBerReset), NULL, this);
 }
 
 TopFrame::~TopFrame()
