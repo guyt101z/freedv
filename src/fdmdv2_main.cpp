@@ -4,7 +4,7 @@
 // Purpose:         FreeDV main()
 // Created:         Apr. 9, 2012
 // Authors:         David Rowe, David Witten
-// 
+//
 // License:
 //
 //  This program is free software; you can redistribute it and/or modify
@@ -178,7 +178,7 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     m_zoom              = 1.;
     m_serialPort        = NULL;
     m_device            = NULL;
-    
+
     tools->AppendSeparator();
     wxMenuItem* m_menuItemToolsConfigDelete;
     m_menuItemToolsConfigDelete = new wxMenuItem(tools, wxID_ANY, wxString(_("&Restore defaults")) , wxT("Delete config file/keys and restore defaults"), wxITEM_NORMAL);
@@ -187,7 +187,6 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     tools->Append(m_menuItemToolsConfigDelete);
 
     wxConfigBase *pConfig = wxConfigBase::Get();
-    //MainApp theApp = wxGetApp();
 
     // restore frame position and size
     int x = pConfig->Read(wxT("/MainFrame/top"),       50);
@@ -226,7 +225,7 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     if(wxGetApp().m_show_spect)
     {
         // Add Spectrum Plot window
-        m_panelSpectrum = new PlotSpectrum((wxFrame*) m_auiNbookCtrl, g_avmag, 
+        m_panelSpectrum = new PlotSpectrum((wxFrame*) m_auiNbookCtrl, g_avmag,
                                            FDMDV_NSPEC*((float)MAX_F_HZ/FDMDV_MAX_F_HZ));
         m_panelSpectrum->SetToolTip(_("Left click to tune"));
         m_auiNbookCtrl->AddPage(m_panelSpectrum, _("Spectrum"), true, wxNullBitmap);
@@ -366,7 +365,7 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     //m_togBtnALC->Disable();
 
     SetupSerialPort();
-    
+
     // squelch settings
     char sqsnr[15];
     m_sliderSQ->SetValue((int)(g_SquelchLevel*2.0));
@@ -418,13 +417,13 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     g_TxFreqOffsetFreqRect.imag = sin(g_TxFreqOffsetHz);
     g_TxFreqOffsetPhaseRect.real = cos(0.0);
     g_TxFreqOffsetPhaseRect.imag = sin(0.0);
- 
+
     g_tx = 0;
     g_split = 0;
 
     // data states
-    g_txDataInFifo = fifo_create(MAX_CALLSIGN*VARICODE_MAX_BITS);   
-    g_rxDataOutFifo = fifo_create(MAX_CALLSIGN*VARICODE_MAX_BITS);   
+    g_txDataInFifo = fifo_create(MAX_CALLSIGN*VARICODE_MAX_BITS);
+    g_rxDataOutFifo = fifo_create(MAX_CALLSIGN*VARICODE_MAX_BITS);
     varicode_decode_init(&g_varicode_dec_states);
 
     sox_biquad_start();
@@ -503,7 +502,7 @@ MainFrame::~MainFrame()
         pConfig->Write(wxT("/Audio/snrSlow"), wxGetApp().m_snrSlow);
 
         pConfig->Write(wxT("/Data/CallSign"), wxGetApp().m_callSign);
- 
+
         pConfig->Write(wxT("/Filter/MicInEQEnable"), wxGetApp().m_MicInEQEnable);
         pConfig->Write(wxT("/Filter/SpkOutEQEnable"), wxGetApp().m_SpkOutEQEnable);
     }
@@ -515,10 +514,10 @@ MainFrame::~MainFrame()
     m_togBtnAnalog->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnAnalogClickUI), NULL, this);
     //m_togBtnALC->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnALCClickUI), NULL, this);
     //m_btnTogPTT->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnPTT_UI), NULL, this);
-    
+
     CloseSerialPort();
     sox_biquad_finish();
-    
+
     if (m_RxRunning)
     {
         stopRxStream();
@@ -587,7 +586,7 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
 
     short demodInPlotSamples[WAVEFORM_PLOT_BUF];
     if (fifo_read(g_plotDemodInFifo, demodInPlotSamples, WAVEFORM_PLOT_BUF))
-        memset(demodInPlotSamples, 0, WAVEFORM_PLOT_BUF*sizeof(short));    
+        memset(demodInPlotSamples, 0, WAVEFORM_PLOT_BUF*sizeof(short));
     m_panelDemodIn->add_new_short_samples(0,demodInPlotSamples, WAVEFORM_PLOT_BUF, 32767);
     m_panelDemodIn->Refresh();
 
@@ -627,7 +626,7 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
     // Level Gauge -----------------------------------------------------------------------
 
     float tooHighThresh;
-    if (!g_tx && m_RxRunning) 
+    if (!g_tx && m_RxRunning)
     {
         // receive mode - display From Radio peaks
 
@@ -643,7 +642,7 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
 
         tooHighThresh = FROM_RADIO_MAX;
     }
-    else 
+    else
     {
         // transmit mode - display From Mic peaks
 
@@ -656,10 +655,10 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
         // peak from last second
         if (maxSpeechIn > m_maxLevel)
             m_maxLevel = maxSpeechIn;
-        
+
        tooHighThresh = FROM_MIC_MAX;
     }
-    
+
     // Peak Reading meter: updates peaks immediately, then slowly decays
     int maxScaled = (int)(100.0 * ((float)m_maxLevel/32767.0));
     m_gaugeLevel->SetValue(maxScaled);
@@ -701,13 +700,13 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
     // See if any Callsign info received --------------------------------
 
     short ashort;
-    while (fifo_read(g_rxDataOutFifo, &ashort, 1) == 0) {            
+    while (fifo_read(g_rxDataOutFifo, &ashort, 1) == 0) {
         if ((ashort == 13) || ((m_pcallsign - m_callsign) > MAX_CALLSIGN-1)) {
             // CR completes line
             *m_pcallsign = 0;
             m_pcallsign = m_callsign;
         }
-        else 
+        else
         {
             *m_pcallsign++ = (char)ashort;
             wxString s;
@@ -720,7 +719,7 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
     if (m_newMicInFilter || m_newSpkOutFilter) {
         g_mutexProtectingCallbackData.Lock();
         deleteEQFilters(g_rxUserdata);
-        designEQFilters(g_rxUserdata);        
+        designEQFilters(g_rxUserdata);
         g_mutexProtectingCallbackData.Unlock();
         m_newMicInFilter = m_newSpkOutFilter = false;
     }
@@ -732,9 +731,9 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
     // Toggle test frame mode at run time
 
     if (!g_testFrames && m_ckboxTestFrame->GetValue()) {
-        
+
         // reset stats on check box off to on transition
-        
+
         g_test_frame_sync_state = 0;
         g_total_bits = 0;
         g_total_bit_errors = 0;
@@ -750,9 +749,9 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
         sprintf(errors, "Errors: %d", g_total_bit_errors); wxString errors_string(errors); m_textErrors->SetLabel(errors_string);
         float b = (float)g_total_bit_errors/(1E-6+g_total_bits);
         sprintf(ber, "BER...: %4.3f", b); wxString ber_string(ber); m_textBER->SetLabel(ber_string);
-        
+
         // update error plots
-        
+
         short *error_pattern = new short[g_sz_error_pattern];
 
         if (fifo_read(g_errorFifo, error_pattern, g_sz_error_pattern) == 0) {
@@ -761,14 +760,14 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
                 for(i=b; i<g_sz_error_pattern; i+= 2*g_Nc)
                     m_panelTestFrameErrors->add_new_sample(b, b + 0.8*error_pattern[i]);
             }
-                
+
             m_panelTestFrameErrors->Refresh();
        }
 
 
         delete error_pattern;
     }
-       
+
 }
 
 #endif
@@ -798,11 +797,11 @@ void MainFrame::OnTop(wxCommandEvent& event)
 {
     int style = GetWindowStyle();
 
-    if (style & wxSTAY_ON_TOP) 
+    if (style & wxSTAY_ON_TOP)
     {
         style &= ~wxSTAY_ON_TOP;
     }
-    else 
+    else
     {
         style |= wxSTAY_ON_TOP;
     }
@@ -898,12 +897,12 @@ void MainFrame::OnCheckSNRClick(wxCommandEvent& event)
 //-------------------------------------------------------------------------
 void MainFrame::OnTogBtnPTT (wxCommandEvent& event)
 {
-    if (g_tx) 
+    if (g_tx)
     {
         // tx-> rx transition, swap to the page we were on for last rx
-        m_auiNbookCtrl->ChangeSelection(wxGetApp().m_rxNbookCtrl); 
+        m_auiNbookCtrl->ChangeSelection(wxGetApp().m_rxNbookCtrl);
     }
-    else 
+    else
     {
         // rx-> tx transition, swap to Mic In page to monitor speech
         wxGetApp().m_rxNbookCtrl = m_auiNbookCtrl->GetSelection();
@@ -913,7 +912,7 @@ void MainFrame::OnTogBtnPTT (wxCommandEvent& event)
     // Tortured and tortuous logic, it seems to me...
     if(wxGetApp().m_boolUseSerialPTT && m_serialPort != NULL)
     {
-        if(event.IsChecked()) 
+        if(event.IsChecked())
         {
             if(wxGetApp().m_boolUseRTS)     // Use RTS
             {
@@ -937,7 +936,7 @@ void MainFrame::OnTogBtnPTT (wxCommandEvent& event)
                     m_serialPort->ClrLineState(ctb::LinestateDtr);
                 }
             }
-        } 
+        }
         else  // !isChecked() - so Clear
         {
             if(wxGetApp().m_boolUseRTS)     // Use RTS
@@ -962,7 +961,7 @@ void MainFrame::OnTogBtnPTT (wxCommandEvent& event)
                     m_serialPort->SetLineState(ctb::LinestateDtr);
                 }
             }
-        } 
+        }
     }
     // reset level gauge
     m_maxLevel = 0;
@@ -1007,7 +1006,7 @@ void MainFrame::OnTogBtnAnalogClick (wxCommandEvent& event)
         g_analog = 1;
     else
         g_analog = 0;
-       
+
     event.Skip();
 }
 
@@ -1063,7 +1062,7 @@ void MainFrame::OnPlayFileToMicIn(wxCommandEvent& event)
 {
     wxUnusedVar(event);
 
-    if(g_playFileToMicIn) 
+    if(g_playFileToMicIn)
     {
         g_mutexProtectingCallbackData.Lock();
         g_playFileToMicIn = false;
@@ -1071,7 +1070,7 @@ void MainFrame::OnPlayFileToMicIn(wxCommandEvent& event)
         SetStatusText(wxT(""));
         g_mutexProtectingCallbackData.Unlock();
     }
-    else 
+    else
     {
         wxString    soundFile;
         SF_INFO     sfInfo;
@@ -1088,7 +1087,7 @@ void MainFrame::OnPlayFileToMicIn(wxCommandEvent& event)
 
         // add the loop check box
         openFileDialog.SetExtraControlCreator(&createMyExtraPlayFilePanel);
- 
+
         if(openFileDialog.ShowModal() == wxID_CANCEL)
         {
             return;     // the user changed their mind...
@@ -1117,7 +1116,7 @@ void MainFrame::OnPlayFileToMicIn(wxCommandEvent& event)
             wxMessageBox(strErr, wxT("Couldn't open sound file"), wxOK);
             return;
         }
-        
+
         wxWindow * const ctrl = openFileDialog.GetExtraControl();
 
         // Huh?! I just copied wxWidgets-2.9.4/samples/dialogs ....
@@ -1138,7 +1137,7 @@ void MainFrame::OnPlayFileFromRadio(wxCommandEvent& event)
     wxUnusedVar(event);
 
     printf("OnPlayFileFromRadio:: %d\n", (int)g_playFileFromRadio);
-    if (g_playFileFromRadio) 
+    if (g_playFileFromRadio)
     {
         printf("OnPlayFileFromRadio:: Stop\n");
         g_mutexProtectingCallbackData.Lock();
@@ -1147,7 +1146,7 @@ void MainFrame::OnPlayFileFromRadio(wxCommandEvent& event)
         SetStatusText(wxT(""));
         g_mutexProtectingCallbackData.Unlock();
     }
-    else 
+    else
     {
         wxString    soundFile;
         SF_INFO     sfInfo;
@@ -1164,7 +1163,7 @@ void MainFrame::OnPlayFileFromRadio(wxCommandEvent& event)
 
         // add the loop check box
         openFileDialog.SetExtraControlCreator(&createMyExtraPlayFilePanel);
- 
+
         if(openFileDialog.ShowModal() == wxID_CANCEL)
         {
             return;     // the user changed their mind...
@@ -1193,7 +1192,7 @@ void MainFrame::OnPlayFileFromRadio(wxCommandEvent& event)
             wxMessageBox(strErr, wxT("Couldn't open sound file"), wxOK);
             return;
         }
-        
+
         wxWindow * const ctrl = openFileDialog.GetExtraControl();
 
         // Huh?! I just copied wxWidgets-2.9.4/samples/dialogs ....
@@ -1256,7 +1255,7 @@ void MainFrame::OnRecFileFromRadio(wxCommandEvent& event)
 
         // add the loop check box
         openFileDialog.SetExtraControlCreator(&createMyExtraRecFilePanel);
- 
+
         if(openFileDialog.ShowModal() == wxID_CANCEL)
         {
             return;     // the user changed their mind...
@@ -1285,12 +1284,12 @@ void MainFrame::OnRecFileFromRadio(wxCommandEvent& event)
                 sfInfo.samplerate = FS;
             } else {
                 wxMessageBox(wxT("Invalid file format"), wxT("Record File From Radio"), wxOK);
-                return;         
+                return;
             }
         }
         else {
             wxMessageBox(wxT("Invalid file format"), wxT("Record File From Radio"), wxOK);
-            return;         
+            return;
         }
 
         // Bug: on Win32 I cant read m_recFileFromRadioSecs, so have hard coded it
@@ -1324,9 +1323,9 @@ void MainFrame::OnRecFileFromRadio(wxCommandEvent& event)
             wxMessageBox(strErr, wxT("Couldn't open sound file"), wxOK);
             return;
         }
-        
+
         SetStatusText(wxT("Recording File: ") + fileName + wxT(" From Radio") , 0);
-        g_recFileFromRadio = true;           
+        g_recFileFromRadio = true;
     }
 
 }
@@ -1407,7 +1406,7 @@ void MainFrame::OnToolsSetCallSign(wxCommandEvent& event)
 {
     wxUnusedVar(event);
     printf("MainFrame::OnToolSetCallSign\n");
-    wxGetApp().m_callSign = wxGetTextFromUser(wxT("Enter Callsign"), 
+    wxGetApp().m_callSign = wxGetTextFromUser(wxT("Enter Callsign"),
                                               wxT("Enter Callsign"),
                                               wxGetApp().m_callSign);
 }
@@ -1516,19 +1515,19 @@ void MainFrame::OnHelpAbout(wxCommandEvent& event)
 
     // Try to determine current SVN revision from the Internet
     wxURL url(wxT("http://freetel.svn.sourceforge.net/svnroot/freetel/fdmdv2/"));
-    
+
     if(url.GetError() == wxURL_NOERR)
     {
         wxString htmldata;
         wxInputStream *in = url.GetInputStream();
- 
+
         if(in && in->IsOk())
         {
             //printf("In OK\n");
             wxStringOutputStream html_stream(&htmldata);
             in->Read(html_stream);
             //wxLogDebug(htmldata);
- 
+
             wxString s("<h2>freetel - Revision ");
             int startIndex = htmldata.find(s) + s.Length();
             int endIndex = htmldata.find(wxT(": /fdmdv2</h2>"));
@@ -1562,9 +1561,9 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
 
     // we are attempting to start
 
-    if (startStop.IsSameAs("Start")) 
+    if (startStop.IsSameAs("Start"))
     {
-        // 
+        //
         // Start Running -------------------------------------------------
         //
 
@@ -1574,7 +1573,7 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
         //m_togRxID->Enable();
         //m_togTxID->Enable();
         m_togBtnAnalog->Enable();
-/*        
+/*
         if(m_serialPort != NULL)
         {
             m_btnTogPTT->Enable();
@@ -1596,7 +1595,7 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
             g_Nc = 14;
             codec2_mode = CODEC2_MODE_1400;
         }
-       
+
         if (m_rb1600->GetValue()) {
             g_mode = MODE_1600;
             g_Nc = 16;
@@ -1649,10 +1648,10 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
 
         // init Codec 2 LPC Post Filter
 
-        codec2_set_lpc_post_filter(g_pCodec2, 
-                                   wxGetApp().m_codec2LPCPostFilterEnable, 
-                                   wxGetApp().m_codec2LPCPostFilterBassBoost, 
-                                   wxGetApp().m_codec2LPCPostFilterBeta, 
+        codec2_set_lpc_post_filter(g_pCodec2,
+                                   wxGetApp().m_codec2LPCPostFilterEnable,
+                                   wxGetApp().m_codec2LPCPostFilterBassBoost,
+                                   wxGetApp().m_codec2LPCPostFilterBeta,
                                    wxGetApp().m_codec2LPCPostFilterGamma);
 
         g_State = 0;
@@ -1671,18 +1670,18 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
 
         startRxStream();
 
-        if (m_RxRunning) 
+        if (m_RxRunning)
         {
 #ifdef _USE_TIMER
             m_plotTimer.Start(_REFRESH_TIMER_PERIOD, wxTIMER_CONTINUOUS);
 #endif // _USE_TIMER
         }
     }
-   
-    // Stop was pressed or start up failed 
+
+    // Stop was pressed or start up failed
     if (startStop.IsSameAs("Stop") || !m_RxRunning ) {
 
-        // 
+        //
         // Stop Running -------------------------------------------------
         //
 
@@ -1763,7 +1762,7 @@ void MainFrame::destroy_src(void)
     src_delete(g_rxUserdata->outsrc2);
 }
 
-void  MainFrame::initPortAudioDevice(PortAudioWrap *pa, int inDevice, int outDevice, 
+void  MainFrame::initPortAudioDevice(PortAudioWrap *pa, int inDevice, int outDevice,
                                      int soundCard, int sampleRate, int inputChannels)
 {
     // Note all of the wrapper functions below just set values in a
@@ -1817,14 +1816,14 @@ void MainFrame::startRxStream()
         }
 
         m_rxPa = new PortAudioWrap();
- 
+
         if (g_nSoundCards == 0) {
             wxMessageBox(wxT("No Sound Cards configured, use Tools - Audio Config to configure"), wxT("Error"), wxOK);
             delete m_rxPa;
             m_RxRunning = false;
             return;
         }
-                
+
         // Init Sound card 1 ----------------------------------------------
         // sanity check on sound card device numbers
 
@@ -1850,7 +1849,7 @@ void MainFrame::startRxStream()
         else
             inputChannels1 = 2;
 
-        initPortAudioDevice(m_rxPa, g_soundCard1InDeviceNum, g_soundCard1OutDeviceNum, 1, 
+        initPortAudioDevice(m_rxPa, g_soundCard1InDeviceNum, g_soundCard1OutDeviceNum, 1,
                             g_soundCard1SampleRate, inputChannels1);
 
         // Init Sound Card 2 ------------------------------------------------
@@ -1885,8 +1884,8 @@ void MainFrame::startRxStream()
                 inputChannels2 = 1;
             else
                 inputChannels2 = 2;
-         
-            initPortAudioDevice(m_txPa, g_soundCard2InDeviceNum, g_soundCard2OutDeviceNum, 2, 
+
+            initPortAudioDevice(m_txPa, g_soundCard2InDeviceNum, g_soundCard2OutDeviceNum, 2,
                                 g_soundCard2SampleRate, inputChannels2);
         }
 
@@ -1917,7 +1916,7 @@ void MainFrame::startRxStream()
 
         g_rxUserdata->rxinfifo = fifo_create(3 * FDMDV_NOM_SAMPLES_PER_FRAME);
         g_rxUserdata->rxoutfifo = fifo_create(2 * codec2_samples_per_frame(g_pCodec2));
-        
+
         // Init Equaliser Filters ------------------------------------------------------
 
         m_newMicInFilter = m_newSpkOutFilter = true;
@@ -1943,7 +1942,7 @@ void MainFrame::startRxStream()
             m_RxRunning = false;
             return;
         }
-    
+
         m_rxErr = m_rxPa->streamStart();
         if(m_rxErr != paNoError) {
             wxMessageBox(wxT("Sound Card 1 Stream Start Error."), wxT("Error"), wxOK);
@@ -1960,7 +1959,7 @@ void MainFrame::startRxStream()
         // Start sound card 2 ----------------------------------------------------------
 
         if (g_nSoundCards == 2) {
- 
+
             // question: can we use same callback data
             // (g_rxUserdata)or both sound card callbacks?  Is there a
             // chance of them both being called at the same time?  We
@@ -1998,7 +1997,7 @@ void MainFrame::startRxStream()
                 return;
             }
         }
-        
+
         // start tx/rx processing thread
 
         m_txRxThread = new txRxThread;
@@ -2026,7 +2025,7 @@ void *MainFrame::designAnEQFilter(const char filterType[], float freqHz, float g
     void  *sbq;
     int    i, argc;
 
-    assert((strcmp(filterType, "bass") == 0)   || 
+    assert((strcmp(filterType, "bass") == 0)   ||
            (strcmp(filterType, "treble") == 0) ||
            (strcmp(filterType, "equalizer") == 0));
 
@@ -2039,15 +2038,15 @@ void *MainFrame::designAnEQFilter(const char filterType[], float freqHz, float g
     argc = 0;
 
     if ((strcmp(filterType, "bass") == 0) || (strcmp(filterType, "treble") == 0)) {
-        sprintf(arg[argc++], "%s", filterType);                
+        sprintf(arg[argc++], "%s", filterType);
         sprintf(arg[argc++], "%f", gaindB+1E-6);
-        sprintf(arg[argc++], "%f", freqHz);      
+        sprintf(arg[argc++], "%f", freqHz);
     }
 
     if (strcmp(filterType, "equalizer") == 0) {
-        sprintf(arg[argc++], "%s", filterType);                
-        sprintf(arg[argc++], "%f", freqHz);      
-        sprintf(arg[argc++], "%f", Q);      
+        sprintf(arg[argc++], "%s", filterType);
+        sprintf(arg[argc++], "%f", freqHz);
+        sprintf(arg[argc++], "%f", Q);
         sprintf(arg[argc++], "%f", gaindB+1E-6);
     }
 
@@ -2145,12 +2144,12 @@ void resample_for_plot(struct FIFO *plotFifo, short buf[], int length)
 
     nSamples = length/decimation;
 
-    for(sample = 0; sample < nSamples; sample += 2) 
+    for(sample = 0; sample < nSamples; sample += 2)
     {
         st = decimation*sample;
         en = decimation*(sample+2);
         max = min = 0;
-        for(i=st; i<en; i++ ) 
+        for(i=st; i<en; i++ )
         {
             if (max < buf[i]) max = buf[i];
             if (min > buf[i]) min = buf[i];
@@ -2232,7 +2231,7 @@ void txRxProcessing()
             }
         }
         g_mutexProtectingCallbackData.Unlock();
-        
+
         fifo_write(cbData->rxinfifo, in8k_short, n8k);
         resample_for_plot(g_plotDemodInFifo, in8k_short, n8k);
 
@@ -2247,11 +2246,11 @@ void txRxProcessing()
             memcpy(out8k_short, in8k_short, sizeof(short)*n8k);
         }
         else {
-            // we are in sync so use decoded audio 
+            // we are in sync so use decoded audio
             memset(out8k_short, 0, sizeof(short)*N8);
             fifo_read(cbData->rxoutfifo, out8k_short, N8);
         }
-        
+
         // Opional Spk Out EQ Filtering, need mutex as filter can change at run time
         g_mutexProtectingCallbackData.Lock();
         if (cbData->spkOutEQEnable) {
@@ -2295,7 +2294,7 @@ void txRxProcessing()
         // between this sound card and sound card 2.
 
         g_mutexProtectingCallbackData.Lock();
-        while((unsigned)fifo_used(cbData->outfifo1) < 6*N48) 
+        while((unsigned)fifo_used(cbData->outfifo1) < 6*N48)
         {
             g_mutexProtectingCallbackData.Unlock();
 
@@ -2311,7 +2310,7 @@ void txRxProcessing()
             // zero speech input just in case infifo2 underflows
             memset(in48k_short, 0, nsam*sizeof(short));
             fifo_read(cbData->infifo2, in48k_short, nsam);
-           
+
             nout = resample(cbData->insrc2, in8k_short, in48k_short, FS, g_soundCard2SampleRate, 2*N8, nsam);
 
             // optionally use file for mic input signal
@@ -2361,7 +2360,7 @@ void txRxProcessing()
             }
             else
                 per_frame_tx_processing(out8k_short, in8k_short, g_pCodec2);
- 
+
             // output 40ms of modem tone
             nout = resample(cbData->outsrc1, out48k_short, out8k_short, g_soundCard1SampleRate, FS, 2*N48, 2*N8);
             g_mutexProtectingCallbackData.Lock();
@@ -2514,7 +2513,7 @@ void per_frame_rx_processing(
         // compute rx spectrum & get demod stats, and update GUI plot data
         fdmdv_get_rx_spectrum(g_pFDMDV, rx_spec, rx_fdm, nin_prev);
         fdmdv_get_demod_stats(g_pFDMDV, &g_stats);
-       
+
         // Average rx spectrum data using a simple IIR low pass filter
         for(i = 0; i < FDMDV_NSPEC; i++)
         {
@@ -2544,7 +2543,7 @@ void per_frame_rx_processing(
 
                 if(g_stats.sync == 1)
                 {
-                    next_state = 1;                   
+                    next_state = 1;
                 }
                 //printf("sync state: %d\n", *state);
                 break;
@@ -2672,7 +2671,7 @@ void per_frame_rx_processing(
                         codeword2 = golay23_decode(recd_codeword);
                         g_total_bit_errors += golay23_count_errors(recd_codeword, codeword2);
                         g_total_bits       += 23;
-                        
+
                         // if (codeword2 != recd_codeword)
                         //    printf("codeword2: 0x%x  recd_codeword: 0x%x\n", codeword2,recd_codeword );
                         //fprintf(stderr, "received codeword2: 0x%x  decoded codeword2: 0x%x\n", recd_codeword, codeword2);
@@ -2720,7 +2719,7 @@ void per_frame_rx_processing(
                     data_flag_index = codec2_get_spare_bit_index(c2);
                     //printf("data_flag_index: %d\n", data_flag_index);
                     assert(data_flag_index != -1); // not supported for all rates
-                    
+
                     short abit = codec_bits[data_flag_index];
                     char  ascii_out;
 
@@ -2732,7 +2731,7 @@ void per_frame_rx_processing(
                     }
 
                     // reconstruct missing bit we steal for data bit and decode speech
-                        
+
                     valid = codec2_rebuild_spare_bit(c2, codec_bits);
                     assert(valid != -1);
 
@@ -2757,9 +2756,9 @@ void per_frame_rx_processing(
                     assert(codec2_samples_per_frame(c2) == (2*N8));
                     codec2_decode(c2, output_buf, packed_bits);
                 }
-                    
+
                 fifo_write(output_fifo, output_buf, codec2_samples_per_frame(c2));
- 
+
                 break;
         }
         //printf("state: %d next_state: %d reliable_sync_bit: %d\n", *state, next_state, reliable_sync_bit);
@@ -2880,7 +2879,7 @@ void per_frame_tx_processing(
             data <<= 1;
             data |= bits[i];
         }
-        data = 
+        data =
         codeword1 = golay23_encode(data);
 
         /* now pack output frame with parity bits at end to make them
@@ -2962,13 +2961,13 @@ int MainFrame::txCallback(
 
     //#define SC2_LOOPBACK
 #ifdef SC2_LOOPBACK
-    
+
     for(i = 0; i < framesPerBuffer; i++, wptr += 2)
     {
         wptr[0] = indata[i];
         wptr[1] = indata[i];
     }
-    
+
 #else
     fifo_write(cbData->infifo2, indata, framesPerBuffer);
 
@@ -3023,13 +3022,13 @@ void fdmdv2_clickTune(float freq) {
 void MainFrame::SetupSerialPort(void)
 {
     long baudrate;
-    
+
     wxGetApp().m_strRigCtrlBaud.ToLong(&baudrate, 10);
     if(!wxGetApp().m_strRigCtrlPort.IsEmpty())
     {
         wxString protocol = wxGetApp().m_strRigCtrlDatabits + wxGetApp().m_strRigCtrlParity + wxGetApp().m_strRigCtrlStopbits;
         m_serialPort = new ctb::SerialPort();
-        if(m_serialPort->Open(wxGetApp().m_strRigCtrlPort.c_str(), baudrate, protocol.c_str(), ctb::SerialPort::NoFlowControl ) >= 0 ) 
+        if(m_serialPort->Open(wxGetApp().m_strRigCtrlPort.c_str(), baudrate, protocol.c_str(), ctb::SerialPort::NoFlowControl ) >= 0 )
         {
             m_device = m_serialPort;
             //  always start with PTT cleared
@@ -3059,7 +3058,7 @@ void MainFrame::SetupSerialPort(void)
             //m_btnTogPTT->Disable();
         }
     }
-/*    
+/*
     else
     {
         wxMessageBox(wxT("You must select a Serial port to Open!"), wxT("Error"), wxOK);
@@ -3076,7 +3075,7 @@ void MainFrame::CloseSerialPort(void)
     {
         m_serialPort->Close();
         m_serialPort = NULL;
-        m_device     = NULL; 
+        m_device     = NULL;
         //m_btnTogPTT->SetLabel(wxT("PTT"));
         //m_btnTogPTT->Enable(false);
     }
