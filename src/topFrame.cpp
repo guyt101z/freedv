@@ -312,6 +312,8 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
 #endif
     m_rb1600 = new wxRadioButton( this, wxID_ANY, wxT("1600"), wxDefaultPosition, wxDefaultSize, 0);
     sbSizer_mode->Add(m_rb1600, 0, wxALIGN_LEFT|wxALL, 1);
+    m_rb1600Wide = new wxRadioButton( this, wxID_ANY, wxT("1600 Wide"), wxDefaultPosition, wxDefaultSize, 0);
+    sbSizer_mode->Add(m_rb1600Wide, 0, wxALIGN_LEFT|wxALL, 1);
 #ifdef DISABLED_FEATURE
     m_rb2000 = new wxRadioButton( this, wxID_ANY, wxT("2000"), wxDefaultPosition, wxDefaultSize, 0);
     sbSizer_mode->Add(m_rb2000, 0, wxALIGN_LEFT|wxALL, 1);

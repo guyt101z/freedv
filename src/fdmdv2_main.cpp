@@ -1597,19 +1597,22 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
             codec2_mode = CODEC2_MODE_1400;
         }
        
+        if (m_rb1600->GetValue()) {
+            g_mode = MODE_1600;
+            g_Nc = 16;
+            codec2_mode = CODEC2_MODE_1300;
+        }
+        if (m_rb1600Wide->GetValue()) {
+            g_mode = MODE_1600_WIDE;
+            g_Nc = 16;
+            codec2_mode = CODEC2_MODE_1300;
+        }
 #ifdef DISABLED_FEATURE
         if (m_rb1400->GetValue()) {
             g_mode = MODE_1400;
             g_Nc = 14;
             codec2_mode = CODEC2_MODE_1400;
         }
-#endif
-        if (m_rb1600->GetValue()) {
-            g_mode = MODE_1600;
-            g_Nc = 16;
-            codec2_mode = CODEC2_MODE_1300;
-        }
-#ifdef DISABLED_FEATURE
         if (m_rb2000->GetValue()) {
             g_mode = MODE_2000;
             g_Nc = 20;
@@ -1631,6 +1634,8 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
 
         if (g_mode == MODE_1400_V0_91)
             fdmdv_use_old_qpsk_mapping(g_pFDMDV);
+        if (g_mode == MODE_1600_WIDE)
+            fdmdv_set_fsep(g_pFDMDV, FSEP_WIDE);
 
         // adjust scatter diagram for Number of FDM carriers
 
@@ -2677,7 +2682,7 @@ void per_frame_rx_processing(
                         }
                     }
 
-                    if (g_mode == MODE_1600) {
+                    if ((g_mode == MODE_1600) || (g_mode == MODE_1600_WIDE)) {
                         int recd_codeword, codeword1, j;
 
                         recd_codeword = 0;
@@ -2855,7 +2860,7 @@ void per_frame_tx_processing(
         assert(i <= 2*bits_per_fdmdv_frame);
     }
 
-    if (g_mode == MODE_1600) {
+    if ((g_mode == MODE_1600) || (g_mode == MODE_1600_WIDE)) {
         int data, codeword1;
 
         /* Protect first 12 out of first 16 excitation bits with (23,12) Golay Code:

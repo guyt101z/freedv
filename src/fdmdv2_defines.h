@@ -97,7 +97,10 @@ enum
 
 #define MODE_1400_V0_91  0   // Legacy 1400 from Dec 2012 V0.91 release with incorrect QPSK mapping
 #define MODE_1400        1   // 1400 bit/s codec, no FEC
-#define MODE_1600        2   // 1600 bit/s codec, no FEC
+#define MODE_1600        2   // 1300 bit/s codec, + 300 bit/s FEC
 #define MODE_2000        3   // 1400 bit/s codec, 600 bit/s FEC on most sensitive bits, 2000 bit/s total
+#define MODE_1600_WIDE   4   // As per 2 but wide carrier spacing
+
+#define FSEP_WIDE      125
 
 #endif  //__FDMDV2_DEFINES__

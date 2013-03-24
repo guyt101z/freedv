@@ -106,6 +106,7 @@ class TopFrame : public wxFrame
         wxRadioButton *m_rb1400;
         wxRadioButton *m_rb1600;
         wxRadioButton *m_rb2000;
+        wxRadioButton *m_rb1600Wide;
 
         // Virtual event handlers, overide them in your derived class
         virtual void topFrame_OnClose( wxCloseEvent& event ) { event.Skip(); }
