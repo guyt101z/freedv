@@ -8,20 +8,44 @@
 
 SVN_REVISION=$(shell svnversion)
 
+# The list of required libraries, we will build this as we go
+LIBS_TO_BUILD :=
+
 # wxWidgets ---------------------------------------------
 
+ifneq ($(SYSTEM_WXWIDGETS),y)
 WXWIDGETS=wxWidgets-2.9.4
 WX_GTK_PATH=$(WXWIDGETS)/build_gtk
 WX_CONFIG=$(WX_GTK_PATH)/wx-config
+LIBS_TO_BUILD += $(WXWIDGETS)/.built
+else
+WX_CONFIG=$(shell which wx-config)
+endif
 WX_CPPFLAGS = $(shell $(WX_CONFIG) --cxxflags)
 WX_LIBS = $(shell $(WX_CONFIG) --libs core, base, aui, adv, net)
 
 # Portaudio ---------------------------------------------
 
+ifeq ($(SYSTEM_PORTAUDIO),n)
 PORTAUDIO=portaudio
 PORTAUDIO_TARBALL=pa_stable_v19_20111121
 PORTAUDIO_INC=-I$(PORTAUDIO)/include
 PORTAUDIO_LIB=$(PORTAUDIO)/lib/.libs/libportaudio.a
+LIBS_TO_BUILD += $(PORTAUDIO)/.built
+
+# if libasound is available, PortAudio will be using it, so we will
+# need to add it to freedv link line.  To test if it is present, we try
+# to link a small C program with -lasound
+
+LIBASOUND=$(shell echo "int main(void) {return 0;}" | gcc -xc - -lasound 2>/dev/null ; if [ $$? -eq 0 ] ; then echo "-lasound" ; fi )
+
+else
+PORTAUDIO_INC ?= $(shell pkg-config portaudio-2.0 --cflags)
+PORTAUDIO_LIB ?= $(shell pkg-config portaudio-2.0 --libs)
+
+# libasound will be taken care of by pkg-config
+LIBASOUND=
+endif
 
 # Codec 2 -----------------------------------------------
 
@@ -42,15 +66,9 @@ CTB=libctb-0.16
 CTB_INC=-I$(CTB)/include
 CTB_LIB=$(CTB)/lib/libctb-0.16.a
 
-# if libasound is available, PortAudio will be using it, so we will
-# need to add it to freedv link line.  To test if it is present, we try
-# to link a small C program with -lasound
-
-LIBASOUND=$(shell echo "int main(void) {return 0;}" | gcc -xc - -lasound 2>/dev/null ; if [ $$? -eq 0 ] ; then echo "-lasound" ; fi )
-
 # FreeDV ------------------------------------------------
 
-CPP_FLAGS = -D_NO_AUTOTOOLS_ $(WX_CPPFLAGS) $(PORTAUDIO_INC) $(CODEC2_INC) $(SOX_INC) $(CTB_INC) -I. -g -Wall -O3 -DSVN_REVISION=\"$(SVN_REVISION)\"
+CPP_FLAGS = -D_NO_AUTOTOOLS_ $(WX_CPPFLAGS) $(PORTAUDIO_INC) $(CODEC2_INC) $(SOX_INC) $(CTB_INC) -I. -g -Wall -O3 -DSVN_REVISION='"$(SVN_REVISION)"' -MMD -MP
 FREEDV_LIBS = $(WX_LIBS) $(PORTAUDIO_LIB) $(CODEC2_LIB) $(SOX_LIB) $(CTB_LIB) -lm -lpthread -lsndfile -lsamplerate $(LIBASOUND)
 
 OBJS = topFrame.o \
@@ -70,23 +88,24 @@ codec2-dev/src/golay23.c
 
 HDRS = ../version.h dlg_about.h dlg_audiooptions.h dlg_comports.h dlg_filter.h fdmdv2_main.h fdmdv2_defines.h fdmdv2_plot.h fdmdv2_plot_scalar.h fdmdv2_plot_waterfall_linux.h fdmdv2_plot_scatter.h fdmdv2_plot_spectrum.h fdmdv2_pa_wrapper.h topFrame.h varicode.h codec2-dev/src/golay23.h
 
-all: $(WXWIDGETS)/.built $(PORTAUDIO)/.built $(CODEC2)/.built $(SOX)/.built $(CTB)/.built freedv
+all: $(LIBS_TO_BUILD) $(CODEC2)/.built $(SOX)/.built $(CTB)/.built freedv
 
 freedv: $(OBJS) 
-	g++ -o freedv $(OBJS) $(CPP_FLAGS) $(FREEDV_LIBS)
+	$(CXX) -o freedv $(OBJS) $(CPP_FLAGS) $(FREEDV_LIBS)
 	
 %.o: %.cpp $(HDRS)
-	g++ $(CPP_FLAGS) -c $< -o $@
+	$(CXX) $(CPP_FLAGS) -c $< -o $@
         
 clean:
-	rm -f *.o fdmdv2 
+	rm -f *.d *.o fdmdv2
 
 clean-lib:
-	rm -Rf $(WXWIDGETS) $(PORTAUDIO) $(CODEC2) $(SOX) $(CTB)  
-	rm -f *.o fdmdv2 
+	rm -Rf $(WXWIDGETS) $(PORTAUDIO) $(CODEC2) $(SOX) $(CTB)
+	rm -f *.d *.o fdmdv2 
 
 # wxWidgets ---------------------------------------------------------
 
+ifneq ($(WXWIDGETS),)
 $(WXWIDGETS)/.built: $(WXWIDGETS)
 	cd $(WXWIDGETS) && mkdir -p build_gtk && cd build_gtk && ../configure && make && touch ../.built
      
@@ -95,9 +114,11 @@ $(WXWIDGETS): $(WXWIDGETS).tar.bz2
 
 $(WXWIDGETS).tar.bz2:
 	wget http://downloads.sourceforge.net/project/wxwindows/2.9.4/wxWidgets-2.9.4.tar.bz2
- 
+endif
+
 # Portaudio ---------------------------------------------------------
 
+ifneq ($(PORTAUDIO),)
 $(PORTAUDIO)/.built: $(PORTAUDIO)
 	cd $(PORTAUDIO) && ./configure --enable-cxx --without-jack && make && touch .built
      
@@ -106,7 +127,8 @@ $(PORTAUDIO): $(PORTAUDIO_TARBALL).tgz
 
 $(PORTAUDIO_TARBALL).tgz:
 	wget http://www.portaudio.com/archives/$(PORTAUDIO_TARBALL).tgz
- 
+endif
+
 # Codec 2 ----------------------------------------------------------
 
 $(CODEC2)/.built: $(CODEC2)
@@ -138,3 +160,6 @@ $(CTB) : $(CTB).tar.gz
        
 $(CTB).tar.gz:
 	wget https://iftools.com/download/ctb/0.16/libctb-0.16.tar.gz
+
+# Source file dependency information
+-include $(wildcard *.d)
