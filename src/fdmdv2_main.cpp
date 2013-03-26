@@ -189,9 +189,9 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     wxConfigBase *pConfig = wxConfigBase::Get();
 
     // restore frame position and size
-    int x = pConfig->Read(wxT("/MainFrame/top"),       50);
-    int y = pConfig->Read(wxT("/MainFrame/left"),      50);
-    int w = pConfig->Read(wxT("/MainFrame/width"),     650);
+    int x = pConfig->Read(wxT("/MainFrame/top"),       20);
+    int y = pConfig->Read(wxT("/MainFrame/left"),      20);
+    int w = pConfig->Read(wxT("/MainFrame/width"),     550);
     int h = pConfig->Read(wxT("/MainFrame/height"),    400);
 
     // note: run DebugView program to see this message under windows
@@ -1548,6 +1548,15 @@ void MainFrame::OnHelpAbout(wxCommandEvent& event)
     wxMessageBox(msg, wxT("About"), wxOK | wxICON_INFORMATION, this);
 
 #endif // _USE_ABOUT_DIALOG
+#ifdef USE_SIMPLE_ABOUT_DIALOG
+    wxUnusedVar(event);
+    wxAboutDialogInfo info;
+    info.SetCopyright(_("HAMLib Test"));
+    info.SetLicence(_("GPL v2 or later"));
+    info.SetDescription(_("Short description goes here"));
+    ::wxAboutBox(info);
+#endif // USE_SIMPLE_ABOUT_DIALOG
+
 }
 
 //bool wxLaunchDefaultBrowser(http:("http://freedv.org/");
