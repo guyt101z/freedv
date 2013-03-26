@@ -4,7 +4,7 @@
 // Purpose:         Implements simple wxWidgets application with GUI.
 // Created:         Apr. 9, 2012
 // Authors:         David Rowe, David Witten
-//  
+//
 // License:
 //
 //  This program is free software; you can redistribute it and/or modify
@@ -171,7 +171,7 @@ class TopFrame : public wxFrame
         wxToggleButton* m_togBtnLoopTx;
         wxAuiNotebook* m_auiNbookCtrl;
 
-        TopFrame( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("FreeDV ") + _(FREEDV_VERSION), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 761,500 ), long style = wxDEFAULT_FRAME_STYLE|wxRESIZE_BORDER|wxTAB_TRAVERSAL );
+        TopFrame( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("FreeDV ") + _(FREEDV_VERSION), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize(561,300 ), long style = wxDEFAULT_FRAME_STYLE|wxRESIZE_BORDER|wxTAB_TRAVERSAL );
 
         ~TopFrame();
 };
