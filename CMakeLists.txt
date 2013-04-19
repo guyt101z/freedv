@@ -1,16 +1,34 @@
-project(FreeDV)
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8)
 
+# Prevent in-source builds to protect automake/autoconf config.
+set(CMAKE_DISABLE_SOURCE_CHANGES ON)
+set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
+
+project(FreeDV)
+
+#
+# Setup version.
+# This should probably be pulled from an external file at some point.
+#
 set(VERSION_MAJOR 0)
 set(VERSION_MINOR 2)
+# Set to value for patch level releases, otherwise leave as FALSE.
+set(VERSION_PATCH FALSE)
 set(VERSION "${VERSION_MAJOR}.${VERSION_MINOR}")
+if(VERSION_PATCH)
+	set(VERSION ${VERSION}.${VERSION_PATCH})
+endif(VERSION_PATCH)
 
-add_definitions(-D_NO_AUTOTOOLS_ -DSVN_REVISION="1231")
+# Work around for not using a svn working copy.
+add_definitions(-DSVN_REVISION="1234")
+
+# Set default build flags.
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+
 # Setup empty list to add to
 set(FREEDV_LINK_LIBS "")
 
-# Check for a bunch of optional libraries
+# Check for a bunch of libraries
 # Would it be better to assume these are available?
 if(MSVC)
 	find_library(ADVAPI32 advapi32)
@@ -35,59 +53,97 @@ if(MSVC)
 	find_library(WXTIFF wxtiff)
 	find_library(WXZLIB wxzlib)
 
-	set(MSVC_LINK_LIBS ${ADVAPI32} ${COMCTL32} ${COMDLG32} ${GDI32} ${KERNEL32} ${OLE32} ${OLEAUT32} ${RPCRT4} ${SHELL32} ${USER32} ${UUID} ${WINMM} ${WINSPOOL} ${WINSOCK32} ${WZEXPAT} ${WXJPEG} ${WXMSW29U} ${WXPNG} ${WXREGEXU} ${WXTIFF} ${WXZLIB})
-	list(APPEND FREEDV_LINK_LIBS ${MSVC_LINK_LIBS})
+	list(APPEND FREEDV_LINK_LIBS ${ADVAPI32} ${COMCTL32} ${COMDLG32} ${GDI32} ${KERNEL32} ${OLE32} ${OLEAUT32} ${RPCRT4} ${SHELL32} ${USER32} ${UUID} ${WINMM} ${WINSPOOL} ${WINSOCK32} ${WZEXPAT} ${WXJPEG} ${WXMSW29U} ${WXPNG} ${WXREGEXU} ${WXTIFF} ${WXZLIB})
 endif(MSVC)
 
-find_library(LIBM m )
-if(LIBM)
+# Math library is automatic on MSVC
+if(UNIX)
 	set(CMAKE_REQUIRED_INCLUDES math.h)
 	set(CMAKE_REQUIRED_LIBRARIES m)
-endif(LIBM)
+endif(UNIX)
 
-find_library(PORTAUDIO portaudio)
-if(PORTAUDIO)
-	list(APPEND FREEDV_LINK_LIBS ${PORTAUDIO})
-endif(PORTAUDIO)
-find_library(PORTAUDIOCPP portaudiocpp)
-find_library(PTHREAD pthread)
-find_library(LIBSAMPLERATE samplerate)
-if(LIBSAMPLERATE)
-	list(APPEND FREEDV_LINK_LIBS ${LIBSAMPLERATE})
-endif(LIBSAMPLERATE)
-find_library(LIBSNDFILE sndfile)
-if(LIBSNDFILE)
-	list(APPEND FREEDV_LINK_LIBS ${LIBSNDFILE})
-endif(LIBSNDFILE)
-find_library(LIBSOX sox)
-if(LIBSOX)
-	list(APPEND FREEDV_LINK_LIBS ${LIBSOX})
-endif(LIBSOX)
-
-# Find some standard headers.
+# Find some standard headers and functions.
 include(CheckIncludeFiles)
-check_include_files("limits.h;stddef.h;stdlib.h;string.h" STDINC_FOUND)
+check_include_files("limits.h" HAVE_STDINT_H)
+check_include_files("stddef.h" HAVE_STDDEF_H)
+check_include_files("stdlib.h" HAVE_STDLIB_H)
+check_include_files("string.h" HAVE_STRING_H)
+
+include(CheckTypeSize)
+check_type_size("int" SIZEOF_INT)
 
 include(CheckFunctionExists)
 check_function_exists(floor HAVE_FLOOR)
 check_function_exists(memset HAVE_MEMSET)
 check_function_exists(pow HAVE_POW)
 check_function_exists(sqrt HAVE_SQRT)
-add_definitions(-DHAVE_FLOOR=${HAVE_FLOOR}
-                -DHAVE_MEMSET=${HAVE_MEMSET}
-                -DHAVE_POW=${HAVE_POW}
-                -DHAVE_SQRT${HAVE_SQRT} )
+
+configure_file ("${PROJECT_SOURCE_DIR}/cmake/config.h.in"
+                "${PROJECT_BINARY_DIR}/config.h" )
+include_directories(${PROJECT_BINARY_DIR})
+
+# Find portaudio Library
+message(STATUS "Looking for portaudio...")
+find_library(PORTAUDIO portaudio)
+if(PORTAUDIO)
+	list(APPEND FREEDV_LINK_LIBS ${PORTAUDIO})
+	message(STATUS "  portaudio found: ${PORTAUDIO}")
+else(PORTAUDIO)
+	message(FATAL_ERROR "portaudio library not found.")
+endif(PORTAUDIO)
+# Do we need this?
+find_library(PORTAUDIOCPP portaudiocpp)
+
+# Pthread Library
+message(STATUS "Looking for pthread...")
+find_library(PTHREAD pthread)
+if(PTHREAD)
+	# Don't need to add linker flag, wx-config adds it already.
+	message(STATUS "  pthread found: ${PTHREAD}")
+else(PTHREAD)
+	message(FATAL_ERROR "pthread library not found.")
+endif(PTHREAD)
+
+# Samplerate Library
+message(STATUS "Looking for samplerate...")
+find_library(LIBSAMPLERATE samplerate)
+if(LIBSAMPLERATE)
+	list(APPEND FREEDV_LINK_LIBS ${LIBSAMPLERATE})
+	message(STATUS "  samplerate found: ${LIBSAMPLERATE}")
+else(LIBSTAMPLERATE)
+	message(FATAL_ERROR "samplerate library not found.")
+endif(LIBSAMPLERATE)
+
+# sndfile Library
+message(STATUS "Looking for sndfile...")
+find_library(LIBSNDFILE sndfile)
+if(LIBSNDFILE)
+	list(APPEND FREEDV_LINK_LIBS ${LIBSNDFILE})
+	message(STATUS "  sndfile found: ${LIBSNDFILE}")
+else(LIBSNDFILE)
+	message(FATAL_ERROR "sndfile library not found.")
+endif(LIBSNDFILE)
+
+# Find sox library
+message(STATUS "Looking for sox...")
+find_library(LIBSOX sox)
+if(LIBSOX)
+	list(APPEND FREEDV_LINK_LIBS ${LIBSOX})
+	message(STATUS "  sox found: ${LIBSOX}")
+else(LIBSOX)
+	message(FATAL_ERROR "sox library not found.")
+endif(LIBSOX)
 
 # Find wxWidgets
+set(WXCONFIG "" CACHE FILEPATH "Location of wx-config binary.")
+set(WXRC "" CACHE FILEPATH "Location of wxrc binary.")
 message(STATUS "Looking for wxWidgets...")
-if(NOT WXCONFIG)
-	set(WXCONFIG "/usr/bin/wx-config")
+if(WXCONFIG)
+	set(wxWidgets_CONFIG_EXECUTABLE ${WXCONFIG})
 endif()
-set(wxWidgets_CONFIG_EXECUTABLE ${WXCONFIG})
-if(NOT WXRC)
-	set(WXRC "/usr/bin/wxrc")
+if(WXRC)
+	set(wxWidgets_wxrc_EXECUTABLE ${WXRC})
 endif()
-set(wxWidgets_wxrc_EXECUTABLE ${WXRC})
 set(WX_VERSION_MIN 2.9.0)
 find_package(wxWidgets REQUIRED COMPONENTS core base aui html net adv REQUIRED)
 execute_process(COMMAND sh "${wxWidgets_CONFIG_EXECUTABLE}" --version
@@ -116,15 +172,12 @@ endif(wxWidgets_FOUND)
 #
 message(STATUS "Looking for codec2...")
 find_path(CODEC2_INCLUDE_DIR codec2.h
-          PATH_SUFFIXES codec2
-         )
+          PATH_SUFFIXES codec2)
 find_library(CODEC2_LIBRARY NAMES codec2)
-set(CODEC2_LIBRARIES ${CODEC2_LIBRARY})
-set(CODEC2_INCLUDE_DIRS ${CODEC2_INCLUDE_DIR})
-message(STATUS "  codec2 library: ${CODEC2_LIBRARIES}")
-message(STATUS "  codec2 headers: ${CODEC2_INCLUDE_DIRS}")
-include_directories(${CODEC2_INCLUDE_DIRS})
-list(APPEND FREEDV_LINK_LIBS ${CODEC2_LIBRARIES})
+message(STATUS "  codec2 library: ${CODEC2_LIBRARY}")
+message(STATUS "  codec2 headers: ${CODEC2_INCLUDE_DIR}")
+include_directories(${CODEC2_INCLUDE_DIR})
+list(APPEND FREEDV_LINK_LIBS ${CODEC2_LIBRARY})
 
 #
 # Find libctb. Assumes version 0.16
