@@ -36,5 +36,8 @@ set(FREEDV_SOURCES
 add_executable(freedv ${FREEDV_SOURCES})
 target_link_libraries(freedv ${FREEDV_LINK_LIBS})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+if(FREEDV_STATIC_LIBS)
+	add_dependencies(freedv ${FREEDV_STATIC_LIBS})
+endif(FREEDV_STATIC_LIBS)
 install(TARGETS freedv
 	RUNTIME DESTINATION bin)

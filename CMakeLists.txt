@@ -19,11 +19,37 @@ if(VERSION_PATCH)
 	set(VERSION ${VERSION}.${VERSION_PATCH})
 endif(VERSION_PATCH)
 
+set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+
 # Work around for not using a svn working copy.
 add_definitions(-DSVN_REVISION="1234")
 
 # Set default build flags.
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+
+#
+# Setup cmake options
+#
+set(USE_STATIC_DEPS FALSE CACHE BOOL 
+	"Download and build static libraries instead of system libraries.")
+set(USE_STATIC_PORTAUDIO FALSE CACHE BOOL 
+	"Download and build static portaudio instead of the system library.")
+set(USE_STATIC_SNDFILE FALSE CACHE BOOL
+	"Download and build static sndfile instead of the system library.")
+set(USE_STATIC_SAMPLERATE FALSE CACHE BOOL
+	"Download and build static samplerate instead of the system library.")
+set(USE_STATIC_SOX FALSE CACHE BOOL
+	"Download and build static sox instead of the system library.")
+set(USE_STATIC_LIBCTB FALSE CACHE BOOL
+	"Download and build static libctb instead of the system library.")
+if(USE_STATIC_DEPS)
+	set(USE_STATIC_PORTAUDIO TRUE FORCE)
+	set(USE_STATIC_SNDFILE TRUE FORCE)
+	set(USE_STATIC_SAMPLERATE TRUE FORCE)
+	set(USE_STATIC_SOX TRUE FORCE)
+	set(USE_STATIC_LIBCTB TRUE FORCE)
+endif(USE_STATIC_DEPS)
+set(FREEDV_STATIC_LIBS "")
 
 # Setup empty list to add to
 set(FREEDV_LINK_LIBS "")
@@ -64,7 +90,7 @@ endif(UNIX)
 
 # Find some standard headers and functions.
 include(CheckIncludeFiles)
-check_include_files("limits.h" HAVE_STDINT_H)
+check_include_files("limits.h" HAVE_LIMITS_H)
 check_include_files("stddef.h" HAVE_STDDEF_H)
 check_include_files("stdlib.h" HAVE_STDLIB_H)
 check_include_files("string.h" HAVE_STRING_H)
@@ -82,57 +108,78 @@ configure_file ("${PROJECT_SOURCE_DIR}/cmake/config.h.in"
                 "${PROJECT_BINARY_DIR}/config.h" )
 include_directories(${PROJECT_BINARY_DIR})
 
-# Find portaudio Library
-message(STATUS "Looking for portaudio...")
-find_library(PORTAUDIO portaudio)
-if(PORTAUDIO)
-	list(APPEND FREEDV_LINK_LIBS ${PORTAUDIO})
-	message(STATUS "  portaudio found: ${PORTAUDIO}")
-else(PORTAUDIO)
-	message(FATAL_ERROR "portaudio library not found.")
-endif(PORTAUDIO)
+# Find or build portaudio Library
+if(NOT USE_STATIC_PORTAUDIO)
+	message(STATUS "Looking for portaudio...")
+	find_library(PORTAUDIO portaudio)
+	if(PORTAUDIO)
+		list(APPEND FREEDV_LINK_LIBS ${PORTAUDIO})
+		message(STATUS "  portaudio found: ${PORTAUDIO}")
+	else(PORTAUDIO)
+		message(FATAL_ERROR "portaudio library not found.")
+	endif(PORTAUDIO)
+else(NOT USE_STATIC_PORTAUDIO)
+	message(STATUS "Will attempt static build of portaudio.")
+	include(cmake/BuildPortaudio.cmake)
+	list(APPEND FREEDV_LINK_LIBS ${PORTAUDIO_LIBRARIES})
+	include_directories(${PORTAUDIO_INCLUDES})
+endif(NOT USE_STATIC_PORTAUDIO)
 # Do we need this?
-find_library(PORTAUDIOCPP portaudiocpp)
+#find_library(PORTAUDIOCPP portaudiocpp)
 
 # Pthread Library
-message(STATUS "Looking for pthread...")
-find_library(PTHREAD pthread)
-if(PTHREAD)
-	# Don't need to add linker flag, wx-config adds it already.
-	message(STATUS "  pthread found: ${PTHREAD}")
-else(PTHREAD)
-	message(FATAL_ERROR "pthread library not found.")
-endif(PTHREAD)
+find_package(Threads REQUIRED)
+message(STATUS "Threads library flags: ${CMAKE_THREAD_LIBS_INIT}")
 
 # Samplerate Library
-message(STATUS "Looking for samplerate...")
-find_library(LIBSAMPLERATE samplerate)
-if(LIBSAMPLERATE)
-	list(APPEND FREEDV_LINK_LIBS ${LIBSAMPLERATE})
-	message(STATUS "  samplerate found: ${LIBSAMPLERATE}")
-else(LIBSTAMPLERATE)
-	message(FATAL_ERROR "samplerate library not found.")
-endif(LIBSAMPLERATE)
-
+if(NOT USE_STATIC_SAMPLERATE)
+	message(STATUS "Looking for samplerate...")
+	find_library(LIBSAMPLERATE samplerate)
+	if(LIBSAMPLERATE)
+		list(APPEND FREEDV_LINK_LIBS ${LIBSAMPLERATE})
+		message(STATUS "  samplerate found: ${LIBSAMPLERATE}")
+	else(LIBSTAMPLERATE)
+		message(FATAL_ERROR "samplerate library not found.")
+	endif(LIBSAMPLERATE)
+else(NOT USE_STATIC_SAMPLERATE)
+	message(STATUS "Will attempt static build of samplerate.")
+	include(cmake/BuildSamplerate.cmake)
+	list(APPEND FREEDV_LINK_LIBS ${SAMPLERATE_LIBRARIES})
+	include_directories(${SAMPLERATE_INCLUDES})
+endif(NOT USE_STATIC_SAMPLERATE)
+	
 # sndfile Library
-message(STATUS "Looking for sndfile...")
-find_library(LIBSNDFILE sndfile)
-if(LIBSNDFILE)
-	list(APPEND FREEDV_LINK_LIBS ${LIBSNDFILE})
-	message(STATUS "  sndfile found: ${LIBSNDFILE}")
-else(LIBSNDFILE)
-	message(FATAL_ERROR "sndfile library not found.")
-endif(LIBSNDFILE)
+if(NOT USE_STATIC_SNDFILE)
+	message(STATUS "Looking for sndfile...")
+	find_library(LIBSNDFILE sndfile)
+	if(LIBSNDFILE)
+		list(APPEND FREEDV_LINK_LIBS ${LIBSNDFILE})
+		message(STATUS "  sndfile found: ${LIBSNDFILE}")
+	else(LIBSNDFILE)
+		message(FATAL_ERROR "sndfile library not found.")
+	endif(LIBSNDFILE)
+else(NOT USE_STATIC_SNDFILE)
+	message(STATUS "Will attempt static build of sndfile.")
+	include(cmake/BuildSndfile.cmake)
+	list(APPEND FREEDV_LINK_LIBS ${SNDFILE_LIBRARIES})
+	include_directories(${SNDFILE_INCLUDES})
+endif(NOT USE_STATIC_SNDFILE)
 
 # Find sox library
-message(STATUS "Looking for sox...")
-find_library(LIBSOX sox)
-if(LIBSOX)
-	list(APPEND FREEDV_LINK_LIBS ${LIBSOX})
-	message(STATUS "  sox found: ${LIBSOX}")
-else(LIBSOX)
-	message(FATAL_ERROR "sox library not found.")
-endif(LIBSOX)
+if(NOT USE_STATIC_SOX)
+	message(STATUS "Looking for sox...")
+	find_library(LIBSOX sox)
+	if(LIBSOX)
+		list(APPEND FREEDV_LINK_LIBS ${LIBSOX})
+		message(STATUS "  sox found: ${LIBSOX}")
+	else(LIBSOX)
+		message(FATAL_ERROR "sox library not found.")
+	endif(LIBSOX)
+else(NOT USE_STATIC_SOX)
+	include(cmake/BuildSox.cmake)
+	list(APPEND FREEDV_LINK_LIBS ${SOX_LIBRARIES})
+	include_directories(${SOX_INCLUDES})
+endif(NOT USE_STATIC_SOX)
 
 # Find wxWidgets
 set(WXCONFIG "" CACHE FILEPATH "Location of wx-config binary.")
@@ -182,31 +229,33 @@ list(APPEND FREEDV_LINK_LIBS ${CODEC2_LIBRARY})
 #
 # Find libctb. Assumes version 0.16
 #
-message(STATUS "Looking for libctb...")
-find_path(LIBCTB_INCLUDE_DIR ctb.h
-          PATH_SUFFIXES ctb-0.16
-         )
-find_library(LIBCTB_LIBRARY NAMES ctb ctb-0.16)
-set(LIBCTB_LIBRARIES ${LIBCTB_LIBRARY})
-set(LIBCTB_INCLUDE_DIRS ${LIBCTB_INCLUDE_DIR})
-message(STATUS "  libctb library: ${LIBCTB_LIBRARIES}")
-message(STATUS "  libctb headers: ${LIBCTB_INCLUDE_DIRS}")
-# Check to make sure linking with libctb works.
-include(CheckCXXSourceCompiles)
-set(CMAKE_REQUIRED_LIBRARIES ${LIBCTB_LIBRARIES})
-check_cxx_source_compiles("
-	#include <ctb-0.16/ctb.h>
-	int main() {
-	ctb::SerialPort*        m_serialPort;
-	m_serialPort = new ctb::SerialPort();
-	};"
-	LIBCTB_LINKS)
-if(NOT LIBCTB_LINKS)
-	message(FATAL_ERROR "Linking libctb failed.")
-endif()
+if(NOT USE_STATIC_LIBCTB)
+	message(STATUS "Looking for libctb...")
+	find_path(LIBCTB_INCLUDE_DIR ctb.h
+	          PATH_SUFFIXES ctb-0.16
+	         )
+	find_library(LIBCTB_LIBRARY NAMES ctb ctb-0.16)
+	message(STATUS "  libctb library: ${LIBCTB_LIBRARY}")
+	message(STATUS "  libctb headers: ${LIBCTB_INCLUDE_DIR}")
+	set(CMAKE_REQUIRED_LIBRARIES ${LIBCTB_LIBRARY})
+	# Check to make sure linking with libctb works.
+	include(CheckCXXSourceCompiles)
+	check_cxx_source_compiles("
+		#include <ctb-0.16/ctb.h>
+		int main() {
+		ctb::SerialPort*        m_serialPort;
+		m_serialPort = new ctb::SerialPort();
+		};"
+		LIBCTB_LINKS)
+	if(NOT LIBCTB_LINKS)
+		message(FATAL_ERROR "Linking libctb failed.")
+	endif(NOT LIBCTB_LINKS)
+else(NOT USE_STATIC_LIBCTB)
+	include(cmake/BuildLibctb.cmake)
+endif(NOT USE_STATIC_LIBCTB)
 
-include_directories(${LIBCTB_INCLUDE_DIRS})
-list(APPEND FREEDV_LINK_LIBS ${LIBCTB_LIBRARIES})
+include_directories(${LIBCTB_INCLUDE_DIR})
+list(APPEND FREEDV_LINK_LIBS ${LIBCTB_LIBRARY})
 
 
 add_subdirectory(src)
