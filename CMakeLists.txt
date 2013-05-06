@@ -37,7 +37,7 @@ message(STATUS "FreeDV version: ${FREEDV_VERSION}")
 #set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 # Work around for not using a svn working copy.
-add_definitions(-DSVN_REVISION="1238")
+add_definitions(-DSVN_REVISION="1239")
 
 # Set default build flags.
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
