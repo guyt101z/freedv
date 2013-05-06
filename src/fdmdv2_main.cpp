@@ -130,7 +130,6 @@ IMPLEMENT_APP(MainApp);
 //-------------------------------------------------------------------------
 bool MainApp::OnInit()
 {
-
     if(!wxApp::OnInit())
     {
         return false;
@@ -138,8 +137,16 @@ bool MainApp::OnInit()
     SetVendorName(wxT("CODEC2-Project"));
     SetAppName(wxT("FreeDV"));      // not needed, it's the default value
 
+#ifdef _WXMSW_
+    // Force use of file-based configuration persistance on Windows platforma
+    wxConfig *pConfig = new wxConfig();
+    wxFileConfig *pFConfig = new wxFileConfig(wxT("FreeDV"), wxT("CODEC2-Project"), wxT("freedv.conf"), wxT("freedv.conf"),  wxCONFIG_USE_LOCAL_FILE | wxCONFIG_USE_RELATIVE_PATH);
+    pConfig->Set(pFConfig);
+    pConfig->SetRecordDefaults();
+#else
     wxConfigBase *pConfig = wxConfigBase::Get();
     pConfig->SetRecordDefaults();
+#endif
 
     m_rTopWindow = wxRect(0, 0, 0, 0);
     m_strRxInAudio.Empty();
