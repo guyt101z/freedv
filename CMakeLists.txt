@@ -37,7 +37,7 @@ message(STATUS "FreeDV version: ${FREEDV_VERSION}")
 #set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 # Work around for not using a svn working copy.
-add_definitions(-DSVN_REVISION="1239")
+add_definitions(-DSVN_REVISION="1238")
 
 # Set default build flags.
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
@@ -277,7 +277,7 @@ if(NOT USE_STATIC_CODEC2)
 Linux: 
 Codec2 may not be in your distribution so build yourself or use the cmake option to build statically into FreeDV.
 Windws:
-It's easiest to use the cmake option: USE_STATIC_PORTAUDIO"
+It's easiest to use the cmake option: USE_STATIC_CODEC2"
         )
     endif(CODEC2_INCLUDE_DIR AND CODEC2_LIBRARY)
 else(NOT USE_STATIC_CODEC2)
