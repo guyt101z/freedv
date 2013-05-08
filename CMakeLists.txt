@@ -59,8 +59,17 @@ set(USE_STATIC_LIBCTB FALSE CACHE BOOL
     "Download and build static libctb instead of the system library.")
 set(USE_STATIC_CODEC2 FALSE CACHE BOOL
     "Download and build static codec2 instead of the system library.")
-set(USE_STATIC_WXWIDGETS FALSE CACHE BOOL
+set(BOOTSTRAP_WXWIDGETS FALSE CACHE BOOL
     "Download and build static wxWidgets instead of the system library.")
+# If we're bootstrapping wxWidgets then this must be set true.
+if(BOOTSTRAP_WXWIDGETS)
+    set(USE_STATIC_WXWIDGETS TRUE CACHE BOOL
+    "Perform bootstrap build of wxWidgets, see README.cmake for more details.")
+else(BOOTSTRAP_WXWIDGETS)
+    set(USE_STATIC_WXWIDGETS FALSE CACHE BOOL
+    "Perform bootstrap build of wxWidgets, see README.cmake for more details.")
+endif(BOOTSTRAP_WXWIDGETS)
+
 if(USE_STATIC_DEPS)
     set(USE_STATIC_PORTAUDIO TRUE FORCE)
     set(USE_STATIC_SNDFILE TRUE FORCE)
@@ -68,9 +77,13 @@ if(USE_STATIC_DEPS)
     set(USE_STATIC_SOX TRUE FORCE)
     set(USE_STATIC_LIBCTB TRUE FORCE)
     set(USE_STATIC_CODEC2 TRUE FORCE)
-    #set(USE_STATIC_WXWIDGETS TRUE FORCE)
 endif(USE_STATIC_DEPS)
 
+
+#
+# Continue normal build if not bootstrapping wxWidgets or already built it.
+#
+if(NOT BOOTSTRAP_WXWIDGETS)
 
 # Setup empty list to append to.
 set(FREEDV_LINK_LIBS "")
@@ -225,39 +238,39 @@ endif(NOT USE_STATIC_SOX)
 set(WXCONFIG "" CACHE FILEPATH "Location of wx-config binary.")
 set(WXRC "" CACHE FILEPATH "Location of wxrc binary.")
 if(USE_STATIC_WXWIDGETS)
-    include(cmake/BuildWxWidgets.cmake)
-else(USE_STATIC_WXWIDGETS)
-    message(STATUS "Looking for wxWidgets...")
-    if(WXCONFIG)
-        message(STATUS "wx-config: ${WXCONFIG}")
-        set(wxWidgets_CONFIG_EXECUTABLE ${WXCONFIG})
-    endif(WXCONFIG)
-    if(WXRC)
-        message(STATUS "wxrc: ${WXRC}")
-        set(wxWidgets_wxrc_EXECUTABLE ${WXRC})
-    endif(WXRC)
-    set(WX_VERSION_MIN 2.9.0)
-    find_package(wxWidgets REQUIRED COMPONENTS core base aui html net adv REQUIRED)
-    execute_process(COMMAND sh "${wxWidgets_CONFIG_EXECUTABLE}" --version
-        OUTPUT_VARIABLE WX_VERSION)
-    if(WX_VERSION VERSION_EQUAL ${WX_VERSION_MIN}
-        OR WX_VERSION VERSION_GREATER ${WX_VERSION_MIN})
-        message(STATUS "wxWidgets version: ${WX_VERSION}")
-    else()
-        message(FATAL_ERROR "wxWidgets must be installed on your system.
-    
-                    Please check that wx-config is in path, the directory
-                    where wxWidgets libraries are installed (returned by
-                    'wx-config --libs' or 'wx-config --static --libs' command)
-                    is in LD_LIBRARY_PATH or equivalent variable and
-                    wxWidgets version is ${WX_VERSION_MIN} or above."
-        )
-    endif()
-    if(wxWidgets_FOUND)
-        include("${wxWidgets_USE_FILE}")
-        list(APPEND FREEDV_LINK_LIBS ${wxWidgets_LIBRARIES})
-    endif(wxWidgets_FOUND)
+    set(WXCONFIG "${CMAKE_BINARY_DIR}/external/dist/bin/wx-config")
+    set(WXRC "${CMAKE_BINARY_DIR}/external/dist/bin/wxrc")
+    set(wxWidgets_CONFIG_OPTIONS --linkdeps)
+    list(APPEND FREEDV_STATIC_DEPS wxWidgets)
 endif(USE_STATIC_WXWIDGETS)
+message(STATUS "Looking for wxWidgets...")
+if(WXCONFIG)
+    message(STATUS "wx-config: ${WXCONFIG}")
+    set(wxWidgets_CONFIG_EXECUTABLE ${WXCONFIG})
+endif(WXCONFIG)
+if(WXRC)
+    message(STATUS "wxrc: ${WXRC}")
+    set(wxWidgets_wxrc_EXECUTABLE ${WXRC})
+endif(WXRC)
+set(WX_VERSION_MIN 2.9.0)
+find_package(wxWidgets REQUIRED COMPONENTS core base aui html net adv REQUIRED)
+execute_process(COMMAND sh "${wxWidgets_CONFIG_EXECUTABLE}" --version
+    OUTPUT_VARIABLE WX_VERSION)
+if(WX_VERSION VERSION_EQUAL ${WX_VERSION_MIN}
+    OR WX_VERSION VERSION_GREATER ${WX_VERSION_MIN})
+   message(STATUS "wxWidgets version: ${WX_VERSION}")
+else()
+    message(FATAL_ERROR "wxWidgets must be installed on your system.
+Please check that wx-config is in path, the directory
+where wxWidgets libraries are installed (returned by
+'wx-config --libs' or 'wx-config --static --libs' command)
+is in LD_LIBRARY_PATH or equivalent variable and
+wxWidgets version is ${WX_VERSION_MIN} or above.")
+endif()
+if(wxWidgets_FOUND)
+    include("${wxWidgets_USE_FILE}")
+    list(APPEND FREEDV_LINK_LIBS ${wxWidgets_LIBRARIES})
+endif(wxWidgets_FOUND)
 
 #
 # Find codec2
@@ -355,3 +368,12 @@ if(WIN32)
     set(CPACK_NSIS_MODIFY_PATH ON)
     include(CPack)
 endif(WIN32)
+
+#
+# Perform bootstrap build of wxWidgets
+#
+else(NOT BOOTSTRAP_WXWIDGETS)
+    message(STATUS "Will perform bootstrap build of wxWidgets.
+After make step completes, re-run cmake and make to perform FreeDV build.")
+    include(cmake/BuildWxWidgets.cmake)
+endif(NOT BOOTSTRAP_WXWIDGETS)

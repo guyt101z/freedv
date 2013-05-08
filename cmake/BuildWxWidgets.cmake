@@ -11,5 +11,5 @@ ExternalProject_Add(wxWidgets
 )
 set(WXCONFIG "${CMAKE_BINARY_DIR}/external/dist/bin/wx-config")
 set(WXRC "${CMAKE_BINARY_DIR}/external/dist/bin/wxrc")
-list(APPEND FREEDV_LINK_LIBS ${wxWidgets_LIBRARIES})
-list(APPEND FREEDV_STATIC_DEPS wxWidgets)
+#list(APPEND FREEDV_LINK_LIBS ${wxWidgets_LIBRARIES})
+#list(APPEND FREEDV_STATIC_DEPS wxWidgets)
