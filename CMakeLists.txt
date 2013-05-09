@@ -37,7 +37,7 @@ message(STATUS "FreeDV version: ${FREEDV_VERSION}")
 #set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 # Work around for not using a svn working copy.
-add_definitions(-DSVN_REVISION="1238")
+add_definitions(-DSVN_REVISION="1245")
 
 # Set default build flags.
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
@@ -116,6 +116,12 @@ if(MSVC)
 
     list(APPEND FREEDV_LINK_LIBS ${ADVAPI32} ${COMCTL32} ${COMDLG32} ${GDI32} ${KERNEL32} ${OLE32} ${OLEAUT32} ${RPCRT4} ${SHELL32} ${USER32} ${UUID} ${WINMM} ${WINSPOOL} ${WINSOCK32} ${WZEXPAT} ${WXJPEG} ${WXMSW29U} ${WXPNG} ${WXREGEXU} ${WXTIFF} ${WXZLIB})
 endif(MSVC)
+
+# Even using msys, cmake doesn't know it can use unix style paths...
+if(MINGW)
+    message(STATUS "System is MinGW.")
+    set(CMAKE_LIBRARY_PATH C:/MinGW/lib;C:/MinGW/msys/1.0/lib;C:/MinGW/msys/1.0/local/lib)
+endif(MINGW)
 
 # Math library is automatic on MSVC
 if(UNIX)
