@@ -30,14 +30,18 @@ if(FREEDV_VERSION_PATCH)
 endif(FREEDV_VERSION_PATCH)
 
 # Set default build type
-set(CMAKE_BUILD_TYPE "Release")
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "Release")
+endif(NOT CMAKE_BUILD_TYPE)
 
 message(STATUS "FreeDV version: ${FREEDV_VERSION}")
 
 #set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 # Work around for not using a svn working copy.
-add_definitions(-DSVN_REVISION="1245")
+add_definitions(-DSVN_REVISION="1246")
+add_definitions(-D_NO_AUTOTOOLS_)
+
 
 # Set default build flags.
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
@@ -309,9 +313,7 @@ endif(NOT USE_STATIC_CODEC2)
 #
 if(NOT USE_STATIC_LIBCTB)
     message(STATUS "Looking for libctb...")
-    find_path(LIBCTB_INCLUDE_DIR ctb.h
-              PATH_SUFFIXES ctb-0.16
-             )
+    find_path(LIBCTB_INCLUDE_DIR NAMES ctb.h ctb-0.16/ctb.h)
     find_library(LIBCTB_LIBRARY NAMES ctb ctb-0.16)
     message(STATUS "  libctb library: ${LIBCTB_LIBRARY}")
     message(STATUS "  libctb headers: ${LIBCTB_INCLUDE_DIR}")
