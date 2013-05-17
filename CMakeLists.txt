@@ -21,7 +21,7 @@ project(FreeDV)
 # This should probably be pulled from an external file at some point.
 #
 set(FREEDV_VERSION_MAJOR 0)
-set(FREEDV_VERSION_MINOR 2)
+set(FREEDV_VERSION_MINOR 96)
 # Set to value for patch level releases, otherwise leave as FALSE.
 set(FREEDV_VERSION_PATCH FALSE)
 set(FREEDV_VERSION "${FREEDV_VERSION_MAJOR}.${FREEDV_VERSION_MINOR}")
@@ -39,7 +39,7 @@ message(STATUS "FreeDV version: ${FREEDV_VERSION}")
 #set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 # Work around for not using a svn working copy.
-add_definitions(-DSVN_REVISION="1246")
+add_definitions(-DSVN_REVISION="1247")
 add_definitions(-D_NO_AUTOTOOLS_)
 
 
@@ -65,13 +65,11 @@ set(USE_STATIC_CODEC2 FALSE CACHE BOOL
     "Download and build static codec2 instead of the system library.")
 set(BOOTSTRAP_WXWIDGETS FALSE CACHE BOOL
     "Download and build static wxWidgets instead of the system library.")
+set(USE_STATIC_WXWIDGETS FALSE CACHE BOOL
+    "Perform bootstrap build of wxWidgets, see README.cmake for more details.")
 # If we're bootstrapping wxWidgets then this must be set true.
 if(BOOTSTRAP_WXWIDGETS)
-    set(USE_STATIC_WXWIDGETS TRUE CACHE BOOL
-    "Perform bootstrap build of wxWidgets, see README.cmake for more details.")
-else(BOOTSTRAP_WXWIDGETS)
-    set(USE_STATIC_WXWIDGETS FALSE CACHE BOOL
-    "Perform bootstrap build of wxWidgets, see README.cmake for more details.")
+    set(USE_STATIC_WXWIDGETS TRUE)
 endif(BOOTSTRAP_WXWIDGETS)
 
 if(USE_STATIC_DEPS)
@@ -121,10 +119,45 @@ if(MSVC)
     list(APPEND FREEDV_LINK_LIBS ${ADVAPI32} ${COMCTL32} ${COMDLG32} ${GDI32} ${KERNEL32} ${OLE32} ${OLEAUT32} ${RPCRT4} ${SHELL32} ${USER32} ${UUID} ${WINMM} ${WINSPOOL} ${WINSOCK32} ${WZEXPAT} ${WXJPEG} ${WXMSW29U} ${WXPNG} ${WXREGEXU} ${WXTIFF} ${WXZLIB})
 endif(MSVC)
 
-# Even using msys, cmake doesn't know it can use unix style paths...
+#
+# Various hacks and work arounds for building under MinGW.
+#
 if(MINGW)
     message(STATUS "System is MinGW.")
+    # For some reason "Release" causes an error on exit. Force build type to be
+    # Debug for MINGW builds.
+    set(CMAKE_BUILD_TYPE Debug)
+    # This sets up the exe icon for windows under mingw.
+    set(RES_FILES "")
+    set(RES_FILES "${CMAKE_SOURCE_DIR}/contrib/freedv.rc")
+    set(CMAKE_RC_COMPILER_INIT windres)
+    enable_language(RC)
+    set(CMAKE_RC_COMPILE_OBJECT
+        "<CMAKE_RC_COMPILER> <FLAGS> -O coff <DEFINES> -i <SOURCE> -o <OBJECT>")
+    # Even using msys, cmake doesn't know it can use unix style paths...
     set(CMAKE_LIBRARY_PATH C:/MinGW/lib;C:/MinGW/msys/1.0/lib;C:/MinGW/msys/1.0/local/lib)
+    # Try to build in libgcc and libstdc++ but it doesn't appear to work.
+    #add_definitions(-static-libgcc -static-libstdc++)
+    # Try to grab all the runtime dlls for the windows installer. 
+    # This will break if the dll names change!
+    foreach(RUNTIME
+        libgcc_s_sjlj-1.dll
+        libstdc++-6.dll
+        libsndfile-1.dll
+        libsamplerate-0.dll
+        libcodec2.dll
+        libportaudio-2.dll
+        libportaudiocpp-0.dll
+        libctb-0.16.dll
+        libsox-2.dll
+        zlib1.dll)
+        message(STATUS "Checking for ${RUNTIME}")
+        find_library(${RUNTIME}_LIB ${RUNTIME})
+#            PATHS ${CMAKE_SYSTEM_LIBRARY_PATH}
+#            NO_DEFAULT_PATH)
+        message(STATUS "runtime found: ${${RUNTIME}_LIB}")
+        list(APPEND CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS ${${RUNTIME}_LIB})
+    endforeach()
 endif(MINGW)
 
 # Math library is automatic on MSVC
@@ -156,87 +189,110 @@ configure_file ("${PROJECT_SOURCE_DIR}/cmake/config.h.in"
 include_directories(${PROJECT_BINARY_DIR})
 add_definitions(-DHAVE_CONFIG_H)
 
+# Pthread Library
+find_package(Threads REQUIRED)
+message(STATUS "Threads library flags: ${CMAKE_THREAD_LIBS_INIT}")
+
+#
 # Find or build portaudio Library
+#
 if(NOT USE_STATIC_PORTAUDIO)
     message(STATUS "Looking for portaudio...")
-    find_library(PORTAUDIO portaudio)
-    if(PORTAUDIO)
-        list(APPEND FREEDV_LINK_LIBS ${PORTAUDIO})
-        message(STATUS "  portaudio found: ${PORTAUDIO}")
-    else(PORTAUDIO)
+    find_library(PORTAUDIO_LIBS NAMES libportaudio-2.dll portaudio)
+    find_path(PORTAUDIO_INCLUDE_DIR portaudio.h)
+    message(STATUS "  portaudio library: ${PORTAUDIO_LIBS}")
+    message(STATUS "  portaudio headers: ${PORTAUDIO_INCLUDE_DIR}")
+    if(PORTAUDIO_LIBS AND PORTAUDIO_INCLUDE_DIR)
+        list(APPEND FREEDV_LINK_LIBS ${PORTAUDIO_LIBS})
+        include_directories(${PORTAUDIO_INCLUDE_DIR})
+    else(PORTAUDIO_LIBS AND PORTAUDIO_INCLUDE_DIR)
         message(FATAL_ERROR "portaudio library not found.
 On Linux systems try installing:
     portaudio-devel  (RPM based systems)
     libportaudio-dev (DEB based systems)
 On Windows it's easiest to use the cmake option: USE_STATIC_PORTAUDIO"
         )
-    endif(PORTAUDIO)
+    endif(PORTAUDIO_LIBS AND PORTAUDIO_INCLUDE_DIR)
 else(NOT USE_STATIC_PORTAUDIO)
     message(STATUS "Will attempt static build of portaudio.")
     include(cmake/BuildPortaudio.cmake)
 endif(NOT USE_STATIC_PORTAUDIO)
 # Do we need this?
-#find_library(PORTAUDIOCPP portaudiocpp)
+find_library(PORTAUDIOCPP portaudiocpp)
+if(PORTAUDIOCPP)
+    message(STATUS "portaudiocpp library: ${PORTAUDIOCPP}")
+    list(APPEND FREEDV_LINK_LIBS ${PORTAUDIOCPP})
+endif(PORTAUDIOCPP)
 
-# Pthread Library
-find_package(Threads REQUIRED)
-message(STATUS "Threads library flags: ${CMAKE_THREAD_LIBS_INIT}")
-
+#
 # Samplerate Library
+#
 if(NOT USE_STATIC_SAMPLERATE)
     message(STATUS "Looking for samplerate...")
     find_library(LIBSAMPLERATE samplerate)
-    if(LIBSAMPLERATE)
+    find_path(LIBSAMPLERATE_INCLUDE_DIR samplerate.h)
+    message(STATUS "  samplerate library: ${LIBSAMPLERATE}")
+    message(STATUS "  samplerate headers: ${LIBSAMPLERATE_INCLUDE_DIR}")
+    if(LIBSAMPLERATE AND LIBSAMPLERATE_INCLUDE_DIR)
         list(APPEND FREEDV_LINK_LIBS ${LIBSAMPLERATE})
-        message(STATUS "  samplerate found: ${LIBSAMPLERATE}")
-    else(LIBSTAMPLERATE)
+        include_directories(${LIBSAMPLERATE_INCLUDE_DIR})
+    else(LIBSTAMPLERATE AND LIBSAMPLERATE_INCLUDE_DIR)
         message(FATAL_ERROR "samplerate library not found.
 On Linux systems try installing:
     samplerate-devel  (RPM based systems)
     libsamplerate-dev (DEB based systems)
 On Windows it's easiest to use the cmake option: USE_STATIC_SAMPLERATE"
         )
-    endif(LIBSAMPLERATE)
+    endif(LIBSAMPLERATE AND LIBSAMPLERATE_INCLUDE_DIR)
 else(NOT USE_STATIC_SAMPLERATE)
     message(STATUS "Will attempt static build of samplerate.")
     include(cmake/BuildSamplerate.cmake)
 endif(NOT USE_STATIC_SAMPLERATE)
-    
+
+#    
 # sndfile Library
+#
 if(NOT USE_STATIC_SNDFILE)
     message(STATUS "Looking for sndfile...")
     find_library(LIBSNDFILE sndfile)
-    if(LIBSNDFILE)
+    find_path(LIBSNDFILE_INCLUDE_DIR sndfile.h)
+    message(STATUS "  sndfile library: ${LIBSNDFILE}")
+    message(STATUS "  sndfile headers: ${LIBSNDFILE_INCLUDE_DIR}")
+    if(LIBSNDFILE AND LIBSNDFILE_INCLUDE_DIR)
         list(APPEND FREEDV_LINK_LIBS ${LIBSNDFILE})
-        message(STATUS "  sndfile found: ${LIBSNDFILE}")
-    else(LIBSNDFILE)
+    else(LIBSNDFILE AND LIBSNDFILE_INCLUDE_DIR)
         message(FATAL_ERROR "sndfile library not found.
 On Linux systems try installing:
     libsndfile-devel (RPM based systems)
     libsndfile-dev   (DEB based systems)
 On Windows it's easiest to use the cmake option: USE_STATIC_SNDFILE"
         )
-    endif(LIBSNDFILE)
+    endif(LIBSNDFILE AND LIBSNDFILE_INCLUDE_DIR)
 else(NOT USE_STATIC_SNDFILE)
     message(STATUS "Will attempt static build of sndfile.")
     include(cmake/BuildSndfile.cmake)
 endif(NOT USE_STATIC_SNDFILE)
 
+#
 # Find sox library
+#
 if(NOT USE_STATIC_SOX)
     message(STATUS "Looking for sox...")
-    find_library(LIBSOX sox)
-    if(LIBSOX)
-        list(APPEND FREEDV_LINK_LIBS ${LIBSOX})
-        message(STATUS "  sox found: ${LIBSOX}")
-    else(LIBSOX)
+    find_library(LIBSOX_LIBRARY sox)
+    find_path(LIBSOX_INCLUDE_DIR NAMES sox/sox.h sox.h)
+    message(STATUS "  sox library: ${LIBSOX_LIBRARY}")
+    message(STATUS "  sox headers: ${LIBSOX_INCLUDE_DIR}")
+    if(LIBSOX_LIBRARY AND LIBSOX_INCLUDE_DIR)
+        list(APPEND FREEDV_LINK_LIBS ${LIBSOX_LIBRARY})
+        include_directories(${LIBSOX_INCLUDE_DIR})
+    else(LIBSOX_LIBRARY AND LIBSOX_INCLUDE_DIR)
         message(FATAL_ERROR "sox library not found.
 On Linux systems try installing:
     sox-devel (RPM based systems)
     libsox-dev (DEB based systems)
 On Windows it's easiest to use the cmake option: USE_STATIC_SOX"
         )
-    endif(LIBSOX)
+    endif(LIBSOX_LIBRARY AND LIBSOX_INCLUDE_DIR)
 else(NOT USE_STATIC_SOX)
     message(STATUS "Will attempt static build of sox.")
     include(cmake/BuildSox.cmake)
@@ -317,8 +373,9 @@ if(NOT USE_STATIC_LIBCTB)
     find_library(LIBCTB_LIBRARY NAMES ctb ctb-0.16)
     message(STATUS "  libctb library: ${LIBCTB_LIBRARY}")
     message(STATUS "  libctb headers: ${LIBCTB_INCLUDE_DIR}")
-        if(LIBCTB_LIBRARY AND LIBCTB_INCLUDE_DIR)
-            set(CMAKE_REQUIRED_LIBRARIES ${LIBCTB_LIBRARY})
+    if(LIBCTB_LIBRARY AND LIBCTB_INCLUDE_DIR)
+        set(CMAKE_REQUIRED_LIBRARIES ${LIBCTB_LIBRARY})
+        if(NOT CMAKE_CROSSCOMPILING)
             # Check to make sure linking with libctb works.
             include(CheckCXXSourceCompiles)
             check_cxx_source_compiles("
@@ -331,14 +388,15 @@ if(NOT USE_STATIC_LIBCTB)
             if(NOT LIBCTB_LINKS)
                 message(FATAL_ERROR "Linking libctb failed.")
             endif(NOT LIBCTB_LINKS)
-        else(LIBCTB_LIBRARY AND LIBCTB_INCLUDE_DIR)
-            message(FATAL_ERROR "libctb not found.
+        endif(NOT CMAKE_CROSSCOMPILING)
+    else(LIBCTB_LIBRARY AND LIBCTB_INCLUDE_DIR)
+        message(FATAL_ERROR "libctb not found.
 Linux:
   libctb may not be available in your distribution. Either build and install or use the cmake option to build statically.
 Windws:
 It's easiest to use the cmake option: USE_STATIC_LIBCTB"
             )
-        endif(LIBCTB_LIBRARY AND LIBCTB_INCLUDE_DIR)
+    endif(LIBCTB_LIBRARY AND LIBCTB_INCLUDE_DIR)
 else(NOT USE_STATIC_LIBCTB)
     include(cmake/BuildLibctb.cmake)
 endif(NOT USE_STATIC_LIBCTB)
@@ -351,6 +409,8 @@ add_subdirectory(src)
 
 # Icons and desktop file
 add_subdirectory(contrib)
+
+message(STATUS "Build type will be: ${CMAKE_BUILD_TYPE}")
 
 #
 # Cpack NSIS configuration for Windows. EXPERIMENTAL!!!
@@ -367,13 +427,14 @@ if(WIN32)
         set(CPACK_PACKAGE_VERSION_PATCH ${FREEDV_VERSION_PATCH})
     endif(FREEDV_VERSION_PATCH)
     set(CPACK_PACKAGE_INSTALL_DIRECTORY "FreeDV")
+    set(CPACK_PACKAGE_EXECUTABLES freedv;FreeDV)
     # There is a bug in NSI that does not handle full unix paths properly. Make
     # sure there is at least one set of four (4) backlasshes.
     #set(CPACK_PACKAGE_ICON "${CMake_SOURCE_DIR}/Utilities/Release\\\\InstallIcon.bmp")
-    #set(CPACK_NSIS_INSTALLED_ICON_NAME "bin\\\\MyExecutable.exe")
+    set(CPACK_NSIS_INSTALLED_ICON_NAME "bin\\\\freedv.exe")
     set(CPACK_NSIS_DISPLAY_NAME "${CPACK_PACKAGE_INSTALL_DIRECTORY}")
     set(CPACK_NSIS_URL_INFO_ABOUT "http:\\\\\\\\freedv.org")
-    set(CPACK_NSIS_MODIFY_PATH ON)
+    set(CPACK_NSIS_MODIFY_PATH OFF)
     include(CPack)
 endif(WIN32)
 
