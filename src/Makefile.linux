@@ -56,9 +56,15 @@ CODEC2_LIB=$(CODEC2)/src/.libs/libcodec2.a
 # Sox ---------------------------------------------------
 # (libmagic is rqd or later versions of Ubuntu)
 
+ifeq ($(SYSTEM_SOX),y)
+SOX_INC ?= $(shell pkg-config sox --cflags)
+SOX_LIB ?= $(shell pkg-config sox --libs)
+else
 SOX=sox-14.4.0
 SOX_INC=-I$(SOX)/src/
 SOX_LIB=$(SOX)/src/.libs/libsox.a
+LIBS_TO_BUILD += $(SOX)/.built
+endif
 
 # CTB ---------------------------------------------------
 
@@ -88,7 +94,7 @@ codec2-dev/src/golay23.c
 
 HDRS = ../version.h dlg_about.h dlg_audiooptions.h dlg_comports.h dlg_filter.h fdmdv2_main.h fdmdv2_defines.h fdmdv2_plot.h fdmdv2_plot_scalar.h fdmdv2_plot_waterfall_linux.h fdmdv2_plot_scatter.h fdmdv2_plot_spectrum.h fdmdv2_pa_wrapper.h topFrame.h varicode.h codec2-dev/src/golay23.h
 
-all: $(LIBS_TO_BUILD) $(CODEC2)/.built $(SOX)/.built $(CTB)/.built freedv
+all: $(LIBS_TO_BUILD) $(CODEC2)/.built $(CTB)/.built freedv
 
 freedv: $(OBJS) 
 	$(CXX) -o freedv $(OBJS) $(CPP_FLAGS) $(FREEDV_LIBS)
