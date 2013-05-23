@@ -198,8 +198,8 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     // restore frame position and size
     int x = pConfig->Read(wxT("/MainFrame/top"),       20);
     int y = pConfig->Read(wxT("/MainFrame/left"),      20);
-    int w = pConfig->Read(wxT("/MainFrame/width"),     550);
-    int h = pConfig->Read(wxT("/MainFrame/height"),    400);
+    int w = pConfig->Read(wxT("/MainFrame/width"),     800);
+    int h = pConfig->Read(wxT("/MainFrame/height"),    550);
 
     // note: run DebugView program to see this message under windows
     //wxLogDebug("x = %d y = %d w = %d h = %d\n", x,y,w,h);

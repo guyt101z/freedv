@@ -136,6 +136,36 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     leftSizer->Add(snrSizer, 2, wxALIGN_CENTER_HORIZONTAL|wxEXPAND|wxALL, 1);
 
     //------------------------------
+    // Sync  Indicator box
+    //------------------------------
+    wxStaticBoxSizer* sbSizer3_33;
+    sbSizer3_33 = new wxStaticBoxSizer(new wxStaticBox(this, wxID_ANY, _("Sync")), wxVERTICAL);
+
+    m_rbSync = new wxRadioButton( this, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
+    m_rbSync->SetForegroundColour( wxColour( 255, 0, 0 ) );
+    sbSizer3_33->Add(m_rbSync, 0, wxALIGN_CENTER|wxALL, 1);
+    leftSizer->Add(sbSizer3_33,0, wxALIGN_CENTER_HORIZONTAL|wxALL|wxEXPAND, 3);
+
+    //------------------------------
+    // BER Frames box
+    //------------------------------
+
+    wxStaticBoxSizer* sbSizer_ber;
+    sbSizer_ber = new wxStaticBoxSizer(new wxStaticBox(this, wxID_ANY, _("Bit Error Rate")), wxVERTICAL);
+
+    m_BtnBerReset = new wxButton(this, wxID_ANY, _("Reset"), wxDefaultPosition, wxDefaultSize, 0);
+    sbSizer_ber->Add(m_BtnBerReset, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+
+    m_textBits = new wxStaticText(this, wxID_ANY, wxT("Bits...: 0"), wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
+    sbSizer_ber->Add(m_textBits, 0, wxALIGN_LEFT, 1);
+    m_textErrors = new wxStaticText(this, wxID_ANY, wxT("Errors: 0"), wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
+    sbSizer_ber->Add(m_textErrors, 0, wxALIGN_LEFT, 1);
+    m_textBER = new wxStaticText(this, wxID_ANY, wxT("BER...: 0.0"), wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
+    sbSizer_ber->Add(m_textBER, 0, wxALIGN_LEFT, 1);
+
+    leftSizer->Add(sbSizer_ber,0, wxALIGN_CENTER_HORIZONTAL|wxALL|wxEXPAND, 3);
+
+    //------------------------------
     // Signal Level(vert. bargraph)
     //------------------------------
     wxStaticBoxSizer* levelSizer;
@@ -251,50 +281,7 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
     sbSizer3->Add(m_ckboxSQ, 0, wxALIGN_CENTER_HORIZONTAL, 0);
     rightSizer->Add(sbSizer3, 2, wxALIGN_CENTER_HORIZONTAL|wxEXPAND, 0);
 
-    //------------------------------
-    // Sync  Indicator box
-    //------------------------------
-    wxStaticBoxSizer* sbSizer3_33;
-    sbSizer3_33 = new wxStaticBoxSizer(new wxStaticBox(this, wxID_ANY, _("Sync")), wxVERTICAL);
-
-    m_rbSync = new wxRadioButton( this, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
-    m_rbSync->SetForegroundColour( wxColour( 255, 0, 0 ) );
-    sbSizer3_33->Add(m_rbSync, 0, wxALIGN_CENTER|wxALL, 1);
-
-    rightSizer->Add(sbSizer3_33,0, wxALIGN_CENTER_HORIZONTAL|wxALL|wxEXPAND, 3);
-
-    /* new --- */
-
-    //------------------------------
-    // Test Frames box
-    //------------------------------
-
-    wxStaticBoxSizer* sbSizer_testFrames;
-    sbSizer_testFrames = new wxStaticBoxSizer(new wxStaticBox(this, wxID_ANY, _("Test Frames")), wxVERTICAL);
-
-    m_ckboxTestFrame = new wxCheckBox(this, wxID_ANY, _("Enable"), wxDefaultPosition, wxDefaultSize, wxCHK_2STATE);
-    sbSizer_testFrames->Add(m_ckboxTestFrame, 0, wxALIGN_LEFT, 0);
-
-    rightSizer->Add(sbSizer_testFrames,0, wxALIGN_CENTER_HORIZONTAL|wxALL|wxEXPAND, 3);
-
-    //------------------------------
-    // BER Frames box
-    //------------------------------
-
-    wxStaticBoxSizer* sbSizer_ber;
-    sbSizer_ber = new wxStaticBoxSizer(new wxStaticBox(this, wxID_ANY, _("Bit Error Rate")), wxVERTICAL);
-
-    m_BtnBerReset = new wxButton(this, wxID_ANY, _("Reset"), wxDefaultPosition, wxDefaultSize, 0);
-    sbSizer_ber->Add(m_BtnBerReset, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 1);
-
-    m_textBits = new wxStaticText(this, wxID_ANY, wxT("Bits...: 0"), wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
-    sbSizer_ber->Add(m_textBits, 0, wxALIGN_LEFT, 1);
-    m_textErrors = new wxStaticText(this, wxID_ANY, wxT("Errors: 0"), wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
-    sbSizer_ber->Add(m_textErrors, 0, wxALIGN_LEFT, 1);
-    m_textBER = new wxStaticText(this, wxID_ANY, wxT("BER...: 0.0"), wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
-    sbSizer_ber->Add(m_textBER, 0, wxALIGN_LEFT, 1);
-
-    rightSizer->Add(sbSizer_ber,0, wxALIGN_CENTER_HORIZONTAL|wxALL|wxEXPAND, 3);
+    //rightSizer->Add(sbSizer3_33,0, wxALIGN_CENTER_HORIZONTAL|wxALL|wxEXPAND, 3);
 
     /* new --- */
 
@@ -312,6 +299,7 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
 #endif
     m_rb1600 = new wxRadioButton( this, wxID_ANY, wxT("1600"), wxDefaultPosition, wxDefaultSize, 0);
     sbSizer_mode->Add(m_rb1600, 0, wxALIGN_LEFT|wxALL, 1);
+    m_rb1600->SetValue(true);
     m_rb1600Wide = new wxRadioButton( this, wxID_ANY, wxT("1600 Wide"), wxDefaultPosition, wxDefaultSize, 0);
     sbSizer_mode->Add(m_rb1600Wide, 0, wxALIGN_LEFT|wxALL, 1);
 #ifdef DISABLED_FEATURE
@@ -320,6 +308,21 @@ TopFrame::TopFrame(wxWindow* parent, wxWindowID id, const wxString& title, const
 #endif
 
     rightSizer->Add(sbSizer_mode,0, wxALIGN_CENTER_HORIZONTAL|wxALL|wxEXPAND, 3);
+
+    /* new --- */
+
+    //------------------------------
+    // Test Frames box
+    //------------------------------
+
+    wxStaticBoxSizer* sbSizer_testFrames;
+    sbSizer_testFrames = new wxStaticBoxSizer(new wxStaticBox(this, wxID_ANY, _("Test Frames")), wxVERTICAL);
+
+    m_ckboxTestFrame = new wxCheckBox(this, wxID_ANY, _("Enable"), wxDefaultPosition, wxDefaultSize, wxCHK_2STATE);
+    sbSizer_testFrames->Add(m_ckboxTestFrame, 0, wxALIGN_LEFT, 0);
+
+    rightSizer->Add(sbSizer_testFrames,0, wxALIGN_CENTER_HORIZONTAL|wxALL|wxEXPAND, 3);
+
 
     //=====================================================
     // Control Toggles box
