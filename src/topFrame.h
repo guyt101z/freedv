@@ -94,8 +94,6 @@ class TopFrame : public wxFrame
         wxStaticText* m_textSQ;
         wxStatusBar* m_statusBar1;
 
-        wxCheckBox    *m_ckboxTestFrame;
-
         wxButton*     m_BtnBerReset;
         wxStaticText  *m_textBits;
         wxStaticText  *m_textErrors;
@@ -120,8 +118,8 @@ class TopFrame : public wxFrame
         virtual void OnToolsAudioUI( wxUpdateUIEvent& event ) { event.Skip(); }
         virtual void OnToolsFilter( wxCommandEvent& event ) { event.Skip(); }
         virtual void OnToolsFilterUI( wxUpdateUIEvent& event ) { event.Skip(); }
-        virtual void OnToolsSetCallSign( wxCommandEvent& event ) { event.Skip(); }
-        virtual void OnToolsSetCallSignUI( wxUpdateUIEvent& event ) { event.Skip(); }
+        virtual void OnToolsOptions( wxCommandEvent& event ) { event.Skip(); }
+        virtual void OnToolsOptionsUI( wxUpdateUIEvent& event ) { event.Skip(); }
         virtual void OnToolsComCfg( wxCommandEvent& event ) { event.Skip(); }
         virtual void OnToolsComCfgUI( wxUpdateUIEvent& event ) { event.Skip(); }
         virtual void OnPlayFileToMicIn( wxCommandEvent& event ) { event.Skip(); }

@@ -74,6 +74,7 @@
 #include "dlg_audiooptions.h"
 #include "dlg_filter.h"
 #include "dlg_about.h"
+#include "dlg_options.h"
 #include "varicode.h"
 #include "sox_biquad.h"
 
@@ -200,6 +201,10 @@ class MainApp : public wxApp
 
         bool                loadConfig();
         bool                saveConfig();
+
+        // misc
+
+        bool        m_testFrames;
 
     protected:
 };
@@ -378,7 +383,7 @@ class MainFrame : public TopFrame
         void OnToolsComCfg( wxCommandEvent& event );
         void OnToolsComCfgUI( wxUpdateUIEvent& event );
         void OnToolsFilter( wxCommandEvent& event );
-        void OnToolsSetCallSign(wxCommandEvent& event);
+        void OnToolsOptions(wxCommandEvent& event);
 
         void OnPlayFileToMicIn( wxCommandEvent& event );
         void OnRecFileFromRadio( wxCommandEvent& event );
@@ -437,7 +442,6 @@ class MainFrame : public TopFrame
         void*       designAnEQFilter(const char filterType[], float freqHz, float gaindB, float Q = 0.0);
         void        designEQFilters(paCallBackData *cb);
         void        deleteEQFilters(paCallBackData *cb);
-
 };
 
 void txRxProcessing();

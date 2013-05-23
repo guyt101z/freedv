@@ -440,6 +440,7 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     g_test_frame_sync_state = 0;
     g_total_bit_errors = 0;
     g_total_bits = 0;
+    wxGetApp().m_testFrames = false;
 }
 
 //-------------------------------------------------------------------------
@@ -737,7 +738,7 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
 
     // Toggle test frame mode at run time
 
-    if (!g_testFrames && m_ckboxTestFrame->GetValue()) {
+    if (!g_testFrames && wxGetApp().m_testFrames) {
 
         // reset stats on check box off to on transition
 
@@ -745,17 +746,17 @@ void MainFrame::OnTimer(wxTimerEvent &evt)
         g_total_bits = 0;
         g_total_bit_errors = 0;
     }
-    g_testFrames = m_ckboxTestFrame->GetValue();
+    g_testFrames =  wxGetApp().m_testFrames;
 
     if (g_State) {
         char bits[80], errors[80], ber[80];
 
         // update stats on main page
 
-        sprintf(bits, "Bits...: %d", g_total_bits); wxString bits_string(bits); m_textBits->SetLabel(bits_string);
-        sprintf(errors, "Errors: %d", g_total_bit_errors); wxString errors_string(errors); m_textErrors->SetLabel(errors_string);
+        sprintf(bits, "Bits: %d", g_total_bits); wxString bits_string(bits); m_textBits->SetLabel(bits_string);
+        sprintf(errors, "Errs: %d", g_total_bit_errors); wxString errors_string(errors); m_textErrors->SetLabel(errors_string);
         float b = (float)g_total_bit_errors/(1E-6+g_total_bits);
-        sprintf(ber, "BER...: %4.3f", b); wxString ber_string(ber); m_textBER->SetLabel(ber_string);
+        sprintf(ber, "BER: %4.3f", b); wxString ber_string(ber); m_textBER->SetLabel(ber_string);
 
         // update error plots
 
@@ -1407,15 +1408,14 @@ void MainFrame::OnToolsFilter(wxCommandEvent& event)
 }
 
 //-------------------------------------------------------------------------
-// OnToolsSetCallSign()
+// OnToolsOptions()
 //-------------------------------------------------------------------------
-void MainFrame::OnToolsSetCallSign(wxCommandEvent& event)
+void MainFrame::OnToolsOptions(wxCommandEvent& event)
 {
     wxUnusedVar(event);
-    printf("MainFrame::OnToolSetCallSign\n");
-    wxGetApp().m_callSign = wxGetTextFromUser(wxT("Enter Callsign"),
-                                              wxT("Enter Callsign"),
-                                              wxGetApp().m_callSign);
+    OptionsDlg *dlg = new OptionsDlg(NULL);
+    dlg->ShowModal();
+    delete dlg;
 }
 
 //-------------------------------------------------------------------------
@@ -1439,7 +1439,6 @@ void MainFrame::OnToolsComCfg(wxCommandEvent& event)
 
     if(m_serialPort != NULL)
     {
-        int iLineState   = m_serialPort->GetLineState();
         CloseSerialPort();
     }
     ComPortsDlg *dlg = new ComPortsDlg(NULL);
@@ -1599,6 +1598,7 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
 
         m_rb1400old->Disable();
         m_rb1600->Disable();
+        m_rb1600Wide->Disable();
 #ifdef DISABLED_FEATURE
         m_rb1400->Disable();
         m_rb2000->Disable();
@@ -1722,6 +1722,7 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
         m_togBtnOnOff->SetLabel(wxT("Start"));
         m_rb1400old->Enable();
         m_rb1600->Enable();
+        m_rb1600Wide->Enable();
 #ifdef DISABLED_FEATURE
         m_rb1400->Enable();
         m_rb2000->Enable();
