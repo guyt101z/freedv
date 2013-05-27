@@ -42,20 +42,16 @@ Many variations are possible.
        http://www.mega-nerd.com/SRC/libsamplerate-0.1.8.tar.gz(not Win32 binaries)
    ./configure && make && make install
 
-7. libtool & hamlib
+7. hamlib
 
-   $ wget http://ftp.gnu.org/gnu/libtool/libtool-2.4.tar.gz
-   $ tar xvzf libtool-2.4.tar.gz
-   $ cd libtool-2.4
-   $ make && make install
+   I couldn't get this to compile from source, so used the pre-built Win32
+   DLLs:
 
-   $ wget https://downloads.sourceforge.net/project/hamlib/hamlib/1.2.15.3/hamlib-1.2.15.3.tar.gz
-   $ tar xvzf hamlib-1.2.15.3.tar.gz
-   $ cd hamlib-1.2.15.3
-   $ CFLAGS=-I/usr/local/include ./configure
-   $ libtoolize --ltdl
-   $ cd libltdl; ./configure --host=i586-mingw32msvc && make
-   $ make && make install
+   Download https://downloads.sourceforge.net/project/hamlib/hamlib/1.2.15.3/hamlib-win32-1.2.15.3.zip
+   Open hamlib-win32-1.2.15.3.zip with a GUI archive tool
+   Copy hamlib/include/* to /usr/local/include
+   Copy hamlib/bin/hamlib*.dll to /usr/local/lib
+   Copy hamlib/lib/gcc to /usr/local/lib
 
 8. sox (used for Filter - EQ)
 

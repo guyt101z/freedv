@@ -125,7 +125,7 @@ void ComPortsDlg::OnInitDialog(wxInitDialogEvent& event)
 //-------------------------------------------------------------------------
 void ComPortsDlg::populatePortList()
 {
-#ifdef __WXMSW__
+#ifdef __NOTUSED__
     m_listCtrlPorts->Clear();
     wxArrayString aStr;
     wxRegKey key(wxRegKey::HKLM, _T("HARDWARE\\DEVICEMAP\\SERIALCOMM"));

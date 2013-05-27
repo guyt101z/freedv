@@ -27,15 +27,15 @@ fdmdv2_plot_spectrum.o \
 fdmdv2_plot_waterfall_linux.o \
 fdmdv2_pa_wrapper.o \
 dlg_audiooptions.o \
-dlg_comports.o \
+dlg_ptt.o \
+dlg_options.o \
 dlg_filter.o \
 varicode.o \
 sox_biquad.o \
 hamlib.o \
 ../../codec2-dev/src/golay23.o
 
-HDRS = ../version.h dlg_audiooptions.h dlg_comports.h dlg_filter.h fdmdv2_main.h fdmdv2_defines.h fdmdv2_plot.h fdmdv2_plot_scalar.h fdmdv2_plot_waterfall_linux.h fdmdv2_plot_scatter.h fdmdv2_plot_spectrum.h fdmdv2_pa_wrapper.h topFrame.h dlg_audiooptions.h topFrame.h varicode.h ../../codec2-dev/src/golay23.h hamlib.h
-
+HDRS = version.h dlg_audiooptions.h dlg_ptt.h dlg_filter.h fdmdv2_main.h fdmdv2_defines.h fdmdv2_plot.h fdmdv2_plot_scalar.h fdmdv2_plot_waterfall_linux.h fdmdv2_plot_scatter.h fdmdv2_plot_spectrum.h fdmdv2_pa_wrapper.h topFrame.h dlg_audiooptions.h topFrame.h varicode.h ../../codec2-dev/src/golay23.h hamlib.h
 
 all: freedv
 
