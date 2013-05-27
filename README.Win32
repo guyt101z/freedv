@@ -38,26 +38,33 @@ Many variations are possible.
    ./configure && make && make install
 
 6. libsamplerate:
-   download lastest source tar ball:
+   download latest source tar ball:
        http://www.mega-nerd.com/SRC/libsamplerate-0.1.8.tar.gz(not Win32 binaries)
    ./configure && make && make install
 
-7. libctb (Communications Toolbox):
+7. libtool & hamlib
 
-$ wget https://iftools.com/download/ctb/0.16/libctb-0.16.tar.gz
-$ tar xvzf libctb-0.16.tar.gz
-$ cd libctb-0.16/build
-$ mingw32-make -f makefile.gcc DEBUG=0 GPIB=0
+   $ wget http://ftp.gnu.org/gnu/libtool/libtool-2.4.tar.gz
+   $ tar xvzf libtool-2.4.tar.gz
+   $ cd libtool-2.4
+   $ make && make install
 
-8. sox (usd for Filter - EQ)
+   $ wget https://downloads.sourceforge.net/project/hamlib/hamlib/1.2.15.3/hamlib-1.2.15.3.tar.gz
+   $ tar xvzf hamlib-1.2.15.3.tar.gz
+   $ cd hamlib-1.2.15.3
+   $ CFLAGS=-I/usr/local/include ./configure
+   $ libtoolize --ltdl
+   $ cd libltdl; ./configure --host=i586-mingw32msvc && make
+   $ make && make install
 
-$ wget http://sourceforge.net/projects/sox/files/sox/14.4.0/sox-14.4.0.tar.gz/
-download
-$ tar xvzf sox-14.4.0.tar.gz
-$ ./configure --enable-shared=no --without-id3tag --without-png --disable-gomp --with-oggvorbis=no --with-oss=no --with-flac=no --disable-dl-sndfile --with-waveaudio=no
-$ make && make install
+8. sox (used for Filter - EQ)
 
-I couldn't find an install command line that worked, so manually copied the libs and include files.
+   $ wget http://sourceforge.net/projects/sox/files/sox/14.4.0/sox-14.4.0.tar.gz
+   $ tar xvzf sox-14.4.0.tar.gz
+   $ ./configure --enable-shared=no --without-id3tag --without-png --disable-gomp --with-oggvorbis=no --with-oss=no --with-flac=no --disable-dl-sndfile --with-waveaudio=no
+   $ make && make install
+
+   I couldn't find an install command line that worked, so manually copied the libs and include files.
 
 9. Codec 2
    $ wget https://freetel.svn.sourceforge.net/svnroot/freetel/codec2-dev
@@ -65,6 +72,6 @@ I couldn't find an install command line that worked, so manually copied the libs
    $ ./configure && make
 
 10. svn co fdmdv2
-   cd fdmdv2/src
-   make -f Makefile.Win32
+    cd fdmdv2/src
+    make -f Makefile.Win32
 
