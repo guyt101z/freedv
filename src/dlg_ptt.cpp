@@ -1,5 +1,5 @@
 //==========================================================================
-// Name:            dlg_comports.cpp
+// Name:            dlg_ptt.cpp
 // Purpose:         Subclasses dialog GUI for PTT Config. Creates simple 
 //                  wxWidgets dialog GUI to select real/virtual Comm ports.
 // Date:            May 11 2012
@@ -19,7 +19,7 @@
 //  along with this program; if not, see <http://www.gnu.org/licenses/>.
 //
 //==========================================================================
-#include "dlg_comports.h"
+#include "dlg_ptt.h"
 #include "fdmdv2_main.h"
 
 #ifdef __WIN32__
@@ -43,45 +43,49 @@ ComPortsDlg::ComPortsDlg(wxWindow* parent, wxWindowID id, const wxString& title,
     mainSizer->Add(staticBoxSizer28, 0, wxEXPAND, 5);
 
     wxStaticBoxSizer* staticBoxSizer18 = new wxStaticBoxSizer( new wxStaticBox(this, wxID_ANY, _("Hamlib Settings")), wxVERTICAL);
-    mainSizer->Add(staticBoxSizer18, 1, wxEXPAND, 5);
 
-    wxGridSizer* gridSizer100 = new wxGridSizer(1, 5, 0, 0);
+    //wxGridSizer* gridSizer100 = new wxGridSizer(1, 5, 0, 0);
+    wxBoxSizer* gridSizer100 = new wxBoxSizer(wxHORIZONTAL);
 
     /* Use Hamlib for PTT checkbox. */
     m_ckUseHamlibPTT = new wxCheckBox(this, wxID_ANY, _("Use Hamlib PTT"), wxDefaultPosition, wxSize(-1, -1), 0);
     m_ckUseHamlibPTT->SetValue(false);
-    gridSizer100->Add(m_ckUseHamlibPTT, 1, wxALIGN_LEFT, 2);
+    gridSizer100->Add(m_ckUseHamlibPTT, 0, wxALIGN_CENTER_VERTICAL, 0);
 
     /* Hamlib Rig Type combobox. */
-    gridSizer100->Add(new wxStaticText(this, wxID_ANY, _("Rig Model: "), wxDefaultPosition, wxDefaultSize, 0), 1,wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL, 2);
-    m_cbRigName = new wxComboBox(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(140, -1), 0, NULL, wxCB_DROPDOWN);
-    /* TODO(Joel): this is a hack. At the least, need to gaurntee that m_hamLib
+    gridSizer100->Add(new wxStaticText(this, wxID_ANY, _("Rig Model:"), wxDefaultPosition, wxDefaultSize, 0), 
+                      0, wxALIGN_CENTER_VERTICAL | wxLEFT, 20);
+    m_cbRigName = new wxComboBox(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(250, -1), 0, NULL, wxCB_DROPDOWN);
+    /* TODO(Joel): this is a hack. At the least, need to gurantee that m_hamLib
      * exists. */
     wxGetApp().m_hamlib->populateComboBox(m_cbRigName);
     m_cbRigName->SetSelection(wxGetApp().m_intHamlibRig);
-    gridSizer100->Add(m_cbRigName, 1, wxALIGN_CENTER|wxALIGN_RIGHT, 2);
+    gridSizer100->Add(m_cbRigName, 0, wxALIGN_CENTER_VERTICAL, 0);
 
     /* Hamlib Serial Port combobox. */
-    gridSizer100->Add(new wxStaticText(this, wxID_ANY, _("Serial Device: "), wxDefaultPosition, wxDefaultSize, 0), 1,wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL, 2);
+    gridSizer100->Add(new wxStaticText(this, wxID_ANY, _("Serial Device:"), wxDefaultPosition, wxDefaultSize, 0), 
+                      0, wxALIGN_CENTER_VERTICAL | wxLEFT, 20);
     m_cbSerialPort = new wxComboBox(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(140, -1), 0, NULL, wxCB_DROPDOWN);
-    gridSizer100->Add(m_cbSerialPort, 1, wxALIGN_CENTER|wxALIGN_RIGHT, 2);
+    gridSizer100->Add(m_cbSerialPort, 0, wxALIGN_CENTER_VERTICAL, 0);
 
-    staticBoxSizer18->Add(gridSizer100, 1, wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    staticBoxSizer18->Add(gridSizer100, 1);
+    mainSizer->Add(staticBoxSizer18, 1);
 
     wxBoxSizer* boxSizer12 = new wxBoxSizer(wxHORIZONTAL);
-    mainSizer->Add(boxSizer12, 0, wxLEFT|wxRIGHT|wxTOP|wxBOTTOM|wxALIGN_CENTER_HORIZONTAL, 5);
 
     m_buttonOK = new wxButton(this, wxID_OK, _("OK"), wxDefaultPosition, wxSize(-1,-1), 0);
     m_buttonOK->SetDefault();
-
     boxSizer12->Add(m_buttonOK, 0, wxLEFT|wxRIGHT|wxTOP|wxBOTTOM, 5);
+
     m_buttonCancel = new wxButton(this, wxID_CANCEL, _("Cancel"), wxDefaultPosition, wxSize(-1,-1), 0);
     boxSizer12->Add(m_buttonCancel, 0, wxLEFT|wxRIGHT|wxTOP|wxBOTTOM, 5);
 
     m_buttonApply = new wxButton(this, wxID_APPLY, _("Apply"), wxDefaultPosition, wxSize(-1,-1), 0);
     boxSizer12->Add(m_buttonApply, 0, wxLEFT|wxRIGHT|wxTOP|wxBOTTOM, 5);
 
-    SetSizeHints(450,300);
+    mainSizer->Add(boxSizer12, 0, wxLEFT|wxRIGHT|wxTOP|wxBOTTOM|wxALIGN_CENTER_HORIZONTAL, 5);
+    //SetSizeHints(450,300);
+
     if ( GetSizer() ) 
     {
          GetSizer()->Fit(this);

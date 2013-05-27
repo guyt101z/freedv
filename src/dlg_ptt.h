@@ -1,5 +1,5 @@
 //==========================================================================
-// Name:            dlg_comports.h
+// Name:            dlg_ptt.h
 // Purpose:         Subclasses dialog GUI for PTT Config.
 //                  
 // Created:         May. 11, 2012

@@ -73,8 +73,9 @@ endif
 
 HAMLIB=hamlib-1.2.15.3
 ifeq ($(SYSTEM_HAMLIB),y)
-HAMLIB_INC ?= $(shell pkg-config hamlib --cflags)
-HAMLIB_LIB ?= $(shell pkg-config hamlib --libs)
+#HAMLIB_INC ?= $(shell pkg-config hamlib --cflags)
+#HAMLIB_LIB ?= $(shell pkg-config hamlib --libs)
+HAMLIB_LIB = -lhamlib
 else
 HAMLIB_INC=-I$(HAMLIB)/include/hamlib
 # TODO: need to include all the backends too
@@ -99,7 +100,7 @@ fdmdv2_plot_spectrum.o \
 fdmdv2_plot_waterfall_linux.o \
 fdmdv2_pa_wrapper.o \
 dlg_audiooptions.o \
-dlg_comports.o \
+dlg_ptt.o \
 dlg_filter.o \
 dlg_options.o \
 varicode.o \

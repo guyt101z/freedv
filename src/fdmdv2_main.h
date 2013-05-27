@@ -59,7 +59,7 @@
 #include "golay23.h"
 
 #include "topFrame.h"
-#include "dlg_comports.h"
+#include "dlg_ptt.h"
 #include "fdmdv2_plot.h"
 #include "fdmdv2_plot_scalar.h"
 #include "fdmdv2_plot_scatter.h"
