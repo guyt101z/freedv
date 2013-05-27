@@ -1,4 +1,8 @@
 set(FREEDV_SOURCES
+    dlg_about.cpp
+    dlg_audiooptions.cpp
+    dlg_comports.cpp
+    dlg_filter.cpp
     fdmdv2_main.cpp
     fdmdv2_pa_wrapper.cpp
     fdmdv2_plot.cpp
@@ -6,14 +10,15 @@ set(FREEDV_SOURCES
     fdmdv2_plot_scatter.cpp
     fdmdv2_plot_spectrum.cpp
     fdmdv2_plot_waterfall_linux.cpp
-    dlg_about.cpp
-    dlg_audiooptions.cpp
-    dlg_comports.cpp
-    dlg_filter.cpp
-    sox_biquad.c
+    hamlib.cpp
     topFrame.cpp
+    sox_biquad.c
     varicode.c
     comp.h
+    dlg_about.h
+    dlg_audiooptions.h
+    dlg_comports.h
+    dlg_filter.h
     fdmdv2_defines.h
     fdmdv2_main.h
     fdmdv2_pa_wrapper.h
@@ -22,11 +27,9 @@ set(FREEDV_SOURCES
     fdmdv2_plot_scatter.h
     fdmdv2_plot_spectrum.h
     fdmdv2_plot_waterfall_linux.h
-    dlg_about.h dlg_audiooptions.h
-    dlg_comports.h
-    dlg_filter.h
-    sox.h
+    hamlib.h
     sox_biquad.h
+    sox.h
     topFrame.h
     varicode.h
     varicode_table.h

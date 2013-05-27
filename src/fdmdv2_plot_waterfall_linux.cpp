@@ -366,7 +366,6 @@ void PlotWaterfall::plotPixelData()
 
     // Shift previous bit map up one row of blocks ----------------------------
     wxNativePixelData data(*m_pBmp);
-    assert(data != NULL);
     wxNativePixelData::Iterator bitMapStart(data);
     wxNativePixelData::Iterator p = bitMapStart;
 

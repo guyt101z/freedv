@@ -11,6 +11,9 @@ SVN_REVISION=$(shell svnversion)
 # The list of required libraries, we will build this as we go
 LIBS_TO_BUILD :=
 
+SYSTEM_HAMLIB=y
+SYSTEM_PORTAUDIO=n
+
 # wxWidgets ---------------------------------------------
 
 ifneq ($(SYSTEM_WXWIDGETS),y)
@@ -56,26 +59,36 @@ CODEC2_LIB=$(CODEC2)/src/.libs/libcodec2.a
 # Sox ---------------------------------------------------
 # (libmagic is rqd or later versions of Ubuntu)
 
+SOX=sox-14.4.0
 ifeq ($(SYSTEM_SOX),y)
 SOX_INC ?= $(shell pkg-config sox --cflags)
 SOX_LIB ?= $(shell pkg-config sox --libs)
 else
-SOX=sox-14.4.0
 SOX_INC=-I$(SOX)/src/
 SOX_LIB=$(SOX)/src/.libs/libsox.a
 LIBS_TO_BUILD += $(SOX)/.built
 endif
 
-# CTB ---------------------------------------------------
+# Hamlib ---------------------------------------------------
 
-CTB=libctb-0.16
-CTB_INC=-I$(CTB)/include
-CTB_LIB=$(CTB)/lib/libctb-0.16.a
+HAMLIB=hamlib-1.2.15.3
+ifeq ($(SYSTEM_HAMLIB),y)
+HAMLIB_INC ?= $(shell pkg-config hamlib --cflags)
+HAMLIB_LIB ?= $(shell pkg-config hamlib --libs)
+else
+HAMLIB_INC=-I$(HAMLIB)/include/hamlib
+# TODO: need to include all the backends too
+HAMLIB_LIB=$(HAMLIB)/src/.libs/libhamlib.a
+LIBS_TO_BUILD += $(HAMLIB)/.built
+endif
 
 # FreeDV ------------------------------------------------
 
-CPP_FLAGS = -D_NO_AUTOTOOLS_ $(WX_CPPFLAGS) $(PORTAUDIO_INC) $(CODEC2_INC) $(SOX_INC) $(CTB_INC) -I. -g -Wall -O3 -DSVN_REVISION='"$(SVN_REVISION)"' -MMD -MP
-FREEDV_LIBS = $(WX_LIBS) $(PORTAUDIO_LIB) $(CODEC2_LIB) $(SOX_LIB) $(CTB_LIB) -lm -lpthread -lsndfile -lsamplerate $(LIBASOUND)
+CPP_FLAGS = -D_NO_AUTOTOOLS_ $(WX_CPPFLAGS) $(PORTAUDIO_INC) $(CODEC2_INC) \
+	    $(HAMLIB_INC) $(SOX_INC) -I. -g -Wall -O2 \
+	    -DSVN_REVISION='"$(SVN_REVISION)"' -MMD -MP
+FREEDV_LIBS = $(WX_LIBS) $(PORTAUDIO_LIB) $(CODEC2_LIB) $(SOX_LIB) $(HAMLIB_LIB) \
+	     $(HAMLIB_LIB) -lm -lpthread -lsndfile -lsamplerate $(LIBASOUND)
 
 OBJS = topFrame.o \
 fdmdv2_main.o \
@@ -91,24 +104,28 @@ dlg_filter.o \
 dlg_options.o \
 varicode.o \
 sox_biquad.o \
-codec2-dev/src/golay23.c
+codec2-dev/src/golay23.c \
+hamlib.o
 
-HDRS = ../version.h dlg_about.h dlg_audiooptions.h dlg_comports.h dlg_filter.h dlg_options.h fdmdv2_main.h fdmdv2_defines.h fdmdv2_plot.h fdmdv2_plot_scalar.h fdmdv2_plot_waterfall_linux.h fdmdv2_plot_scatter.h fdmdv2_plot_spectrum.h fdmdv2_pa_wrapper.h topFrame.h varicode.h codec2-dev/src/golay23.h
-
-all: $(LIBS_TO_BUILD) $(CODEC2)/.built $(CTB)/.built freedv
+all: $(LIBS_TO_BUILD) $(CODEC2)/.built freedv
 
 freedv: $(OBJS) 
 	$(CXX) -o freedv $(OBJS) $(CPP_FLAGS) $(FREEDV_LIBS)
-	
-%.o: %.cpp $(HDRS)
-	$(CXX) $(CPP_FLAGS) -c $< -o $@
-        
+
+%.o: %.cpp
+	$(CXX) -MMD -MF $(@:.o=.d) $(CPP_FLAGS) -c $< -o $@
+
+%.o: %.c
+	$(CC) -MMD -MF $(@:.o=.d) $(CPP_FLAGS) -c $< -o $@
+
+-include $(OBJ:.o=.d)
+
 clean:
-	rm -f *.d *.o fdmdv2
+	rm -f *.d *.o freedv
 
 clean-lib:
 	rm -Rf $(WXWIDGETS) $(PORTAUDIO) $(CODEC2) $(SOX) $(CTB)
-	rm -f *.d *.o fdmdv2 
+	rm -f *.d *.o freedv
 
 # wxWidgets ---------------------------------------------------------
 

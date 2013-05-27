@@ -155,10 +155,8 @@ bool MainApp::OnInit()
     m_textVoiceOutput.Empty();
     m_strSampleRate.Empty();
     m_strBitrate.Empty();
-    m_boolUseTonePTT   = false;
-    m_boolUseSerialPTT = true;
     // Create the main application window
-    MainFrame *frame = new MainFrame(NULL);
+    frame = new MainFrame(NULL);
     SetTopWindow(frame);
     // Should guarantee that the first plot tab defined is the one
     // displayed. But it doesn't when built from command line.  Why?
@@ -183,8 +181,9 @@ int MainApp::OnExit()
 MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
 {
     m_zoom              = 1.;
-    m_serialPort        = NULL;
-    m_device            = NULL;
+
+    /* TODO(Joel): Try making hamlib owned by MainFrame. */ 
+    wxGetApp().m_hamlib = new Hamlib();
 
     tools->AppendSeparator();
     wxMenuItem* m_menuItemToolsConfigDelete;
@@ -304,23 +303,16 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
             g_nSoundCards = 2;
     }
 
-    wxGetApp().m_strRigCtrlPort     = pConfig->Read(wxT("/Rig/Port"),               wxT("COM3"));
-    wxGetApp().m_strRigCtrlBaud     = pConfig->Read(wxT("/Rig/Baud"),               wxT("9600"));
-    wxGetApp().m_strRigCtrlDatabits = pConfig->Read(wxT("/Rig/DataBits"),           wxT("8"));
-    wxGetApp().m_strRigCtrlStopbits = pConfig->Read(wxT("/Rig/StopBits"),           wxT("1"));
-    wxGetApp().m_strRigCtrlParity   = pConfig->Read(wxT("/Rig/Parity"),             wxT("n"));
-    wxGetApp().m_boolUseTonePTT     = pConfig->ReadBool(wxT("/Rig/UseTonePTT"),     false);
     wxGetApp().m_boolHalfDuplex     = pConfig->ReadBool(wxT("/Rig/HalfDuplex"),     true);
-    wxGetApp().m_boolUseSerialPTT   = pConfig->ReadBool(wxT("/Rig/UseSerialPTT"),   false);
-    wxGetApp().m_boolUseRTS         = pConfig->ReadBool(wxT("/Rig/UseRTS"),         true);
-    wxGetApp().m_boolRTSPos         = pConfig->ReadBool(wxT("/Rig/RTSPolarity"),    false);
-    wxGetApp().m_boolUseDTR         = pConfig->ReadBool(wxT("/Rig/UseDTR"),         false);
-    wxGetApp().m_boolDTRPos         = pConfig->ReadBool(wxT("/Rig/DTRPolarity"),    false);
     wxGetApp().m_playFileToMicInPath = pConfig->Read("/File/playFileToMicInPath",   wxT(""));
     wxGetApp().m_recFileFromRadioPath = pConfig->Read("/File/recFileFromRadioPath", wxT(""));
     wxGetApp().m_recFileFromRadioSecs = pConfig->Read("/File/recFileFromRadioSecs", 30);
     wxGetApp().m_playFileFromRadioPath = pConfig->Read("/File/playFileFromRadioPath", wxT(""));
 
+    wxGetApp().m_boolHamlibUseForPTT = pConfig->ReadBool("/Hamlib/UseForPTT", false);
+    wxGetApp().m_intHamlibRig = pConfig->ReadLong("/Hamlib/RigName", 0);
+    wxGetApp().m_strHamlibSerialPort = pConfig->Read("/Hamlib/SerialPort", "");
+    
     bool slow = false; // prevents compile error when using default bool
     wxGetApp().m_snrSlow = pConfig->Read("/Audio/snrSlow", slow);
 
@@ -369,9 +361,10 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     //m_togRxID->Disable();
     //m_togTxID->Disable();
     m_togBtnAnalog->Disable();
+    m_btnTogPTT->Disable();
     //m_togBtnALC->Disable();
 
-    SetupSerialPort();
+    OpenHamlibRig(); 
 
     // squelch settings
     char sqsnr[15];
@@ -453,6 +446,9 @@ MainFrame::~MainFrame()
     int w;
     int h;
 
+    /* TOOD(Joel): the ownership of m_hamlib is probably wrong. */
+    if (wxGetApp().m_hamlib) delete wxGetApp().m_hamlib;
+
     //MainApp *pApp = wxGetApp();
     wxConfigBase *pConfig = wxConfigBase::Get();
     if(pConfig)
@@ -489,18 +485,11 @@ MainFrame::~MainFrame()
         pConfig->Write(wxT("/Audio/soundCard2OutDeviceNum"),  g_soundCard2OutDeviceNum);
         pConfig->Write(wxT("/Audio/soundCard2SampleRate"),    g_soundCard2SampleRate );
 
-        pConfig->Write(wxT("/Rig/Port"),                    wxGetApp().m_strRigCtrlPort);
-        pConfig->Write(wxT("/Rig/Baud"),                    wxGetApp().m_strRigCtrlBaud);
-        pConfig->Write(wxT("/Rig/DataBits"),                wxGetApp().m_strRigCtrlDatabits);
-        pConfig->Write(wxT("/Rig/StopBits"),                wxGetApp().m_strRigCtrlStopbits);
-        pConfig->Write(wxT("/Rig/Parity"),                  wxGetApp().m_strRigCtrlParity);
-        pConfig->Write(wxT("/Rig/UseRTS"),                  wxGetApp().m_boolUseRTS);
-        pConfig->Write(wxT("/Rig/RTSPolarity"),             wxGetApp().m_boolRTSPos);
-        pConfig->Write(wxT("/Rig/UseDTR"),                  wxGetApp().m_boolUseDTR);
-        pConfig->Write(wxT("/Rig/DTRPolarity"),             wxGetApp().m_boolDTRPos);
-        pConfig->Write(wxT("/Rig/UseTonePTT"),              wxGetApp().m_boolUseTonePTT);
-        pConfig->Write(wxT("/Rig/UseSerialPTT"),            wxGetApp().m_boolUseSerialPTT);
         pConfig->Write(wxT("/Rig/HalfDuplex"),              wxGetApp().m_boolHalfDuplex);
+        pConfig->Write("/Hamlib/UseForPTT", wxGetApp().m_boolHamlibUseForPTT);
+        pConfig->Write("/Hamlib/RigName", wxGetApp().m_intHamlibRig);
+        pConfig->Write("/Hamlib/SerialPort", wxGetApp().m_strHamlibSerialPort);
+
 
         pConfig->Write(wxT("/File/playFileToMicInPath"),    wxGetApp().m_playFileToMicInPath);
         pConfig->Write(wxT("/File/recFileFromRadioPath"),   wxGetApp().m_recFileFromRadioPath);
@@ -523,7 +512,6 @@ MainFrame::~MainFrame()
     //m_togBtnALC->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnALCClickUI), NULL, this);
     //m_btnTogPTT->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MainFrame::OnTogBtnPTT_UI), NULL, this);
 
-    CloseSerialPort();
     sox_biquad_finish();
 
     if (m_RxRunning)
@@ -900,11 +888,39 @@ void MainFrame::OnCheckSNRClick(wxCommandEvent& event)
     //printf("m_snrSlow: %d\n", (int)wxGetApp().m_snrSlow);
 }
 
+// check for space bar press
+
+int MainApp::FilterEvent(wxEvent& event)
+{
+    if ((event.GetEventType() == wxEVT_KEY_DOWN) && 
+        (((wxKeyEvent&)event).GetKeyCode() == WXK_SPACE))
+        {
+            //printf("m_rxRunnng: %d\n", frame->m_RxRunning);
+            if (frame->m_RxRunning) {
+                if (frame->m_btnTogPTT->GetValue())
+                    frame->m_btnTogPTT->SetValue(false);
+                else
+                    frame->m_btnTogPTT->SetValue(true);
+
+                frame->togglePTT();
+            }
+            return true;
+
+        }
+ 
+    return -1;
+}
+
 //-------------------------------------------------------------------------
 // OnTogBtnPTT ()
 //-------------------------------------------------------------------------
 void MainFrame::OnTogBtnPTT (wxCommandEvent& event)
 {
+    togglePTT();
+    event.Skip();
+}
+
+void MainFrame::togglePTT(void) {
     if (g_tx)
     {
         // tx-> rx transition, swap to the page we were on for last rx
@@ -917,65 +933,17 @@ void MainFrame::OnTogBtnPTT (wxCommandEvent& event)
         m_auiNbookCtrl->ChangeSelection(m_auiNbookCtrl->GetPageIndex((wxWindow *)m_panelSpeechIn));
     }
     g_tx = m_btnTogPTT->GetValue();
-    // Tortured and tortuous logic, it seems to me...
-    if(wxGetApp().m_boolUseSerialPTT && m_serialPort != NULL)
-    {
-        if(event.IsChecked())
-        {
-            if(wxGetApp().m_boolUseRTS)     // Use RTS
-            {
-                if(wxGetApp().m_boolRTSPos) // RTS asserted HIGH
-                {
-                    m_serialPort->SetLineState(ctb::LinestateRts);
-                }
-                else                        // RTS asserted LOW
-                {
-                    m_serialPort->ClrLineState(ctb::LinestateRts);
-                }
-            }
-            else                            // Use DTR
-            {
-                if(wxGetApp().m_boolDTRPos) // DTR asserted HIGH
-                {
-                    m_serialPort->SetLineState(ctb::LinestateDtr);
-                }
-                else                        // DTR asserted LOW
-                {
-                    m_serialPort->ClrLineState(ctb::LinestateDtr);
-                }
-            }
-        }
-        else  // !isChecked() - so Clear
-        {
-            if(wxGetApp().m_boolUseRTS)     // Use RTS
-            {
-                if(wxGetApp().m_boolRTSPos) // RTS cleared LOW
-                {
-                    m_serialPort->ClrLineState(ctb::LinestateRts);
-                }
-                else                        // RTS cleared HIGH
-                {
-                    m_serialPort->SetLineState(ctb::LinestateRts);
-                }
-            }
-            else                            // Use DTR
-            {
-                if(wxGetApp().m_boolDTRPos) // DTR cleared LOW
-                {
-                    m_serialPort->ClrLineState(ctb::LinestateDtr);
-                }
-                else                        // DTR cleared HIGH
-                {
-                    m_serialPort->SetLineState(ctb::LinestateDtr);
-                }
-            }
-        }
+
+    // Hamlib
+    Hamlib *rig = wxGetApp().m_hamlib; 
+    if (wxGetApp().m_boolHamlibUseForPTT && rig != NULL) {
+        rig->ptt(g_tx);
     }
+
     // reset level gauge
     m_maxLevel = 0;
     m_textLevel->SetLabel(wxT(""));
     m_gaugeLevel->SetValue(0);
-    event.Skip();
 }
 
 //-------------------------------------------------------------------------
@@ -1367,7 +1335,6 @@ void MainFrame::OnExit(wxCommandEvent& event)
     m_togBtnAnalog->Disable();
     //m_togBtnALC->Disable();
     //m_btnTogPTT->Disable();
-    CloseSerialPort();
     Pa_Terminate();
     Destroy();
 }
@@ -1432,46 +1399,15 @@ void MainFrame::OnToolsAudioUI(wxUpdateUIEvent& event)
 void MainFrame::OnToolsComCfg(wxCommandEvent& event)
 {
     wxUnusedVar(event);
-    int rv = 0;
-    int  iLineState  = 0;
-    //bool bPTTEnabled = m_btnTogPTT->IsEnabled();
-    //bool bPTTState   = m_btnTogPTT->GetValue();
 
-    if(m_serialPort != NULL)
-    {
-        CloseSerialPort();
-    }
     ComPortsDlg *dlg = new ComPortsDlg(NULL);
-    rv = dlg->ShowModal();
-    if(rv == wxID_OK)
+    if(dlg->ShowModal() == wxID_OK)
     {
         dlg->ExchangeData(EXCHANGE_DATA_OUT);
-        SetupSerialPort();
-    }
-    else if(rv == wxID_CANCEL)
-    {
-        SetupSerialPort();
-        if(m_serialPort != NULL)
-        {
-            if(iLineState | ctb::LinestateRts)
-            {
-                m_serialPort->SetLineState(ctb::LinestateRts);
-            }
-            else
-            {
-                m_serialPort->ClrLineState(ctb::LinestateRts);
-            }
-            if(iLineState | ctb::LinestateDtr)
-            {
-                m_serialPort->SetLineState(ctb::LinestateDtr);
-            }
-            else
-            {
-                m_serialPort->ClrLineState(ctb::LinestateDtr);
-            }
-        // m_btnTogPTT->Enable(bPTTEnabled);
-        // m_btnTogPTT->SetValue(bPTTState);
-        }
+        /* Opening is done on app start. If the user has just
+         * adjusted the hamlib settings, do an open when they press
+         * okay. */
+        OpenHamlibRig();
     }
     delete dlg;
 }
@@ -1567,6 +1503,23 @@ void MainFrame::OnHelpAbout(wxCommandEvent& event)
 
 //bool wxLaunchDefaultBrowser(http:("http://freedv.org/");
 
+bool MainFrame::OpenHamlibRig() {
+    if (wxGetApp().m_boolHamlibUseForPTT != true)
+       return false;
+    if (wxGetApp().m_intHamlibRig == 0)
+        return false;
+    if (wxGetApp().m_hamlib == NULL)
+        return false;
+
+    int rig = wxGetApp().m_intHamlibRig;
+    wxString port = wxGetApp().m_strHamlibSerialPort;
+    bool status = wxGetApp().m_hamlib->connect(rig, port.mb_str(wxConvUTF8));
+    if (status == false)
+        wxMessageBox("Couldn't connect to Radio with hamlib", wxT("About"), wxOK | wxICON_ERROR, this);
+
+    return status;
+} 
+
 //-------------------------------------------------------------------------
 // OnTogBtnOnOff()
 //-------------------------------------------------------------------------
@@ -1588,13 +1541,8 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
         //m_togRxID->Enable();
         //m_togTxID->Enable();
         m_togBtnAnalog->Enable();
-/*
-        if(m_serialPort != NULL)
-        {
-            m_btnTogPTT->Enable();
-        }
-*/
         m_togBtnOnOff->SetLabel(wxT("Stop"));
+        m_btnTogPTT->Enable();
 
         m_rb1400old->Disable();
         m_rb1600->Disable();
@@ -1705,6 +1653,13 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
         m_plotTimer.Stop();
 #endif // _USE_TIMER
 
+        // ensure we are not transmitting
+        Hamlib *rig = wxGetApp().m_hamlib; 
+        if (wxGetApp().m_boolHamlibUseForPTT && rig != NULL) {
+          rig->ptt(false);
+        }
+        m_btnTogPTT->SetValue(false);
+
         stopRxStream();
 
         free(g_error_pattern);
@@ -1718,7 +1673,7 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
         //m_togRxID->Disable();
         //m_togTxID->Disable();
         m_togBtnAnalog->Disable();
-        //m_btnTogPTT->Disable();
+        m_btnTogPTT->Disable();
         m_togBtnOnOff->SetLabel(wxT("Start"));
         m_rb1400old->Enable();
         m_rb1600->Enable();
@@ -3030,70 +2985,5 @@ void fdmdv2_clickTune(float freq) {
     else {
         g_TxFreqOffsetHz = freq - FDMDV_FCENTRE;
         g_RxFreqOffsetHz = FDMDV_FCENTRE - freq;
-    }
-}
-
-//----------------------------------------------------------------
-// SetupSerialPort()
-//----------------------------------------------------------------
-void MainFrame::SetupSerialPort(void)
-{
-    long baudrate;
-
-    wxGetApp().m_strRigCtrlBaud.ToLong(&baudrate, 10);
-    if(!wxGetApp().m_strRigCtrlPort.IsEmpty())
-    {
-        wxString protocol = wxGetApp().m_strRigCtrlDatabits + wxGetApp().m_strRigCtrlParity + wxGetApp().m_strRigCtrlStopbits;
-        m_serialPort = new ctb::SerialPort();
-        if(m_serialPort->Open(wxGetApp().m_strRigCtrlPort.c_str(), baudrate, protocol.c_str(), ctb::SerialPort::NoFlowControl ) >= 0 )
-        {
-            m_device = m_serialPort;
-            //  always start with PTT cleared
-            if(wxGetApp().m_boolRTSPos) // RTS cleared LOW
-            {
-                m_serialPort->ClrLineState(ctb::LinestateRts);
-            }
-            else                        // RTS cleared HIGH
-            {
-                m_serialPort->SetLineState(ctb::LinestateRts);
-            }
-            if(wxGetApp().m_boolDTRPos) // DTR cleared LOW
-            {
-                m_serialPort->ClrLineState(ctb::LinestateDtr);
-            }
-            else                        // DTR cleared HIGH
-            {
-                m_serialPort->SetLineState(ctb::LinestateDtr);
-            }
-            //m_btnTogPTT->Enable(true);
-            m_btnTogPTT->SetValue(false);
-        }
-        else
-        {
-            m_serialPort = NULL;
-            m_device     = NULL;
-            //m_btnTogPTT->Disable();
-        }
-    }
-/*
-    else
-    {
-        wxMessageBox(wxT("You must select a Serial port to Open!"), wxT("Error"), wxOK);
-    }
-*/
-}
-
-//----------------------------------------------------------------
-// CloseSerialPort()
-//----------------------------------------------------------------
-void MainFrame::CloseSerialPort(void)
-{
-    if((m_serialPort != NULL) && m_serialPort->IsOpen())
-    {
-        m_serialPort->Close();
-        m_serialPort = NULL;
-        m_device     = NULL;
-        //m_btnTogPTT->SetLabel(wxT("PTT"));
-        //m_btnTogPTT->Enable(false);
     }
 }

@@ -39,7 +39,7 @@ message(STATUS "FreeDV version: ${FREEDV_VERSION}")
 #set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 # Work around for not using a svn working copy.
-add_definitions(-DSVN_REVISION="1248")
+add_definitions(-DSVN_REVISION="Unversioned directory")
 add_definitions(-D_NO_AUTOTOOLS_)
 
 
@@ -223,6 +223,22 @@ if(PORTAUDIOCPP)
     message(STATUS "portaudiocpp library: ${PORTAUDIOCPP}")
     list(APPEND FREEDV_LINK_LIBS ${PORTAUDIOCPP})
 endif(PORTAUDIOCPP)
+
+#
+# Hamlib library
+#
+message(STATUS "Looking for hamlib...")
+find_library(LIBHAMLIB hamlib)
+if(LIBHAMLIB)
+    list(APPEND FREEDV_LINK_LIBS ${LIBHAMLIB})
+    message(STATUS "  hamlib found: ${LIBHAMLIB}")
+else(LIBHAMLIB)
+    message(FATAL_ERROR "hamlib not found.
+On Linux systems try installing:
+    hamlib-devel  (RPM based systems)
+    libhamlib-dev (DEB based systems)"
+    )
+endif(LIBHAMLIB)
 
 #
 # Samplerate Library

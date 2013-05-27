@@ -23,6 +23,7 @@
 #define __COMPORTS_DIALOG__
 
 #include "fdmdv2_main.h"
+#include "hamlib.h"
 #include <wx/settings.h>
 #include <wx/xrc/xmlres.h>
 #include <wx/xrc/xh_bmp.h>
@@ -33,6 +34,7 @@
 #include <wx/listbox.h>
 #include <wx/radiobut.h>
 #include <wx/button.h>
+#include <wx/spinctrl.h>
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 // Class ComPortsDlg
@@ -46,30 +48,21 @@ class ComPortsDlg : public wxDialog
 
     protected:
         wxCheckBox* m_ckHalfDuplex;
-        wxCheckBox* m_ckUsePTTRtChan;
-        wxListBox* m_listCtrlPorts;
-        wxCheckBox* m_ckUseSerialPTT;
-        wxStaticText* m_staticText12;
-        wxTextCtrl *m_txtCtlDevicePath;
-        wxRadioButton* m_rbUseDTR;
-        wxCheckBox* m_ckRTSPos;
-        wxRadioButton* m_rbUseRTS;
-        wxCheckBox* m_ckDTRPos;
+
         wxButton* m_buttonOK;
         wxButton* m_buttonCancel;
         wxButton* m_buttonApply;
 
-protected:
-        void ListAllPorts();
+        /* Hamlib settings. */
+        wxCheckBox *m_ckUseHamlibPTT;
+        wxComboBox *m_cbRigName;
+        wxComboBox *m_cbSerialPort;
 
-        void populatePortList(void);
-        void PTTAudioClick(wxCommandEvent& event);
-//        void PTTPortSlelcted(wxCommandEvent& event);
-        void PTTUseSerialClicked(wxCommandEvent& event);
-        void UseDTRCliched(wxCommandEvent& event);
-        //void DTRVPlusClicked(wxCommandEvent& event);
-        void UseRTSClicked(wxCommandEvent& event);
-        //void RTSVPlusClicked(wxCommandEvent& event);
+        Hamlib *m_hamlib;
+
+protected:
+        void populatePortList();
+
         void OnOK(wxCommandEvent& event);
         void OnCancel(wxCommandEvent& event);
         void OnApply(wxCommandEvent& event);

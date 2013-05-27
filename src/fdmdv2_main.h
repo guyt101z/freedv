@@ -51,15 +51,12 @@
 
 #include <samplerate.h>
 
+#include <hamlib.h> 
+
 #include "codec2.h"
 #include "codec2_fdmdv.h"
 #include "codec2_fifo.h"
 #include "golay23.h"
-
-#include "ctb-0.16/ctb.h"
-#include "ctb-0.16/portscan.h"
-#include "ctb-0.16/serportx.h"
-#include "ctb-0.16/serport.h"
 
 #include "topFrame.h"
 #include "dlg_comports.h"
@@ -104,6 +101,8 @@ extern int                 g_soundCard2InDeviceNum;
 extern int                 g_soundCard2OutDeviceNum;
 extern int                 g_soundCard2SampleRate;
 
+class MainFrame;
+
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
 // Class MainApp
 //
@@ -133,18 +132,12 @@ class MainApp : public wxApp
         wxString            m_strSampleRate;
         wxString            m_strBitrate;
 
-        wxString            m_strRigCtrlPort;
-        wxString            m_strRigCtrlBaud;
-        wxString            m_strRigCtrlDatabits;
-        wxString            m_strRigCtrlStopbits;
-        wxString            m_strRigCtrlParity;
         bool                m_boolHalfDuplex;
-        bool                m_boolUseSerialPTT;
-        bool                m_boolUseTonePTT;
-        bool                m_boolUseRTS;
-        bool                m_boolRTSPos;
-        bool                m_boolUseDTR;
-        bool                m_boolDTRPos;
+
+        bool                m_boolHamlibUseForPTT;
+        unsigned int        m_intHamlibRig;
+        wxString            m_strHamlibSerialPort;
+        Hamlib              *m_hamlib;
 
         wxString            m_playFileToMicInPath;
         wxString            m_recFileFromRadioPath;
@@ -206,6 +199,8 @@ class MainApp : public wxApp
 
         bool        m_testFrames;
 
+        int        FilterEvent(wxEvent& event);
+        MainFrame *frame;
     protected:
 };
 
@@ -324,8 +319,7 @@ class MainFrame : public TopFrame
         
         txRxThread*             m_txRxThread;
 
-        void SetupSerialPort(void);
-        void CloseSerialPort(void);
+        bool                    OpenHamlibRig();
 
 #ifdef _USE_TIMER
         wxTimer                 m_plotTimer;
@@ -357,10 +351,9 @@ class MainFrame : public TopFrame
     void initPortAudioDevice(PortAudioWrap *pa, int inDevice, int outDevice, 
                              int soundCard, int sampleRate, int inputChannels);
 
-    protected:
+    void togglePTT(void);
 
-        ctb::IOBase*            m_device;
-        ctb::SerialPort*        m_serialPort;
+    protected:
 
         void setsnrBeta(bool snrSlow);
 
