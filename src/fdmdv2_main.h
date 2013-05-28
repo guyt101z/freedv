@@ -63,7 +63,7 @@
 #include "fdmdv2_plot.h"
 #include "fdmdv2_plot_scalar.h"
 #include "fdmdv2_plot_scatter.h"
-#include "fdmdv2_plot_waterfall_linux.h"
+#include "fdmdv2_plot_waterfall.h"
 #include "fdmdv2_plot_spectrum.h"
 #include "fdmdv2_pa_wrapper.h"
 #include "sndfile.h"

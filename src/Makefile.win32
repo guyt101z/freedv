@@ -24,7 +24,7 @@ fdmdv2_plot.o \
 fdmdv2_plot_scalar.o \
 fdmdv2_plot_scatter.o \
 fdmdv2_plot_spectrum.o \
-fdmdv2_plot_waterfall_linux.o \
+fdmdv2_plot_waterfall.o \
 fdmdv2_pa_wrapper.o \
 dlg_audiooptions.o \
 dlg_ptt.o \

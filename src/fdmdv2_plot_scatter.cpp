@@ -1,6 +1,6 @@
 //==========================================================================
 // Name:            fdmdv2_plot_scatter.cpp
-// Purpose:         Implements a scatter plot derivative of fdmdv2_plot.
+// Purpose:         A scatter plot derivative of fdmdv2_plot.
 // Created:         June 24, 2012
 // Authors:         David Rowe, David Witten
 // 
