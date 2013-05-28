@@ -1483,6 +1483,11 @@ void MainFrame::OnHelpAbout(wxCommandEvent& event)
     msg.Printf( wxT("FreeDV %s\n\n")
                 wxT("Open Source Narrow Band Digital Voice over Radio\n\n")
                 wxT("For Help and Support visit: http://freedv.org\n\n")
+
+                wxT("How much have you spent on Ham gear this year?  How did it compare to FreeDV? ")
+                wxT("FreeDV repesents an open and free future for digital voice over Ham Radio. ")
+                wxT("Please help by donating just $10 here: http://freedv.org\n\n")
+
                 wxT("GNU Public License V2.1\n\n")
                 wxT("Copyright (c) David Witten KD0EAG and David Rowe VK5DGR\n\n")
                 wxT("svn revision: %s\n") + svnLatestRev, FREEDV_VERSION, SVN_REVISION);

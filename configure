@@ -2775,7 +2775,7 @@ ac_config_headers="$ac_config_headers config.h"
 
 
 
-$as_echo "#define SVN_REVISION \"1145 \"" >>confdefs.h
+$as_echo "#define SVN_REVISION \"1152 \"" >>confdefs.h
 
 
 # Check whether --enable-about-dialog was given.
@@ -6370,8 +6370,8 @@ LIBS="$LIBS $WX_LIBS"
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: -----------" >&5
 $as_echo "$as_me: -----------" >&6;}
-{ $as_echo "$as_me:${as_lineno-$LINENO}:   SVN_REVISION: 1145 " >&5
-$as_echo "$as_me:   SVN_REVISION: 1145 " >&6;}
+{ $as_echo "$as_me:${as_lineno-$LINENO}:   SVN_REVISION: 1152 " >&5
+$as_echo "$as_me:   SVN_REVISION: 1152 " >&6;}
 { $as_echo "$as_me:${as_lineno-$LINENO}:   enable about dialog: $enable_about_dialog " >&5
 $as_echo "$as_me:   enable about dialog: $enable_about_dialog " >&6;}
 { $as_echo "$as_me:${as_lineno-$LINENO}: -----------" >&5

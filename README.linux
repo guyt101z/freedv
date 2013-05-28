@@ -2,12 +2,6 @@ README.linux for fdmdv2
 Created by David Rowe
 Oct 14 2012
 
-Linux usage Notes
-=================
-
-1. Config is stored in ~/.FreeDV, rm this file to restore defaults
-
-
 BUILDING FreeDV for Linux
 =========================
 
@@ -28,48 +22,23 @@ BUILDING FreeDV for Linux
    cd fdmdv2/src 
    make -f Makefile.linux
 
+Linux usage Notes
+=================
+
+1. Config is stored in ~/.FreeDV, rm this file to restore defaults
+
+
 TODO
 ====
 
 [ ] Stopping Waterfall
     + When Stop pressed lower 25% of Waterfall isn't erased
-[X] Axis labels on Waterfall incorrect
-[ ] CPU load very high for waterfall, proportional to screen size
-[X] resizing Waterfall
-    + bit map is used for memory of waterfall, so resizing will cause some
-      probs as previous memory will be for a different size
-    + so if we resize, need to delete old memory, zero new bit map
-[ ] minimum window size so we don't lose buttons and get waterfall/spectrum text
-    pressed together
-[ ] tell take lights for over/underflow realtime type issues
-[ ] lights for clipping of audio input/ouput
-    + level gauge?
 
 [ ] release clean up
-    [X] bug in record file on Win32
-    [X] svn version tag?
-        + i.e. 1.0 etc rather than number
-    [ ] waterfall
-        + is graticule useful
-        + peaks showing
-        + showing fades properly
-    [ ] record/play dialogs layout
     [ ] remove/comment out debug printfs
-    [ ] Credits: Mel, Tapr, Bruce,  Peter M, cesco, Dave W
-    [ ] linux version
-    [ ] help about with URL (hyperlink?) to web site
-    [ ] do we keep/put effort into getting working ./configure && Makefile?
-    [ ] test with simulated AWGN/burst error channels
-        + see if sync needs tuning to not fall over too quickly
-        + nasty noises
+    [ ] help about with URL (hyperlink?) to web site & donations
     [ ] buffer sizes, maybe make a config number
-    [ ] read comments and make sure they are still valid
     [ ] tool tip help for audio config dialog
-    [ ] something sensible with disabling rx when tx button is pressed?        
-    [ ] tx/rx muting for half duplex
-        + dont want funny sounds during tx
-    [ ] setup doc
-    [ ] Donate button with hyperlink from about dialog or help menu?
 
 IDEAS
 =====
@@ -81,32 +50,14 @@ IDEAS
 2. Way to I/O to/from files on each "port", for example:
    + monitor input speech or feed input speech
 
-3. (Thomas Kocourek n4fwd) Context senditive help.
+3. (Thomas Kocourek n4fwd) Context sensitive help.
 
 4. Look at how people hook up and use program, stop common mistakes or assumptions
 
-5. speech Waveform I/O.  Look for clipping
-
-6. Should SNR (i) respond more quickly (ii) be smoother with less
-   variation for a continuous signal?
-
-7. Look at performance with channels with impulsive noise or fading.
-   Does it lose sync too easily?  Should it track thru a few frames of
-   fading?  For example if sync sequcne lost we could mute but not do
-   coarse freq for a few frames.
-
-8. Simulate channel errors including QRM of an adjacent SSB signal.
-   How can we detect partial obscuring of tones and what do we do?
-
-9. Squelch implementation.  Effect of SNR bouncing around might be to
+5. Squelch implementation.  Effect of SNR bouncing around might be to
    have audio cut in and out.  We might need a better way of
    triggering mute, such as amplitude of pilots, or smoother SNR.  Or
    hysteresis in Squelch.
-
-Test Plan
----------
-
-1. Remove ~/.FDMDV and do a fresh install
 
 User Manual Notes
 -----------------
@@ -120,7 +71,5 @@ Draw a block diagram, image of set up dialog.
 What a good scatter diagram/spectrum looks like
 
 Setting up in audio loopback
-
-Explain one and two soundcard modes
 
 Right click drag tabs, new window, tab order
