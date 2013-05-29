@@ -420,6 +420,27 @@ endif(NOT USE_STATIC_LIBCTB)
 include_directories(${LIBCTB_INCLUDE_DIR})
 list(APPEND FREEDV_LINK_LIBS ${LIBCTB_LIBRARY})
 
+#
+# Hamlib
+#
+find_package(PkgConfig)
+pkg_check_modules(HAMLIB REQUIRED hamlib)
+set(HAMLIB_DEFINITIONS ${HAMLIB_CFLAGS_OTHER})
+find_path(HAMLIB_INCLUDE_DIR hamlib/rig.h
+    HINTS ${HAMLIB_INCLUDEDIR} ${HAMLIB_INCLUDE_DIRS})
+find_library(HAMLIB_LIBRARY hamlib
+    HINTS ${HAMLIB_LIBDIR} ${HAMLIB_LIBRARY_DIRS})
+message(STATUS "Hamlib  library: ${HAMLIB_LIBRARY}")
+message(STATUS "Hamlib includes: ${HAMLIB_INCLUDE_DIR}")
+if(HAMLIB_LIBRARY AND HAMLIB_INCLUDE_DIR)
+    message(STATUS "Hamlib library found.")
+    include_directories(${HAMLIB_INCLUDE_DIR})
+    list(APPEND FREEDV_LINK_LIBS ${HAMLIB_LIBRARY})
+else(HAMLIB_LIBRARY AND HAMLIB_INCLUDE_DIR)
+    message(STATUS "Hamlib was not found.")
+endif(HAMLIB_LIBRARY AND HAMLIB_INCLUDE_DIR)
+
+
 # Freedv 
 add_subdirectory(src)
 

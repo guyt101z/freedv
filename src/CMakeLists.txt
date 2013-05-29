@@ -1,8 +1,9 @@
 set(FREEDV_SOURCES
     dlg_about.cpp
     dlg_audiooptions.cpp
-    dlg_comports.cpp
     dlg_filter.cpp
+    dlg_options.cpp
+    dlg_ptt.cpp
     fdmdv2_main.cpp
     fdmdv2_pa_wrapper.cpp
     fdmdv2_plot.cpp
@@ -17,8 +18,9 @@ set(FREEDV_SOURCES
     comp.h
     dlg_about.h
     dlg_audiooptions.h
-    dlg_comports.h
     dlg_filter.h
+    dlg_options.h
+    dlg_ptt.h
     fdmdv2_defines.h
     fdmdv2_main.h
     fdmdv2_pa_wrapper.h
