@@ -9,7 +9,7 @@ set(FREEDV_SOURCES
     fdmdv2_plot_scalar.cpp
     fdmdv2_plot_scatter.cpp
     fdmdv2_plot_spectrum.cpp
-    fdmdv2_plot_waterfall_linux.cpp
+    fdmdv2_plot_waterfall.cpp
     hamlib.cpp
     topFrame.cpp
     sox_biquad.c
@@ -26,7 +26,7 @@ set(FREEDV_SOURCES
     fdmdv2_plot_scalar.h
     fdmdv2_plot_scatter.h
     fdmdv2_plot_spectrum.h
-    fdmdv2_plot_waterfall_linux.h
+    fdmdv2_plot_waterfall.h
     hamlib.h
     sox_biquad.h
     sox.h
