@@ -2,7 +2,7 @@ The CMake configuration for FDMDV2 (FreeDV) should be considered experimental at
 this time but has been thouroughly tested on Fedora Linux and will likely work
 well on most *nix systems and has many advanages over the autotools config. 
 
-- Builds against system libraries (default).
+- Builds against system libraries (by default).
 - Or optionally download, build, and statically link with required libraries on
   an individual basis. See USE_STATIC_??? options.
 - Has experimental NSIS packaing support for Windows (WIN32) targets. *nix
