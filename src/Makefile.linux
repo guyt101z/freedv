@@ -83,13 +83,19 @@ HAMLIB_LIB=$(HAMLIB)/src/.libs/libhamlib.a
 LIBS_TO_BUILD += $(HAMLIB)/.built
 endif
 
+# CTB ---------------------------------------------------
+
+CTB=libctb-0.16
+CTB_INC=-I$(CTB)/include
+CTB_LIB=$(CTB)/lib/libctb-0.16.a
+
 # FreeDV ------------------------------------------------
 
 CPP_FLAGS = -D_NO_AUTOTOOLS_ $(WX_CPPFLAGS) $(PORTAUDIO_INC) $(CODEC2_INC) \
-	    $(HAMLIB_INC) $(SOX_INC) -I. -g -Wall -O2 \
+	    $(HAMLIB_INC) $(CTB_INC) $(SOX_INC) -I. -g -Wall -O2 \
 	    -DSVN_REVISION='"$(SVN_REVISION)"' -MMD -MP
 FREEDV_LIBS = $(WX_LIBS) $(PORTAUDIO_LIB) $(CODEC2_LIB) $(SOX_LIB) $(HAMLIB_LIB) \
-	     $(HAMLIB_LIB) -lm -lpthread -lsndfile -lsamplerate $(LIBASOUND)
+	     $(CTB_LIB) -lm -lpthread -lsndfile -lsamplerate $(LIBASOUND)
 
 OBJS = topFrame.o \
 fdmdv2_main.o \

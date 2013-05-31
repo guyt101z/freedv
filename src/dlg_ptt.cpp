@@ -174,6 +174,8 @@ ComPortsDlg::ComPortsDlg(wxWindow* parent, wxWindowID id, const wxString& title,
 
     // Connect events
     this->Connect(wxEVT_INIT_DIALOG, wxInitDialogEventHandler(ComPortsDlg::OnInitDialog), NULL, this);
+    m_ckUseHamlibPTT->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(ComPortsDlg::PTTUseHamLibClicked), NULL, this);
+    m_ckUseSerialPTT->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(ComPortsDlg::PTTUseSerialClicked), NULL, this);
     m_buttonOK->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(ComPortsDlg::OnOK), NULL, this);
     m_buttonCancel->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(ComPortsDlg::OnCancel), NULL, this);
     m_buttonApply->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(ComPortsDlg::OnApply), NULL, this);
@@ -186,6 +188,8 @@ ComPortsDlg::~ComPortsDlg()
 {
     // Disconnect Events
     this->Disconnect(wxEVT_INIT_DIALOG, wxInitDialogEventHandler(ComPortsDlg::OnInitDialog), NULL, this);
+    m_ckUseHamlibPTT->Disconnect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(ComPortsDlg::PTTUseHamLibClicked), NULL, this);
+    m_ckUseSerialPTT->Disconnect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(ComPortsDlg::PTTUseSerialClicked), NULL, this);
     m_buttonOK->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(ComPortsDlg::OnOK), NULL, this);
     m_buttonCancel->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(ComPortsDlg::OnCancel), NULL, this);
     m_buttonApply->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(ComPortsDlg::OnApply), NULL, this);
@@ -320,6 +324,22 @@ void ComPortsDlg::ExchangeData(int inout)
         pConfig->Flush();
     }
     delete wxConfigBase::Set((wxConfigBase *) NULL);
+}
+
+//-------------------------------------------------------------------------
+// PTTUseHamLibClicked()
+//-------------------------------------------------------------------------
+void ComPortsDlg::PTTUseHamLibClicked(wxCommandEvent& event)
+{
+    m_ckUseSerialPTT->SetValue(false);    
+}
+
+//-------------------------------------------------------------------------
+// PTTUseSerialClicked()
+//-------------------------------------------------------------------------
+void ComPortsDlg::PTTUseSerialClicked(wxCommandEvent& event)
+{
+    m_ckUseHamlibPTT->SetValue(false);
 }
 
 //-------------------------------------------------------------------------

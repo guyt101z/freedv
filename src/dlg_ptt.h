@@ -59,14 +59,14 @@ class ComPortsDlg : public wxDialog
 
         /* Serial Settings */
 
-        wxListBox* m_listCtrlPorts;
-        wxCheckBox* m_ckUseSerialPTT;
-        wxStaticText* m_staticText12;
-        wxTextCtrl *m_txtCtlDevicePath;
-        wxRadioButton* m_rbUseDTR;
-        wxCheckBox* m_ckRTSPos;
-        wxRadioButton* m_rbUseRTS;
-        wxCheckBox* m_ckDTRPos;
+        wxListBox     *m_listCtrlPorts;
+        wxCheckBox    *m_ckUseSerialPTT;
+        wxStaticText  *m_staticText12;
+        wxTextCtrl    *m_txtCtlDevicePath;
+        wxRadioButton *m_rbUseDTR;
+        wxCheckBox    *m_ckRTSPos;
+        wxRadioButton *m_rbUseRTS;
+        wxCheckBox    *m_ckDTRPos;
 
         /* Ok - Cancel - Apply */
 
@@ -77,6 +77,9 @@ class ComPortsDlg : public wxDialog
 
 protected:
         void populatePortList();
+
+        void PTTUseHamLibClicked(wxCommandEvent& event);
+        void PTTUseSerialClicked(wxCommandEvent& event);
 
         void OnOK(wxCommandEvent& event);
         void OnCancel(wxCommandEvent& event);

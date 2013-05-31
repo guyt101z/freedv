@@ -52,6 +52,10 @@
 #include <samplerate.h>
 
 #include <hamlib.h> 
+#include "ctb-0.16/ctb.h"
+#include "ctb-0.16/portscan.h"
+#include "ctb-0.16/serportx.h"
+#include "ctb-0.16/serport.h"
 
 #include "codec2.h"
 #include "codec2_fdmdv.h"
@@ -331,6 +335,9 @@ class MainFrame : public TopFrame
         txRxThread*             m_txRxThread;
 
         bool                    OpenHamlibRig();
+        void                    SetupSerialPort(void);
+        void                    CloseSerialPort(void);
+        void                    SerialPTTRx(void);
 
 #ifdef _USE_TIMER
         wxTimer                 m_plotTimer;
@@ -365,6 +372,9 @@ class MainFrame : public TopFrame
     void togglePTT(void);
 
     protected:
+
+        ctb::IOBase*            m_device;
+        ctb::SerialPort*        m_serialPort;
 
         void setsnrBeta(bool snrSlow);
 
