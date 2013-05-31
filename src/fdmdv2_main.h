@@ -132,12 +132,23 @@ class MainApp : public wxApp
         wxString            m_strSampleRate;
         wxString            m_strBitrate;
 
+        // PTT -----------------------------------
+
         bool                m_boolHalfDuplex;
 
         bool                m_boolHamlibUseForPTT;
         unsigned int        m_intHamlibRig;
         wxString            m_strHamlibSerialPort;
         Hamlib              *m_hamlib;
+
+        bool                m_boolUseSerialPTT;
+        wxString            m_strRigCtrlPort;
+        bool                m_boolUseRTS;
+        bool                m_boolRTSPos;
+        bool                m_boolUseDTR;
+        bool                m_boolDTRPos;
+
+        // Play/Rec files
 
         wxString            m_playFileToMicInPath;
         wxString            m_recFileFromRadioPath;

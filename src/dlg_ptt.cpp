@@ -36,15 +36,24 @@ ComPortsDlg::ComPortsDlg(wxWindow* parent, wxWindowID id, const wxString& title,
     wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
     this->SetSizer(mainSizer);
     
+    //----------------------------------------------------------------------
+    // Half Duplex Flag for VOX PTT
+    //----------------------------------------------------------------------
+
+    // DR: should this be on options dialog?
+
     wxStaticBoxSizer* staticBoxSizer28 = new wxStaticBoxSizer( new wxStaticBox(this, wxID_ANY, _("VOX PTT Settings")), wxVERTICAL);
     m_ckHalfDuplex = new wxCheckBox(this, wxID_ANY, _("Half Duplex"), wxDefaultPosition, wxSize(-1,-1), 0);
     m_ckHalfDuplex->SetToolTip(_("Should be checked for VOX operated Tx/Rx switching"));
     staticBoxSizer28->Add(m_ckHalfDuplex, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL, 5);
     mainSizer->Add(staticBoxSizer28, 0, wxEXPAND, 5);
 
+    //----------------------------------------------------------------------
+    // Hamlib for CAT PTT
+    //----------------------------------------------------------------------
+
     wxStaticBoxSizer* staticBoxSizer18 = new wxStaticBoxSizer( new wxStaticBox(this, wxID_ANY, _("Hamlib Settings")), wxVERTICAL);
 
-    //wxGridSizer* gridSizer100 = new wxGridSizer(1, 5, 0, 0);
     wxBoxSizer* gridSizer100 = new wxBoxSizer(wxHORIZONTAL);
 
     /* Use Hamlib for PTT checkbox. */
@@ -71,6 +80,78 @@ ComPortsDlg::ComPortsDlg(wxWindow* parent, wxWindowID id, const wxString& title,
     staticBoxSizer18->Add(gridSizer100, 1);
     mainSizer->Add(staticBoxSizer18, 1);
 
+    //----------------------------------------------------------------------
+    // Serial port PTT
+    //----------------------------------------------------------------------
+
+    wxStaticBoxSizer* staticBoxSizer17 = new wxStaticBoxSizer( new wxStaticBox(this, wxID_ANY, _("Serial Port Settings")), wxVERTICAL);
+    mainSizer->Add(staticBoxSizer17, 1, wxEXPAND, 5);
+    wxStaticBoxSizer* staticBoxSizer31 = new wxStaticBoxSizer( new wxStaticBox(this, wxID_ANY, _("PTT Port")), wxVERTICAL);
+    staticBoxSizer17->Add(staticBoxSizer31, 1, wxEXPAND, 5);
+
+#ifdef __WXMSW__
+    m_ckUseSerialPTT = new wxCheckBox(this, wxID_ANY, _("Use Serial Port PTT"), wxDefaultPosition, wxSize(-1,-1), 0);
+    m_ckUseSerialPTT->SetValue(false);
+    staticBoxSizer31->Add(m_ckUseSerialPTT, 0, wxALIGN_LEFT, 20);
+
+    wxArrayString m_listCtrlPortsArr;
+    m_listCtrlPorts = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxSize(-1,45), m_listCtrlPortsArr, wxLB_SINGLE | wxLB_SORT);
+    staticBoxSizer31->Add(m_listCtrlPorts, 1, wxALIGN_CENTER, 0);
+#endif
+
+#ifdef __WXGTK__
+    wxBoxSizer* bSizer83;
+    bSizer83 = new wxBoxSizer(wxHORIZONTAL);
+
+    wxGridSizer* gridSizer200 = new wxGridSizer(1, 3, 0, 0);
+    
+    m_ckUseSerialPTT = new wxCheckBox(this, wxID_ANY, _("Use Serial Port PTT"), wxDefaultPosition, wxSize(-1,-1), 0);
+    m_ckUseSerialPTT->SetValue(false);
+    gridSizer200->Add(m_ckUseSerialPTT, 1, wxALIGN_CENTER|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL, 2);
+
+    m_staticText12 = new wxStaticText(this, wxID_ANY, _("Serial Device:  "), wxDefaultPosition, wxDefaultSize, 0);
+    m_staticText12->Wrap(-1);
+    gridSizer200->Add(m_staticText12, 1,wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL, 2);
+
+    m_txtCtlDevicePath = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0);
+    gridSizer200->Add(m_txtCtlDevicePath, 1, wxEXPAND|wxALIGN_CENTER|wxALIGN_RIGHT, 2);
+    
+    bSizer83->Add(gridSizer200, 0, wxALIGN_CENTER_VERTICAL | wxALIGN_LEFT | wxALL, 2);
+    staticBoxSizer31->Add(bSizer83, 1, wxALIGN_CENTER_VERTICAL|wxALL, 1);
+#endif
+
+    wxBoxSizer* boxSizer19 = new wxBoxSizer(wxVERTICAL);
+    staticBoxSizer17->Add(boxSizer19, 1, wxEXPAND, 5);
+    wxStaticBoxSizer* staticBoxSizer16 = new wxStaticBoxSizer( new wxStaticBox(this, wxID_ANY, _("Signal polarity")), wxHORIZONTAL);
+    boxSizer19->Add(staticBoxSizer16, 1, wxEXPAND|wxALIGN_CENTER|wxALIGN_RIGHT, 5);
+
+    wxGridSizer* gridSizer17 = new wxGridSizer(2, 2, 0, 0);
+    staticBoxSizer16->Add(gridSizer17, 1, wxEXPAND|wxALIGN_RIGHT, 5);
+
+    m_rbUseDTR = new wxRadioButton(this, wxID_ANY, _("Use DTR"), wxDefaultPosition, wxSize(-1,-1), 0);
+    m_rbUseDTR->SetToolTip(_("Toggle DTR line for PTT"));
+    m_rbUseDTR->SetValue(1);
+    gridSizer17->Add(m_rbUseDTR, 0, wxALIGN_CENTER|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL, 5);
+
+    m_ckDTRPos = new wxCheckBox(this, wxID_ANY, _("DTR = +V"), wxDefaultPosition, wxSize(-1,-1), 0);
+    m_ckDTRPos->SetToolTip(_("Set Polarity of the DTR line"));
+    m_ckDTRPos->SetValue(false);
+    gridSizer17->Add(m_ckDTRPos, 0, wxALIGN_CENTER|wxALIGN_RIGHT, 5);
+
+    m_rbUseRTS = new wxRadioButton(this, wxID_ANY, _("Use RTS"), wxDefaultPosition, wxSize(-1,-1), 0);
+    m_rbUseRTS->SetToolTip(_("Toggle the RTS pin for PTT"));
+    m_rbUseRTS->SetValue(1);
+    gridSizer17->Add(m_rbUseRTS, 0, wxALIGN_CENTER|wxALIGN_RIGHT, 5);
+
+    m_ckRTSPos = new wxCheckBox(this, wxID_ANY, _("RTS = +V"), wxDefaultPosition, wxSize(-1,-1), 0);
+    m_ckRTSPos->SetValue(false);
+    m_ckRTSPos->SetToolTip(_("Set Polarity of the RTS line"));
+    gridSizer17->Add(m_ckRTSPos, 0, wxALIGN_CENTER|wxALIGN_RIGHT, 5);
+
+    //----------------------------------------------------------------------
+    // OK - Cancel - Apply
+    //----------------------------------------------------------------------
+
     wxBoxSizer* boxSizer12 = new wxBoxSizer(wxHORIZONTAL);
 
     m_buttonOK = new wxButton(this, wxID_OK, _("OK"), wxDefaultPosition, wxSize(-1,-1), 0);
@@ -84,7 +165,6 @@ ComPortsDlg::ComPortsDlg(wxWindow* parent, wxWindowID id, const wxString& title,
     boxSizer12->Add(m_buttonApply, 0, wxLEFT|wxRIGHT|wxTOP|wxBOTTOM, 5);
 
     mainSizer->Add(boxSizer12, 0, wxLEFT|wxRIGHT|wxTOP|wxBOTTOM|wxALIGN_CENTER_HORIZONTAL, 5);
-    //SetSizeHints(450,300);
 
     if ( GetSizer() ) 
     {
@@ -125,7 +205,7 @@ void ComPortsDlg::OnInitDialog(wxInitDialogEvent& event)
 //-------------------------------------------------------------------------
 void ComPortsDlg::populatePortList()
 {
-#ifdef __NOTUSED__
+#ifdef __WXMSW__
     m_listCtrlPorts->Clear();
     wxArrayString aStr;
     wxRegKey key(wxRegKey::HKLM, _T("HARDWARE\\DEVICEMAP\\SERIALCOMM"));
@@ -184,9 +264,23 @@ void ComPortsDlg::ExchangeData(int inout)
     if(inout == EXCHANGE_DATA_IN)
     {
         m_ckHalfDuplex->SetValue(wxGetApp().m_boolHalfDuplex);
+
         m_ckUseHamlibPTT->SetValue(wxGetApp().m_boolHamlibUseForPTT);
         m_cbRigName->SetSelection(wxGetApp().m_intHamlibRig);
         m_cbSerialPort->SetValue(wxGetApp().m_strHamlibSerialPort);
+
+        m_ckUseSerialPTT->SetValue(wxGetApp().m_boolUseSerialPTT);
+        str = wxGetApp().m_strRigCtrlPort;
+#ifdef __WXMSW__
+        m_listCtrlPorts->SetStringSelection(str);
+#endif
+#ifdef __WXGTK__
+        m_txtCtlDevicePath->SetValue(str);
+#endif
+        m_rbUseRTS->SetValue(wxGetApp().m_boolUseRTS);
+        m_ckRTSPos->SetValue(wxGetApp().m_boolRTSPos);
+        m_rbUseDTR->SetValue(wxGetApp().m_boolUseDTR);
+        m_ckDTRPos->SetValue(wxGetApp().m_boolDTRPos);
     }
     if(inout == EXCHANGE_DATA_OUT)
     {
@@ -194,6 +288,7 @@ void ComPortsDlg::ExchangeData(int inout)
         pConfig->Write(wxT("/Rig/HalfDuplex"), wxGetApp().m_boolHalfDuplex);
 
         /* Hamlib settings. */
+
         wxGetApp().m_boolHamlibUseForPTT = m_ckUseHamlibPTT->GetValue();
         wxGetApp().m_intHamlibRig = m_cbRigName->GetSelection();
         wxGetApp().m_strHamlibSerialPort = m_cbSerialPort->GetValue();
@@ -201,6 +296,27 @@ void ComPortsDlg::ExchangeData(int inout)
         pConfig->Write(wxT("/Hamlib/UseForPTT"), wxGetApp().m_boolHamlibUseForPTT);
         pConfig->Write(wxT("/Hamlib/RigName"), wxGetApp().m_intHamlibRig);
         pConfig->Write(wxT("/Hamlib/SerialPort"), wxGetApp().m_strHamlibSerialPort);
+
+        /* Serial settings */
+
+        wxGetApp().m_boolUseSerialPTT           = m_ckUseSerialPTT->IsChecked();
+#ifdef __WXMSW__
+        wxGetApp().m_strRigCtrlPort             = m_listCtrlPorts->GetStringSelection();
+#endif
+#ifdef __WXGTK__
+        wxGetApp().m_strRigCtrlPort             = m_txtCtlDevicePath->GetValue();
+#endif
+        wxGetApp().m_boolUseRTS                 = m_rbUseRTS->GetValue();
+        wxGetApp().m_boolRTSPos                 = m_ckRTSPos->IsChecked();
+        wxGetApp().m_boolUseDTR                 = m_rbUseDTR->GetValue();
+        wxGetApp().m_boolDTRPos                 = m_ckDTRPos->IsChecked();
+        
+        pConfig->Write(wxT("/Rig/UseSerialPTT"),    wxGetApp().m_boolUseSerialPTT);
+        pConfig->Write(wxT("/Rig/UseRTS"),          wxGetApp().m_boolUseRTS);
+        pConfig->Write(wxT("/Rig/RTSPolarity"),     wxGetApp().m_boolRTSPos);
+        pConfig->Write(wxT("/Rig/UseDTR"),          wxGetApp().m_boolUseDTR);
+        pConfig->Write(wxT("/Rig/DTRPolarity"),     wxGetApp().m_boolDTRPos);
+
         pConfig->Flush();
     }
     delete wxConfigBase::Set((wxConfigBase *) NULL);

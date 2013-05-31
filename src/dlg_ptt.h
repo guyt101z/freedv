@@ -49,16 +49,31 @@ class ComPortsDlg : public wxDialog
     protected:
         wxCheckBox* m_ckHalfDuplex;
 
-        wxButton* m_buttonOK;
-        wxButton* m_buttonCancel;
-        wxButton* m_buttonApply;
+        /* Hamlib settings.*/
 
-        /* Hamlib settings. */
         wxCheckBox *m_ckUseHamlibPTT;
         wxComboBox *m_cbRigName;
         wxComboBox *m_cbSerialPort;
 
         Hamlib *m_hamlib;
+
+        /* Serial Settings */
+
+        wxListBox* m_listCtrlPorts;
+        wxCheckBox* m_ckUseSerialPTT;
+        wxStaticText* m_staticText12;
+        wxTextCtrl *m_txtCtlDevicePath;
+        wxRadioButton* m_rbUseDTR;
+        wxCheckBox* m_ckRTSPos;
+        wxRadioButton* m_rbUseRTS;
+        wxCheckBox* m_ckDTRPos;
+
+        /* Ok - Cancel - Apply */
+
+        wxButton* m_buttonOK;
+        wxButton* m_buttonCancel;
+        wxButton* m_buttonApply;
+
 
 protected:
         void populatePortList();
