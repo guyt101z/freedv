@@ -969,25 +969,23 @@ void MainFrame::togglePTT(void) {
           0      0        1
           1      0        0
 
-          -> exclusive NOR
+          exclusive NOR
     */
 
     if(wxGetApp().m_boolUseSerialPTT && m_serialPort != NULL) {
         if (wxGetApp().m_boolUseRTS) {
-            bool serialLine = !(g_tx ^ wxGetApp().m_boolRTSPos);
-            printf("g_tx: %d m_boolRTSPos: %d serialLine: %d\n", g_tx, wxGetApp().m_boolRTSPos, serialLine);
-            if (serialLine)
+            printf("g_tx: %d m_boolRTSPos: %d serialLine: %d\n", g_tx, wxGetApp().m_boolRTSPos, g_tx == wxGetApp().m_boolRTSPos);
+            if (g_tx == wxGetApp().m_boolRTSPos)
                 m_serialPort->SetLineState(ctb::LinestateRts);
             else
                 m_serialPort->ClrLineState(ctb::LinestateRts);
         }
         if (wxGetApp().m_boolUseDTR) {
-            bool serialLine = !(g_tx ^ wxGetApp().m_boolRTSPos);
-            printf("g_tx: %d m_boolDTRPos: %d serialLine: %d\n", g_tx, wxGetApp().m_boolDTRPos, serialLine);
-            if (serialLine)
-                m_serialPort->SetLineState(ctb::LinestateCts);
+            printf("g_tx: %d m_boolDTRPos: %d serialLine: %d\n", g_tx, wxGetApp().m_boolDTRPos, g_tx == wxGetApp().m_boolDTRPos);
+            if (g_tx == wxGetApp().m_boolDTRPos)
+                m_serialPort->SetLineState(ctb::LinestateDtr);
             else
-                m_serialPort->ClrLineState(ctb::LinestateCts);
+                m_serialPort->ClrLineState(ctb::LinestateDtr);
         }
  
     }
@@ -1701,8 +1699,9 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
         
         if (wxGetApp().m_boolHamlibUseForPTT)
             OpenHamlibRig();
-        if (wxGetApp().m_boolUseSerialPTT)
+        if (wxGetApp().m_boolUseSerialPTT) {
             SetupSerialPort();
+        }
 
         // attempt to start sound cards and tx/rx processing
 
@@ -3094,28 +3093,30 @@ void MainFrame::SetupSerialPort(void)
         {
             m_serialPort = NULL;
             m_device     = NULL;
+            wxMessageBox("Couldn't open Serial Port", wxT("About"), wxOK | wxICON_ERROR, this);
+
         }
     }
 }
 
 void MainFrame::SerialPTTRx(void)
 {
-    if(wxGetApp().m_boolRTSPos) // RTS cleared LOW
-        {
+    printf("m_boolUseRTS: %d m_boolRTSPos: %d m_boolUseDTR: %d m_boolDTRPos: %d\n",
+           wxGetApp().m_boolUseRTS, wxGetApp().m_boolRTSPos, wxGetApp().m_boolUseDTR, wxGetApp().m_boolDTRPos);
+
+    if (wxGetApp().m_boolUseRTS) {
+        if(wxGetApp().m_boolRTSPos) // RTS cleared LOW
             m_serialPort->ClrLineState(ctb::LinestateRts);
-        }
-    else                        // RTS cleared HIGH
-        {
+        else                        // RTS cleared HIGH
             m_serialPort->SetLineState(ctb::LinestateRts);
-        }
-    if(wxGetApp().m_boolDTRPos) // DTR cleared LOW
-        {
+    }
+
+    if (wxGetApp().m_boolUseDTR) {
+        if(wxGetApp().m_boolDTRPos) // DTR cleared LOW
             m_serialPort->ClrLineState(ctb::LinestateDtr);
-        }
-    else                        // DTR cleared HIGH
-        {
+        else                        // DTR cleared HIGH
             m_serialPort->SetLineState(ctb::LinestateDtr);
-        }
+    }
 }
 
 //----------------------------------------------------------------
@@ -3123,14 +3124,15 @@ void MainFrame::SerialPTTRx(void)
 //----------------------------------------------------------------
 void MainFrame::CloseSerialPort(void)
 {
-    // always end with PTT in rx state
+    if (m_serialPort != NULL) {
+        // always end with PTT in rx state
 
-    SerialPTTRx();
+        SerialPTTRx();
 
-    if((m_serialPort != NULL) && m_serialPort->IsOpen())
-    {
-        m_serialPort->Close();
-        m_serialPort = NULL;
-        m_device     = NULL;
+        if((m_serialPort != NULL) && m_serialPort->IsOpen()) {
+            m_serialPort->Close();
+            m_serialPort = NULL;
+            m_device     = NULL;
+        }
     }
 }

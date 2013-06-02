@@ -253,7 +253,9 @@ void ComPortsDlg::populatePortList()
     /* TODO(Joel): http://stackoverflow.com/questions/2530096/how-to-find-all-serial-devices-ttys-ttyusb-on-linux-without-opening-them */
     m_cbSerialPort->Clear();
     m_cbSerialPort->Append("/dev/ttyUSB0");
+    m_cbSerialPort->Append("/dev/ttyUSB1");
     m_cbSerialPort->Append("/dev/ttyS0");
+    m_cbSerialPort->Append("/dev/ttyS1");
 #endif
 }
 
@@ -316,6 +318,7 @@ void ComPortsDlg::ExchangeData(int inout)
         wxGetApp().m_boolDTRPos                 = m_ckDTRPos->IsChecked();
         
         pConfig->Write(wxT("/Rig/UseSerialPTT"),    wxGetApp().m_boolUseSerialPTT);
+        pConfig->Write(wxT("/Rig/Port"),            wxGetApp().m_strRigCtrlPort); 
         pConfig->Write(wxT("/Rig/UseRTS"),          wxGetApp().m_boolUseRTS);
         pConfig->Write(wxT("/Rig/RTSPolarity"),     wxGetApp().m_boolRTSPos);
         pConfig->Write(wxT("/Rig/UseDTR"),          wxGetApp().m_boolUseDTR);
