@@ -40,7 +40,8 @@ int lsx_biquad_flow(sox_effect_t * effp, const sox_sample_t *ibuf,
 void sox_biquad_start(void)
 {
     printf("sox_biquad_start(void)\n");
-    assert(sox_init() == SOX_SUCCESS);
+    int r = sox_init();
+    assert(r == SOX_SUCCESS);
 }
 
 void sox_biquad_finish(void)
@@ -64,7 +65,8 @@ void *sox_biquad_create(int argc, const char *argv[])
     int (*start)(sox_effect_t *); /* function pointer to effect start func */
     
     e = sox_create_effect(sox_find_effect(argv[0])); assert(e != NULL);
-    assert(sox_effect_options(e, argc, (char * const*)&argv[1]) == SOX_SUCCESS);
+    ret = sox_effect_options(e, argc, (char * const*)&argv[1]);
+    assert(ret == SOX_SUCCESS);
 
     start = e->handler.start;
     e->in_signal.rate = 8000;     /* locked at FS=8000 Hz */
