@@ -17,13 +17,15 @@ set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 project(FreeDV)
 
 #
-# Setup version.
-# This should probably be pulled from an external file at some point.
+# Parse FreeDV version from src/version.h
 #
-set(FREEDV_VERSION_MAJOR 0)
-set(FREEDV_VERSION_MINOR 96)
-# Set to value for patch level releases, otherwise leave as FALSE.
-set(FREEDV_VERSION_PATCH 2)
+file(READ "${CMAKE_SOURCE_DIR}/src/version.h" _VERSION_H)
+string(REGEX REPLACE ".*FREEDV_VERSION_MAJOR ([0-9]+).*" "\\1"
+    FREEDV_VERSION_MAJOR "${_VERSION_H}")
+string(REGEX REPLACE ".*FREEDV_VERSION_MINOR ([0-9]+).*" "\\1"
+    FREEDV_VERSION_MINOR "${_VERSION_H}")
+string(REGEX REPLACE ".*FREEDV_VERSION_PATCH ([0-9]+).*" "\\1"
+    FREEDV_VERSION_PATCH "${_VERSION_H}")
 set(FREEDV_VERSION "${FREEDV_VERSION_MAJOR}.${FREEDV_VERSION_MINOR}")
 if(FREEDV_VERSION_PATCH)
     set(FREEDV_VERSION ${FREEDV_VERSION}.${FREEDV_VERSION_PATCH})
@@ -91,33 +93,6 @@ if(NOT BOOTSTRAP_WXWIDGETS)
 set(FREEDV_LINK_LIBS "")
 set(FREEDV_STATIC_LIBS "")
 
-# Check for a bunch of libraries
-# Would it be better to assume these are available?
-if(MSVC)
-    find_library(ADVAPI32 advapi32)
-    find_library(COMCTL32 comctl32)
-    find_library(COMDLG32 comdlg32)
-    find_library(GDI32 gdi32)
-    find_library(KERNEL32 kernel32)
-    find_library(OLE32 ole32)
-    find_library(OLEAUT32 oleaut32)
-    find_library(RPCRT4 rpcrt4)
-    find_library(SHELL32 shell32)
-    find_library(USER32 user32)
-    find_package(UUID uuid)
-    find_library(WINMM winmm)
-    find_library(WINSPOOL winspool)
-    find_library(WSOCK32 wsock32)
-    find_library(WXEXPAT wxexpat)
-    find_library(WXJPEG wxjpeg)
-    find_library(WXMSW29U wxmsw29u)
-    find_library(WXPNG wxpng)
-    find_library(WXREGEXU wxregexu)
-    find_library(WXTIFF wxtiff)
-    find_library(WXZLIB wxzlib)
-
-    list(APPEND FREEDV_LINK_LIBS ${ADVAPI32} ${COMCTL32} ${COMDLG32} ${GDI32} ${KERNEL32} ${OLE32} ${OLEAUT32} ${RPCRT4} ${SHELL32} ${USER32} ${UUID} ${WINMM} ${WINSPOOL} ${WINSOCK32} ${WZEXPAT} ${WXJPEG} ${WXMSW29U} ${WXPNG} ${WXREGEXU} ${WXTIFF} ${WXZLIB})
-endif(MSVC)
 
 #
 # Various hacks and work arounds for building under MinGW.
@@ -150,17 +125,41 @@ if(MINGW)
         libportaudiocpp-0.dll
         libctb-0.16.dll
         libsox-2.dll
-        zlib1.dll)
+        zlib1.dll
+        libusb0.dll
+        libhamlib-2.dll
+        hamlib-adat.dll
+        hamlib-alinco.dll
+        hamlib-amsat.dll
+        hamlib-aor.dll
+        hamlib-ars.dll
+        hamlib-celestron.dll
+        hamlib-drake.dll
+        hamlib-dummy.dll
+        hamlib-easycomm.dll
+        hamlib-flexradio.dll
+        hamlib-fodtrack.dll
+        hamlib-gs232a.dll
+        hamlib-heathkit.dll
+        hamlib-icom.dll
+        hamlib-jrc.dll
+        hamlib-kachina.dll
+        hamlib-kenwood.dll
+        hamlib-kit.dll
+        hamlib-lowe.dll
+        hamlib-m2.dll
+        hamlib-pcr.dll
+        hamlib-prm80.dll
+        hamlib-racal.dll
+        hamlib-rft.dll)
         message(STATUS "Checking for ${RUNTIME}")
         find_library(${RUNTIME}_LIB ${RUNTIME})
-#            PATHS ${CMAKE_SYSTEM_LIBRARY_PATH}
-#            NO_DEFAULT_PATH)
         message(STATUS "runtime found: ${${RUNTIME}_LIB}")
         list(APPEND CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS ${${RUNTIME}_LIB})
     endforeach()
 endif(MINGW)
 
-# Math library is automatic on MSVC
+# Math library is automatic on MinGW
 if(UNIX)
     set(CMAKE_REQUIRED_INCLUDES math.h)
     set(CMAKE_REQUIRED_LIBRARIES m)
@@ -340,7 +339,7 @@ if(WXRC)
     set(wxWidgets_wxrc_EXECUTABLE ${WXRC})
 endif(WXRC)
 set(WX_VERSION_MIN 2.9.0)
-find_package(wxWidgets REQUIRED COMPONENTS core base aui html net adv REQUIRED)
+find_package(wxWidgets REQUIRED core base aui html net adv)
 execute_process(COMMAND sh "${wxWidgets_CONFIG_EXECUTABLE}" --version
     OUTPUT_VARIABLE WX_VERSION)
 if(WX_VERSION VERSION_EQUAL ${WX_VERSION_MIN}
