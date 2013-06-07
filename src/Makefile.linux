@@ -88,6 +88,7 @@ endif
 CTB=libctb-0.16
 CTB_INC=-I$(CTB)/include
 CTB_LIB=$(CTB)/lib/libctb-0.16.a
+LIBS_TO_BUILD += $(CTB)/.built
 
 # FreeDV ------------------------------------------------
 
