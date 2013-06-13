@@ -5,7 +5,7 @@ ExternalProject_Add(sndfile
     URL http://www.mega-nerd.com/libsndfile/files/${SNDFILE_TARBALL}.tar.gz
     BUILD_IN_SOURCE 1
     INSTALL_DIR external/dist
-    CONFIGURE_COMMAND ./configure --prefix=${CMAKE_BINARY_DIR}/external/dist
+    CONFIGURE_COMMAND ./configure --prefix=${CMAKE_BINARY_DIR}/external/dist --disable-external-libs
     BUILD_COMMAND $(MAKE)
     INSTALL_COMMAND $(MAKE) install
 )

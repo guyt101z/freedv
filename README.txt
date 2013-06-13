@@ -2,6 +2,7 @@ README.txt for FDMDV2
 
 README.Win32 contains instructions for building on Windows.
 README.linux contains instructions for building on Linux.
+README.cmake contains instructions for building on Windows or Linux using cmake.
 
 Editing
 -------

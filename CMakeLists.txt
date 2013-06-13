@@ -38,8 +38,6 @@ endif(NOT CMAKE_BUILD_TYPE)
 
 message(STATUS "FreeDV version: ${FREEDV_VERSION}")
 
-#set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
-
 # Work around for not using a svn working copy.
 add_definitions(-DSVN_REVISION="Unversioned directory")
 add_definitions(-D_NO_AUTOTOOLS_)
@@ -67,11 +65,13 @@ set(USE_STATIC_CODEC2 FALSE CACHE BOOL
     "Download and build static codec2 instead of the system library.")
 set(BOOTSTRAP_WXWIDGETS FALSE CACHE BOOL
     "Download and build static wxWidgets instead of the system library.")
-set(USE_STATIC_WXWIDGETS FALSE CACHE BOOL
-    "Perform bootstrap build of wxWidgets, see README.cmake for more details.")
 # If we're bootstrapping wxWidgets then this must be set true.
 if(BOOTSTRAP_WXWIDGETS)
-    set(USE_STATIC_WXWIDGETS TRUE)
+    set(USE_STATIC_WXWIDGETS TRUE CACHE BOOL
+    "Perform bootstrap build of wxWidgets, see README.cmake for more details.")
+else(BOOTSTRAP_WXWIDGETS)
+    set(USE_STATIC_WXWIDGETS FALSE CACHE BOOL
+    "Perform bootstrap build of wxWidgets, see README.cmake for more details.")
 endif(BOOTSTRAP_WXWIDGETS)
 
 if(USE_STATIC_DEPS)
@@ -83,11 +83,23 @@ if(USE_STATIC_DEPS)
     set(USE_STATIC_CODEC2 TRUE FORCE)
 endif(USE_STATIC_DEPS)
 
+#
+# Pull in external wxWidgets target if performing static build.
+#
+if(BOOTSTRAP_WXWIDGETS)
+    include(cmake/BuildWxWidgets.cmake)
+endif(BOOTSTRAP_WXWIDGETS)
 
+#
+# Perform bootstrap build of wxWidgets
+#
+if(BOOTSTRAP_WXWIDGETS AND NOT TARGET wxWidgets)
+    message(STATUS "Will perform bootstrap build of wxWidgets.
+   After make step completes, re-run cmake and make again to perform FreeDV build.")
 #
 # Continue normal build if not bootstrapping wxWidgets or already built it.
 #
-if(NOT BOOTSTRAP_WXWIDGETS)
+else(BOOTSTRAP_WXWIDGETS AND NOT TARGET wxWidgets)
 
 # Setup empty list to append to.
 set(FREEDV_LINK_LIBS "")
@@ -326,7 +338,7 @@ set(WXRC "" CACHE FILEPATH "Location of wxrc binary.")
 if(USE_STATIC_WXWIDGETS)
     set(WXCONFIG "${CMAKE_BINARY_DIR}/external/dist/bin/wx-config")
     set(WXRC "${CMAKE_BINARY_DIR}/external/dist/bin/wxrc")
-    set(wxWidgets_CONFIG_OPTIONS --linkdeps)
+    #set(wxWidgets_CONFIG_OPTIONS --linkdeps)
     list(APPEND FREEDV_STATIC_DEPS wxWidgets)
 endif(USE_STATIC_WXWIDGETS)
 message(STATUS "Looking for wxWidgets...")
@@ -459,11 +471,4 @@ if(WIN32)
     include(CPack)
 endif(WIN32)
 
-#
-# Perform bootstrap build of wxWidgets
-#
-else(NOT BOOTSTRAP_WXWIDGETS)
-    message(STATUS "Will perform bootstrap build of wxWidgets.
-After make step completes, re-run cmake and make to perform FreeDV build.")
-    include(cmake/BuildWxWidgets.cmake)
-endif(NOT BOOTSTRAP_WXWIDGETS)
+endif(BOOTSTRAP_WXWIDGETS AND NOT TARGET wxWidgets)

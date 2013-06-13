@@ -1,5 +1,16 @@
 set(PORTAUDIO_TARBALL "pa_stable_v19_20111121")
 
+# required linking libraries on linux. Not sure about windows.
+find_library(ALSA_LIBRARIES asound)
+
+if(UNIX AND NOT ALSA_LIBRARIES)
+    message(ERROR "Could not find alsa library which is required for portaudio.
+On Linux systems try installing:
+    alsa-lib-devel  (RPM based systems)
+    libasound2-dev  (DEB based systems)"
+    )
+endif(UNIX AND NOT ALSA_LIBRARIES)
+
 include(ExternalProject)
 ExternalProject_Add(portaudio
     URL http://www.portaudio.com/archives/${PORTAUDIO_TARBALL}.tgz
@@ -16,6 +27,7 @@ else(WIN32)
     find_library(ASOUND asound)
     set(PORTAUDIO_LIBRARIES
         ${CMAKE_BINARY_DIR}/external/dist/lib/libportaudio.a
+        ${CMAKE_BINARY_DIR}/external/dist/lib/libportaudiocpp.a
         ${RT}
         ${ASOUND}
     )
