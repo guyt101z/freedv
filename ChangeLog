@@ -1,0 +1,1819 @@
+------------------------------------------------------------------------
+r1317 | hobbes1069 | 2013-06-13 10:40:39 -0500 (Thu, 13 Jun 2013) | 1 line
+
+Update wxWidgets bootstrap process to be more simple and other tweaks to USE_STATIC_... options.
+------------------------------------------------------------------------
+r1312 | hobbes1069 | 2013-06-07 13:17:05 -0500 (Fri, 07 Jun 2013) | 1 line
+
+Use version.h for settign version info.
+------------------------------------------------------------------------
+r1311 | shenki | 2013-06-06 19:55:20 -0500 (Thu, 06 Jun 2013) | 5 lines
+
+Add libctb to the list of libraries to build
+
+It will not be downloaded nor built with the current configuration.
+Thanks to Curt, WE7U on the codec2 mailing list for discovering this one.
+
+------------------------------------------------------------------------
+r1310 | shenki | 2013-06-06 04:00:35 -0500 (Thu, 06 Jun 2013) | 2 lines
+
+Move init of sox outside of assert calls
+
+------------------------------------------------------------------------
+r1306 | hobbes1069 | 2013-06-02 11:50:41 -0500 (Sun, 02 Jun 2013) | 1 line
+
+Update version in cmake config.
+------------------------------------------------------------------------
+r1305 | hobbes1069 | 2013-06-02 08:01:51 -0500 (Sun, 02 Jun 2013) | 1 line
+
+Put the file in the right place...
+------------------------------------------------------------------------
+r1304 | hobbes1069 | 2013-06-02 07:59:53 -0500 (Sun, 02 Jun 2013) | 1 line
+
+Add freedv.rc which allows embedding the freedv icon in the windows executable.
+------------------------------------------------------------------------
+r1303 | drowe67 | 2013-06-01 19:19:57 -0500 (Sat, 01 Jun 2013) | 1 line
+
+serial & Hamlib PTT tested OK on Linux
+------------------------------------------------------------------------
+r1300 | drowe67 | 2013-05-31 17:20:06 -0500 (Fri, 31 May 2013) | 1 line
+
+hooked up serial port logic, still to test and debug
+------------------------------------------------------------------------
+r1297 | drowe67 | 2013-05-30 19:50:52 -0500 (Thu, 30 May 2013) | 1 line
+
+restored serial PTT dilaog, yet to hook up actual logic to use it
+------------------------------------------------------------------------
+r1296 | drowe67 | 2013-05-29 21:11:07 -0500 (Wed, 29 May 2013) | 1 line
+
+made filter dialog a little larger as ok/cancel wasbing cropped
+------------------------------------------------------------------------
+r1295 | hobbes1069 | 2013-05-29 20:36:45 -0500 (Wed, 29 May 2013) | 1 line
+
+Move golay23 into codec2 library.
+------------------------------------------------------------------------
+r1294 | hobbes1069 | 2013-05-29 15:06:55 -0500 (Wed, 29 May 2013) | 1 line
+
+Additional hamlib cmake config cleanup.
+------------------------------------------------------------------------
+r1293 | hobbes1069 | 2013-05-28 19:55:57 -0500 (Tue, 28 May 2013) | 1 line
+
+Add cmake checks for hamlib and more fixes for updated source names.
+------------------------------------------------------------------------
+r1292 | hobbes1069 | 2013-05-28 19:15:28 -0500 (Tue, 28 May 2013) | 1 line
+
+Update cmake config for renamed source files.
+------------------------------------------------------------------------
+r1291 | drowe67 | 2013-05-28 01:45:26 -0500 (Tue, 28 May 2013) | 1 line
+
+cleaned up some unused files
+------------------------------------------------------------------------
+r1289 | drowe67 | 2013-05-27 19:37:30 -0500 (Mon, 27 May 2013) | 1 line
+
+minor tweaks to README, remove dunused automake stuff, and tweaked help-about for donations
+------------------------------------------------------------------------
+r1288 | drowe67 | 2013-05-27 18:35:32 -0500 (Mon, 27 May 2013) | 1 line
+
+managedto get Win32 building with hamlib win32 binaries instead of building hamlib myself
+------------------------------------------------------------------------
+r1287 | drowe67 | 2013-05-27 17:33:38 -0500 (Mon, 27 May 2013) | 1 line
+
+first pass at building with hamlib, but cantget hamlib to build
+------------------------------------------------------------------------
+r1286 | drowe67 | 2013-05-27 15:50:41 -0500 (Mon, 27 May 2013) | 1 line
+
+filer dialog now fits on 800x600 without clipping 
+------------------------------------------------------------------------
+r1285 | drowe67 | 2013-05-27 15:46:49 -0500 (Mon, 27 May 2013) | 1 line
+
+after some sizer frustration with ptt dlg, rename commport to ptt
+------------------------------------------------------------------------
+r1284 | shenki | 2013-05-27 05:41:58 -0500 (Mon, 27 May 2013) | 4 lines
+
+Add hamlib related files
+
+These were missing from the previous commit. Oops!
+
+------------------------------------------------------------------------
+r1283 | shenki | 2013-05-27 05:17:32 -0500 (Mon, 27 May 2013) | 13 lines
+
+Add hamlib support for push to talk
+
+This removes libctb in favour of hamlib. It has been tested with 1.2.15.3 of
+hamlib with a IC-7200.
+
+The rig is configured using it's own dialog Tools -> PTT Config.  The only
+options available are the rig model and serial port, the rest of the options
+are obtained from the rig definition in hamlib.
+
+FreeDV will open the configured serial port on startup. When it cannot find
+the radio, an error dialog will be displayed. Spacebar can be used to toggle
+TX/RX.
+
+------------------------------------------------------------------------
+r1268 | drowe67 | 2013-05-23 18:00:55 -0500 (Thu, 23 May 2013) | 1 line
+
+added options dialog, bumped version
+------------------------------------------------------------------------
+r1267 | drowe67 | 2013-05-23 09:24:58 -0500 (Thu, 23 May 2013) | 1 line
+
+make 1600 default and re-arranged to fit 800x600 netbook layout
+------------------------------------------------------------------------
+r1253 | wittend99 | 2013-05-20 16:23:52 -0500 (Mon, 20 May 2013) | 1 line
+
+Personal test project 
+------------------------------------------------------------------------
+r1252 | wittend99 | 2013-05-20 16:22:44 -0500 (Mon, 20 May 2013) | 1 line
+
+Personal test stuff
+------------------------------------------------------------------------
+r1251 | wittend99 | 2013-05-20 16:21:24 -0500 (Mon, 20 May 2013) | 1 line
+
+
+------------------------------------------------------------------------
+r1250 | shenki | 2013-05-18 23:08:22 -0500 (Sat, 18 May 2013) | 7 lines
+
+Allow building against the system sox library
+
+Provide SYSTEM_SOX=y to build against the system libsox instead
+of downloading, building and linking staticly.
+
+The default of linking staticly remains the same.
+
+------------------------------------------------------------------------
+r1249 | hobbes1069 | 2013-05-17 09:53:07 -0500 (Fri, 17 May 2013) | 1 line
+
+Forgot to svn add the readme.
+------------------------------------------------------------------------
+r1248 | hobbes1069 | 2013-05-17 09:51:38 -0500 (Fri, 17 May 2013) | 2 lines
+
+Major cmake config overhall for freedv mingw build. Add freedv icon to installer and start menu entry. Add README.cmake for codec2-dev.
+
+------------------------------------------------------------------------
+r1246 | hobbes1069 | 2013-05-10 18:54:16 -0500 (Fri, 10 May 2013) | 1 line
+
+Workaround for location of config.h
+------------------------------------------------------------------------
+r1245 | hobbes1069 | 2013-05-09 15:44:20 -0500 (Thu, 09 May 2013) | 1 line
+
+Fix internal building of Codec2. Fix finding libraries under MinGW.
+------------------------------------------------------------------------
+r1244 | hobbes1069 | 2013-05-08 14:38:44 -0500 (Wed, 08 May 2013) | 1 line
+
+CMake configuration tweaks for wxWidgets bootstrap build option and update of README.cmake.
+------------------------------------------------------------------------
+r1243 | hobbes1069 | 2013-05-07 09:13:02 -0500 (Tue, 07 May 2013) | 1 line
+
+Fix typo in cmake config, add README.cmake.
+------------------------------------------------------------------------
+r1242 | hobbes1069 | 2013-05-07 09:07:47 -0500 (Tue, 07 May 2013) | 1 line
+
+Add missing BuildCodec2.cmake
+------------------------------------------------------------------------
+r1241 | wittend99 | 2013-05-06 12:17:19 -0500 (Mon, 06 May 2013) | 1 line
+
+Pushing changes to force windows builds to use a configuration file rather than the registry. 
+------------------------------------------------------------------------
+r1240 | wittend99 | 2013-05-06 12:14:34 -0500 (Mon, 06 May 2013) | 1 line
+
+Just changes to my personal IDE workspace.  Irrelevant to everyone but me -DMW
+------------------------------------------------------------------------
+r1239 | hobbes1069 | 2013-05-06 10:49:31 -0500 (Mon, 06 May 2013) | 1 line
+
+Add cmake configuration for contrib dir.
+------------------------------------------------------------------------
+r1238 | hobbes1069 | 2013-05-06 10:48:37 -0500 (Mon, 06 May 2013) | 1 line
+
+CMake configuration updates. More detailed error messages. Icon and desktop installation for Linux. WIN32 CPack tweaks.
+------------------------------------------------------------------------
+r1237 | wittend99 | 2013-04-26 08:13:11 -0500 (Fri, 26 Apr 2013) | 1 line
+
+Reversing commits made in error...
+------------------------------------------------------------------------
+r1236 | wittend99 | 2013-04-26 08:09:05 -0500 (Fri, 26 Apr 2013) | 1 line
+
+
+------------------------------------------------------------------------
+r1235 | hobbes1069 | 2013-04-24 14:34:37 -0500 (Wed, 24 Apr 2013) | 1 line
+
+Update cmake configuration including building static builds of most dependencies. Update codec2 build to include basic cpack configuration.
+------------------------------------------------------------------------
+r1234 | hobbes1069 | 2013-04-19 14:26:53 -0500 (Fri, 19 Apr 2013) | 1 line
+
+Major updates to cmake configuration for both codec2-dev and fdmdv2. Preliminary cpack NSIS configuration for codec2 windows installer.
+------------------------------------------------------------------------
+r1232 | hobbes1069 | 2013-04-15 09:35:41 -0500 (Mon, 15 Apr 2013) | 1 line
+
+Commit inital cmake configuration, *nix and windows icon, and *nix desktop file.
+------------------------------------------------------------------------
+r1231 | wittend99 | 2013-03-26 10:53:46 -0500 (Tue, 26 Mar 2013) | 1 line
+
+
+------------------------------------------------------------------------
+r1230 | wittend99 | 2013-03-26 10:31:07 -0500 (Tue, 26 Mar 2013) | 1 line
+
+Updating my personal resting configuration.
+------------------------------------------------------------------------
+r1229 | wittend99 | 2013-03-26 10:22:42 -0500 (Tue, 26 Mar 2013) | 1 line
+
+Reduce minimum size of the top level frame to let it be used on 1024 x 600 displays.
+------------------------------------------------------------------------
+r1228 | wittend99 | 2013-03-26 10:22:07 -0500 (Tue, 26 Mar 2013) | 1 line
+
+Reduce minimum size of the top level frame to let it be used on 1024 x 600 displays.
+------------------------------------------------------------------------
+r1227 | drowe67 | 2013-03-25 15:33:49 -0500 (Mon, 25 Mar 2013) | 1 line
+
+checked in Stuarts patches 1 thru 4
+------------------------------------------------------------------------
+r1226 | wittend99 | 2013-03-24 17:21:11 -0500 (Sun, 24 Mar 2013) | 1 line
+
+Removed comment
+------------------------------------------------------------------------
+r1224 | drowe67 | 2013-03-24 00:47:15 -0500 (Sun, 24 Mar 2013) | 1 line
+
+prototype 1600 wide mode
+------------------------------------------------------------------------
+r1223 | drowe67 | 2013-03-22 17:51:40 -0500 (Fri, 22 Mar 2013) | 1 line
+
+disabled a few extraneous test modes for v0.96 release
+------------------------------------------------------------------------
+r1221 | drowe67 | 2013-03-19 22:51:21 -0500 (Tue, 19 Mar 2013) | 1 line
+
+bump version
+------------------------------------------------------------------------
+r1219 | drowe67 | 2013-03-19 20:35:29 -0500 (Tue, 19 Mar 2013) | 1 line
+
+made test frames count high error rate frames to get a more accurate result
+------------------------------------------------------------------------
+r1218 | drowe67 | 2013-03-19 20:21:35 -0500 (Tue, 19 Mar 2013) | 1 line
+
+integrated and tested more reliable odd/even frame sync, I think it's an improvement on 4dB poor channel
+------------------------------------------------------------------------
+r1213 | drowe67 | 2013-03-18 02:30:28 -0500 (Mon, 18 Mar 2013) | 1 line
+
+removed clip, added new 1600 bit/s mode (1300+FEC)
+------------------------------------------------------------------------
+r1205 | drowe67 | 2013-03-08 22:00:48 -0600 (Fri, 08 Mar 2013) | 1 line
+
+support for clipping of tx waveform
+------------------------------------------------------------------------
+r1204 | drowe67 | 2013-03-08 17:59:51 -0600 (Fri, 08 Mar 2013) | 1 line
+
+normalised tx power across modes
+------------------------------------------------------------------------
+r1203 | drowe67 | 2013-03-08 14:49:30 -0600 (Fri, 08 Mar 2013) | 1 line
+
+Support in Windows Makefile for golay module
+------------------------------------------------------------------------
+r1202 | drowe67 | 2013-03-08 01:45:10 -0600 (Fri, 08 Mar 2013) | 1 line
+
+changed version number
+------------------------------------------------------------------------
+r1201 | drowe67 | 2013-03-08 01:24:29 -0600 (Fri, 08 Mar 2013) | 1 line
+
+first pass at bit error patterns being plotted
+------------------------------------------------------------------------
+r1199 | drowe67 | 2013-03-07 21:15:29 -0600 (Thu, 07 Mar 2013) | 1 line
+
+added multi-channel support to plot scalar, tested OK with 1 channel
+------------------------------------------------------------------------
+r1198 | drowe67 | 2013-03-07 20:40:11 -0600 (Thu, 07 Mar 2013) | 1 line
+
+BER tx and tx working OK, tested with some simulated AWGN and CCIR files
+------------------------------------------------------------------------
+r1197 | drowe67 | 2013-03-07 01:37:11 -0600 (Thu, 07 Mar 2013) | 1 line
+
+FEC on 2000 mode implemented but not tested with errors (yet)
+------------------------------------------------------------------------
+r1196 | drowe67 | 2013-03-07 01:23:02 -0600 (Thu, 07 Mar 2013) | 1 line
+
+2000 bit/s mode seems to be transmitting OK
+------------------------------------------------------------------------
+r1194 | drowe67 | 2013-03-07 00:49:11 -0600 (Thu, 07 Mar 2013) | 1 line
+
+both 1400 and 1600 modes working in loopback, needed to test 1400V0.91 against a V0.91 release
+------------------------------------------------------------------------
+r1189 | drowe67 | 2013-03-06 22:18:54 -0600 (Wed, 06 Mar 2013) | 1 line
+
+added mode radio-buttons to front page of GUI
+------------------------------------------------------------------------
+r1155 | wittend99 | 2012-12-30 16:41:15 -0600 (Sun, 30 Dec 2012) | 1 line
+
+Trivial updates, looking for uninitialized variables and other loose ends.
+------------------------------------------------------------------------
+r1154 | wittend99 | 2012-12-29 17:28:53 -0600 (Sat, 29 Dec 2012) | 1 line
+
+Add files README.osx and freedv_osx_port.patch.gz, update credits.txt file.  Not much else.
+------------------------------------------------------------------------
+r1153 | wittend99 | 2012-12-29 13:10:49 -0600 (Sat, 29 Dec 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r1152 | drowe67 | 2012-12-23 18:14:07 -0600 (Sun, 23 Dec 2012) | 1 line
+
+first pass at autotools build system, thanks Patrick, not tested at this stage, Makefile.linux still works
+------------------------------------------------------------------------
+r1151 | drowe67 | 2012-12-22 01:29:28 -0600 (Sat, 22 Dec 2012) | 1 line
+
+changed changed fifo.h and fdmdv.h to more unique names codec2_fifo.h & codec2_fdmdv.h
+------------------------------------------------------------------------
+r1145 | wittend99 | 2012-12-16 20:43:05 -0600 (Sun, 16 Dec 2012) | 1 line
+
+Unversion some pieces unintentionally added by restructuring.
+------------------------------------------------------------------------
+r1144 | wittend99 | 2012-12-16 20:40:23 -0600 (Sun, 16 Dec 2012) | 1 line
+
+Added a msvc folder to build for a future MS C++ build.
+------------------------------------------------------------------------
+r1143 | wittend99 | 2012-12-16 20:33:05 -0600 (Sun, 16 Dec 2012) | 1 line
+
+Move all Codelite-Mingw build environment from ./build to ./build/codelite
+------------------------------------------------------------------------
+r1142 | wittend99 | 2012-12-16 20:04:21 -0600 (Sun, 16 Dec 2012) | 1 line
+
+Add codelite subfolder.
+------------------------------------------------------------------------
+r1141 | wittend99 | 2012-12-16 19:56:46 -0600 (Sun, 16 Dec 2012) | 1 line
+
+Work on moving multiple unrelated classes out of fdmdv_main.cpp, cleanup dead code.
+------------------------------------------------------------------------
+r1140 | drowe67 | 2012-12-16 16:57:25 -0600 (Sun, 16 Dec 2012) | 1 line
+
+disabled jack with portaudio based on mailing list feedback, thanks guys
+------------------------------------------------------------------------
+r1139 | drowe67 | 2012-12-16 00:24:46 -0600 (Sun, 16 Dec 2012) | 1 line
+
+typo in README.linux
+------------------------------------------------------------------------
+r1138 | drowe67 | 2012-12-16 00:22:52 -0600 (Sun, 16 Dec 2012) | 1 line
+
+2nd pass at generic Makefile.linux
+------------------------------------------------------------------------
+r1137 | drowe67 | 2012-12-15 17:28:45 -0600 (Sat, 15 Dec 2012) | 1 line
+
+experimental new makefile for Linux that downloads and builds most of the libraries we need, tested on Ubuntu 9.1 and 10.04
+------------------------------------------------------------------------
+r1136 | drowe67 | 2012-12-15 06:14:13 -0600 (Sat, 15 Dec 2012) | 1 line
+
+makefile modified for Ubuntu 10.04
+------------------------------------------------------------------------
+r1135 | drowe67 | 2012-12-15 05:41:44 -0600 (Sat, 15 Dec 2012) | 1 line
+
+experimental Linux makefile, about to test on Ubuntu 10.04
+------------------------------------------------------------------------
+r1134 | wittend99 | 2012-12-14 15:36:21 -0600 (Fri, 14 Dec 2012) | 1 line
+
+Comment out the event handlers which were connected to the wrong check boxes in the PTT dialog. This _should_ have no effect on behavior because the event handlers in question were unused in the current code.
+------------------------------------------------------------------------
+r1133 | wittend99 | 2012-12-12 19:11:14 -0600 (Wed, 12 Dec 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r1132 | wittend99 | 2012-12-11 08:43:05 -0600 (Tue, 11 Dec 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r1131 | drowe67 | 2012-12-10 18:31:12 -0600 (Mon, 10 Dec 2012) | 1 line
+
+added some debug code to trap reported sox lib errors
+------------------------------------------------------------------------
+r1130 | wittend99 | 2012-12-10 18:05:18 -0600 (Mon, 10 Dec 2012) | 2 lines
+
+Moved version.h from /fdmdv2 to /fdmdv2/src. 
+Removed four orphaned lib files from /fdmdv2
+------------------------------------------------------------------------
+r1129 | wittend99 | 2012-12-10 17:37:17 -0600 (Mon, 10 Dec 2012) | 2 lines
+
+Renamed (finally) OnTogBtnTXClick to OnTogBtnPTT globally.  
+Removed fdmdv2-doc/* for now - to reduce traffic for first time users. Probably to be replaced with freedv-doc when useful content stabilizes.
+------------------------------------------------------------------------
+r1128 | drowe67 | 2012-12-09 23:36:38 -0600 (Sun, 09 Dec 2012) | 1 line
+
+small edits to README.Linux
+------------------------------------------------------------------------
+r1127 | drowe67 | 2012-12-09 23:33:18 -0600 (Sun, 09 Dec 2012) | 1 line
+
+after testing half duplex on Windows
+------------------------------------------------------------------------
+r1126 | drowe67 | 2012-12-09 23:09:11 -0600 (Sun, 09 Dec 2012) | 1 line
+
+first pass at half duplex, still testing
+------------------------------------------------------------------------
+r1125 | wittend99 | 2012-12-09 19:55:45 -0600 (Sun, 09 Dec 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r1124 | drowe67 | 2012-12-06 18:14:53 -0600 (Thu, 06 Dec 2012) | 1 line
+
+analog 6dB boost on mic, some experiments with waterfall blue colors, using 200-2800Hz for waterfall max AGC level, and updated Linux compile notes
+------------------------------------------------------------------------
+r1123 | drowe67 | 2012-12-05 21:04:43 -0600 (Wed, 05 Dec 2012) | 1 line
+
+added V0.9 Beta version code and support for future versioning via version.txt
+------------------------------------------------------------------------
+r1122 | drowe67 | 2012-12-05 15:06:24 -0600 (Wed, 05 Dec 2012) | 1 line
+
+added Codec 2 build instructions to README.Win32
+------------------------------------------------------------------------
+r1121 | wittend99 | 2012-12-05 09:22:25 -0600 (Wed, 05 Dec 2012) | 1 line
+
+More work on PTT button.
+------------------------------------------------------------------------
+r1120 | drowe67 | 2012-12-04 18:37:25 -0600 (Tue, 04 Dec 2012) | 1 line
+
+fix for File-Exit, works under Linux
+------------------------------------------------------------------------
+r1119 | wittend99 | 2012-12-04 15:27:23 -0600 (Tue, 04 Dec 2012) | 1 line
+
+Improve layout of PTT dialog layout under Linux
+------------------------------------------------------------------------
+r1118 | drowe67 | 2012-12-04 00:52:27 -0600 (Tue, 04 Dec 2012) | 1 line
+
+removed a few prints and #ifdefed out the display of txid/rxid buttons for now as feature wont be implemented for the beta
+------------------------------------------------------------------------
+r1117 | wittend99 | 2012-12-03 22:27:26 -0600 (Mon, 03 Dec 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r1116 | wittend99 | 2012-12-03 21:41:59 -0600 (Mon, 03 Dec 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r1115 | wittend99 | 2012-12-03 21:39:40 -0600 (Mon, 03 Dec 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r1114 | drowe67 | 2012-12-02 23:42:18 -0600 (Sun, 02 Dec 2012) | 1 line
+
+better shut down of EQ states to prevent bombing with sound card error
+------------------------------------------------------------------------
+r1113 | drowe67 | 2012-12-02 23:31:12 -0600 (Sun, 02 Dec 2012) | 1 line
+
+speaker eq states now being preserved and can take eqs in and out at run time
+------------------------------------------------------------------------
+r1112 | drowe67 | 2012-12-02 19:41:38 -0600 (Sun, 02 Dec 2012) | 1 line
+
+real time EQ adjustment working, designing filters on the fly, but still a few GUI and context save/restore bugs
+------------------------------------------------------------------------
+r1111 | drowe67 | 2012-12-02 04:39:21 -0600 (Sun, 02 Dec 2012) | 1 line
+
+EQ enable and separate default buttons, ready to wire up real time code
+------------------------------------------------------------------------
+r1110 | drowe67 | 2012-12-02 03:18:22 -0600 (Sun, 02 Dec 2012) | 1 line
+
+make axis labels dissapear if windows small enough to make text overlap
+------------------------------------------------------------------------
+r1109 | drowe67 | 2012-12-01 20:48:07 -0600 (Sat, 01 Dec 2012) | 1 line
+
+first pass at speaker eq controls
+------------------------------------------------------------------------
+r1108 | drowe67 | 2012-12-01 20:26:13 -0600 (Sat, 01 Dec 2012) | 1 line
+
+some tweaks to mic in filter
+------------------------------------------------------------------------
+r1107 | drowe67 | 2012-12-01 18:01:07 -0600 (Sat, 01 Dec 2012) | 1 line
+
+3 band equaliser for Mic In working on dialog, not connected to actual real time speech yet
+------------------------------------------------------------------------
+r1106 | drowe67 | 2012-12-01 02:38:43 -0600 (Sat, 01 Dec 2012) | 1 line
+
+fixed some registry probs on Win32, read & write formats were different.  Think its OK now
+------------------------------------------------------------------------
+r1105 | drowe67 | 2012-12-01 01:46:36 -0600 (Sat, 01 Dec 2012) | 1 line
+
+reduced filter dialog size
+------------------------------------------------------------------------
+r1104 | drowe67 | 2012-12-01 00:07:39 -0600 (Sat, 01 Dec 2012) | 1 line
+
+instructions for building sox on Win32 and modified win32 makefile for sox
+------------------------------------------------------------------------
+r1103 | wittend99 | 2012-11-30 22:20:24 -0600 (Fri, 30 Nov 2012) | 1 line
+
+Fix some things about PTT.
+------------------------------------------------------------------------
+r1102 | drowe67 | 2012-11-30 22:06:23 -0600 (Fri, 30 Nov 2012) | 1 line
+
+first pass at real time update of MicIn spectrum in response to slider
+------------------------------------------------------------------------
+r1095 | drowe67 | 2012-11-30 19:56:34 -0600 (Fri, 30 Nov 2012) | 1 line
+
+reduced size of filter dialog so it fits on 800 high screens...
+------------------------------------------------------------------------
+r1094 | drowe67 | 2012-11-30 19:09:11 -0600 (Fri, 30 Nov 2012) | 1 line
+
+equaliser: one slider partially connected
+------------------------------------------------------------------------
+r1093 | wittend99 | 2012-11-30 18:52:49 -0600 (Fri, 30 Nov 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r1092 | drowe67 | 2012-11-30 18:02:09 -0600 (Fri, 30 Nov 2012) | 1 line
+
+wrote and unit tested library to use sox biqaud filter
+------------------------------------------------------------------------
+r1091 | wittend99 | 2012-11-30 14:29:40 -0600 (Fri, 30 Nov 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r1090 | wittend99 | 2012-11-29 20:39:08 -0600 (Thu, 29 Nov 2012) | 1 line
+
+No more segfault, problem was not in this code.  Fixes to the PTT signal polarity, should work now, but not properly tested.
+------------------------------------------------------------------------
+r1088 | drowe67 | 2012-11-29 18:36:46 -0600 (Thu, 29 Nov 2012) | 1 line
+
+Win32 makefile and install notes for libctb
+------------------------------------------------------------------------
+r1086 | drowe67 | 2012-11-29 17:30:25 -0600 (Thu, 29 Nov 2012) | 1 line
+
+modified Linux makefile for libctb, added build instructions for libctb
+------------------------------------------------------------------------
+r1085 | wittend99 | 2012-11-29 16:22:25 -0600 (Thu, 29 Nov 2012) | 1 line
+
+I should have noted - this and the previous commit give me a segfault when the audio processing runs.
+------------------------------------------------------------------------
+r1084 | wittend99 | 2012-11-29 16:18:52 -0600 (Thu, 29 Nov 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r1083 | drowe67 | 2012-11-26 23:03:09 -0600 (Mon, 26 Nov 2012) | 1 line
+
+rewrote callsign system along fdmdv1 lines
+------------------------------------------------------------------------
+r1082 | drowe67 | 2012-11-26 21:39:17 -0600 (Mon, 26 Nov 2012) | 1 line
+
+rescaled waterfall and spectrum to be 300Hz wide, as per fdmdv1
+------------------------------------------------------------------------
+r1080 | drowe67 | 2012-11-26 20:41:12 -0600 (Mon, 26 Nov 2012) | 1 line
+
+added play file to From Radio option
+------------------------------------------------------------------------
+r1079 | drowe67 | 2012-11-26 19:24:40 -0600 (Mon, 26 Nov 2012) | 1 line
+
+automatic scaling of spectrogram, and toggling color mapping.  Think it works better but need to try on real signals
+------------------------------------------------------------------------
+r1078 | drowe67 | 2012-11-26 16:48:17 -0600 (Mon, 26 Nov 2012) | 1 line
+
+implemented level guage on tx & rx inclduing too high warning
+------------------------------------------------------------------------
+r1077 | drowe67 | 2012-11-26 14:43:08 -0600 (Mon, 26 Nov 2012) | 1 line
+
+number of secords to record from radio hard coded for Win32 as I cant read number of secs from dialog ctrl
+------------------------------------------------------------------------
+r1073 | drowe67 | 2012-11-26 00:03:20 -0600 (Mon, 26 Nov 2012) | 1 line
+
+receive data now doing something sensible, but I think rxid window is too big
+------------------------------------------------------------------------
+r1070 | wittend99 | 2012-11-25 20:37:41 -0600 (Sun, 25 Nov 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r1069 | drowe67 | 2012-11-25 18:23:24 -0600 (Sun, 25 Nov 2012) | 1 line
+
+first pass with data, can send messages and printf to screen.  Need to think about silence thresholds/time outs
+------------------------------------------------------------------------
+r1066 | drowe67 | 2012-11-25 03:34:47 -0600 (Sun, 25 Nov 2012) | 1 line
+
+tx id callback working on Linux
+------------------------------------------------------------------------
+r1065 | drowe67 | 2012-11-25 03:28:31 -0600 (Sun, 25 Nov 2012) | 1 line
+
+started hooking up controls for tx and rx data experiments
+------------------------------------------------------------------------
+r1064 | drowe67 | 2012-11-25 03:27:04 -0600 (Sun, 25 Nov 2012) | 1 line
+
+modified varicode decoder to retain state between calls so it can be interrupted half way thru decoding one character
+------------------------------------------------------------------------
+r1063 | drowe67 | 2012-11-25 00:01:27 -0600 (Sun, 25 Nov 2012) | 1 line
+
+Filter dialog all hooked up to Codec, still requires testing
+------------------------------------------------------------------------
+r1062 | wittend99 | 2012-11-24 20:38:37 -0600 (Sat, 24 Nov 2012) | 1 line
+
+Work on PTT control dialog. Not finished...
+------------------------------------------------------------------------
+r1060 | drowe67 | 2012-11-24 18:00:28 -0600 (Sat, 24 Nov 2012) | 1 line
+
+basic filter dialog screen working, after usual pain with sizers
+------------------------------------------------------------------------
+r1059 | drowe67 | 2012-11-24 16:03:07 -0600 (Sat, 24 Nov 2012) | 1 line
+
+added filter dialog, it displays OK but doesn't do anything yet.  test OK under Linux
+------------------------------------------------------------------------
+r1058 | drowe67 | 2012-11-24 05:02:48 -0600 (Sat, 24 Nov 2012) | 1 line
+
+varicode encoding and decoding, passes unittest
+------------------------------------------------------------------------
+r1056 | drowe67 | 2012-11-23 17:27:07 -0600 (Fri, 23 Nov 2012) | 1 line
+
+minor tweaks to scatter scaling
+------------------------------------------------------------------------
+r1055 | drowe67 | 2012-11-23 17:04:43 -0600 (Fri, 23 Nov 2012) | 1 line
+
+automatic scaling of scatter diagram, quite nice to watch
+------------------------------------------------------------------------
+r1054 | drowe67 | 2012-11-23 16:39:17 -0600 (Fri, 23 Nov 2012) | 1 line
+
+higher resn FFT, red tuning line, automatic page switching on tx/rx, works OK on Linux
+------------------------------------------------------------------------
+r1052 | drowe67 | 2012-11-23 13:51:46 -0600 (Fri, 23 Nov 2012) | 1 line
+
+modified Makefiles for DW cleanup, modified waterfall to handle slow waterfall updates where DT nmaps to less than one vertical pixel.  Waterfall now covers 30 seconds. Works OK on Linux
+------------------------------------------------------------------------
+r1051 | wittend99 | 2012-11-23 10:24:35 -0600 (Fri, 23 Nov 2012) | 1 line
+
+Removed unnecessary or distracting Files, C++ Classes, members, and unimplemented code.
+------------------------------------------------------------------------
+r1050 | wittend99 | 2012-11-23 10:01:05 -0600 (Fri, 23 Nov 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r1049 | wittend99 | 2012-11-23 09:59:26 -0600 (Fri, 23 Nov 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r1048 | drowe67 | 2012-11-23 04:41:31 -0600 (Fri, 23 Nov 2012) | 1 line
+
+wired up squelch, added slow SNR option, works OK on Linux, need to test on Win32
+------------------------------------------------------------------------
+r1046 | drowe67 | 2012-11-22 13:39:05 -0600 (Thu, 22 Nov 2012) | 1 line
+
+modified split so tx doesn't change, version number in program title on main window, edited to-do
+------------------------------------------------------------------------
+r1045 | drowe67 | 2012-11-21 17:28:54 -0600 (Wed, 21 Nov 2012) | 1 line
+
+click tune with split and tx logic, works OK on Linux
+------------------------------------------------------------------------
+r1043 | drowe67 | 2012-11-20 23:31:22 -0600 (Tue, 20 Nov 2012) | 1 line
+
+tx and rx click tune, tied together (non split)
+------------------------------------------------------------------------
+r1042 | drowe67 | 2012-11-20 22:57:41 -0600 (Tue, 20 Nov 2012) | 1 line
+
+rx click tune using globals resulted in a cleaner design although I would prefer not to have used globals.  Maybe passing the address of the freq offset in the waterfall/spectrum constructor would have ben cleaner
+------------------------------------------------------------------------
+r1041 | drowe67 | 2012-11-20 22:32:21 -0600 (Tue, 20 Nov 2012) | 1 line
+
+first pass at click to tune for rx.  It works OK, but the communication of the click freq sucks so I might try re-writing that bit
+------------------------------------------------------------------------
+r1040 | drowe67 | 2012-11-20 04:07:13 -0600 (Tue, 20 Nov 2012) | 1 line
+
+looks up svn revision from the Internet
+------------------------------------------------------------------------
+r1039 | drowe67 | 2012-11-20 02:58:55 -0600 (Tue, 20 Nov 2012) | 1 line
+
+attemp at support for svn revsion under windows 
+------------------------------------------------------------------------
+r1038 | drowe67 | 2012-11-20 02:53:47 -0600 (Tue, 20 Nov 2012) | 1 line
+
+testing adding svn revision to about (yet again)
+------------------------------------------------------------------------
+r1037 | drowe67 | 2012-11-20 02:52:51 -0600 (Tue, 20 Nov 2012) | 1 line
+
+testing adding svn revision to about (and again)
+------------------------------------------------------------------------
+r1036 | drowe67 | 2012-11-20 02:45:28 -0600 (Tue, 20 Nov 2012) | 1 line
+
+testing adding svn revision to about (again)
+------------------------------------------------------------------------
+r1035 | drowe67 | 2012-11-20 02:44:30 -0600 (Tue, 20 Nov 2012) | 1 line
+
+testing adding svn revision to about
+------------------------------------------------------------------------
+r1034 | wittend99 | 2012-11-19 21:55:22 -0600 (Mon, 19 Nov 2012) | 1 line
+
+Modified the header comment block of all files to indicate GPL license.
+------------------------------------------------------------------------
+r1033 | drowe67 | 2012-11-19 20:49:53 -0600 (Mon, 19 Nov 2012) | 1 line
+
+removed tx & rx loopback, as they no longer necc
+------------------------------------------------------------------------
+r1032 | drowe67 | 2012-11-19 20:37:44 -0600 (Mon, 19 Nov 2012) | 1 line
+
+added record from radio feature, works OK on wave and raw files, can demod/decode aved files using command line tools
+------------------------------------------------------------------------
+r1031 | drowe67 | 2012-11-19 04:14:34 -0600 (Mon, 19 Nov 2012) | 1 line
+
+wav and raw at the same time, can't position loop checkbox correctly...
+------------------------------------------------------------------------
+r1030 | drowe67 | 2012-11-19 03:56:56 -0600 (Mon, 19 Nov 2012) | 1 line
+
+added some todos to readme.linux, added play file to mic in feature
+------------------------------------------------------------------------
+r1024 | drowe67 | 2012-11-18 21:49:16 -0600 (Sun, 18 Nov 2012) | 1 line
+
+changed labels on audo config test, fifo header file change
+------------------------------------------------------------------------
+r1023 | wittend99 | 2012-11-18 21:20:58 -0600 (Sun, 18 Nov 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r1016 | drowe67 | 2012-11-17 22:26:06 -0600 (Sat, 17 Nov 2012) | 1 line
+
+tried static text fields for API tab of audio config dlg
+------------------------------------------------------------------------
+r1015 | drowe67 | 2012-11-17 17:03:02 -0600 (Sat, 17 Nov 2012) | 1 line
+
+was a bit unstable under ubuntu/alsa so added some mutex protection around fifo access that is shared by callsbacks and tx/rx processing threads.  Alsa now seems more stable.
+------------------------------------------------------------------------
+r1014 | drowe67 | 2012-11-17 16:07:23 -0600 (Sat, 17 Nov 2012) | 1 line
+
+experimental thread based tx/rx processing.  Seems more stable on Windows and works better with Rig Blaster despite dirfting tx/rx sample clock.  Still some start up transients, i.e. loss of sync in first few seconds and occasionally thereafter
+------------------------------------------------------------------------
+r1001 | drowe67 | 2012-11-16 20:11:54 -0600 (Fri, 16 Nov 2012) | 1 line
+
+moved tx and rx processing to OnIdle, using device-defined buffer sizes for portaudio callbacks.  Still testing.
+------------------------------------------------------------------------
+r978 | drowe67 | 2012-11-15 22:08:38 -0600 (Thu, 15 Nov 2012) | 1 line
+
+experimental support for mono record devices such as the rig blaster, still testing
+------------------------------------------------------------------------
+r970 | drowe67 | 2012-11-14 05:12:26 -0600 (Wed, 14 Nov 2012) | 1 line
+
+made sample rate combo box wider
+------------------------------------------------------------------------
+r969 | drowe67 | 2012-11-14 02:17:13 -0600 (Wed, 14 Nov 2012) | 1 line
+
+nicer layout with test feature
+------------------------------------------------------------------------
+r968 | drowe67 | 2012-11-13 16:34:42 -0600 (Tue, 13 Nov 2012) | 1 line
+
+test feature for all 4 audio devices, tested OK on Ubuntu 9.10, needs work on the layout
+------------------------------------------------------------------------
+r967 | drowe67 | 2012-11-13 02:18:53 -0600 (Tue, 13 Nov 2012) | 1 line
+
+first pass at a test tool for audio config dialog that plots input to a little screen.  Just rx in at this stage.  Some indication that it is occasionally unstable.  Might need to convert to async/callback model
+------------------------------------------------------------------------
+r966 | drowe67 | 2012-11-12 17:03:04 -0600 (Mon, 12 Nov 2012) | 1 line
+
+Sync indicator now works for Windows, but isn't multicolour like on Linux. As it is implemented with a radio button, unfortunately the user can press it.
+------------------------------------------------------------------------
+r965 | drowe67 | 2012-11-12 16:23:18 -0600 (Mon, 12 Nov 2012) | 1 line
+
+minor tweaks to SNR positioning
+------------------------------------------------------------------------
+r964 | drowe67 | 2012-11-12 15:43:36 -0600 (Mon, 12 Nov 2012) | 1 line
+
+Testing wxlogdebug and added device number to device name in config dialog to help ID devices with the same name under Windows
+------------------------------------------------------------------------
+r963 | drowe67 | 2012-11-12 14:22:51 -0600 (Mon, 12 Nov 2012) | 1 line
+
+added some notes to Linux README
+------------------------------------------------------------------------
+r962 | wittend99 | 2012-11-12 13:53:33 -0600 (Mon, 12 Nov 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r961 | drowe67 | 2012-11-11 22:40:02 -0600 (Sun, 11 Nov 2012) | 1 line
+
+small sample rate selection bug
+------------------------------------------------------------------------
+r960 | drowe67 | 2012-11-11 22:30:48 -0600 (Sun, 11 Nov 2012) | 1 line
+
+fixed bug, can now run soudn card1 at 44kHz
+------------------------------------------------------------------------
+r959 | drowe67 | 2012-11-11 19:34:32 -0600 (Sun, 11 Nov 2012) | 1 line
+
+After testing on an Alsa based Ubuntu 10 machine: tweaked layout, added dynamic sample rate list generation to dlg_audioconfig, refactored a few routines that got messy, and separated portaudio device number from list box index to support non-duplex devices
+------------------------------------------------------------------------
+r958 | drowe67 | 2012-11-11 15:58:29 -0600 (Sun, 11 Nov 2012) | 1 line
+
+improved detection of erros due to removed sound card
+------------------------------------------------------------------------
+r957 | drowe67 | 2012-11-11 04:05:21 -0600 (Sun, 11 Nov 2012) | 1 line
+
+disable Audio Config dialog when running
+------------------------------------------------------------------------
+r956 | drowe67 | 2012-11-10 19:22:01 -0600 (Sat, 10 Nov 2012) | 1 line
+
+first pass at connecting audio config dialog to rest of system.  Can configure single and dual card systems on Unbuntu 9.10.  Still a few situations that can crash system
+------------------------------------------------------------------------
+r955 | drowe67 | 2012-11-08 22:38:02 -0600 (Thu, 08 Nov 2012) | 1 line
+
+removed some accel key debug warnings on start up
+------------------------------------------------------------------------
+r954 | drowe67 | 2012-11-08 21:16:52 -0600 (Thu, 08 Nov 2012) | 1 line
+
+peristent storing of squelch levels to config file
+------------------------------------------------------------------------
+r953 | drowe67 | 2012-11-08 20:43:55 -0600 (Thu, 08 Nov 2012) | 1 line
+
+wired up analog mode
+------------------------------------------------------------------------
+r952 | drowe67 | 2012-11-08 20:29:35 -0600 (Thu, 08 Nov 2012) | 1 line
+
+removed ALC
+------------------------------------------------------------------------
+r951 | drowe67 | 2012-11-08 19:56:45 -0600 (Thu, 08 Nov 2012) | 1 line
+
+positioned squelch and snr static text correctly and stays centred
+------------------------------------------------------------------------
+r950 | drowe67 | 2012-11-07 22:19:29 -0600 (Wed, 07 Nov 2012) | 1 line
+
+playing with squelch slider, but not happy with layout
+------------------------------------------------------------------------
+r949 | drowe67 | 2012-11-07 19:35:43 -0600 (Wed, 07 Nov 2012) | 1 line
+
+hooked up sync LED, changed SNR text box to static text to prevent it getting focus
+------------------------------------------------------------------------
+r948 | drowe67 | 2012-11-07 17:14:42 -0600 (Wed, 07 Nov 2012) | 1 line
+
+formatting, and added freq shifter in front of demod to suport click tune feature
+------------------------------------------------------------------------
+r944 | wittend99 | 2012-11-07 13:09:14 -0600 (Wed, 07 Nov 2012) | 1 line
+
+Remove dependencies in Icon files in dlg_audiooptions.*.  Eliminated use of icons for now.  They were ugly anyway.  Dialog returns the string form of the chosen interface, and not the if # for now.  This can be trivially changed.
+------------------------------------------------------------------------
+r939 | wittend99 | 2012-11-06 20:09:35 -0600 (Tue, 06 Nov 2012) | 1 line
+
+Changed dlg_audio.* to dlg_audiooptions.*, changed other dlg code, altered makefiles.
+------------------------------------------------------------------------
+r938 | wittend99 | 2012-11-06 08:18:21 -0600 (Tue, 06 Nov 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r937 | drowe67 | 2012-11-05 18:47:29 -0600 (Mon, 05 Nov 2012) | 1 line
+
+Added editor set up instructions to avoid problems with tabs
+------------------------------------------------------------------------
+r936 | drowe67 | 2012-11-05 17:58:54 -0600 (Mon, 05 Nov 2012) | 1 line
+
+changed Davids emacs to use spaces rather than tabs
+------------------------------------------------------------------------
+r935 | wittend99 | 2012-11-05 13:22:16 -0600 (Mon, 05 Nov 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r934 | drowe67 | 2012-11-05 02:20:38 -0600 (Mon, 05 Nov 2012) | 1 line
+
+Added libresample
+------------------------------------------------------------------------
+r933 | drowe67 | 2012-11-05 02:18:35 -0600 (Mon, 05 Nov 2012) | 1 line
+
+added libsamplerate
+------------------------------------------------------------------------
+r932 | drowe67 | 2012-11-05 01:46:54 -0600 (Mon, 05 Nov 2012) | 1 line
+
+SNR text box and bar graph hooked up
+------------------------------------------------------------------------
+r931 | drowe67 | 2012-11-04 23:25:34 -0600 (Sun, 04 Nov 2012) | 1 line
+
+building up soundcard auto detect code
+------------------------------------------------------------------------
+r930 | drowe67 | 2012-11-04 23:04:49 -0600 (Sun, 04 Nov 2012) | 1 line
+
+improved speech plots with a better decimation algorithm
+------------------------------------------------------------------------
+r928 | drowe67 | 2012-11-04 18:23:51 -0600 (Sun, 04 Nov 2012) | 1 line
+
+added experimental waveform plots, the idea is to usethm as a tool to adjust levels. Not sure if they are useful yet...
+------------------------------------------------------------------------
+r927 | drowe67 | 2012-11-04 17:11:29 -0600 (Sun, 04 Nov 2012) | 1 line
+
+first pass at plot-scalar working to produce timing and frequency offset plots
+------------------------------------------------------------------------
+r926 | drowe67 | 2012-11-03 17:15:48 -0500 (Sat, 03 Nov 2012) | 1 line
+
+cleaned up some code after adjusting demod sample rate slip 
+------------------------------------------------------------------------
+r924 | drowe67 | 2012-11-03 16:30:41 -0500 (Sat, 03 Nov 2012) | 1 line
+
+refactored sample rate conversion code to clean up sound card 1 call back, works OK
+------------------------------------------------------------------------
+r923 | wittend99 | 2012-11-03 10:57:11 -0500 (Sat, 03 Nov 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r922 | drowe67 | 2012-11-03 02:53:32 -0500 (Sat, 03 Nov 2012) | 1 line
+
+shutdown codec for libresample states
+------------------------------------------------------------------------
+r921 | drowe67 | 2012-11-03 01:32:20 -0500 (Sat, 03 Nov 2012) | 1 line
+
+libresample used for all 4 sample rate conversions, but needs clean up into functions.
+------------------------------------------------------------------------
+r920 | drowe67 | 2012-11-03 01:13:21 -0500 (Sat, 03 Nov 2012) | 1 line
+
+partial port to libresample, using 48kHz for one sound card and 44.1kHz for another
+------------------------------------------------------------------------
+r918 | drowe67 | 2012-11-02 01:26:16 -0500 (Fri, 02 Nov 2012) | 1 line
+
+debug version while testing different headphones
+------------------------------------------------------------------------
+r917 | drowe67 | 2012-11-01 21:56:57 -0500 (Thu, 01 Nov 2012) | 1 line
+
+working better with new headphones - about to remove some debug printfs
+------------------------------------------------------------------------
+r916 | drowe67 | 2012-11-01 19:02:56 -0500 (Thu, 01 Nov 2012) | 1 line
+
+debug version, looking for reason mic audio is getting corrupted
+------------------------------------------------------------------------
+r915 | wittend99 | 2012-11-01 17:31:35 -0500 (Thu, 01 Nov 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r902 | drowe67 | 2012-10-30 20:58:52 -0500 (Tue, 30 Oct 2012) | 1 line
+
+modified for independant in and output portaudio devices to suit Win32.
+------------------------------------------------------------------------
+r901 | drowe67 | 2012-10-30 19:18:00 -0500 (Tue, 30 Oct 2012) | 1 line
+
+first pass at full duplex working ... two sound card, tx looped back to rx audio, can hear what I am saying in headset.  Still some stability issues
+------------------------------------------------------------------------
+r900 | drowe67 | 2012-10-30 18:40:11 -0500 (Tue, 30 Oct 2012) | 1 line
+
+have tx process doing something with one sound card - it sends a signal that I can loop back to rx with good quality scatter diagram.  Next stage is to enable the 2nd sound card
+------------------------------------------------------------------------
+r899 | drowe67 | 2012-10-30 01:18:02 -0500 (Tue, 30 Oct 2012) | 1 line
+
+first attempt at support for two sound cardsand tx processing.  Debugging tx side
+------------------------------------------------------------------------
+r888 | drowe67 | 2012-10-28 22:29:37 -0500 (Sun, 28 Oct 2012) | 1 line
+
+replaced buffers in rx callback with fifos to ease porting to two sound cards
+------------------------------------------------------------------------
+r873 | wittend99 | 2012-10-28 18:14:06 -0500 (Sun, 28 Oct 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r855 | drowe67 | 2012-10-28 03:31:55 -0500 (Sun, 28 Oct 2012) | 1 line
+
+changed portaudio buffer size to make OSS work a little better on Ububtu 9.10 - but still cant adjust mic gain
+------------------------------------------------------------------------
+r831 | drowe67 | 2012-10-27 00:36:22 -0500 (Sat, 27 Oct 2012) | 1 line
+
+Fixed Waterfall/Spectrum axis labels on windows.  Rx loop also decodes modem signals OK, sounds good, no clicks or pops!
+------------------------------------------------------------------------
+r829 | drowe67 | 2012-10-26 18:47:18 -0500 (Fri, 26 Oct 2012) | 1 line
+
+Davids R's first version building on Win32
+------------------------------------------------------------------------
+r825 | wittend99 | 2012-10-25 17:05:20 -0500 (Thu, 25 Oct 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r816 | wittend99 | 2012-10-25 14:34:02 -0500 (Thu, 25 Oct 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r815 | wittend99 | 2012-10-25 14:27:38 -0500 (Thu, 25 Oct 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r814 | wittend99 | 2012-10-25 14:23:10 -0500 (Thu, 25 Oct 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r813 | wittend99 | 2012-10-25 13:45:14 -0500 (Thu, 25 Oct 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r812 | wittend99 | 2012-10-25 13:39:14 -0500 (Thu, 25 Oct 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r811 | wittend99 | 2012-10-25 08:50:56 -0500 (Thu, 25 Oct 2012) | 1 line
+
+Just update my IDE configuration probably of no interest to anyone but me. DMW  
+------------------------------------------------------------------------
+r804 | wittend99 | 2012-10-24 10:30:04 -0500 (Wed, 24 Oct 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r803 | drowe67 | 2012-10-24 03:14:35 -0500 (Wed, 24 Oct 2012) | 1 line
+
+first pass at a working scatter plot - haven't tested on real modem signals yet
+------------------------------------------------------------------------
+r802 | drowe67 | 2012-10-23 19:50:22 -0500 (Tue, 23 Oct 2012) | 1 line
+
+renamed a few variables for consistency, spectrum now working
+------------------------------------------------------------------------
+r801 | drowe67 | 2012-10-23 19:20:06 -0500 (Tue, 23 Oct 2012) | 1 line
+
+fixed axis labels on waterfall and tweaked those on spectrum
+------------------------------------------------------------------------
+r800 | wittend99 | 2012-10-23 17:12:37 -0500 (Tue, 23 Oct 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r799 | wittend99 | 2012-10-23 17:07:13 -0500 (Tue, 23 Oct 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r798 | drowe67 | 2012-10-23 16:03:44 -0500 (Tue, 23 Oct 2012) | 1 line
+
+spectrum plot drawGraticule() working OK with nice labels
+------------------------------------------------------------------------
+r797 | drowe67 | 2012-10-23 05:05:13 -0500 (Tue, 23 Oct 2012) | 1 line
+
+added some code to handle resizing better, and fact OnSize can't be relied upon to be called for bit map allocation
+------------------------------------------------------------------------
+r796 | drowe67 | 2012-10-23 04:37:49 -0500 (Tue, 23 Oct 2012) | 1 line
+
+cleaned up a little, made var names consistent with plot spectrum
+------------------------------------------------------------------------
+r795 | drowe67 | 2012-10-23 04:26:30 -0500 (Tue, 23 Oct 2012) | 1 line
+
+fixed wrong window dimensions, was reading past endof array and writing past end of bit map
+------------------------------------------------------------------------
+r794 | wittend99 | 2012-10-22 10:46:47 -0500 (Mon, 22 Oct 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r793 | wittend99 | 2012-10-22 10:31:13 -0500 (Mon, 22 Oct 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r792 | wittend99 | 2012-10-22 10:21:49 -0500 (Mon, 22 Oct 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r791 | wittend99 | 2012-10-22 10:20:43 -0500 (Mon, 22 Oct 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r790 | wittend99 | 2012-10-22 10:11:26 -0500 (Mon, 22 Oct 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r789 | wittend99 | 2012-10-22 10:10:00 -0500 (Mon, 22 Oct 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r788 | wittend99 | 2012-10-22 10:09:37 -0500 (Mon, 22 Oct 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r787 | drowe67 | 2012-10-21 20:35:43 -0500 (Sun, 21 Oct 2012) | 1 line
+
+spent a few hours trying to debug Stop not erasing bottom 25% of Waterfall, but haven't fixed bug.  Leaving for now
+------------------------------------------------------------------------
+r786 | drowe67 | 2012-10-20 18:59:33 -0500 (Sat, 20 Oct 2012) | 1 line
+
+waterfall working at slow update rate on Linux, some visual bugs on stop & restart
+------------------------------------------------------------------------
+r785 | drowe67 | 2012-10-20 17:58:04 -0500 (Sat, 20 Oct 2012) | 1 line
+
+related timer period to update interval of Waterfall
+------------------------------------------------------------------------
+r784 | drowe67 | 2012-10-20 17:56:42 -0500 (Sat, 20 Oct 2012) | 1 line
+
+removed debug printfs
+------------------------------------------------------------------------
+r783 | drowe67 | 2012-10-20 17:50:34 -0500 (Sat, 20 Oct 2012) | 1 line
+
+free g_RxInBuf on Stop
+------------------------------------------------------------------------
+r782 | drowe67 | 2012-10-19 21:29:23 -0500 (Fri, 19 Oct 2012) | 1 line
+
+bottom line of spectrogram working at 500ms period
+------------------------------------------------------------------------
+r781 | drowe67 | 2012-10-19 18:22:35 -0500 (Fri, 19 Oct 2012) | 1 line
+
+bitmap test pattern working
+------------------------------------------------------------------------
+r780 | drowe67 | 2012-10-19 16:43:56 -0500 (Fri, 19 Oct 2012) | 1 line
+
+libsndfile support
+------------------------------------------------------------------------
+r779 | wittend99 | 2012-10-19 16:28:59 -0500 (Fri, 19 Oct 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r778 | wittend99 | 2012-10-19 07:54:57 -0500 (Fri, 19 Oct 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r777 | drowe67 | 2012-10-18 23:50:43 -0500 (Thu, 18 Oct 2012) | 1 line
+
+initial cjeck in of wxWdigets image test dir
+------------------------------------------------------------------------
+r766 | wittend99 | 2012-10-17 07:53:44 -0500 (Wed, 17 Oct 2012) | 2 lines
+
+minimal changes.
+
+------------------------------------------------------------------------
+r765 | wittend99 | 2012-10-16 12:25:48 -0500 (Tue, 16 Oct 2012) | 1 line
+
+Updating doxygen documentation and removing some unnecessary junk that has accumulated. 
+------------------------------------------------------------------------
+r764 | wittend99 | 2012-10-16 10:32:32 -0500 (Tue, 16 Oct 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r763 | wittend99 | 2012-10-16 10:17:09 -0500 (Tue, 16 Oct 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r762 | wittend99 | 2012-10-16 10:16:45 -0500 (Tue, 16 Oct 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r761 | wittend99 | 2012-10-15 21:01:27 -0500 (Mon, 15 Oct 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r760 | wittend99 | 2012-10-15 20:29:25 -0500 (Mon, 15 Oct 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r759 | wittend99 | 2012-10-15 20:28:47 -0500 (Mon, 15 Oct 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r757 | drowe67 | 2012-10-15 16:19:49 -0500 (Mon, 15 Oct 2012) | 1 line
+
+main demod processing loop runs without crashing
+------------------------------------------------------------------------
+r752 | drowe67 | 2012-10-14 22:59:03 -0500 (Sun, 14 Oct 2012) | 1 line
+
+added a fifo buffer to interface between framesPerBufferof portaudio and the buffer size we need for modem processing. Basic audio loopback working now
+------------------------------------------------------------------------
+r748 | drowe67 | 2012-10-13 16:50:57 -0500 (Sat, 13 Oct 2012) | 1 line
+
+build instructions for Linux
+------------------------------------------------------------------------
+r747 | drowe67 | 2012-10-13 02:25:50 -0500 (Sat, 13 Oct 2012) | 1 line
+
+temp. disabled timer and rx callback to stabilise, can start/stop without crashing now
+------------------------------------------------------------------------
+r746 | drowe67 | 2012-10-13 01:32:03 -0500 (Sat, 13 Oct 2012) | 1 line
+
+re-orged linux Makefile a little
+------------------------------------------------------------------------
+r745 | wittend99 | 2012-10-12 16:49:51 -0500 (Fri, 12 Oct 2012) | 1 line
+
+Convert line endings to UNIX style for readability. 
+------------------------------------------------------------------------
+r744 | drowe67 | 2012-10-11 19:53:06 -0500 (Thu, 11 Oct 2012) | 1 line
+
+changed syntax of extern g_avmag to fix segfault
+------------------------------------------------------------------------
+r743 | drowe67 | 2012-10-11 18:29:14 -0500 (Thu, 11 Oct 2012) | 1 line
+
+added setColour to prevent bombing on Linux
+------------------------------------------------------------------------
+r742 | drowe67 | 2012-10-11 00:16:50 -0500 (Thu, 11 Oct 2012) | 1 line
+
+first pass at Makefile for Linux
+------------------------------------------------------------------------
+r740 | wittend99 | 2012-10-09 22:31:50 -0500 (Tue, 09 Oct 2012) | 1 line
+
+Killer bug.  Data point array not initialized?
+------------------------------------------------------------------------
+r739 | wittend99 | 2012-10-08 08:29:38 -0500 (Mon, 08 Oct 2012) | 1 line
+
+Receive side connected, segfault still to be tracked down. 
+------------------------------------------------------------------------
+r738 | wittend99 | 2012-10-06 14:16:25 -0500 (Sat, 06 Oct 2012) | 1 line
+
+Various incremental advances.  Not 'there' yet.
+------------------------------------------------------------------------
+r731 | wittend99 | 2012-09-19 12:21:32 -0500 (Wed, 19 Sep 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r730 | wittend99 | 2012-09-19 12:11:30 -0500 (Wed, 19 Sep 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r716 | wittend99 | 2012-09-17 13:16:46 -0500 (Mon, 17 Sep 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r712 | wittend99 | 2012-09-14 18:26:51 -0500 (Fri, 14 Sep 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r676 | wittend99 | 2012-09-11 15:10:16 -0500 (Tue, 11 Sep 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r675 | wittend99 | 2012-09-11 14:58:36 -0500 (Tue, 11 Sep 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r674 | wittend99 | 2012-09-11 14:51:11 -0500 (Tue, 11 Sep 2012) | 1 line
+
+no longer needed.
+------------------------------------------------------------------------
+r673 | wittend99 | 2012-09-11 14:49:55 -0500 (Tue, 11 Sep 2012) | 1 line
+
+no longer needed.
+------------------------------------------------------------------------
+r672 | wittend99 | 2012-09-11 14:44:56 -0500 (Tue, 11 Sep 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r671 | wittend99 | 2012-09-11 14:36:45 -0500 (Tue, 11 Sep 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r670 | wittend99 | 2012-09-11 12:13:28 -0500 (Tue, 11 Sep 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r667 | wittend99 | 2012-09-10 11:45:37 -0500 (Mon, 10 Sep 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r666 | wittend99 | 2012-09-10 11:25:14 -0500 (Mon, 10 Sep 2012) | 1 line
+
+Beginning to add some code documentation using Doxygen.
+------------------------------------------------------------------------
+r663 | wittend99 | 2012-09-04 21:54:00 -0500 (Tue, 04 Sep 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r662 | wittend99 | 2012-09-04 21:47:34 -0500 (Tue, 04 Sep 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r660 | wittend99 | 2012-09-04 15:44:29 -0500 (Tue, 04 Sep 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r659 | wittend99 | 2012-09-04 15:43:00 -0500 (Tue, 04 Sep 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r658 | wittend99 | 2012-09-04 15:40:24 -0500 (Tue, 04 Sep 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r647 | wittend99 | 2012-08-28 23:03:56 -0500 (Tue, 28 Aug 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r646 | wittend99 | 2012-08-28 22:54:54 -0500 (Tue, 28 Aug 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r645 | wittend99 | 2012-08-28 22:50:53 -0500 (Tue, 28 Aug 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r643 | wittend99 | 2012-08-27 12:01:45 -0500 (Mon, 27 Aug 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r639 | wittend99 | 2012-08-24 14:01:17 -0500 (Fri, 24 Aug 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r638 | wittend99 | 2012-08-24 14:00:49 -0500 (Fri, 24 Aug 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r637 | wittend99 | 2012-08-24 13:56:48 -0500 (Fri, 24 Aug 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r636 | wittend99 | 2012-08-22 12:33:04 -0500 (Wed, 22 Aug 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r634 | wittend99 | 2012-08-21 16:29:09 -0500 (Tue, 21 Aug 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r633 | wittend99 | 2012-08-21 13:26:23 -0500 (Tue, 21 Aug 2012) | 1 line
+
+Working to get an Autotools build in place.
+------------------------------------------------------------------------
+r632 | wittend99 | 2012-08-20 15:09:21 -0500 (Mon, 20 Aug 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r631 | wittend99 | 2012-08-20 14:54:14 -0500 (Mon, 20 Aug 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r630 | wittend99 | 2012-08-20 14:53:49 -0500 (Mon, 20 Aug 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r629 | wittend99 | 2012-08-20 14:52:31 -0500 (Mon, 20 Aug 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r628 | wittend99 | 2012-08-20 14:43:10 -0500 (Mon, 20 Aug 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r627 | wittend99 | 2012-08-17 15:57:31 -0500 (Fri, 17 Aug 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r626 | wittend99 | 2012-08-17 15:50:27 -0500 (Fri, 17 Aug 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r625 | wittend99 | 2012-08-17 15:50:00 -0500 (Fri, 17 Aug 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r624 | wittend99 | 2012-08-17 15:48:58 -0500 (Fri, 17 Aug 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r623 | wittend99 | 2012-08-17 15:43:19 -0500 (Fri, 17 Aug 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r622 | wittend99 | 2012-08-17 15:42:13 -0500 (Fri, 17 Aug 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r621 | wittend99 | 2012-08-17 15:20:38 -0500 (Fri, 17 Aug 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r620 | wittend99 | 2012-08-17 15:18:55 -0500 (Fri, 17 Aug 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r619 | wittend99 | 2012-08-17 15:18:39 -0500 (Fri, 17 Aug 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r618 | wittend99 | 2012-08-17 15:18:24 -0500 (Fri, 17 Aug 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r617 | wittend99 | 2012-08-17 15:10:20 -0500 (Fri, 17 Aug 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r616 | wittend99 | 2012-08-17 15:07:18 -0500 (Fri, 17 Aug 2012) | 1 line
+
+For variant versions
+------------------------------------------------------------------------
+r615 | wittend99 | 2012-08-17 15:05:10 -0500 (Fri, 17 Aug 2012) | 1 line
+
+Moved to ./3rdparty
+------------------------------------------------------------------------
+r614 | wittend99 | 2012-08-17 15:03:59 -0500 (Fri, 17 Aug 2012) | 1 line
+
+Moved to ./3rdparty
+------------------------------------------------------------------------
+r613 | wittend99 | 2012-08-17 15:02:47 -0500 (Fri, 17 Aug 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r612 | wittend99 | 2012-08-14 21:31:28 -0500 (Tue, 14 Aug 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r589 | wittend99 | 2012-07-15 15:45:52 -0500 (Sun, 15 Jul 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r588 | wittend99 | 2012-07-15 15:44:30 -0500 (Sun, 15 Jul 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r571 | wittend99 | 2012-06-18 10:10:40 -0500 (Mon, 18 Jun 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r570 | wittend99 | 2012-06-18 10:07:01 -0500 (Mon, 18 Jun 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r569 | wittend99 | 2012-06-18 10:06:26 -0500 (Mon, 18 Jun 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r568 | wittend99 | 2012-06-18 10:04:56 -0500 (Mon, 18 Jun 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r567 | wittend99 | 2012-06-18 10:04:10 -0500 (Mon, 18 Jun 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r566 | wittend99 | 2012-06-18 09:16:14 -0500 (Mon, 18 Jun 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r565 | wittend99 | 2012-06-18 09:13:02 -0500 (Mon, 18 Jun 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r564 | wittend99 | 2012-06-18 09:10:53 -0500 (Mon, 18 Jun 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r563 | wittend99 | 2012-06-18 09:08:49 -0500 (Mon, 18 Jun 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r562 | wittend99 | 2012-06-18 08:54:08 -0500 (Mon, 18 Jun 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r561 | wittend99 | 2012-06-18 08:52:45 -0500 (Mon, 18 Jun 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r560 | wittend99 | 2012-06-18 08:52:08 -0500 (Mon, 18 Jun 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r559 | wittend99 | 2012-06-18 08:51:00 -0500 (Mon, 18 Jun 2012) | 1 line
+
+Update svn:ignore
+------------------------------------------------------------------------
+r558 | wittend99 | 2012-06-18 08:45:24 -0500 (Mon, 18 Jun 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r557 | wittend99 | 2012-06-18 08:44:06 -0500 (Mon, 18 Jun 2012) | 1 line
+
+Some cleanup
+------------------------------------------------------------------------
+r556 | wittend99 | 2012-06-17 10:05:25 -0500 (Sun, 17 Jun 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r555 | wittend99 | 2012-06-17 10:03:12 -0500 (Sun, 17 Jun 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r554 | wittend99 | 2012-06-17 10:02:44 -0500 (Sun, 17 Jun 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r553 | wittend99 | 2012-06-17 10:00:29 -0500 (Sun, 17 Jun 2012) | 1 line
+
+Bunches of work on portaudio, still not done. Added fdmdvBasic tor testing, it is the same as the main app without the graphic spectrum display.  It may not be useful for without the waterfall display for tuning. 
+------------------------------------------------------------------------
+r551 | wittend99 | 2012-06-15 09:26:24 -0500 (Fri, 15 Jun 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r550 | wittend99 | 2012-06-15 09:25:06 -0500 (Fri, 15 Jun 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r549 | wittend99 | 2012-06-15 09:20:30 -0500 (Fri, 15 Jun 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r548 | wittend99 | 2012-06-15 09:19:41 -0500 (Fri, 15 Jun 2012) | 1 line
+
+experiments
+------------------------------------------------------------------------
+r547 | wittend99 | 2012-06-15 09:18:07 -0500 (Fri, 15 Jun 2012) | 1 line
+
+update build from codec2-dev 545
+------------------------------------------------------------------------
+r546 | wittend99 | 2012-06-12 07:30:44 -0500 (Tue, 12 Jun 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r521 | wittend99 | 2012-05-30 21:53:15 -0500 (Wed, 30 May 2012) | 1 line
+
+Still working on the audio dialog, mostly.
+------------------------------------------------------------------------
+r520 | wittend99 | 2012-05-29 22:43:11 -0500 (Tue, 29 May 2012) | 1 line
+
+Work on portaudio dialog, misc. cleanup.
+------------------------------------------------------------------------
+r518 | wittend99 | 2012-05-29 18:27:43 -0500 (Tue, 29 May 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r517 | wittend99 | 2012-05-29 18:26:27 -0500 (Tue, 29 May 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r516 | wittend99 | 2012-05-29 18:07:56 -0500 (Tue, 29 May 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r515 | wittend99 | 2012-05-29 17:53:59 -0500 (Tue, 29 May 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r514 | wittend99 | 2012-05-29 17:53:42 -0500 (Tue, 29 May 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r513 | wittend99 | 2012-05-29 17:53:00 -0500 (Tue, 29 May 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r512 | wittend99 | 2012-05-29 17:50:22 -0500 (Tue, 29 May 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r511 | wittend99 | 2012-05-29 17:49:51 -0500 (Tue, 29 May 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r510 | wittend99 | 2012-05-29 17:49:13 -0500 (Tue, 29 May 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r509 | wittend99 | 2012-05-29 17:48:28 -0500 (Tue, 29 May 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r508 | wittend99 | 2012-05-29 17:47:54 -0500 (Tue, 29 May 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r507 | wittend99 | 2012-05-29 17:35:24 -0500 (Tue, 29 May 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r505 | wittend99 | 2012-05-27 12:34:55 -0500 (Sun, 27 May 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r504 | wittend99 | 2012-05-27 10:44:30 -0500 (Sun, 27 May 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r503 | wittend99 | 2012-05-27 10:41:44 -0500 (Sun, 27 May 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r502 | wittend99 | 2012-05-26 22:10:12 -0500 (Sat, 26 May 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r501 | wittend99 | 2012-05-26 21:53:08 -0500 (Sat, 26 May 2012) | 1 line
+
+fdmdv2dll builds, as yet untested though.
+------------------------------------------------------------------------
+r500 | wittend99 | 2012-05-26 09:05:50 -0500 (Sat, 26 May 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r499 | wittend99 | 2012-05-26 08:31:29 -0500 (Sat, 26 May 2012) | 1 line
+
+changed this to fdmdv2dll
+------------------------------------------------------------------------
+r498 | wittend99 | 2012-05-26 08:30:03 -0500 (Sat, 26 May 2012) | 1 line
+
+Attempting to clean up the project.
+------------------------------------------------------------------------
+r497 | wittend99 | 2012-05-26 08:26:01 -0500 (Sat, 26 May 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r495 | wittend99 | 2012-05-26 07:59:29 -0500 (Sat, 26 May 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r494 | wittend99 | 2012-05-26 07:17:59 -0500 (Sat, 26 May 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r493 | wittend99 | 2012-05-26 07:17:28 -0500 (Sat, 26 May 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r491 | wittend99 | 2012-05-24 18:46:43 -0500 (Thu, 24 May 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r486 | wittend99 | 2012-05-21 21:23:11 -0500 (Mon, 21 May 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r485 | wittend99 | 2012-05-19 20:58:55 -0500 (Sat, 19 May 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r480 | wittend99 | 2012-05-17 21:16:32 -0500 (Thu, 17 May 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r479 | wittend99 | 2012-05-17 21:10:59 -0500 (Thu, 17 May 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r478 | wittend99 | 2012-05-17 21:09:48 -0500 (Thu, 17 May 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r477 | wittend99 | 2012-05-17 21:08:19 -0500 (Thu, 17 May 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r476 | wittend99 | 2012-05-17 21:07:58 -0500 (Thu, 17 May 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r475 | wittend99 | 2012-05-17 21:06:15 -0500 (Thu, 17 May 2012) | 1 line
+
+Catching up before things get into a snarl.
+------------------------------------------------------------------------
+r474 | wittend99 | 2012-05-17 13:06:55 -0500 (Thu, 17 May 2012) | 1 line
+
+More basic required library files.
+------------------------------------------------------------------------
+r473 | wittend99 | 2012-05-17 12:54:14 -0500 (Thu, 17 May 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r472 | wittend99 | 2012-05-17 10:08:08 -0500 (Thu, 17 May 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r471 | wittend99 | 2012-05-17 10:03:24 -0500 (Thu, 17 May 2012) | 1 line
+
+More work with portaudiocpp
+------------------------------------------------------------------------
+r470 | wittend99 | 2012-05-15 21:31:30 -0500 (Tue, 15 May 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r469 | wittend99 | 2012-05-15 14:11:26 -0500 (Tue, 15 May 2012) | 1 line
+
+synching things up...
+------------------------------------------------------------------------
+r468 | wittend99 | 2012-05-15 14:07:29 -0500 (Tue, 15 May 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r467 | wittend99 | 2012-05-15 08:47:57 -0500 (Tue, 15 May 2012) | 1 line
+
+Fun with portaudio!
+------------------------------------------------------------------------
+r466 | wittend99 | 2012-05-15 08:44:43 -0500 (Tue, 15 May 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r465 | wittend99 | 2012-05-15 08:44:23 -0500 (Tue, 15 May 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r464 | wittend99 | 2012-05-15 08:44:02 -0500 (Tue, 15 May 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r463 | wittend99 | 2012-05-15 08:42:49 -0500 (Tue, 15 May 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r462 | wittend99 | 2012-05-14 20:25:56 -0500 (Mon, 14 May 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r460 | wittend99 | 2012-05-13 20:04:35 -0500 (Sun, 13 May 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r459 | wittend99 | 2012-05-13 19:55:29 -0500 (Sun, 13 May 2012) | 1 line
+
+built libs and headers for linking
+------------------------------------------------------------------------
+r458 | wittend99 | 2012-05-13 19:51:07 -0500 (Sun, 13 May 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r456 | wittend99 | 2012-05-13 19:25:07 -0500 (Sun, 13 May 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r455 | wittend99 | 2012-05-13 19:13:32 -0500 (Sun, 13 May 2012) | 1 line
+
+Notes about building portaudio for fdmdv2.
+------------------------------------------------------------------------
+r453 | wittend99 | 2012-05-13 16:19:57 -0500 (Sun, 13 May 2012) | 1 line
+
+portaudio portable audio framework
+------------------------------------------------------------------------
+r452 | wittend99 | 2012-05-13 16:10:42 -0500 (Sun, 13 May 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r451 | wittend99 | 2012-05-13 15:49:44 -0500 (Sun, 13 May 2012) | 1 line
+
+remove incorrect paths
+------------------------------------------------------------------------
+r450 | wittend99 | 2012-05-13 15:49:03 -0500 (Sun, 13 May 2012) | 1 line
+
+Workspace for the Codelite IDE
+------------------------------------------------------------------------
+r449 | wittend99 | 2012-05-13 15:48:16 -0500 (Sun, 13 May 2012) | 1 line
+
+fixup some paths
+------------------------------------------------------------------------
+r448 | wittend99 | 2012-05-13 15:44:49 -0500 (Sun, 13 May 2012) | 1 line
+
+project file for Codelite
+------------------------------------------------------------------------
+r447 | wittend99 | 2012-05-13 14:43:58 -0500 (Sun, 13 May 2012) | 1 line
+
+Potentially for use for rig control
+------------------------------------------------------------------------
+r446 | wittend99 | 2012-05-13 14:32:29 -0500 (Sun, 13 May 2012) | 1 line
+
+Possible rs-232 Comm library for use if needed. Born of frustration with existing options. After all these years isn't there a decent, usable, documented cross-platform library somewhere?
+------------------------------------------------------------------------
+r445 | wittend99 | 2012-05-13 14:20:14 -0500 (Sun, 13 May 2012) | 1 line
+
+A copy of libsndfile.dll built for Win32 using MinGW + MSYS on Win7 
+------------------------------------------------------------------------
+r444 | wittend99 | 2012-05-13 14:17:16 -0500 (Sun, 13 May 2012) | 1 line
+
+Just running notes about where ideas and code have come from.
+------------------------------------------------------------------------
+r443 | wittend99 | 2012-05-13 14:10:56 -0500 (Sun, 13 May 2012) | 1 line
+
+Class declarations for the spectrum and waterfall classes.
+------------------------------------------------------------------------
+r442 | wittend99 | 2012-05-13 14:08:16 -0500 (Sun, 13 May 2012) | 1 line
+
+Intended to be a superclass to the waterfall and spectrum plot classes.  Currently the UI just instantiates one directly derived for each window in the wxNotebook display.
+------------------------------------------------------------------------
+r441 | wittend99 | 2012-05-13 14:03:07 -0500 (Sun, 13 May 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r440 | wittend99 | 2012-05-13 11:30:57 -0500 (Sun, 13 May 2012) | 1 line
+
+UI Project 'main' header
+------------------------------------------------------------------------
+r439 | wittend99 | 2012-05-13 11:30:12 -0500 (Sun, 13 May 2012) | 1 line
+
+UI project 'main' module
+------------------------------------------------------------------------
+r438 | wittend99 | 2012-05-13 11:28:34 -0500 (Sun, 13 May 2012) | 1 line
+
+Workspace for CodeLite
+------------------------------------------------------------------------
+r437 | wittend99 | 2012-05-13 11:03:53 -0500 (Sun, 13 May 2012) | 1 line
+
+An XRC definition of the UI window classes.  Can be used by wxWidgets, but is just for reference in this project.
+------------------------------------------------------------------------
+r436 | wittend99 | 2012-05-13 11:01:37 -0500 (Sun, 13 May 2012) | 1 line
+
+wxFormbuilder generated Python version of the UI classes, included just for grins (for now)
+------------------------------------------------------------------------
+r435 | wittend99 | 2012-05-13 10:59:09 -0500 (Sun, 13 May 2012) | 1 line
+
+wxFormbuilder generated UI class declarations. (topframe.* are all generated classes. Don' Edit!)
+------------------------------------------------------------------------
+r434 | wittend99 | 2012-05-13 10:56:34 -0500 (Sun, 13 May 2012) | 1 line
+
+Defines the top level frame window for the UI as well as the dialogs.  the MainFrame classs and all of the dialog classes inherit from this.
+------------------------------------------------------------------------
+r433 | wittend99 | 2012-05-13 10:53:43 -0500 (Sun, 13 May 2012) | 1 line
+
+wxFormbuilder Project File used to create the top-level UI and the dialogs.  Probably requires wxFormbuilder v. 3.3.2-beta or above. This generates topframe.h, topframe.cpp, (and topframe.py, topframe.xrc for experimentation).  Use this with care.
+------------------------------------------------------------------------
+r432 | wittend99 | 2012-05-13 10:45:54 -0500 (Sun, 13 May 2012) | 1 line
+
+Sound file Read/Write library
+------------------------------------------------------------------------
+r431 | wittend99 | 2012-05-13 10:39:42 -0500 (Sun, 13 May 2012) | 1 line
+
+sample rate conversion library aka "Secret Rabbit Code"
+------------------------------------------------------------------------
+r430 | wittend99 | 2012-05-13 10:31:45 -0500 (Sun, 13 May 2012) | 1 line
+
+General Program Options Dialog Header
+------------------------------------------------------------------------
+r429 | wittend99 | 2012-05-13 10:30:39 -0500 (Sun, 13 May 2012) | 1 line
+
+General Program Options Dialog
+------------------------------------------------------------------------
+r428 | wittend99 | 2012-05-13 10:29:55 -0500 (Sun, 13 May 2012) | 1 line
+
+Comm Ports Dialog Header
+------------------------------------------------------------------------
+r427 | wittend99 | 2012-05-13 10:29:07 -0500 (Sun, 13 May 2012) | 1 line
+
+Comm Ports Dialog
+------------------------------------------------------------------------
+r426 | wittend99 | 2012-05-13 10:27:58 -0500 (Sun, 13 May 2012) | 1 line
+
+Audio Dialog Header
+------------------------------------------------------------------------
+r425 | wittend99 | 2012-05-13 10:27:22 -0500 (Sun, 13 May 2012) | 1 line
+
+Audio Dialog
+------------------------------------------------------------------------
+r424 | wittend99 | 2012-05-13 10:26:11 -0500 (Sun, 13 May 2012) | 1 line
+
+help>About Header
+------------------------------------------------------------------------
+r423 | wittend99 | 2012-05-13 10:25:24 -0500 (Sun, 13 May 2012) | 1 line
+
+help>About Dialog.
+------------------------------------------------------------------------
+r422 | wittend99 | 2012-05-13 10:23:55 -0500 (Sun, 13 May 2012) | 1 line
+
+wxWidgets DLL file used for Win32 build.
+------------------------------------------------------------------------
+r421 | wittend99 | 2012-05-13 10:08:46 -0500 (Sun, 13 May 2012) | 1 line
+
+A folder for fdmdv-2 UI work.
+------------------------------------------------------------------------
