@@ -242,12 +242,12 @@ void ComPortsDlg::populatePortList()
         for(unsigned int i = 0; i < values; i++)
         {
             key.QueryValue(key_name, key_data);
-//            wxPrintf("Value:  %s Data: %s\n", key_name, key_data);
+            //wxPrintf("Value:  %s Data: %s\n", key_name, key_data);
             aStr.Add(key_data, 1);
             key.GetNextValue(key_name, el);
         }
     }
-    m_cbSerialPort->Append(aStr);
+    m_listCtrlPorts->Append(aStr);
 #endif
 #ifdef __WXGTK__
     /* TODO(Joel): http://stackoverflow.com/questions/2530096/how-to-find-all-serial-devices-ttys-ttyusb-on-linux-without-opening-them */
