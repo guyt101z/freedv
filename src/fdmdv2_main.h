@@ -398,6 +398,7 @@ class MainFrame : public TopFrame
         void OnToolsComCfgUI( wxUpdateUIEvent& event );
         void OnToolsFilter( wxCommandEvent& event );
         void OnToolsOptions(wxCommandEvent& event);
+        void OnToolsOptionsUI(wxUpdateUIEvent& event);
 
         void OnPlayFileToMicIn( wxCommandEvent& event );
         void OnRecFileFromRadio( wxCommandEvent& event );

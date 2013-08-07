@@ -899,14 +899,13 @@ void MainFrame::OnCheckSNRClick(wxCommandEvent& event)
     //printf("m_snrSlow: %d\n", (int)wxGetApp().m_snrSlow);
 }
 
-// check for space bar press
+// check for space bar press (only when running)
 
 int MainApp::FilterEvent(wxEvent& event)
 {
     if ((event.GetEventType() == wxEVT_KEY_DOWN) && 
         (((wxKeyEvent&)event).GetKeyCode() == WXK_SPACE))
         {
-            //printf("m_rxRunnng: %d\n", frame->m_RxRunning);
             if (frame->m_RxRunning) {
                 if (frame->m_btnTogPTT->GetValue())
                     frame->m_btnTogPTT->SetValue(false);
@@ -915,10 +914,8 @@ int MainApp::FilterEvent(wxEvent& event)
 
                 frame->togglePTT();
             }
-            return true;
-
         }
- 
+
     return -1;
 }
 
@@ -1415,6 +1412,14 @@ void MainFrame::OnToolsAudio(wxCommandEvent& event)
 }
 
 //-------------------------------------------------------------------------
+// OnToolsAudioUI()
+//-------------------------------------------------------------------------
+void MainFrame::OnToolsAudioUI(wxUpdateUIEvent& event)
+{
+    event.Enable(!m_RxRunning);
+}
+
+//-------------------------------------------------------------------------
 // OnToolsFilter()
 //-------------------------------------------------------------------------
 void MainFrame::OnToolsFilter(wxCommandEvent& event)
@@ -1437,9 +1442,9 @@ void MainFrame::OnToolsOptions(wxCommandEvent& event)
 }
 
 //-------------------------------------------------------------------------
-// OnToolsAudioUI()
+// OnToolsOptionsUI()
 //-------------------------------------------------------------------------
-void MainFrame::OnToolsAudioUI(wxUpdateUIEvent& event)
+void MainFrame::OnToolsOptionsUI(wxUpdateUIEvent& event)
 {
     event.Enable(!m_RxRunning);
 }
