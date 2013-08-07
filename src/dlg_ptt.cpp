@@ -211,6 +211,7 @@ void ComPortsDlg::populatePortList()
 {
 #ifdef __WXMSW__
     m_listCtrlPorts->Clear();
+    m_cbSerialPort->Clear();
     wxArrayString aStr;
     wxRegKey key(wxRegKey::HKLM, _T("HARDWARE\\DEVICEMAP\\SERIALCOMM"));
     if(!key.Exists())
@@ -248,6 +249,7 @@ void ComPortsDlg::populatePortList()
         }
     }
     m_listCtrlPorts->Append(aStr);
+    m_cbSerialPort->Append(aStr);
 #endif
 #ifdef __WXGTK__
     /* TODO(Joel): http://stackoverflow.com/questions/2530096/how-to-find-all-serial-devices-ttys-ttyusb-on-linux-without-opening-them */
@@ -256,6 +258,13 @@ void ComPortsDlg::populatePortList()
     m_cbSerialPort->Append("/dev/ttyUSB1");
     m_cbSerialPort->Append("/dev/ttyS0");
     m_cbSerialPort->Append("/dev/ttyS1");
+    /*
+    m_txtCtlDevicePath->Clear();
+    m_txtCtlDevicePath->Append("/dev/ttyUSB0");
+    m_txtCtlDevicePath->Append("/dev/ttyUSB1");
+    m_txtCtlDevicePath->Append("/dev/ttyS0");
+    m_txtCtlDevicePath->Append("/dev/ttyS1");
+    */
 #endif
 }
 
