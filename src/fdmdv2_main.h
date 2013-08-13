@@ -339,6 +339,8 @@ class MainFrame : public TopFrame
         void                    CloseSerialPort(void);
         void                    SerialPTTRx(void);
 
+        bool                    m_modal;
+
 #ifdef _USE_TIMER
         wxTimer                 m_plotTimer;
 #endif

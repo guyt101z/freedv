@@ -318,9 +318,9 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     wxGetApp().m_strHamlibSerialPort = pConfig->Read("/Hamlib/SerialPort", "");
     
     wxGetApp().m_boolUseSerialPTT   = pConfig->ReadBool(wxT("/Rig/UseSerialPTT"),   false);
-    wxGetApp().m_strRigCtrlPort     = pConfig->Read(wxT("/Rig/Port"),               wxT("COM3"));
+    wxGetApp().m_strRigCtrlPort     = pConfig->Read(wxT("/Rig/Port"),               wxT(""));
     wxGetApp().m_boolUseRTS         = pConfig->ReadBool(wxT("/Rig/UseRTS"),         true);
-    wxGetApp().m_boolRTSPos         = pConfig->ReadBool(wxT("/Rig/RTSPolarity"),    false);
+    wxGetApp().m_boolRTSPos         = pConfig->ReadBool(wxT("/Rig/RTSPolarity"),    true);
     wxGetApp().m_boolUseDTR         = pConfig->ReadBool(wxT("/Rig/UseDTR"),         false);
     wxGetApp().m_boolDTRPos         = pConfig->ReadBool(wxT("/Rig/DTRPolarity"),    false);
 
@@ -445,6 +445,8 @@ MainFrame::MainFrame(wxWindow *parent) : TopFrame(parent)
     g_total_bit_errors = 0;
     g_total_bits = 0;
     wxGetApp().m_testFrames = false;
+
+    m_modal = false;
 }
 
 //-------------------------------------------------------------------------
@@ -906,13 +908,18 @@ int MainApp::FilterEvent(wxEvent& event)
     if ((event.GetEventType() == wxEVT_KEY_DOWN) && 
         (((wxKeyEvent&)event).GetKeyCode() == WXK_SPACE))
         {
-            if (frame->m_RxRunning) {
+            // only use space to toggle PTT if we are running and no modal dialogs (like options) up
+
+            if (frame->m_RxRunning && !frame->m_modal) {
                 if (frame->m_btnTogPTT->GetValue())
                     frame->m_btnTogPTT->SetValue(false);
                 else
                     frame->m_btnTogPTT->SetValue(true);
 
                 frame->togglePTT();
+
+                return true; // absorb space so we don't toggle control with focus (e.g. Start)
+
             }
         }
 
@@ -949,9 +956,9 @@ void MainFrame::togglePTT(void) {
     // Hamlib PTT
 
     if (wxGetApp().m_boolHamlibUseForPTT) {        
-        Hamlib *rig = wxGetApp().m_hamlib; 
-        if (wxGetApp().m_boolHamlibUseForPTT && rig != NULL) {
-            rig->ptt(g_tx);
+        Hamlib *hamlib = wxGetApp().m_hamlib; 
+        if (wxGetApp().m_boolHamlibUseForPTT && hamlib != NULL) {
+            hamlib->ptt(g_tx);
         }
     }
 
@@ -1437,7 +1444,9 @@ void MainFrame::OnToolsOptions(wxCommandEvent& event)
 {
     wxUnusedVar(event);
     OptionsDlg *dlg = new OptionsDlg(NULL);
+    m_modal=true;
     dlg->ShowModal();
+    m_modal=false;
     delete dlg;
 }
 
@@ -1446,7 +1455,6 @@ void MainFrame::OnToolsOptions(wxCommandEvent& event)
 //-------------------------------------------------------------------------
 void MainFrame::OnToolsOptionsUI(wxUpdateUIEvent& event)
 {
-    event.Enable(!m_RxRunning);
 }
 
 //-------------------------------------------------------------------------
@@ -1466,6 +1474,7 @@ void MainFrame::OnToolsComCfg(wxCommandEvent& event)
     {
         if (wxGetApp().m_boolHamlibUseForPTT) {
             OpenHamlibRig();
+            wxGetApp().m_hamlib->close();
         }
         if (wxGetApp().m_boolUseSerialPTT) {
             SetupSerialPort();
@@ -1586,7 +1595,7 @@ bool MainFrame::OpenHamlibRig() {
     bool status = wxGetApp().m_hamlib->connect(rig, port.mb_str(wxConvUTF8));
     if (status == false)
         wxMessageBox("Couldn't connect to Radio with hamlib", wxT("About"), wxOK | wxICON_ERROR, this);
-
+ 
     return status;
 } 
 
@@ -1735,9 +1744,10 @@ void MainFrame::OnTogBtnOnOff(wxCommandEvent& event)
         // ensure we are not transmitting and shut down audio processing
 
         if (wxGetApp().m_boolHamlibUseForPTT) {
-            Hamlib *rig = wxGetApp().m_hamlib; 
-            if (wxGetApp().m_boolHamlibUseForPTT && rig != NULL) {
-                rig->ptt(false);
+            Hamlib *hamlib = wxGetApp().m_hamlib; 
+            if (wxGetApp().m_boolHamlibUseForPTT && hamlib != NULL) {
+                hamlib->ptt(false);
+                hamlib->close();
             }
         }
 

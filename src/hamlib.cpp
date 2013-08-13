@@ -45,8 +45,6 @@ Hamlib::Hamlib() : m_rig(NULL) {
 }
 
 Hamlib::~Hamlib() {
-    rig_close(m_rig);
-    rig_cleanup(m_rig);
 }
 
 static int build_list(const struct rig_caps *rig, rig_ptr_t rigList) {
@@ -107,4 +105,10 @@ bool Hamlib::ptt(bool press) {
     ptt_t on = press ? RIG_PTT_ON : RIG_PTT_OFF;
     /* TODO(Joel): what should the VFO option be? */
     return rig_set_ptt(m_rig, RIG_VFO_CURR, on) == RIG_OK;
+}
+
+void Hamlib::close(void) {
+    rig_close(m_rig);
+    rig_cleanup(m_rig);
+    free(m_rig);
 }
